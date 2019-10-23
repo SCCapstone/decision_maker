@@ -48,5 +48,5 @@ The backend of our application running in the AWS cloud requires deployment.
 ## Authors
 * John Andrews - jha2@email.sc.edu
 * Josh Rapoport - rapopoj@email.sc.edu
-*
+* Edmond Klaric - eklaric@email.sc.edu
 *
