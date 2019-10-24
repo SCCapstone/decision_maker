@@ -2,7 +2,7 @@
 
 This mobile application will help users in creating events for a group of people. Users can create groups amongst other users. Users can define categories that have related choices. Users can rate their preference of each choice for a category and save their ratings. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choices for group activities at the click of a button.
 
-The basic architecture of this project consists of Flutter and several AWS services: API Gateway, Lambda, DynamoDB, and S3. Flutter activates the dart code to create the UI and front end. In the dart code there are http calls to api endpoints set up in AWS API Gateway. These apis are backed by AWS Lambda cloud functions. Package Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package source code. 
+The basic architecture of this project consists of Flutter and several AWS services: API Gateway, Lambda, DynamoDB, and S3. Flutter activates the dart code to create the UI and front end. In the dart code there are http calls to api endpoints set up in AWS API Gateway. These apis are backed by AWS Lambda cloud functions. Package Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package source code.
 
 ## Technologies
 This application leverages several technologies, at the top level, it uses flutter for the front end and java for the back end.
@@ -51,6 +51,6 @@ The backend of our application running in the AWS cloud requires deployment.
 
 ## Authors
 * John Andrews - jha2@email.sc.edu
-*
-*
+* Josh Rapoport - email: rapopoj@email.sc.edu
+* Edmond Klaric - eklaric@email.sc.edu
 *
