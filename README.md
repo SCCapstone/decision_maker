@@ -45,6 +45,10 @@ The backend of our application running in the AWS cloud requires deployment.
 4. Upon deployment, you will be able to view the link to access the api, this can be used within the dart front end code to access the backend.
 5. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the api has authorization to access the lambda function.
 
+## Code Style Guides:
+[Dart](https://dart.dev/guides/language/effective-dart/style)
+[Java](https://google.github.io/styleguide/javaguide.html)
+
 ## Authors
 * John Andrews - jha2@email.sc.edu
 *
