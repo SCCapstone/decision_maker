@@ -55,6 +55,3 @@ The backend of our application running in the AWS cloud requires deployment.
 * Edmond Klaric - eklaric@email.sc.edu
 <<<<<<< HEAD
 * Jeffrey Arling - jarling@email.sc.edu
-=======
-* Jeff Arling - My Email
->>>>>>> 5414ead724677ce977c8921df3d6a50e87b2a2a9
