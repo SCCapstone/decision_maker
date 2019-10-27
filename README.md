@@ -53,4 +53,4 @@ The backend of our application running in the AWS cloud requires deployment.
 * John Andrews - jha2@email.sc.edu
 * Josh Rapoport - email: rapopoj@email.sc.edu
 * Edmond Klaric - eklaric@email.sc.edu
-*
+* Jeff Arling - My Email
