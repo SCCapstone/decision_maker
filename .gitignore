@@ -1,19 +1,19 @@
 # Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
+**/*.class
+**/*.log
+**/*.pyc
+**/*.swp
+**/.DS_Store
+**/.atom/
+**/.buildlog/
+**/.history
+**/.svn/
 
 # IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.idea/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -21,13 +21,13 @@
 #.vscode/
 
 # Flutter/Dart/Pub related
-**/doc/api/
-.dart_tool/
-.flutter-plugins
-.packages
-.pub-cache/
-.pub/
-/build/
+frontEnd/**/doc/api/
+frontEnd/.dart_tool/
+frontEnd/.flutter-plugins
+frontEnd/.packages
+frontEnd/.pub-cache/
+frontEnd/.pub/
+frontEnd/build/
 
 # Android related
 **/android/**/gradle-wrapper.jar
