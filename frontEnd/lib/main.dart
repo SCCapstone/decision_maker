@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'add_value_pair.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
+import 'sign_in_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,7 +15,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: MyAppContents(dbPairs: this.getAllPairsWidget()),
+        home: SignInPage(),
+//      home: MyAppContents(dbPairs: this.getAllPairsWidget()),
     );
   }
 
