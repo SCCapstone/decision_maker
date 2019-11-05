@@ -1,14 +1,12 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'AddValuePair.dart';
-import 'package:http/http.dart' as http;
+
+import 'add_value_pair.dart';
+import 'includes/dev_testing_manager.dart';
+import 'includes/pair.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  final String pairsApiEndpoint = "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta";
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,19 +18,8 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Future<List<Pair>> getAllPairs() async {
-    http.Response response = await http.get(this.pairsApiEndpoint);
-
-    if (response.statusCode == 200) {
-      List responseJson = json.decode(response.body);
-      return responseJson.map((m) => new Pair.fromJson(m)).toList();
-    } else {
-      throw Exception("Failed to load value pairs from the database.");
-    }
-  }
-
   Future<Widget> getAllPairsWidget() async {
-    List<Pair> allPairs = await this.getAllPairs();
+    List<Pair> allPairs = await DevTestingManager.getAllPairs();
     return new Column(children: allPairs.map((pair) => new Text(pair.key + ": " + pair.value)).toList());
   }
 }
@@ -82,20 +69,6 @@ class MyAppContents extends StatelessWidget {
           ).then((_) => runApp(MyApp()));
         },
       ),
-    );
-  }
-}
-
-class Pair {
-  final String key;
-  final String value;
-
-  Pair({this.key, this.value});
-
-  factory Pair.fromJson(Map<String, dynamic> json) {
-    return Pair(
-      key: json['key'],
-      value: json['value'],
     );
   }
 }
