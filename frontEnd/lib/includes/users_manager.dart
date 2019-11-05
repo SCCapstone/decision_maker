@@ -2,7 +2,6 @@
 import 'response_item.dart';
 
 class UsersManager {
-  static final tableName = "users";
   static final String apiEndpoint = "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/usersendpoint";
 
   static ResponseItem insertNewUser() {
