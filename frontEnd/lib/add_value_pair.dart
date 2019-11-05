@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'includes/dev_testing_manager.dart';
+import 'imports/dev_testing_manager.dart';
 
 class AddValuePair extends StatefulWidget {
   @override

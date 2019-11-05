@@ -13,6 +13,17 @@ ResponseItem logUserIn() {
   bool success = false;
   String actionMessage = "function not implemented";
 
+  //attempt to log user in with cognito
+
+  //if login is successful, call getUserTokens with parsed code from Location header
+
+  return new ResponseItem(success, actionMessage);
+}
+
+ResponseItem registerNewUser() {
+  bool success = false;
+  String actionMessage = "function not implemented";
+
   //attempt to create user account with cognito
 
   //if adding user is successful, add call to 'insertNewUser' located in users_manager.dart
