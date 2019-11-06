@@ -1,3 +1,11 @@
-PairUploader$1.class
-PairsGetter.class
-PairUploader.class
+imports\UsersManager.class
+imports\CategoriesManager.class
+utilities\IOStreamsHelper$1.class
+handlers\PairsGetter.class
+handlers\PairUploader.class
+imports\DatabaseAccessManager.class
+imports\EventsManager.class
+utilities\IOStreamsHelper.class
+imports\DevTestingManager.class
+utilities\ExceptionHelper.class
+imports\GroupsManager.class
