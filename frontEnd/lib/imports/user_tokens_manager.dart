@@ -20,7 +20,7 @@ ResponseItem logUserIn() {
   return new ResponseItem(success, actionMessage);
 }
 
-ResponseItem registerNewUser() {
+ResponseItem registerNewUser(String email, String username, String password) {
   bool success = false;
   String actionMessage = "function not implemented";
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:milestone_3/imports/response_item.dart';
 import 'package:milestone_3/imports/user_tokens_manager.dart';
 
 import 'utilities/input_field.dart';
@@ -9,11 +10,11 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInState extends State<SignInPage> {
-  final InputField usernameInput = new InputField("Username", TextInputType.text);
-  final InputField passwordInput = new InputField("Password", TextInputType.text);
-  final InputField emailInput = new InputField("Email Address", TextInputType.emailAddress);
+  final InputField usernameInput = new InputField("Username", TextInputType.text, false);
+  final InputField passwordInput = new InputField("Password", TextInputType.text, true);
+  final InputField emailInput = new InputField("Email Address", TextInputType.emailAddress, false);
 
-  bool _signUp = true;
+  bool _signUp = false;
 
   @override
   void dispose() {
@@ -28,7 +29,7 @@ class _SignInState extends State<SignInPage> {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
-        title: Text(getTitle(_signUp)),
+        title: Text(getPageTitle(_signUp)),
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
@@ -57,15 +58,6 @@ class _SignInState extends State<SignInPage> {
             Padding(
               padding: EdgeInsets.all(5.0),
             ),
-            RaisedButton(
-              onPressed: (){}, // TODO implement
-              child: Text(
-                "Forgot Password?",
-                style: TextStyle(
-                  fontSize: 20
-                ),
-              ),
-            ),
             Padding(
               padding: EdgeInsets.all(5.0),
             ),
@@ -73,15 +65,16 @@ class _SignInState extends State<SignInPage> {
               width: 300.0,
               height: 50.0,
               child: RaisedButton(
-                color: Colors.blue,
+                color: const Color(0xff106126),
+                textColor: Colors.white,
                 onPressed: (){
-                  if(validatePassword(passwordInput,_signUp)==null){
-                    registerNewUser();
-                    }
+                  if(_signUp){
+                    attemptSignUp(context,passwordInput,usernameInput,emailInput,_signUp);
+                  }
                   else{
-                      showErrorDialog(context,usernameInput,passwordInput,_signUp);
-                    }
-                  }, // TODO implement
+                    attemptSignIn(context,passwordInput,usernameInput,emailInput,_signUp);
+                  }
+                  },
                 child: Text(
                   getSubmitButtonMsg(_signUp),
                   style: TextStyle(
@@ -94,19 +87,23 @@ class _SignInState extends State<SignInPage> {
               padding: EdgeInsets.all(25.0),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Flexible(
                   fit: FlexFit.loose,
-                  child: Text(getMessage(_signUp)),
+                  child: Text(getQuestion(_signUp)),
                 ),
                 Flexible(
-                  fit: FlexFit.tight,
                   child: RaisedButton(
+                    color: Colors.blue,
                     onPressed: (){setState(() {
+                      // reload widget and switch to either sign up or sign in
+                      passwordInput.controller.clear();
+                      usernameInput.controller.clear();
+                      emailInput.controller.clear();
                       _signUp = !_signUp;
                     });},
-                    child: Text(getButtonMessage(_signUp)),
+                    child: Text(getNavButtonMessage(_signUp)),
                   ),
                 )
               ],
@@ -118,7 +115,7 @@ class _SignInState extends State<SignInPage> {
   }
 }
 
-String getTitle(bool signUp){
+String getPageTitle(bool signUp){
   if(signUp){
     return "Sign Up";
   }
@@ -136,7 +133,7 @@ String getSubmitButtonMsg(bool signUp){
   }
 }
 
-String getButtonMessage(bool signUp){
+String getNavButtonMessage(bool signUp){
   if(signUp){
     return "Sign in";
   }
@@ -145,7 +142,7 @@ String getButtonMessage(bool signUp){
   }
 }
 
-String getMessage(bool signUp){
+String getQuestion(bool signUp){
   if(signUp){
     return "Already have an account?";
   }
@@ -155,12 +152,16 @@ String getMessage(bool signUp){
 }
 
 String validatePassword(InputField passwordInput, bool signUp){
+  /*
+    Validates a password with a given inputField object. If the user is not signing up, only check if it is empty
+   */
   String password = passwordInput.controller.text;
-  String retVal;
+  String retVal="";
   if (password.isEmpty ) {
     retVal = "Password cannot be empty!";
   }
   else if(password.length<8 && signUp){
+    // if not signing up, don't need to remind the user of length of password
     retVal = "Password must be greater than 8 characters";
   }
   return retVal;
@@ -168,29 +169,87 @@ String validatePassword(InputField passwordInput, bool signUp){
 
 String validateUsernameInput(InputField inputField) {
   String name = inputField.controller.text;
-  String retVal;
+  String retVal="";
   if (name.isEmpty ) {
     retVal = "Username cannot be empty!";
   }
   return retVal;
 }
 
-void showErrorDialog(BuildContext context, InputField usernameInput, InputField passwordInput, bool signUp) {
-  String usernameErrorMsg = validateUsernameInput(usernameInput);
-  String passwordErrorMsg = validatePassword(passwordInput, signUp);
-  String errorMsg;
-  if(usernameErrorMsg == null){
-    // the username is valid
-    errorMsg = passwordErrorMsg;
+String validateEmailInput(InputField inputField){
+  String email = inputField.controller.text;
+  String retVal = "";
+  if (email.isEmpty ) {
+    retVal = "Email cannot be empty!";
   }
-  else if(passwordErrorMsg == null){
-    // the password is valid
-    errorMsg = usernameErrorMsg;
+  else if(!email.contains("@")){
+    retVal = "Enter a valid email address!";
+  }
+  return retVal;
+}
+
+void attemptSignIn(BuildContext context, InputField passwordInput, InputField usernameInput,
+    InputField emailInput, bool signUp){
+  if(validatePassword(passwordInput,signUp)=="" && validateUsernameInput(usernameInput)==""){
+    // TODO trim the input
+    ResponseItem response = logUserIn();
+    if(response.getSuccess()){
+      // sign up success, go to next stage
+    }
+    else{
+      // sign in was not successful, show error
+      print("Sign in not successful");
+    }
   }
   else{
-    // both invalid
-    errorMsg = usernameErrorMsg+"\n"+passwordErrorMsg;
+    showErrorDialog(context,usernameInput,passwordInput,emailInput,signUp);
   }
+}
+
+void attemptSignUp(BuildContext context, InputField passwordInput, InputField usernameInput,
+    InputField emailInput, bool signUp){
+  if(validatePassword(passwordInput,signUp)=="" && validateEmailInput(emailInput)==""
+      && validateUsernameInput(usernameInput)==""){
+    // no errors in the input, so attempt to sign up in cognito
+    String email = emailInput.controller.text.trim();
+    String username = usernameInput.controller.text.trim();
+    String password = passwordInput.controller.text.trim();
+    ResponseItem response = registerNewUser(email,username,password);
+    if(response.getSuccess()){
+      // sign up success, go to next stage
+    }
+    else{
+      // sign up was not successful, show error
+      print("Sign up not successful");
+    }
+  }
+  else{
+    // error
+    showErrorDialog(context,usernameInput,passwordInput,emailInput,signUp);
+  }
+}
+
+void showErrorDialog(BuildContext context, InputField usernameInput, InputField passwordInput,
+    InputField emailInput, bool signUp) {
+  List errorMsgs = new List();
+  if(signUp){
+    errorMsgs.add(validateEmailInput(emailInput));
+  }
+  errorMsgs.add(validateUsernameInput(usernameInput));
+  errorMsgs.add(validatePassword(passwordInput, signUp));
+
+  String errorMsg = "";
+  if(errorMsgs.length==1){
+    errorMsg = errorMsgs[0];
+  }
+  else{
+    // more than one error msg, so create message with appropriate new lines separating each error message
+    for(int i=0;i<errorMsgs.length;i++){
+      errorMsg += errorMsgs[i]+"\n";
+    }
+  }
+  errorMsg.trim(); // gets rid of extra new line
+
   showDialog(
     context: context,
     builder: (BuildContext context) {

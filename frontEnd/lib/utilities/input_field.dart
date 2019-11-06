@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 class InputField extends StatelessWidget {
   String textHint;
   String errorMsg;
+  bool password;
   TextInputType inputType;
   TextEditingController controller = TextEditingController();
-  InputField(this.textHint, this.inputType);
+  InputField(this.textHint, this.inputType, this.password);
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +18,7 @@ class InputField extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(10.0)),
         child: TextFormField(
           controller: controller,
+          obscureText: this.password,
           keyboardType: this.inputType,
           style: TextStyle(fontSize: 25.0),
           decoration: InputDecoration(
