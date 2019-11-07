@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:milestone_3/imports/response_item.dart';
 import 'package:milestone_3/imports/user_tokens_manager.dart';
+import 'package:milestone_3/utilities/utilities.dart';
 
 import 'utilities/input_field.dart';
 import 'imports/globals.dart';
@@ -19,8 +20,8 @@ class _SignInState extends State<SignInPage> {
       new InputField("Password", TextInputType.text, true);
   final InputField emailInput =
       new InputField("Email Address", TextInputType.emailAddress, false);
-
   bool _signUp = false; // default is sign in
+  final Future<ResponseItem> responseValue = null;
 
   @override
   void dispose() {
@@ -34,9 +35,7 @@ class _SignInState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
-        title: Text(getPageTitle(_signUp)),
-      ),
+      appBar: AppBar(title: Text(getPageTitle(_signUp))),
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -217,11 +216,13 @@ void attemptSignIn(BuildContext context, InputField passwordInput,
    */
   if (validatePassword(passwordInput, signUp) == "" &&
       validateUsernameInput(usernameInput) == "") {
+    showLoadingDialog(context, "Loading..."); // show loading dialog
     String username = usernameInput.controller.text.trim();
     String password = passwordInput.controller.text.trim();
     mutexLock = true;
     ResponseItem response = await logUserIn(context, username, password);
     mutexLock = false;
+    Navigator.pop(context); // dismiss loading dialog
     if (response.success) {
       // sign up success, go to next stage
       //TODO Jeff or Edmond
@@ -244,6 +245,7 @@ void attemptSignUp(BuildContext context, InputField passwordInput,
       validateEmailInput(emailInput) == "" &&
       validateUsernameInput(usernameInput) == "") {
     // no errors in the input, so attempt to sign up in cognito
+    showLoadingDialog(context, "Loading..."); // show a loading dialog
     String email = emailInput.controller.text.trim();
     String username = usernameInput.controller.text.trim();
     String password = passwordInput.controller.text.trim();
@@ -251,6 +253,7 @@ void attemptSignUp(BuildContext context, InputField passwordInput,
     ResponseItem response =
         await registerNewUser(context, email, username, password);
     mutexLock = false;
+    Navigator.pop(context); // dismiss loading dialog
     if (response.success) {
       // sign up success, go to next stage
       //TODO Jeff or Edmond
