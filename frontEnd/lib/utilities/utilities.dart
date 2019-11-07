@@ -16,19 +16,23 @@ void showLoadingDialog(BuildContext context, String msg) {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return AlertDialog(
-          content: Flex(
-            direction: Axis.horizontal,
-            children: <Widget>[
-              CircularProgressIndicator(),
-              Padding(
-                padding: EdgeInsets.all(20),
-              ),
-              Flexible(
-                flex: 8,
-                child: Text(msg),
-              )
-            ],
+        return WillPopScope(
+          // prevents the dialog from being exited by the back button
+          onWillPop: () async => false,
+          child: AlertDialog(
+            content: Flex(
+              direction: Axis.horizontal,
+              children: <Widget>[
+                CircularProgressIndicator(),
+                Padding(
+                  padding: EdgeInsets.all(20),
+                ),
+                Flexible(
+                  flex: 8,
+                  child: Text(msg),
+                )
+              ],
+            ),
           ),
         );
       });
