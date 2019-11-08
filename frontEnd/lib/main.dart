@@ -3,19 +3,36 @@ import 'package:flutter/material.dart';
 import 'add_value_pair.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
+import 'imports/user_tokens_manager.dart';
+import 'login_page.dart';
+import 'web_view_container.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  final WebViewContainer webViewContainer = new WebViewContainer("https://pocket-poll.auth.us-east-2.amazoncognito.com/login?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://google.com");
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: MyAppContents(dbPairs: this.getAllPairsWidget()),
-    );
+    if (!hasValidTokensSet()) {
+      return MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+
+
+        ),
+        home: LoginScreen(),
+      );
+    } else {
+      return MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+        ),
+        home: MyAppContents(dbPairs: this.getAllPairsWidget()),
+      );
+    }
   }
 
   Future<Widget> getAllPairsWidget() async {
