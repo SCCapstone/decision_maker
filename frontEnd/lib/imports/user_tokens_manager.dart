@@ -20,6 +20,12 @@ ResponseItem logUserIn() {
   return new ResponseItem(success, actionMessage);
 }
 
+bool hasValidTokensSet() {
+  //need a check to see if they're stored in local memory and to see if they can get
+  //data from the user endpoint, if not, try to refresh, if can't refresh, return false
+  return false;
+}
+
 ResponseItem registerNewUser() {
   bool success = false;
   String actionMessage = "function not implemented";
