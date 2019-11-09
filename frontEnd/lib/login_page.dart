@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'imports/user_tokens_manager.dart';
 
 import 'main.dart';
 
@@ -45,21 +46,30 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
     // Add a listener to on url changed
-    _onUrlChanged = flutterWebviewPlugin.onUrlChanged.listen((String url) {
-      if (mounted) {
-        setState(() {
+    _onUrlChanged = flutterWebviewPlugin.onUrlChanged.listen((String url) async {
+      //if (mounted) {
+        //setState(() {
           int codeIndex = url.indexOf("code");
 
           if (url.startsWith("https://www.google.com") && codeIndex != -1) {
             //login was successful, parse and store code
             String code = url.substring(codeIndex + 5);
-
-            //if storage is successful run these lines, otherwise we'll probably want to do sometype of error page
-            flutterWebviewPlugin.close();
-            Route route = MaterialPageRoute(builder: (context) => MyApp());
-            Navigator.pushReplacement(context, route);
+            await getUserTokens(code);
+            //setState is called after the asynchronous function so that the
+            //state is updated after the execution of said function is complete.
+            if (mounted) {
+              setState(() {
+              if (gotTokens) {
+                //if storage is successful run these lines, otherwise we'll probably want to do some type of error page
+                flutterWebviewPlugin.close();
+                Route route = MaterialPageRoute(builder: (context) => MyApp());
+                Navigator.pushReplacement(context, route);
+              } else {
+                flutterWebviewPlugin.close(); //TODO: proper error page
+              }
+              });
           }
-        });
+        //});
       }
     });
   }
@@ -67,7 +77,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     String loginEndpoint = "https://pocket-poll.auth.us-east-2.amazoncognito.com/login?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://google.com";
-
     return new WebviewScaffold(
         url: loginEndpoint,
         appBar: new AppBar(
