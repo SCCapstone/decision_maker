@@ -5,6 +5,7 @@ import 'package:milestone_3/utilities/utilities.dart';
 
 import 'utilities/input_field.dart';
 import 'imports/globals.dart';
+import 'imports/users_manager.dart';
 
 bool mutexLock = false;
 
@@ -225,7 +226,7 @@ void attemptSignIn(BuildContext context, InputField passwordInput,
     Navigator.pop(context); // dismiss loading dialog
     if (response.success) {
       // sign up success, go to next stage
-      //TODO Jeff or Edmond
+      //TODO switch view to main page
     } else {
       // sign in was not successful, show error
       print("Sign in not successful");
@@ -256,7 +257,10 @@ void attemptSignUp(BuildContext context, InputField passwordInput,
     Navigator.pop(context); // dismiss loading dialog
     if (response.success) {
       // sign up success, go to next stage
-      //TODO Jeff or Edmond
+      //TODO receive token from cognito in form of cogID
+      String cogID = "placeholder";
+      UsersManager.insertNewUser(cogID, username, context);
+      //TODO move to main page
     } else {
       // sign up was not successful, show error
       print("Sign up not successful");
