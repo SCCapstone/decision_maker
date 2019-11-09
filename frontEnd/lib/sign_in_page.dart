@@ -1,3 +1,5 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:milestone_3/imports/response_item.dart';
 import 'package:milestone_3/imports/user_tokens_manager.dart';
@@ -6,6 +8,8 @@ import 'package:milestone_3/utilities/utilities.dart';
 import 'utilities/input_field.dart';
 import 'imports/globals.dart';
 import 'imports/users_manager.dart';
+import 'entrance_page.dart';
+import 'main.dart';
 
 bool mutexLock = false;
 
@@ -226,7 +230,11 @@ void attemptSignIn(BuildContext context, InputField passwordInput,
     Navigator.pop(context); // dismiss loading dialog
     if (response.success) {
       // sign up success, go to next stage
-      //TODO switch view to main page
+      //switch view to entrance page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EntrancePage()),
+      ).then((_) => runApp(MyApp()));
     } else {
       // sign in was not successful, show error
       print("Sign in not successful");
@@ -260,7 +268,11 @@ void attemptSignUp(BuildContext context, InputField passwordInput,
       //TODO receive token from cognito in form of cogID
       String cogID = "placeholder";
       UsersManager.insertNewUser(cogID, username, context);
-      //TODO move to main page
+      //move to entrance page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EntrancePage()),
+      ).then((_) => runApp(MyApp()));
     } else {
       // sign up was not successful, show error
       print("Sign up not successful");

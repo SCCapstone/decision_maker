@@ -1,9 +1,7 @@
 //Written by Jeffrey Arling
-//Last updated on November 9th 2019
+//Last updated on November 9th 2019 by Jeffrey Arling
 
 import 'package:flutter/material.dart';
-
-import 'imports/globals.dart';
 
 import 'add_value_pair.dart';
 import 'main.dart';
@@ -15,39 +13,20 @@ class EntrancePage extends StatelessWidget {
     String user = "user";
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(title: Text("Demo Entrance Page")
+      appBar: AppBar(title: Text("Demo Entrance Page"),
+        leading: InkWell(
+          child: Icon(Icons.menu),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddValuePair()),
+            ).then((_) => runApp(MyApp()));
+          }
+        ),
       ),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(25.0),
-            ),
-            Text("Hello "+ user),
-            Padding(
-              padding: EdgeInsets.all(5.0),
-            ),
-            SizedBox(
-              width: 300.0,
-              height: 50.0,
-              child: RaisedButton(
-                color: Globals.secondaryColor,
-                textColor: Colors.white,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => AddValuePair()),
-                  ).then((_) => runApp(MyApp()));
-                },
-                child: Text("Add pairs")
-              ),
-            ),
-          ],
+      body: Center(
+        child: Text("Hello "+ user),
       ),
-      ),
-
     );
 
   }
