@@ -6,9 +6,7 @@ import 'add_value_pair.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
 import 'imports/user_tokens_manager.dart';
-import 'imports/globals.dart';
 import 'login_page.dart';
-import 'web_view_container.dart';
 
 void main() => runApp(MyApp());
 
