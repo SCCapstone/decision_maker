@@ -45,8 +45,8 @@ Future<bool> hasValidTokensSet() async {
           userPoolUrl + userInfoEndpoint, headers: headers);
 
       if (response.statusCode == 200) {
-        var body = json.decode(response.body);
-        Globals.username = body['username']; //Store the username for other functions.
+        Map<String, dynamic> body = json.decode(response.body);
+        Globals.username = body['username']; //Store the username
         return true;
       } else {
         //The access token didn't work, so refresh and try again. If it fails a
@@ -60,10 +60,10 @@ Future<bool> hasValidTokensSet() async {
           "Authorization": "Bearer " + _tokens.getString(accessTokenKey)
         };
 
-        await get(userPoolUrl + userInfoEndpoint, headers: headers);
+        response = await get(userPoolUrl + userInfoEndpoint, headers: headers);
         if (response.statusCode == 200) {
           debugPrint("THE REFRESHED ACCESS TOKEN WORKED");
-          var body = json.decode(response.body);
+          Map<String, dynamic> body = json.decode(response.body);
           Globals.username = body['username'];
           return true;
         } else {
@@ -98,7 +98,7 @@ Future<void> getUserTokens(String authorizationCode) async {
       body: data);
 
   if (response.statusCode == 200) {
-    var body = json.decode(response.body);
+    Map<String, dynamic> body = json.decode(response.body);
 
     storeUserTokens(
         body['access_token'], body['refresh_token'], body['id_token']);
@@ -126,7 +126,7 @@ Future<void> refreshUserTokens() async {
     body: data);
 
   if (response.statusCode == 200) {
-    var body = json.decode(response.body);
+    Map<String, dynamic> body = json.decode(response.body);
     storeUserTokens(body['access_token'], refreshToken, body['id_token']);
   } else {
     debugPrint("FAILED REFRESH RESPONSE WITH CODE: " + response.statusCode.toString());
