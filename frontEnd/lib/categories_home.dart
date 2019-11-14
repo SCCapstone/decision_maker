@@ -1,24 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:milestone_3/imports/categories_manager.dart';
 import 'package:milestone_3/models/category.dart';
 import 'imports/globals.dart';
 
 class CategoriesHome extends StatefulWidget {
+  Future<List<Category>> categories;
+
+  CategoriesHome({Key key, this.categories}) : super(key: key);
+
   @override
   _CategoriesHomeState createState() => new _CategoriesHomeState();
 }
 
 class _CategoriesHomeState extends State<CategoriesHome> {
-  @override
-  void dispose() {
-    // Every listener should be canceled, the same should be done with this stream.
-    super.dispose();
-  }
 
   @override
   void initState() {
-    // TODO fetch from the database all categories the user has
     super.initState();
+    widget.categories = getAllCategoriesList();
   }
 
   @override
@@ -39,12 +39,16 @@ class _CategoriesHomeState extends State<CategoriesHome> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.sort),
-            onPressed: () {},
+            onPressed: () {
+              // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
+            },
           )
         ],
         leading: IconButton(
           icon: navIcon,
-          onPressed: () {},
+          onPressed: () {
+            // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78
+          },
         ),
       ),
       body: Center(
@@ -59,28 +63,15 @@ class _CategoriesHomeState extends State<CategoriesHome> {
               height: MediaQuery.of(context).size.height * .60,
               child: new Container(
                 child: FutureBuilder(
-                  future: null,
+                  future: widget.categories,
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (!snapshot.hasData) {
-                      // TODO remove once the endpoint is working
-                      List<Category> categories = new List<Category>();
-                      for (int i = 0; i < 15; i++) {
-                        Map<int, String> choices = new Map<int, String>();
-                        Map<int, String> groups = new Map<int, String>();
-                        Category category = new Category.debug(
-                            i, "Category", choices, groups, 0, i);
-                        categories.add(category);
-                      }
+                    if (snapshot.hasData) {
+                      List<Category> categories = snapshot.data;
                       return CategoryList(categories: categories);
-                    } else {
-                      if (!snapshot.data) {
-                        return Text("Error");
-                      } else {
-                        return Expanded(
-                          child: CategoryList(),
-                        );
-                      }
+                    } else if (snapshot.hasError) {
+                      return Text("Error: ${snapshot.error}");
                     }
+                    return Center(child: CircularProgressIndicator());
                   },
                 ),
               ),
@@ -108,6 +99,12 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   }
 }
 
+Future<List<Category>> getAllCategoriesList() async {
+  List<Category> allCategories =
+      await CategoriesManager.getCategories(Globals.username, true);
+  return allCategories;
+}
+
 class CategoryList extends StatefulWidget {
   final List<Category> categories;
 
@@ -120,16 +117,27 @@ class CategoryList extends StatefulWidget {
 class _CategoryListState extends State<CategoryList> {
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: widget.categories.length,
-        itemBuilder: (context, index) {
-          return CategoryRow(widget.categories[index], index, true,
-              onDelete: () => removeItem(index));
-        },
-      ),
-    );
+    if (widget.categories.length == 0) {
+      return Center(
+        child:
+            Text("No categories found! Click \"New Category\" to create some!"),
+      );
+    } else {
+      return Scrollbar(
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: widget.categories.length,
+          itemBuilder: (context, index) {
+            bool defaultCategory = false;
+            if (widget.categories[index].owner == null) {
+              defaultCategory = true;
+            }
+            return CategoryRow(widget.categories[index], index, defaultCategory,
+                onDelete: () => removeItem(index));
+          },
+        ),
+      );
+    }
   }
 
   void removeItem(int index) {
@@ -200,9 +208,12 @@ class CategoryRow extends StatelessWidget {
                     "Delete",
                     style: TextStyle(),
                   ),
-                  // TODO delete the category and if success, then remove from list
+                  /*
+                    TODO delete the category from DB and if success, 
+                     then remove from local list (https://github.com/SCCapstone/decision_maker/issues/97) 
+                   */
                   onPressed: () {
-                    this.onDelete();
+                    this.onDelete(); // this deletes it from the local list
                   },
                 ),
               ],
