@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import imports.DevTestingManager;
 
 import utilities.IOStreamsHelper;
+import utilities.JsonParsers;
 
 public class PairUploader implements RequestStreamHandler {
   private final DevTestingManager devTestingManager = new DevTestingManager();
@@ -18,7 +19,7 @@ public class PairUploader implements RequestStreamHandler {
       throws IOException {
 
     try {
-      Map<String, Object> jsonMap = IOStreamsHelper.parseInput(inputStream);
+      Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
 
       // upload the data
       if (!jsonMap.isEmpty()) {
