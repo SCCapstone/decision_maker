@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:milestone_3/models/category.dart';
 
-import 'pair.dart';
 import '../utilities/utilities.dart';
 
 import 'globals.dart';
@@ -19,14 +18,12 @@ class CategoriesManager {
       'username': '$username',
       'getAll': '$getAll'
     };
-
     http.Response response =
         await http.get(apiEndpoint, headers: requestHeaders);
 
     if (response.statusCode == 200) {
       Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
       var responseJson = jsonDecode(fullResponseJson['body']);
-      print(responseJson);
       Category category = new Category.fromJson(responseJson);
       List categories = new List<Category>();
       categories.add(category);

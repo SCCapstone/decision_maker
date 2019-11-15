@@ -5,7 +5,7 @@ import 'package:milestone_3/models/category.dart';
 import 'imports/globals.dart';
 
 class CategoriesHome extends StatefulWidget {
-  Future<List<Category>> categories;
+  final Future<List<Category>> categories;
 
   CategoriesHome({Key key, this.categories}) : super(key: key);
 
@@ -15,12 +15,6 @@ class CategoriesHome extends StatefulWidget {
 
 class _CategoriesHomeState extends State<CategoriesHome> {
   String _sortMethod;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.categories = CategoriesManager.getAllCategoriesList();
-  }
 
   @override
   Widget build(BuildContext context) {

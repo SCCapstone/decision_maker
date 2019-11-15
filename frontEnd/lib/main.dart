@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:milestone_3/categories_home.dart';
+import 'package:milestone_3/imports/categories_manager.dart';
 
 import 'add_value_pair.dart';
 import 'imports/dev_testing_manager.dart';
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.green,
                 ),
-                  home: CategoriesHome(),
+                  home: CategoriesHome(categories: CategoriesManager.getAllCategoriesList()),
 //                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
               );
             }
