@@ -29,7 +29,7 @@ class _StartScreenState extends State<AddValuePair> {
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Column(
-            children: <Widget>[
+            children: [
               TextFormField(
                 controller: keyController,
                 decoration: InputDecoration(
@@ -47,7 +47,8 @@ class _StartScreenState extends State<AddValuePair> {
                     DevTestingManager.processAddPair(keyController.text, valueController.text, context);
                   },
                   icon: Icon(Icons.add),
-                  label: Text("Add Pair"))
+                  label: Text("Add Pair")
+              )
             ],
           ),
         ),
