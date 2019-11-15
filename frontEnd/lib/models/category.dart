@@ -26,4 +26,10 @@ class Category {
         nextChoiceNum: json['NextChoiceNo'],
         owner: json["Owner"]);
   }
+
+  @override
+  String toString() {
+    return "CategoryId: $categoryId CategoryName: $categoryName Choices: "
+        "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner";
+  }
 }

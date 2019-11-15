@@ -14,11 +14,12 @@ class CategoriesHome extends StatefulWidget {
 }
 
 class _CategoriesHomeState extends State<CategoriesHome> {
+  String _sortMethod;
 
   @override
   void initState() {
     super.initState();
-    widget.categories = getAllCategoriesList();
+    widget.categories = CategoriesManager.getAllCategoriesList();
   }
 
   @override
@@ -40,6 +41,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
           IconButton(
             icon: Icon(Icons.sort),
             onPressed: () {
+              // can implement a variable that has the sort type, then setState here
               // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
             },
           )
@@ -67,7 +69,8 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       List<Category> categories = snapshot.data;
-                      return CategoryList(categories: categories);
+                      return CategoryList(
+                          categories: categories, sortType: _sortMethod);
                     } else if (snapshot.hasError) {
                       return Text("Error: ${snapshot.error}");
                     }
@@ -99,16 +102,11 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   }
 }
 
-Future<List<Category>> getAllCategoriesList() async {
-  List<Category> allCategories =
-      await CategoriesManager.getCategories(Globals.username, true);
-  return allCategories;
-}
-
 class CategoryList extends StatefulWidget {
   final List<Category> categories;
+  final String sortType;
 
-  CategoryList({Key key, this.categories}) : super(key: key);
+  CategoryList({Key key, this.categories, this.sortType}) : super(key: key);
 
   @override
   _CategoryListState createState() => _CategoryListState();
@@ -129,7 +127,7 @@ class _CategoryListState extends State<CategoryList> {
           itemCount: widget.categories.length,
           itemBuilder: (context, index) {
             bool defaultCategory = false;
-            if (widget.categories[index].owner == null) {
+            if (widget.categories[index].owner.isEmpty) {
               defaultCategory = true;
             }
             return CategoryRow(widget.categories[index], index, defaultCategory,
@@ -141,6 +139,7 @@ class _CategoryListState extends State<CategoryList> {
   }
 
   void removeItem(int index) {
+    // removes an item from the local list of categories used in the CategoryList state
     setState(() {
       widget.categories.remove(widget.categories[index]);
     });

@@ -7,6 +7,8 @@ import 'package:milestone_3/models/category.dart';
 import 'pair.dart';
 import '../utilities/utilities.dart';
 
+import 'globals.dart';
+
 class CategoriesManager {
   static final String apiEndpoint =
       "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
@@ -33,5 +35,11 @@ class CategoriesManager {
       //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       throw Exception("Failed to load categories from the database.");
     }
+  }
+
+  static Future<List<Category>> getAllCategoriesList() async {
+    List<Category> allCategories =
+        await CategoriesManager.getCategories(Globals.username, true);
+    return allCategories;
   }
 }
