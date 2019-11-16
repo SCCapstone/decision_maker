@@ -29,6 +29,9 @@ frontEnd/.pub-cache/
 frontEnd/.pub/
 frontEnd/build/
 
+# Backend related
+backend/target/
+
 # Android related
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
