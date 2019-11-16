@@ -13,100 +13,102 @@ import java.util.Map;
 import java.util.UUID;
 
 public class CategoriesManager extends DatabaseAccessManager {
-    public static final String CATEGORY_FIELD_CATEGORY_ID = "CategoryId";
-    public static final String CATEGORY_FIELD_CATEGORY_NAME = "CategoryName";
-    public static final String CATEGORY_FIELD_CHOICES = "Choices";
-    public static final String CATEGORY_FIELD_GROUPS = "Groups";
-    public static final String CATEGORY_FIELD_NEXT_CHOICE = "NextChoiceNo";
-    public static final String CATEGORY_FIELD_OWNER = "Owner";
 
-    private UUID uuid;
+  public static final String CATEGORY_FIELD_CATEGORY_ID = "CategoryId";
+  public static final String CATEGORY_FIELD_CATEGORY_NAME = "CategoryName";
+  public static final String CATEGORY_FIELD_CHOICES = "Choices";
+  public static final String CATEGORY_FIELD_GROUPS = "Groups";
+  public static final String CATEGORY_FIELD_NEXT_CHOICE = "NextChoiceNo";
+  public static final String CATEGORY_FIELD_OWNER = "Owner";
 
-    public CategoriesManager() {
-        super("categories", "CategoryId", Regions.US_EAST_2);
+  private UUID uuid;
+
+  public CategoriesManager() {
+    super("categories", "CategoryId", Regions.US_EAST_2);
+  }
+
+  public ResultStatus addNewCategory(Map<String, Object> jsonMap) {
+    //validate data, log results as there should be some validation already on the front end
+    ResultStatus resultStatus = new ResultStatus();
+    if (
+        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_NAME) &&
+            jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
+            jsonMap.containsKey(CATEGORY_FIELD_OWNER)
+    ) {
+      this.uuid = UUID.randomUUID();
+
+      try {
+        String nextCategoryIndex = this.uuid.toString();
+        String categoryName = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_NAME);
+        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
+        Map<String, Object> groups = new HashMap<String, Object>();
+        int nextChoiceNo = choices.size();
+        String owner = (String) jsonMap.get(CATEGORY_FIELD_OWNER);
+
+        Item newCategory = new Item()
+            .withPrimaryKey(CATEGORY_FIELD_CATEGORY_ID, nextCategoryIndex)
+            .withString(CATEGORY_FIELD_CATEGORY_NAME, categoryName)
+            .withMap(CATEGORY_FIELD_CHOICES, choices)
+            .withMap(CATEGORY_FIELD_GROUPS, groups)
+            .withInt(CATEGORY_FIELD_NEXT_CHOICE, nextChoiceNo)
+            .withString(CATEGORY_FIELD_OWNER, owner);
+
+        PutItemSpec putItemSpec = new PutItemSpec()
+            .withItem(newCategory);
+
+        super.putItem(putItemSpec);
+
+        resultStatus = new ResultStatus(true, "Category created successfully!");
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request";
+      }
+    } else {
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    public ResultStatus addNewCategory(Map<String, Object> jsonMap) {
-        //validate data, log results as there should be some validation already on the front end
-        ResultStatus resultStatus = new ResultStatus();
-        if (
-                jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_NAME) &&
-                        jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
-                        jsonMap.containsKey(CATEGORY_FIELD_OWNER)
-        ) {
-            this.uuid = UUID.randomUUID();
+    return resultStatus;
+  }
 
-            try {
-                String nextCategoryIndex = this.uuid.toString();
-                String categoryName = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_NAME);
-                Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
-                Map<String, Object> groups = new HashMap<String, Object>();
-                int nextChoiceNo = choices.size();
-                String owner = (String) jsonMap.get(CATEGORY_FIELD_OWNER);
+  public ResultStatus editCategory(Map<String, Object> jsonMap) {
+    //validate data, log results as there should be some validation already on the front end
+    return new ResultStatus();
+  }
 
-                Item newCategory = new Item()
-                        .withPrimaryKey(CATEGORY_FIELD_CATEGORY_ID, nextCategoryIndex)
-                        .withString(CATEGORY_FIELD_CATEGORY_NAME, categoryName)
-                        .withMap(CATEGORY_FIELD_CHOICES, choices)
-                        .withMap(CATEGORY_FIELD_GROUPS, groups)
-                        .withInt(CATEGORY_FIELD_NEXT_CHOICE, nextChoiceNo)
-                        .withString(CATEGORY_FIELD_OWNER, owner);
-
-                PutItemSpec putItemSpec = new PutItemSpec()
-                        .withItem(newCategory);
-
-                super.putItem(putItemSpec);
-
-                resultStatus = new ResultStatus(true, "Category created successfully!");
-            } catch (Exception e) {
-                //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-                resultStatus.resultMessage = "Error: Unable to parse request";
-            }
+  public String getAllCategories(ArrayList<String> categoryIds) {
+    // this will be a json string representing an array of objects
+    StringBuilder outputString = new StringBuilder("[");
+    for (String id : categoryIds) {
+      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      Map<String, Object> dbDataMap = dbData.asMap();
+      outputString.append("{");
+      for (String s : dbDataMap.keySet()) {
+        Object value = dbDataMap.get(s);
+        if (value instanceof Map) {
+          // found a map in the object, so now loop through each key/value in said map and format appropriately
+          outputString.append("\\\"" + s + "\\\":");
+          Map<Object, Object> map = (Map<Object, Object>) value;
+          outputString.append("{");
+          for (Object key : map.keySet()) {
+            outputString.append("\\\"" + key + "\\\":");
+            outputString.append("\\\"" + map.get(key).toString() + "\\\",");
+          }
+          outputString
+              .deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+          outputString.append("},");
         } else {
-            resultStatus.resultMessage = "Error: Required request keys not found.";
+          // no map found, so normal key value pair
+          outputString.append("\\\"" + s + "\\\":");
+          outputString.append("\\\"" + dbDataMap.get(s).toString() + "\\\",");
         }
-
-        return resultStatus;
+      }
+      outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+      outputString.append("},");
     }
+    outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+    outputString.append("]");
 
-    public ResultStatus editCategory(Map<String, Object> jsonMap) {
-        //validate data, log results as there should be some validation already on the front end
-        return new ResultStatus();
-    }
+    return outputString.toString();
 
-    public String getAllCategories(ArrayList<String> categoryIds) {
-        // this will be a json string representing an array of objects
-        StringBuilder outputString = new StringBuilder("[");
-        for (String id : categoryIds) {
-            Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
-            Map<String, Object> dbDataMap = dbData.asMap();
-            outputString.append("{");
-            for (String s : dbDataMap.keySet()) {
-                Object value = dbDataMap.get(s);
-                if (value instanceof Map) {
-                    // found a map in the object, so now loop through each key/value in said map and format appropriately
-                    outputString.append("\\\"" + s + "\\\":");
-                    Map<Object, Object> map = (Map<Object, Object>) value;
-                    outputString.append("{");
-                    for (Object key : map.keySet()) {
-                        outputString.append("\\\"" + key + "\\\":");
-                        outputString.append("\\\"" + map.get(key).toString() + "\\\",");
-                    }
-                    outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
-                    outputString.append("},");
-                } else {
-                    // no map found, so normal key value pair
-                    outputString.append("\\\"" + s + "\\\":");
-                    outputString.append("\\\"" + dbDataMap.get(s).toString() + "\\\",");
-                }
-            }
-            outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
-            outputString.append("},");
-        }
-        outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
-        outputString.append("]");
-
-        return outputString.toString();
-
-    }
+  }
 }
