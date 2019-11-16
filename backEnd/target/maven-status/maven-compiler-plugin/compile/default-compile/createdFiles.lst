@@ -8,4 +8,5 @@ imports\EventsManager.class
 utilities\IOStreamsHelper.class
 imports\DevTestingManager.class
 utilities\ExceptionHelper.class
+handlers\CategoriesGetter.class
 imports\GroupsManager.class

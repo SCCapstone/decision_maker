@@ -16,23 +16,18 @@ public class CategoriesManager extends DatabaseAccessManager {
         super("categories", "CategoryId", Regions.US_EAST_2);
     }
 
-    public Item getTableData() {
-        return super.getItem(
-                new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), "John"));
-    }
 
-    public String getJsonStringOfTableDataForFrontEnd() {
-        Item dbData = this.getTableData();
+    public String getAllCategories(String username) {
+        Item dbData = super.getItem(new GetItemSpec().withAttributesToGet(username));
         Map<String, Object> dbDataMap = dbData.asMap();
 
         // this will be a json string representing an array of objects
         StringBuilder outputString = new StringBuilder("[");
 
         for (String s : dbDataMap.keySet()) {
-            outputString.append("{\"key\": \"");
-            outputString.append(s);
-            outputString.append("\", \"value\": \"");
-            outputString.append(dbDataMap.get(s).toString());
+            Object value = dbDataMap.get(s).toString();
+            outputString.append("{\"" + s + "\": \"");
+            outputString.append("\", \"" + value);
             outputString.append("\"},");
         }
 
@@ -40,5 +35,6 @@ public class CategoriesManager extends DatabaseAccessManager {
         outputString.append("]");
 
         return outputString.toString();
+
     }
 }

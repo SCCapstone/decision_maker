@@ -20,14 +20,18 @@ public class CategoriesGetter implements RequestStreamHandler {
 
         try {
             Map<String, Object> jsonInput = parseInput(inputStream);
-            String username = null;
-            if(jsonInput.containsKey("username")){
+            String username = "";
+            boolean getAll = false;
+            if (jsonInput.containsKey("username")) {
                 username = jsonInput.get("username").toString();
             }
-            if(username!=null){
-                String jsonPairsData = this.categoriesManager.getJsonStringOfTableDataForFrontEnd();
+            if (jsonInput.containsKey("getAll")) {
+                getAll = Boolean.parseBoolean(jsonInput.get("username").toString());
+            }
+            if (!username.equalsIgnoreCase("") && getAll) {
+                String jsonData = this.categoriesManager.getAllCategories(username);
 
-                IOStreamsHelper.writeToOutput(outputStream, jsonPairsData);
+                IOStreamsHelper.writeToOutput(outputStream, jsonData);
             }
 
         } catch (Exception e) {
