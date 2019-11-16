@@ -22,11 +22,12 @@ public class CategoriesGetter implements RequestStreamHandler {
             Map<String, Object> jsonInput = parseInput(inputStream);
             String username = "";
             boolean getAll = false;
+            // call to user manager to get all categories. parse out ids as list
             if (jsonInput.containsKey("username")) {
                 username = jsonInput.get("username").toString();
             }
             if (jsonInput.containsKey("getAll")) {
-                getAll = Boolean.parseBoolean(jsonInput.get("username").toString());
+                getAll = Boolean.parseBoolean(jsonInput.get("getAll").toString());
             }
             if (!username.equalsIgnoreCase("") && getAll) {
                 String jsonData = this.categoriesManager.getAllCategories(username);

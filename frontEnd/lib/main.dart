@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.green,
                 ),
-                  home: CategoriesHome(categories: CategoriesManager.getAllCategoriesList()),
+                  home: CategoriesHome(),
 //                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
               );
             }

@@ -18,10 +18,12 @@ class CategoriesManager {
       'username': '$username',
       'getAll': '$getAll'
     };
+    print(requestHeaders);
     http.Response response =
         await http.get(apiEndpoint, headers: requestHeaders);
 
     if (response.statusCode == 200) {
+      print(response.body);
       Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
       var responseJson = jsonDecode(fullResponseJson['body']);
       Category category = new Category.fromJson(responseJson);

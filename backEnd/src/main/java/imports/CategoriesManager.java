@@ -18,18 +18,21 @@ public class CategoriesManager extends DatabaseAccessManager {
 
 
     public String getAllCategories(String username) {
-        Item dbData = super.getItem(new GetItemSpec().withAttributesToGet(username));
-        Map<String, Object> dbDataMap = dbData.asMap();
+//        Item dbData = super.getItem(new GetItemSpec().withAttributesToGet(username));
+//        Map<String, Object> dbDataMap = dbData.asMap();
 
         // this will be a json string representing an array of objects
         StringBuilder outputString = new StringBuilder("[");
+        outputString.append("{\"" + "s" + "\": \"");
+        outputString.append("\", \"" + "value");
+        outputString.append("\"},");
 
-        for (String s : dbDataMap.keySet()) {
-            Object value = dbDataMap.get(s).toString();
-            outputString.append("{\"" + s + "\": \"");
-            outputString.append("\", \"" + value);
-            outputString.append("\"},");
-        }
+//        for (String s : dbDataMap.keySet()) {
+//            Object value = dbDataMap.get(s).toString();
+//            outputString.append("{\"" + "s" + "\": \"");
+//            outputString.append("\", \"" + "value");
+//            outputString.append("\"},");
+//        }
 
         outputString.deleteCharAt(outputString.lastIndexOf(",")); // remove the last comma
         outputString.append("]");
