@@ -59,13 +59,12 @@ class CategoriesManager {
 
   static Future<List<Category>> getCategories(
       String username, bool getAll) async {
-    Map<String, String> requestHeaders = {
-      'username': '$username',
-      'getAll': '$getAll'
-    };
-    print(requestHeaders);
+    String jsonBody = "{\"action\":\"getCategories\", ";
+    jsonBody += "\"payload\": {\"Username\" : \"$username\",";
+    jsonBody += "\"GetAll\" : \"$getAll\"}}";
+    print(jsonBody);
     http.Response response =
-    await http.get(apiEndpoint, headers: requestHeaders);
+    await http.post(apiEndpoint, body: jsonBody);
 
     if (response.statusCode == 200) {
       print(response.body);
