@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:milestone_3/imports/user_tokens_manager.dart';
-import 'imports/user_tokens_manager.dart';
 
+import 'imports/user_tokens_manager.dart';
 import 'main.dart';
 
 class LoginScreen extends StatefulWidget {

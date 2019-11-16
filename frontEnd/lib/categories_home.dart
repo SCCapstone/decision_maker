@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:milestone_3/imports/categories_manager.dart';
-import 'package:milestone_3/models/category.dart';
+import 'imports/categories_manager.dart';
+import 'models/category.dart';
 import 'imports/globals.dart';
 
 class CategoriesHome extends StatefulWidget {

@@ -6,8 +6,8 @@ class UsersManager {
 
   static ResponseItem insertNewUser() {
     bool success = false;
-    String actionMessage = "function not implemented";
+    String resultMessage = "function not implemented";
 
-    return new ResponseItem(success, actionMessage);
+    return new ResponseItem(success: success, resultMessage: resultMessage);
   }
 }

@@ -1,12 +1,19 @@
-imports\UsersManager.class
 imports\CategoriesManager.class
-utilities\IOStreamsHelper$1.class
+utilities\JsonParsers$1.class
+utilities\ResultStatus.class
 handlers\PairsGetter.class
+utilities\IOStreamsHelper.class
+utilities\JsonParsers$2.class
+imports\DevTestingManager.class
+utilities\ExceptionHelper.class
+<<<<<<< HEAD
+handlers\CategoriesGetter.class
+=======
+imports\UsersManager.class
+handlers\CategoriesPostHandler.class
 handlers\PairUploader.class
 imports\DatabaseAccessManager.class
 imports\EventsManager.class
-utilities\IOStreamsHelper.class
-imports\DevTestingManager.class
-utilities\ExceptionHelper.class
-handlers\CategoriesGetter.class
+utilities\JsonParsers.class
+>>>>>>> master
 imports\GroupsManager.class

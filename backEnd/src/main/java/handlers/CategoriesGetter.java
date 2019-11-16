@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import static utilities.IOStreamsHelper.parseInput;
+import static utilities.JsonParsers.parseInput;
 
 public class CategoriesGetter implements RequestStreamHandler {
     private final CategoriesManager categoriesManager = new CategoriesManager();

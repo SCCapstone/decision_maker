@@ -1,4 +1,4 @@
-package com.example.milestone_3;
+package com.example.frontEnd;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

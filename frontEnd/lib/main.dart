@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:milestone_3/categories_home.dart';
-import 'package:milestone_3/imports/categories_manager.dart';
+import 'categories_home.dart';
 
 import 'add_value_pair.dart';
+import 'create_or_edit_category.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
 import 'imports/user_tokens_manager.dart';
@@ -81,29 +81,43 @@ class MyAppContents extends StatelessWidget {
       appBar: AppBar(
         title: Text("View Entered Key Value Pairs"),
       ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
-            //crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text("Here are all the value pairs that have been entered:"),
-              FutureBuilder<Widget>(
-                future: this.dbPairs,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return snapshot.data;
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
+      body: Column(
+        children: [
+          Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                //mainAxisAlignment: MainAxisAlignment.center,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text("Here are all the value pairs that have been entered:"),
+                  FutureBuilder<Widget>(
+                    future: this.dbPairs,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data;
+                      } else if (snapshot.hasError) {
+                        return Text("${snapshot.error}");
+                      }
 
-                  return CircularProgressIndicator();
-                },
+                      return CircularProgressIndicator();
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          RaisedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: false)),
+                ).then((_) => runApp(MyApp()));
+              },
+              icon: Icon(Icons.add),
+              label: Text("Add New Category")
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
