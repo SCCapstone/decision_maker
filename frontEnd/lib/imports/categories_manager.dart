@@ -8,9 +8,11 @@ import 'package:frontEnd/models/category.dart';
 import 'globals.dart';
 
 class CategoriesManager {
-  static final String apiEndpoint = "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
+  static final String apiEndpoint =
+      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
 
-  static void addNewCategory(String categoryName, List<String> choiceLabels, List<String> choiceRates, String user, BuildContext context) async {
+  static void addNewCategory(String categoryName, List<String> choiceLabels,
+      List<String> choiceRates, String user, BuildContext context) async {
     //TODO make call to save choice rating in the users table
     //TODO validate input
     String jsonBody = "{\"action\":\"newCategory\",";
@@ -18,7 +20,8 @@ class CategoriesManager {
     jsonBody += "\"Choices\" : {";
 
     for (int i = 0; i < choiceLabels.length; i++) {
-      jsonBody += "\"" + i.toString() + "\" : \"" + choiceLabels.elementAt(i) + "\", ";
+      jsonBody +=
+          "\"" + i.toString() + "\" : \"" + choiceLabels.elementAt(i) + "\", ";
     }
 
     jsonBody = jsonBody.substring(0, jsonBody.length - 2);
@@ -28,8 +31,7 @@ class CategoriesManager {
     jsonBody += "}}";
     print(jsonBody);
 
-    http.Response response = await http.post(
-        apiEndpoint,
+    http.Response response = await http.post(apiEndpoint,
         //TODO create or find something that will create the json for me
         body: jsonBody);
 
@@ -51,9 +53,7 @@ class CategoriesManager {
         showPopupMessage("Error createing the new category (2).", context);
       }
     } else {
-      showPopupMessage(
-        "Unable to create category.",
-        context);
+      showPopupMessage("Unable to create category.", context);
     }
   }
 
@@ -62,18 +62,13 @@ class CategoriesManager {
     String jsonBody = "{\"action\":\"getCategories\", ";
     jsonBody += "\"payload\": {\"Username\" : \"$username\",";
     jsonBody += "\"GetAll\" : \"$getAll\"}}";
-    print(jsonBody);
-    http.Response response =
-    await http.post(apiEndpoint, body: jsonBody);
+    http.Response response = await http.post(apiEndpoint, body: jsonBody);
 
     if (response.statusCode == 200) {
-      print(response.body);
       Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
-      var responseJson = jsonDecode(fullResponseJson['body']);
-      Category category = new Category.fromJson(responseJson);
-      List categories = new List<Category>();
-      categories.add(category);
-      return categories;
+      List<dynamic> responseJson =
+          json.decode(fullResponseJson['resultMessage']);
+      return responseJson.map((m) => new Category.fromJson(m)).toList();
     } else {
       //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       throw Exception("Failed to load categories from the database.");
@@ -82,7 +77,7 @@ class CategoriesManager {
 
   static Future<List<Category>> getAllCategoriesList() async {
     List<Category> allCategories =
-    await CategoriesManager.getCategories(Globals.username, true);
+        await CategoriesManager.getCategories(Globals.username, true);
     return allCategories;
   }
 }

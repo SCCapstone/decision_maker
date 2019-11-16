@@ -80,13 +80,30 @@ public class CategoriesManager extends DatabaseAccessManager {
         for (String id : categoryIds) {
             Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
             Map<String, Object> dbDataMap = dbData.asMap();
-            for (String s: dbDataMap.keySet()) {
-                outputString.append("\"" + s + "\": \"");
-                outputString.append("\", \"" + dbDataMap.get(s).toString());
-                outputString.append("\",");
+            outputString.append("{");
+            for (String s : dbDataMap.keySet()) {
+                Object value = dbDataMap.get(s);
+                if (value instanceof Map) {
+                    // found a map in the object, so now loop through each key/value in said map and format appropriately
+                    outputString.append("\\\"" + s + "\\\":");
+                    Map<Object, Object> map = (Map<Object, Object>) value;
+                    outputString.append("{");
+                    for (Object key : map.keySet()) {
+                        outputString.append("\\\"" + key + "\\\":");
+                        outputString.append("\\\"" + map.get(key).toString() + "\\\",");
+                    }
+                    outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+                    outputString.append("},");
+                } else {
+                    // no map found, so normal key value pair
+                    outputString.append("\\\"" + s + "\\\":");
+                    outputString.append("\\\"" + dbDataMap.get(s).toString() + "\\\",");
+                }
             }
-            outputString.deleteCharAt(outputString.lastIndexOf(",")); // remove the last comma
+            outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+            outputString.append("},");
         }
+        outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
         outputString.append("]");
 
         return outputString.toString();

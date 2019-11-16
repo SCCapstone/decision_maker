@@ -43,6 +43,12 @@ public class CategoriesPostHandler implements RequestStreamHandler {
                         } else if (action.equals("getCategories")) {
                             String username = (String) payloadJsonMap.get(USERNAME_FIELD);
                             String getAllString = (String) payloadJsonMap.get(GET_ALL_FIELD);
+                            if (username == null || getAllString == null) {
+                                IOStreamsHelper.writeToOutput(outputStream, new ResultStatus(false,
+                                        "Error: Username or getAll parameter invalid ").toString());
+                                return;
+                            }
+
                             boolean getAll = Boolean.parseBoolean(getAllString);
                             if (getAll) {
                                 ArrayList<String> categoryIds = this.usersManager.getAllCategoryIds(username);
@@ -50,7 +56,6 @@ public class CategoriesPostHandler implements RequestStreamHandler {
                             } else {
                                 resultStatus = new ResultStatus(true, "Not yet implemented");
                             }
-
                         } else {
                             resultStatus = new ResultStatus(false, "Error: Invalid action entered");
                         }

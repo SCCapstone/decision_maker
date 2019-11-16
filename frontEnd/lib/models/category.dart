@@ -1,6 +1,6 @@
 class Category {
   final String categoryName;
-  final int categoryId;
+  final String categoryId;
   final Map<String, dynamic> choices;
   final Map<String, dynamic> groups;
   final int nextChoiceNum;
@@ -23,7 +23,7 @@ class Category {
         categoryName: json['CategoryName'],
         choices: json['Choices'],
         groups: json['Groups'],
-        nextChoiceNum: json['NextChoiceNo'],
+        nextChoiceNum: int.parse(json['NextChoiceNo']),
         owner: json["Owner"]);
   }
 
