@@ -8,6 +8,7 @@ import 'imports/globals.dart';
 
 class CreateOrEditCategory extends StatefulWidget {
   final bool isEdit;
+
   final String categoryId;
 
   CreateOrEditCategory({@required this.isEdit, this.categoryId});
@@ -25,6 +26,7 @@ class _StartScreenState extends State<CreateOrEditCategory> {
   int nextChoiceValue;
   Map<int, TextEditingController> labels = new LinkedHashMap<int, TextEditingController>();
   Map<int, TextEditingController> rates = new LinkedHashMap<int, TextEditingController>();
+
 
   _StartScreenState({@required this.isEdit, this.categoryId}) {
     if (this.isEdit && this.categoryId == null) {
@@ -76,6 +78,7 @@ class _StartScreenState extends State<CreateOrEditCategory> {
         onPressed: () {
           setState(() {
             TextEditingController t1 = new TextEditingController();
+
             this.labels.putIfAbsent(this.nextChoiceValue, () => t1);
 
             TextEditingController t2 = new TextEditingController();
@@ -132,9 +135,7 @@ class _StartScreenState extends State<CreateOrEditCategory> {
     );
   }
 
-  Widget getChoiceRatingWidget(
-      TextEditingController l, TextEditingController r, int choiceNo) {
-
+  Widget getChoiceRatingWidget(TextEditingController l, TextEditingController r, int choiceNo) {
     //this builds the children for an input row of a choice
     List<Widget> children = new List<Widget>();
     children.add(Expanded(
