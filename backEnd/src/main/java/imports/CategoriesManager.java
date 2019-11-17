@@ -2,15 +2,18 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class CategoriesManager extends DatabaseAccessManager {
+
   public static final String CATEGORY_FIELD_CATEGORY_ID = "CategoryId";
   public static final String CATEGORY_FIELD_CATEGORY_NAME = "CategoryName";
   public static final String CATEGORY_FIELD_CHOICES = "Choices";
@@ -29,8 +32,8 @@ public class CategoriesManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_NAME) &&
-        jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
-        jsonMap.containsKey(CATEGORY_FIELD_OWNER)
+            jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
+            jsonMap.containsKey(CATEGORY_FIELD_OWNER)
     ) {
       this.uuid = UUID.randomUUID();
 
@@ -48,7 +51,7 @@ public class CategoriesManager extends DatabaseAccessManager {
             .withMap(CATEGORY_FIELD_CHOICES, choices)
             .withMap(CATEGORY_FIELD_GROUPS, groups)
             .withInt(CATEGORY_FIELD_NEXT_CHOICE, nextChoiceNo)
-            .withString(CATEGORY_FIELD_OWNER,owner);
+            .withString(CATEGORY_FIELD_OWNER, owner);
 
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newCategory);
@@ -70,5 +73,42 @@ public class CategoriesManager extends DatabaseAccessManager {
   public ResultStatus editCategory(Map<String, Object> jsonMap) {
     //validate data, log results as there should be some validation already on the front end
     return new ResultStatus();
+  }
+
+  public String getAllCategories(ArrayList<String> categoryIds) {
+    // this will be a json string representing an array of objects
+    StringBuilder outputString = new StringBuilder("[");
+    for (String id : categoryIds) {
+      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      Map<String, Object> dbDataMap = dbData.asMap();
+      outputString.append("{");
+      for (String s : dbDataMap.keySet()) {
+        Object value = dbDataMap.get(s);
+        if (value instanceof Map) {
+          // found a map in the object, so now loop through each key/value in said map and format appropriately
+          outputString.append("\\\"" + s + "\\\":");
+          Map<Object, Object> map = (Map<Object, Object>) value;
+          outputString.append("{");
+          for (Object key : map.keySet()) {
+            outputString.append("\\\"" + key + "\\\":");
+            outputString.append("\\\"" + map.get(key).toString() + "\\\",");
+          }
+          outputString
+              .deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+          outputString.append("},");
+        } else {
+          // no map found, so normal key value pair
+          outputString.append("\\\"" + s + "\\\":");
+          outputString.append("\\\"" + dbDataMap.get(s).toString() + "\\\",");
+        }
+      }
+      outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+      outputString.append("},");
+    }
+    outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+    outputString.append("]");
+
+    return outputString.toString();
+
   }
 }

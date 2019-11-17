@@ -1,13 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'categories_home.dart';
 
 import 'add_value_pair.dart';
 import 'create_or_edit_category.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
 import 'imports/user_tokens_manager.dart';
+import 'imports/globals.dart';
 import 'login_page.dart';
+import 'dart:io' show Platform;
 
 void main() => runApp(MyApp());
 
@@ -15,6 +18,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if(Platform.isAndroid){
+      Globals.android = true;
+    }
+    else{
+      Globals.android = false;
+    }
     return new Container(
       //We use a FutureBuilder here since the display of the widget depends on
       //the asynchronous function hasValidTokensSet being able to fully execute
@@ -45,7 +54,8 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.green,
                 ),
-                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
+                  home: CategoriesHome(),
+//                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
               );
             }
           }
