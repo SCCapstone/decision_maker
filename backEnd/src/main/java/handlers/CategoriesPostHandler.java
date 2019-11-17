@@ -3,23 +3,18 @@ package handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.CategoriesManager;
-import imports.UsersManager;
+import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Map;
 
 public class CategoriesPostHandler implements RequestStreamHandler {
 
   private final CategoriesManager categoriesManager = new CategoriesManager();
-  private final UsersManager usersManager = new UsersManager();
-  public static final String USERNAME_FIELD = "Username";
-  public static final String GET_ALL_FIELD = "GetAll";
-
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
@@ -40,22 +35,7 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             } else if (action.equals("editCategory")) {
               resultStatus = this.categoriesManager.editCategory(payloadJsonMap);
             } else if (action.equals("getCategories")) {
-              String username = (String) payloadJsonMap.get(USERNAME_FIELD);
-              String getAllString = (String) payloadJsonMap.get(GET_ALL_FIELD);
-              if (username == null || getAllString == null) {
-                IOStreamsHelper.writeToOutput(outputStream, new ResultStatus(false,
-                    "Error: Username or getAll parameter invalid ").toString());
-                return;
-              }
-
-              boolean getAll = Boolean.parseBoolean(getAllString);
-              if (getAll) {
-                ArrayList<String> categoryIds = this.usersManager.getAllCategoryIds(username);
-                resultStatus = new ResultStatus(true,
-                    this.categoriesManager.getAllCategories(categoryIds));
-              } else {
-                resultStatus = new ResultStatus(true, "Not yet implemented");
-              }
+              resultStatus = this.categoriesManager.getCategories(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
@@ -63,7 +43,7 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request. ").toString());
+                new ResultStatus(false, "Error: Unable to parse request.").toString() + '\n' +ExceptionHelper.getStackTrace(e));
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through

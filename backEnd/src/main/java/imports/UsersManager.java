@@ -2,12 +2,7 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -27,6 +22,5 @@ public class UsersManager extends DatabaseAccessManager {
     Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORY_FIELD);
     ArrayList<String> ids = new ArrayList<String>(categoryMap.keySet());
     return ids;
-
   }
 }

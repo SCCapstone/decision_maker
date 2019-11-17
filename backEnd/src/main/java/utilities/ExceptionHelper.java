@@ -11,4 +11,18 @@ public class ExceptionHelper {
 //      }
 //      dataOutputStream.writeUTF(stringBuilder.toString());
   }
+
+  public static String getStackTrace(Exception e) {
+    String ret = e.getMessage() + '\n';
+
+    StackTraceElement[] stackTraceElements = e.getStackTrace();
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int i = 0; i < stackTraceElements.length; i++) {
+      stringBuilder.append(stackTraceElements[i].toString() + "\n");
+    }
+
+    ret += stringBuilder.toString();
+
+    return ret;
+  }
 }

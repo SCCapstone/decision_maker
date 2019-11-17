@@ -4,12 +4,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import utilities.IOStreamsHelper;
 import utilities.ResultStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class CategoriesManager extends DatabaseAccessManager {
 
@@ -19,6 +17,10 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String CATEGORY_FIELD_GROUPS = "Groups";
   public static final String CATEGORY_FIELD_NEXT_CHOICE = "NextChoiceNo";
   public static final String CATEGORY_FIELD_OWNER = "Owner";
+
+  private final UsersManager usersManager = new UsersManager();
+  public static final String USERNAME_FIELD = "Username";
+  public static final String GET_ALL_FIELD = "GetAll";
 
   private UUID uuid;
 
@@ -74,7 +76,21 @@ public class CategoriesManager extends DatabaseAccessManager {
     return new ResultStatus();
   }
 
-  public String getAllCategories(ArrayList<String> categoryIds) {
+  public ResultStatus getCategories(Map<String, Object> jsonMap) {
+    boolean success = true;
+    String resultMessage = "";
+    List<String> categoryIds = new ArrayList<String>();
+
+    if (jsonMap.containsKey("Username")) {
+      String username = (String) jsonMap.get(USERNAME_FIELD);
+      categoryIds = this.usersManager.getAllCategoryIds(username);
+    } else if (jsonMap.containsKey("CategoryIds")) {
+      categoryIds = (List<String>) jsonMap.get("CategoryIds");
+    } else {
+      success = false;
+      resultMessage = "Error: query key not defined.";
+    }
+
     // this will be a json string representing an array of objects
     StringBuilder outputString = new StringBuilder("[");
     for (String id : categoryIds) {
@@ -85,29 +101,34 @@ public class CategoriesManager extends DatabaseAccessManager {
         Object value = dbDataMap.get(s);
         if (value instanceof Map) {
           // found a map in the object, so now loop through each key/value in said map and format appropriately
-          outputString.append("\\\"" + s + "\\\":");
+          outputString.append(String.format("\\\"%s\\\":", s));
           Map<Object, Object> map = (Map<Object, Object>) value;
           outputString.append("{");
           for (Object key : map.keySet()) {
-            outputString.append("\\\"" + key + "\\\":");
-            outputString.append("\\\"" + map.get(key).toString() + "\\\",");
+            outputString.append(String.format("\\\"%s\\\":", key.toString()));
+            outputString.append(String.format("\\\"%s\\\",", map.get(key).toString()));
           }
           outputString
               .deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
           outputString.append("},");
-        } else {
+        } else if(value instanceof String) {
           // no map found, so normal key value pair
-          outputString.append("\\\"" + s + "\\\":");
-          outputString.append("\\\"" + dbDataMap.get(s).toString() + "\\\",");
+          outputString.append(String.format("\\\"%s\\\":", s));
+          outputString.append(String.format("\\\"%s\\\",", dbDataMap.get(s).toString()));
         }
       }
-      outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+      IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
       outputString.append("},");
     }
-    outputString.deleteCharAt(outputString.toString().lastIndexOf(",")); // remove the last comma
+    IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
     outputString.append("]");
 
-    return outputString.toString();
+    if (success) {
+      resultMessage = outputString.toString();
+    }
 
+    return new ResultStatus(success, resultMessage);
   }
+
+
 }

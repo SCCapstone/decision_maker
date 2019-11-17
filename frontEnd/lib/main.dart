@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'categories_home.dart';
 
-import 'add_value_pair.dart';
-import 'create_or_edit_category.dart';
 import 'imports/dev_testing_manager.dart';
 import 'imports/pair.dart';
 import 'imports/user_tokens_manager.dart';
@@ -54,8 +52,7 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.green,
                 ),
-                  home: CategoriesHome(),
-//                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
+                home: CategoriesHome(),
               );
             }
           }
@@ -67,70 +64,5 @@ class MyApp extends StatelessWidget {
   Future<Widget> getAllPairsWidget() async {
     List<Pair> allPairs = await DevTestingManager.getAllPairs();
     return new Column(children: allPairs.map((pair) => new Text(pair.key + ": " + pair.value)).toList());
-  }
-}
-
-class MyAppContents extends StatelessWidget {
-  final Future<Widget> dbPairs;
-
-  MyAppContents({Key key, this.dbPairs}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("View Entered Key Value Pairs"),
-      ),
-      body: Column(
-        children: [
-          Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Column(
-                //mainAxisAlignment: MainAxisAlignment.center,
-                //crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Text("Here are all the value pairs that have been entered:"),
-                  FutureBuilder<Widget>(
-                    future: this.dbPairs,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return snapshot.data;
-                      } else if (snapshot.hasError) {
-                        return Text("${snapshot.error}");
-                      }
-
-                      return CircularProgressIndicator();
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          RaisedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) =>
-                      //CreateOrEditCategory(isEdit: true, categoryId: "23087a5d-8367-46ed-9601-3e1949925ed4")),
-                      CreateOrEditCategory(isEdit: false)),
-                ).then((_) => runApp(MyApp()));
-              },
-              icon: Icon(Icons.add),
-              label: Text("Add New Category")
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          // Navigate to second route when tapped.
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddValuePair()),
-          ).then((_) => runApp(MyApp()));
-        },
-      ),
-    );
   }
 }

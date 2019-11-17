@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'create_or_edit_category.dart';
 import 'imports/categories_manager.dart';
 import 'models/category.dart';
 import 'imports/globals.dart';
@@ -73,6 +74,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                           categories: categories, sortType: _sortMethod);
                     } else if (snapshot.hasError) {
                       print(snapshot.error);
+                      print(snapshot);
                       return Text("Error: ${snapshot.error}");
                     }
                     return Center(child: CircularProgressIndicator());
@@ -94,7 +96,15 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                 "New Category",
                 style: TextStyle(fontSize: 30),
               ),
-              onPressed: () {},
+              onPressed: () {
+                // Navigate to second route when tapped.
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: false)),
+                ).then((_) => setState(() {
+                  widget.categories = CategoriesManager.getAllCategoriesList();
+                }));
+              }
             )
           ],
         ),
