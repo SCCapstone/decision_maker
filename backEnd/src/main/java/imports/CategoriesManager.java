@@ -3,7 +3,6 @@ package imports;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
-import utilities.JsonParsers;
 import utilities.ResultStatus;
 
 import java.util.HashMap;
@@ -39,7 +38,19 @@ public class CategoriesManager extends DatabaseAccessManager {
         String categoryName = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_NAME);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
         Map<String, Object> groups = new HashMap<String, Object>();
-        int nextChoiceNo = choices.size();
+        int nextChoiceNo = -1;
+
+        //set nextChoiceNo to be the largest key in the entered set.
+        //this could be bad, we what if this sets the nextChoiceNo to something that was 'deleted'
+        for (String i : choices.keySet()) {
+          if(Integer.parseInt(i) > nextChoiceNo) {
+            nextChoiceNo = Integer.parseInt(i);
+          }
+        }
+
+        //this is now updating to be the largest key + 1 from the entered setValues
+        nextChoiceNo++;
+
         String owner = (String) jsonMap.get(CATEGORY_FIELD_OWNER);
 
         Item newCategory = new Item()

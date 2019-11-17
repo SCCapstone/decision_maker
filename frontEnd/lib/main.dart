@@ -101,7 +101,9 @@ class MyAppContents extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: false)),
+                  MaterialPageRoute(builder: (context) =>
+                      //CreateOrEditCategory(isEdit: true, categoryId: "23087a5d-8367-46ed-9601-3e1949925ed4")),
+                      CreateOrEditCategory(isEdit: false)),
                 ).then((_) => runApp(MyApp()));
               },
               icon: Icon(Icons.add),
