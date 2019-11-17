@@ -19,7 +19,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   @override
   void initState() {
-    widget.categories = CategoriesManager.getAllCategoriesList();
+    widget.categories = CategoriesManager.getAllCategoriesList(Globals.username);
     super.initState();
   }
 
@@ -102,7 +102,8 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                   context,
                   MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: false)),
                 ).then((_) => setState(() {
-                  widget.categories = CategoriesManager.getAllCategoriesList();
+                  //TODO update this so that we don't have to requery the categories, we probably want some global var for this
+                  widget.categories = CategoriesManager.getAllCategoriesList(Globals.username);
                 }));
               }
             )
@@ -181,7 +182,12 @@ class CategoryRow extends StatelessWidget {
                 "Edit",
                 style: TextStyle(),
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: true, category: this.category)),
+                );
+              },
             )
           ],
         ),
@@ -207,7 +213,12 @@ class CategoryRow extends StatelessWidget {
                     "Edit",
                     style: TextStyle(),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: true, category: this.category)),
+                    );
+                  },
                 ),
                 Padding(
                   padding:
@@ -219,8 +230,8 @@ class CategoryRow extends StatelessWidget {
                     style: TextStyle(),
                   ),
                   /*
-                    TODO delete the category from DB and if success, 
-                     then remove from local list (https://github.com/SCCapstone/decision_maker/issues/97) 
+                    TODO delete the category from DB and if success,
+                     then remove from local list (https://github.com/SCCapstone/decision_maker/issues/97)
                    */
                   onPressed: () {
                     this.onDelete(); // this deletes it from the local list

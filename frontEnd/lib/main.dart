@@ -1,10 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'categories_home.dart';
 
-import 'imports/dev_testing_manager.dart';
-import 'imports/pair.dart';
 import 'imports/user_tokens_manager.dart';
 import 'imports/globals.dart';
 import 'login_page.dart';
@@ -59,10 +55,5 @@ class MyApp extends StatelessWidget {
         }
       )
     );
-  }
-
-  Future<Widget> getAllPairsWidget() async {
-    List<Pair> allPairs = await DevTestingManager.getAllPairs();
-    return new Column(children: allPairs.map((pair) => new Text(pair.key + ": " + pair.value)).toList());
   }
 }
