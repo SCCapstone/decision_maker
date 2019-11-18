@@ -115,7 +115,10 @@ public class CategoriesManager extends DatabaseAccessManager {
 
   public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID)) {
+    if (
+        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&
+            jsonMap.containsKey("Username")
+    ) {
       try {
         // Confirm that the username matches with the owner of the category before deleting it
         String username = (String) jsonMap.get(("Username"));
@@ -128,13 +131,15 @@ public class CategoriesManager extends DatabaseAccessManager {
                   .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
           super.deleteItem(deleteItemSpec);
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: User is not the owner of the category.";
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request";
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      resultStatus.resultMessage = "Error: No CategoryId found.";
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     return resultStatus;
   }
