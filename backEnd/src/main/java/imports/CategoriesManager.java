@@ -103,9 +103,10 @@ public class CategoriesManager extends DatabaseAccessManager {
       try {
         String categoryId = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_ID);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_USER_RATINGS);
         String activeUser = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
 
-        //TODO check to see if the choices match what are there and if not, user needs to be owner
+        //TODO check to see if the choices match what are there and if not, user needs to be owner (https://github.com/SCCapstone/decision_maker/issues/107)
 
         int nextChoiceNo = -1;
 
@@ -130,6 +131,19 @@ public class CategoriesManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         super.updateItem(updateItemSpec);
+
+        //put the entered ratings in the users table
+        Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
+        insertNewCatForOwner.put(UsersManager.USER_FIELD_USERNAME, activeUser);
+        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_CATEGORYID, categoryId);
+        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_RATINGS, ratings);
+        ResultStatus updatedUsersTableResult = this.usersManager.updateUserChoiceRatings(insertNewCatForOwner);
+
+        if (updatedUsersTableResult.success) {
+          resultStatus = new ResultStatus(true, "Category saved successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: Unable to update this category's ratings in the users table. " + updatedUsersTableResult.resultMessage;
+        }
 
         resultStatus = new ResultStatus(true, "Category updated successfully!");
       } catch (Exception e) {
@@ -200,6 +214,7 @@ public class CategoriesManager extends DatabaseAccessManager {
   }
 
   public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
+    //TODO remove all mappings in the groups table and in users table (https://github.com/SCCapstone/decision_maker/issues/108)
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&

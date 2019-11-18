@@ -15,7 +15,8 @@ class CreateOrEditCategory extends StatefulWidget {
   CreateOrEditCategory({@required this.isEdit, this.category});
 
   @override
-  _StartScreenState createState() => _StartScreenState(isEdit: this.isEdit, category: this.category);
+  _StartScreenState createState() =>
+      _StartScreenState(isEdit: this.isEdit, category: this.category);
 }
 
 class _StartScreenState extends State<CreateOrEditCategory> {
@@ -26,9 +27,10 @@ class _StartScreenState extends State<CreateOrEditCategory> {
 
   bool isCategoryOwner;
   int nextChoiceValue;
-  Map<int, TextEditingController> labels = new LinkedHashMap<int, TextEditingController>();
-  Map<int, TextEditingController> rates = new LinkedHashMap<int, TextEditingController>();
-
+  Map<int, TextEditingController> labels =
+      new LinkedHashMap<int, TextEditingController>();
+  Map<int, TextEditingController> rates =
+      new LinkedHashMap<int, TextEditingController>();
 
   _StartScreenState({@required this.isEdit, this.category}) {
     if (this.isEdit && this.category == null) {
@@ -46,7 +48,7 @@ class _StartScreenState extends State<CreateOrEditCategory> {
         this.labels.putIfAbsent(int.parse(choiceId), () => t1);
 
         TextEditingController t2 = new TextEditingController();
-        //todo: get user's choice rating for these instead of default
+        //todo: get user's choice rating for these instead of default (https://github.com/SCCapstone/decision_maker/issues/105)
         t2.text = this.defaultRate.toString();
         this.rates.putIfAbsent(int.parse(choiceId), () => t2);
       }
@@ -88,24 +90,17 @@ class _StartScreenState extends State<CreateOrEditCategory> {
         ),
       ));
     } else {
-      choices.add(Row(
-          children: [
-            Text(
-              "Category: " + this.category.categoryName,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5
-              ),
-            ),
-            Spacer()
-          ]
-      ));
-      choices.add(Row(
-          children: [
-            Text("By: " + this.category.owner),
-            Spacer()
-          ]
-      ));
+      choices.add(Row(children: [
+        Text(
+          "Category: " + this.category.categoryName,
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
+        ),
+        Spacer()
+      ]));
+      choices
+          .add(Row(children: [Text("By: " + this.category.owner), Spacer()]));
     }
 
     for (int i in this.labels.keys) {
@@ -144,39 +139,42 @@ class _StartScreenState extends State<CreateOrEditCategory> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: Colors.green,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            RaisedButton.icon(
-              icon: Icon(Icons.save),
-              label: Text((this.isEdit ? "Save" : "Create")),
-              onPressed: () {
-                Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
-                Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
-                for (int i in this.labels.keys) {
-                  labelsToSave.putIfAbsent(i.toString(), () => this.labels[i].text);
-                  ratesToSave.putIfAbsent(i.toString(), () => this.rates[i].text);
-                }
+          color: Colors.green,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              RaisedButton.icon(
+                icon: Icon(Icons.save),
+                label: Text((this.isEdit ? "Save" : "Create")),
+                onPressed: () {
+                  Map<String, String> labelsToSave =
+                      new LinkedHashMap<String, String>();
+                  Map<String, String> ratesToSave =
+                      new LinkedHashMap<String, String>();
+                  for (int i in this.labels.keys) {
+                    labelsToSave.putIfAbsent(
+                        i.toString(), () => this.labels[i].text);
+                    ratesToSave.putIfAbsent(
+                        i.toString(), () => this.rates[i].text);
+                  }
 
-                CategoriesManager.addNewCategory(
-                  this.categoryNameController.text,
-                  labelsToSave,
-                  ratesToSave,
-                  (this.isEdit ? this.category : null),
-                  Globals.username,
-                  context
-                );
-              },
-            )
-          ],
-        )
-      ),
+                  CategoriesManager.addNewCategory(
+                      this.categoryNameController.text,
+                      labelsToSave,
+                      ratesToSave,
+                      (this.isEdit ? this.category : null),
+                      Globals.username,
+                      context);
+                },
+              )
+            ],
+          )),
     );
   }
 
-  Widget getChoiceRatingWidget(TextEditingController l, TextEditingController r, int choiceNo) {
+  Widget getChoiceRatingWidget(
+      TextEditingController l, TextEditingController r, int choiceNo) {
     //this builds the children for an input row of a choice
     List<Widget> children = new List<Widget>();
     if (this.isCategoryOwner) {
@@ -236,12 +234,10 @@ class _StartScreenState extends State<CreateOrEditCategory> {
             title: new Text("Rate this choice:"),
             initialIntegerValue: defaultRate,
           );
-        }
-      ).then((int value) {
-        if (value != null) {
-          setState(() => r.text = value.toString());
-        }
+        }).then((int value) {
+      if (value != null) {
+        setState(() => r.text = value.toString());
       }
-    );
+    });
   }
 }

@@ -19,7 +19,8 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   @override
   void initState() {
-    widget.categories = CategoriesManager.getAllCategoriesList(Globals.username);
+    widget.categories =
+        CategoriesManager.getAllCategoriesList(Globals.username);
     super.initState();
   }
 
@@ -92,21 +93,24 @@ class _CategoriesHomeState extends State<CategoriesHome> {
               padding: EdgeInsets.all(MediaQuery.of(context).size.height * .01),
             ),
             RaisedButton(
-              child: Text(
-                "New Category",
-                style: TextStyle(fontSize: 30),
-              ),
-              onPressed: () {
-                // Navigate to second route when tapped.
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: false)),
-                ).then((_) => setState(() {
-                  //TODO update this so that we don't have to requery the categories, we probably want some global var for this
-                  widget.categories = CategoriesManager.getAllCategoriesList(Globals.username);
-                }));
-              }
-            )
+                child: Text(
+                  "New Category",
+                  style: TextStyle(fontSize: 30),
+                ),
+                onPressed: () {
+                  // Navigate to second route when tapped.
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            CreateOrEditCategory(isEdit: false)),
+                  ).then((_) => setState(() {
+                        //TODO update this so that we don't have to requery the categories, we probably want some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
+                        widget.categories =
+                            CategoriesManager.getAllCategoriesList(
+                                Globals.username);
+                      }));
+                })
           ],
         ),
       ),
@@ -187,7 +191,9 @@ class CategoryRow extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: true, category: this.category)),
+                  MaterialPageRoute(
+                      builder: (context) => CreateOrEditCategory(
+                          isEdit: true, category: this.category)),
                 );
               },
             )
@@ -218,7 +224,9 @@ class CategoryRow extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CreateOrEditCategory(isEdit: true, category: this.category)),
+                      MaterialPageRoute(
+                          builder: (context) => CreateOrEditCategory(
+                              isEdit: true, category: this.category)),
                     );
                   },
                 ),

@@ -107,11 +107,12 @@ public class UsersManager extends DatabaseAccessManager {
         Map<String,Object> ratings = (Map<String,Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
         String user = (String) jsonMap.get(USER_FIELD_USERNAME);
         
-        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".ID_"+categoryId+ " = :map";
+        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId = :map";
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
         
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
           .withPrimaryKey(super.getPrimaryKeyIndex(), user)
+          .withNameMap(new NameMap().with("#categoryId", categoryId))
           .withUpdateExpression(updateExpression)
           .withValueMap(valueMap);
         
@@ -144,7 +145,7 @@ public class UsersManager extends DatabaseAccessManager {
         String categoryId = (String) jsonMap.get(REQUEST_FIELD_CATEGORYID);
         Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
 
-        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId" + " = :map";
+        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId = :map";
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()

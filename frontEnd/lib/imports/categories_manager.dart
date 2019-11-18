@@ -9,9 +9,16 @@ import 'package:http/http.dart' as http;
 import 'globals.dart';
 
 class CategoriesManager {
-  static final String apiEndpoint = "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
+  static final String apiEndpoint =
+      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
 
-  static void addNewCategory(String categoryName, Map<String, String> choiceLabels, Map<String, String> choiceRatings, Category category, String user, BuildContext context) async {
+  static void addNewCategory(
+      String categoryName,
+      Map<String, String> choiceLabels,
+      Map<String, String> choiceRatings,
+      Category category,
+      String user,
+      BuildContext context) async {
     if (categoryName == "") {
       showPopupMessage("Please enter a name for this category.", context);
       return;
@@ -39,19 +46,20 @@ class CategoriesManager {
 
     if (category != null) {
       jsonRequestBody["action"] = "editCategory";
-      jsonRequestBody["payload"].putIfAbsent("CategoryId", () => category.categoryId);
+      jsonRequestBody["payload"]
+          .putIfAbsent("CategoryId", () => category.categoryId);
     } else {
       jsonRequestBody["action"] = "newCategory";
-      jsonRequestBody["payload"].putIfAbsent("CategoryName", () => categoryName);
+      jsonRequestBody["payload"]
+          .putIfAbsent("CategoryName", () => categoryName);
     }
 
     jsonRequestBody["payload"].putIfAbsent("Choices", () => choiceLabels);
     jsonRequestBody["payload"].putIfAbsent("UserRatings", () => choiceRatings);
     jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => user);
 
-    http.Response response = await http.post(
-        apiEndpoint,
-        body: json.encode(jsonRequestBody));
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
@@ -67,7 +75,7 @@ class CategoriesManager {
         showPopupMessage("Error saving the category (2).", context);
       }
     } else {
-      showPopupMessage("Unable to edit/create category.",context);
+      showPopupMessage("Unable to edit/create category.", context);
     }
   }
 
@@ -76,16 +84,16 @@ class CategoriesManager {
     jsonRequestBody["action"] = "getCategories";
     jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => username);
 
-    http.Response response = await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
         Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
-        List<dynamic> responseJson = json.decode(
-            fullResponseJson['resultMessage']);
+        List<dynamic> responseJson =
+            json.decode(fullResponseJson['resultMessage']);
 
-        return responseJson.map((m) => new Category.fromJson(m))
-            .toList();
+        return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {
         //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
         return new List<Category>(); // returns empty list
@@ -99,12 +107,12 @@ class CategoriesManager {
   static void deleteCategory(String categoryId, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "deleteCategory";
-    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => Globals.username);
+    jsonRequestBody["payload"]
+        .putIfAbsent("ActiveUser", () => Globals.username);
     jsonRequestBody["payload"].putIfAbsent("CategoryId", () => categoryId);
 
-    http.Response response = await http.post(
-        apiEndpoint,
-        body: json.encode(jsonRequestBody));
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
@@ -120,7 +128,7 @@ class CategoriesManager {
         showPopupMessage("Error deleting the category (2).", context);
       }
     } else {
-      showPopupMessage("Unable to deleting category.",context);
+      showPopupMessage("Unable to deleting category.", context);
     }
   }
 }
