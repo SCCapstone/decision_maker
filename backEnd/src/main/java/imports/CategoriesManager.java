@@ -2,6 +2,7 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
@@ -184,5 +185,36 @@ public class CategoriesManager extends DatabaseAccessManager {
     }
 
     return new ResultStatus(success, resultMessage);
+  }
+
+  public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    if (
+        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&
+            jsonMap.containsKey("Username")
+    ) {
+      try {
+        // Confirm that the username matches with the owner of the category before deleting it
+        String username = (String) jsonMap.get(("Username"));
+        String categoryId = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_ID);
+        GetItemSpec getItemSpec = new GetItemSpec()
+                .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
+        Item item = super.getItem(getItemSpec);
+        if (username.equals(item.getString(CATEGORY_FIELD_OWNER))) {
+          DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
+                  .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
+          super.deleteItem(deleteItemSpec);
+          resultStatus = new ResultStatus(true, "Category deleted successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: User is not the owner of the category.";
+        }
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request.";
+      }
+    } else {
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+    return resultStatus;
   }
 }
