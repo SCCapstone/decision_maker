@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_home.dart';
 import 'categories_home.dart';
 
 import 'add_value_pair.dart';
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.green,
                 ),
-                  home: CategoriesHome(),
+                  home: GroupsHome(),
 //                home: MyAppContents(dbPairs: this.getAllPairsWidget()),
               );
             }
