@@ -133,6 +133,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request";
       }
+    } else {
+      resultStatus.resultMessage = "Error: No CategoryId found.";
     }
     return resultStatus;
   }
