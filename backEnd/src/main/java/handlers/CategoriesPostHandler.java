@@ -58,6 +58,8 @@ public class CategoriesPostHandler implements RequestStreamHandler {
               } else {
                 resultStatus = new ResultStatus(true, "Not yet implemented");
               }
+            } else if (action.equals("deleteCategory")) {
+              resultStatus = this.categoriesManager.deleteCategory(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
@@ -65,7 +67,7 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request. ").toString());
+                new ResultStatus(false, "Error: Unable to parse request. Exception message: " + e).toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
