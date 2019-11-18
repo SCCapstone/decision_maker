@@ -58,6 +58,8 @@ public class CategoriesPostHandler implements RequestStreamHandler {
               } else {
                 resultStatus = new ResultStatus(true, "Not yet implemented");
               }
+            } else if (action.equals("deleteCategory")) {
+              resultStatus = this.categoriesManager.deleteCategory(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

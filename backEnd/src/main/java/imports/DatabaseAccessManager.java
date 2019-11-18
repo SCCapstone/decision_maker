@@ -2,10 +2,8 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
-import com.amazonaws.services.dynamodbv2.document.UpdateItemOutcome;
+import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
@@ -44,5 +42,9 @@ public class DatabaseAccessManager {
 
   public PutItemOutcome putItem(PutItemSpec putItemSpec) {
     return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
+  }
+
+  public DeleteItemOutcome deleteItem(DeleteItemSpec deleteItemSpec) {
+    return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
   }
 }
