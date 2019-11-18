@@ -92,10 +92,14 @@ public class CategoriesManager extends DatabaseAccessManager {
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
         String activeUser = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
 
+        Map<String, String> realChoices = new HashMap<String, String>();
+
+
         int nextChoiceNo = -1;
 
         //get the max current choiceNo
         for (String choiceNo : choices.keySet()) {
+          realChoices.put(choiceNo, (String) choices.get(choiceNo));
           if (Integer.parseInt(choiceNo) > nextChoiceNo) {
             nextChoiceNo = Integer.parseInt(choiceNo);
           }
@@ -105,8 +109,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         nextChoiceNo++;
 
         String updateExpression = "set " + CATEGORY_FIELD_CHOICES + "." + categoryId + " = :map";
-        ValueMap valueMap = new ValueMap().withMap(":map", choices);
-        
+        ValueMap valueMap = new ValueMap().withMap(":map", realChoices);
+
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
             .withPrimaryKey(super.getPrimaryKeyIndex(), activeUser)
             .withUpdateExpression(updateExpression)
