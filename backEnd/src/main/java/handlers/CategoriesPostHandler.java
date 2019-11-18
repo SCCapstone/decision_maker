@@ -65,7 +65,7 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request. ").toString());
+                new ResultStatus(false, "Error: Unable to parse request. Exception message: " + e).toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
