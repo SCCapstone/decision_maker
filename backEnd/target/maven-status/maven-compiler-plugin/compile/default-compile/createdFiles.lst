@@ -2,6 +2,7 @@ imports\CategoriesManager.class
 utilities\JsonParsers$1.class
 utilities\ResultStatus.class
 handlers\PairsGetter.class
+handlers\UsersPostHandler.class
 utilities\IOStreamsHelper.class
 utilities\JsonParsers$2.class
 imports\DevTestingManager.class

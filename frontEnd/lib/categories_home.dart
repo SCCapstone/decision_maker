@@ -153,6 +153,8 @@ class _CategoryListState extends State<CategoryList> {
   void removeItem(int index) {
     // removes an item from the local list of categories used in the CategoryList state
     setState(() {
+      Category category = widget.categories[index];
+      CategoriesManager.deleteCategory(category.categoryId, context);
       widget.categories.remove(widget.categories[index]);
     });
   }
@@ -232,7 +234,7 @@ class CategoryRow extends StatelessWidget {
                   /*
                     TODO delete the category from DB and if success,
                      then remove from local list (https://github.com/SCCapstone/decision_maker/issues/97)
-                   */
+                  */
                   onPressed: () {
                     this.onDelete(); // this deletes it from the local list
                   },

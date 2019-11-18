@@ -6,12 +6,12 @@ import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 
+import 'globals.dart';
+
 class CategoriesManager {
   static final String apiEndpoint = "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
 
   static void addNewCategory(String categoryName, Map<String, String> choiceLabels, Map<String, String> choiceRatings, Category category, String user, BuildContext context) async {
-    //TODO make call to save choice rating in the users table
-
     if (categoryName == "") {
       showPopupMessage("Please enter a name for this category.", context);
       return;
@@ -35,60 +35,27 @@ class CategoriesManager {
 
     //Validation successful
 
-    String jsonBody = "";
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
 
     if (category != null) {
-      jsonBody += "{\"action\":\"editCategory\",";
-      jsonBody += "\"payload\": {\"CategoryId\" : \"" + category.categoryId + "\",";
-      jsonBody += "\"Choices\" : {";
-
-      for (String i in choiceLabels.keys) {
-        jsonBody += "\"$i\" : \"" + choiceLabels[i] + "\", ";
-      }
-
-      jsonBody = jsonBody.substring(0, jsonBody.length - 2);
-
-      jsonBody += "}, ";
+      jsonRequestBody["action"] = "editCategory";
+      jsonRequestBody["payload"].putIfAbsent("CategoryId", () => category.categoryId);
     } else {
-      jsonBody += "{\"action\":\"newCategory\",";
-      jsonBody += "\"payload\": {\"CategoryName\" : \"$categoryName\",";
-      jsonBody += "\"Choices\" : {";
-
-      for (String i in choiceLabels.keys) {
-        jsonBody += "\"$i\" : \"" + choiceLabels[i] + "\", ";
-      }
-
-      //remove trailing space and comma
-      jsonBody = jsonBody.substring(0, jsonBody.length - 2);
-
-      jsonBody += "}, ";
+      jsonRequestBody["action"] = "newCategory";
+      jsonRequestBody["payload"].putIfAbsent("CategoryName", () => categoryName);
     }
 
-    jsonBody += "\"UserRatings\" : {";
-
-    for (String i in choiceRatings.keys) {
-      jsonBody += "\"$i\" : \"" + choiceRatings[i] + "\", ";
-    }
-
-    //remove trailing space and comma
-    jsonBody = jsonBody.substring(0, jsonBody.length - 2);
-
-    jsonBody += "}, ";
-
-    jsonBody += "\"ActiveUser\" : \"$user\"";
-    jsonBody += "}}";
-
-    print(jsonBody);
+    jsonRequestBody["payload"].putIfAbsent("Choices", () => choiceLabels);
+    jsonRequestBody["payload"].putIfAbsent("UserRatings", () => choiceRatings);
+    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => user);
 
     http.Response response = await http.post(
         apiEndpoint,
-        //TODO create or find something that will create the json for me
-        body: jsonBody);
+        body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
-
       try {
+        Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -105,10 +72,11 @@ class CategoriesManager {
   }
 
   static Future<List<Category>> getAllCategoriesList(String username) async {
-    String jsonBody = "{\"action\":\"getCategories\", ";
-    jsonBody += "\"payload\": {\"ActiveUser\" : \"$username\"}}";
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "getCategories";
+    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => username);
 
-    http.Response response = await http.post(apiEndpoint, body: jsonBody);
+    http.Response response = await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
@@ -125,6 +93,34 @@ class CategoriesManager {
     } else {
       //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       throw Exception("Failed to load categories from the database.");
+    }
+  }
+
+  static void deleteCategory(String categoryId, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "deleteCategory";
+    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => Globals.username);
+    jsonRequestBody["payload"].putIfAbsent("CategoryId", () => categoryId);
+
+    http.Response response = await http.post(
+        apiEndpoint,
+        body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error deleting the category (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error deleting the category (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to deleting category.",context);
     }
   }
 }

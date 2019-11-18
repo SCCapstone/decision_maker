@@ -5,11 +5,14 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import utilities.ExceptionHelper;
 import utilities.ResultStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class UsersManager extends DatabaseAccessManager {
@@ -29,6 +32,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final boolean DEFAULT_MUTED = false;
 
   public static final String CATEGORY_FIELD = "Categories";
+
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -103,16 +107,6 @@ public class UsersManager extends DatabaseAccessManager {
         Map<String,Object> ratings = (Map<String,Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
         String user = (String) jsonMap.get(USER_FIELD_USERNAME);
         
-        int nextRatingNo = -1;
-        
-        for(String ratingNo : ratings.keySet()) {
-          if(Integer.parseInt(ratingNo) > nextRatingNo) {
-            nextRatingNo = Integer.parseInt(ratingNo);
-          }
-        }
-        
-        nextRatingNo++;
-        
         String updateExpression = "set " + USER_FIELD_CATEGORIES + ".ID_"+categoryId+ " = :map";
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
         
@@ -128,6 +122,44 @@ public class UsersManager extends DatabaseAccessManager {
       catch(Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: "+e;
+      }
+    } else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    return resultStatus;
+  }
+
+  public ResultStatus insertUserChoiceRatings(Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+
+    if (
+        jsonMap.containsKey(USER_FIELD_USERNAME) &&
+            jsonMap.containsKey(REQUEST_FIELD_CATEGORYID) &&
+            jsonMap.containsKey(REQUEST_FIELD_RATINGS)
+    ) {
+      try {
+        String user = (String) jsonMap.get(USER_FIELD_USERNAME);
+        String categoryId = (String) jsonMap.get(REQUEST_FIELD_CATEGORYID);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
+
+        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId" + " = :map";
+        ValueMap valueMap = new ValueMap().withMap(":map", ratings);
+
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), user)
+            .withNameMap(new NameMap().with("#categoryId", categoryId))
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
+        super.updateItem(updateItemSpec);
+
+        resultStatus = new ResultStatus(true, "User ratings inserted successfully!");
+      }
+      catch(Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request. \n" + ExceptionHelper.getStackTrace(e);
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82

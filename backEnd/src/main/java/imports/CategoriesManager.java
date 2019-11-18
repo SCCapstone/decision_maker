@@ -49,6 +49,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         String nextCategoryIndex = this.uuid.toString();
         String categoryName = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_NAME);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_USER_RATINGS);
         Map<String, Object> groups = new HashMap<String, Object>();
         int nextChoiceNo = choices.size();
         String owner = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
@@ -66,7 +67,18 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         super.putItem(putItemSpec);
 
-        resultStatus = new ResultStatus(true, "Category created successfully!");
+        //put the entered ratings in the users table
+        Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
+        insertNewCatForOwner.put(UsersManager.USER_FIELD_USERNAME, owner);
+        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_CATEGORYID, nextCategoryIndex);
+        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_RATINGS, ratings);
+        ResultStatus updatedUsersTableResult = this.usersManager.insertUserChoiceRatings(insertNewCatForOwner);
+
+        if (updatedUsersTableResult.success) {
+          resultStatus = new ResultStatus(true, "Category created successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: Unable to add this category to the users table. " + updatedUsersTableResult.resultMessage;
+        }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request";
@@ -93,14 +105,12 @@ public class CategoriesManager extends DatabaseAccessManager {
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
         String activeUser = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
 
-        Map<String, String> realChoices = new HashMap<String, String>();
-
+        //TODO check to see if the choices match what are there and if not, user needs to be owner
 
         int nextChoiceNo = -1;
 
         //get the max current choiceNo
         for (String choiceNo : choices.keySet()) {
-          realChoices.put(choiceNo, (String) choices.get(choiceNo));
           if (Integer.parseInt(choiceNo) > nextChoiceNo) {
             nextChoiceNo = Integer.parseInt(choiceNo);
           }
@@ -109,11 +119,13 @@ public class CategoriesManager extends DatabaseAccessManager {
         //move the next choice to be the next value up from the max
         nextChoiceNo++;
 
-        String updateExpression = "set " + CATEGORY_FIELD_CHOICES + "." + categoryId + " = :map";
-        ValueMap valueMap = new ValueMap().withMap(":map", realChoices);
+        String updateExpression = "set " + CATEGORY_FIELD_CHOICES + " = :map, " + CATEGORY_FIELD_NEXT_CHOICE + " = :next";
+        ValueMap valueMap = new ValueMap()
+            .withMap(":map", choices)
+            .withInt(":next", nextChoiceNo);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), activeUser)
+            .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
@@ -191,11 +203,11 @@ public class CategoriesManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&
-            jsonMap.containsKey("Username")
+            jsonMap.containsKey(REQUEST_FIELD_ACTIVE_USER)
     ) {
       try {
         // Confirm that the username matches with the owner of the category before deleting it
-        String username = (String) jsonMap.get(("Username"));
+        String username = (String) jsonMap.get((REQUEST_FIELD_ACTIVE_USER));
         String categoryId = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_ID);
         GetItemSpec getItemSpec = new GetItemSpec()
                 .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
@@ -203,7 +215,9 @@ public class CategoriesManager extends DatabaseAccessManager {
         if (username.equals(item.getString(CATEGORY_FIELD_OWNER))) {
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
                   .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
+
           super.deleteItem(deleteItemSpec);
+
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
         } else {
           resultStatus.resultMessage = "Error: User is not the owner of the category.";
@@ -213,6 +227,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     return resultStatus;

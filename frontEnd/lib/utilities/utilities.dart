@@ -11,3 +11,10 @@ void showPopupMessage(String message, BuildContext context) {
       }
   );
 }
+
+Map<String, dynamic> getEmptyApiRequest() {
+  return {
+    "action": "",
+    "payload": {}
+  };
+}
