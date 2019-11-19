@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/group_page.dart';
+import 'package:frontEnd/main.dart';
 import 'imports/categories_manager.dart';
 import 'models/group.dart';
 import 'imports/globals.dart';
@@ -15,8 +18,6 @@ class GroupsHome extends StatefulWidget {
 }
 
 class _GroupsHomeState extends State<GroupsHome> {
-  String _sortMethod;
-
   @override
   void initState() {
     widget.groups = GroupsManager.getAllGroupsList();
@@ -41,6 +42,7 @@ class _GroupsHomeState extends State<GroupsHome> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.search),
+            iconSize: 40,
             onPressed: () {
               // TODO implement a group search (https://github.com/SCCapstone/decision_maker/issues/42)
             },
@@ -48,6 +50,7 @@ class _GroupsHomeState extends State<GroupsHome> {
         ],
         leading: IconButton(
           icon: navIcon,
+          iconSize: 40,
           onPressed: () {
             // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78)
           },
@@ -88,7 +91,11 @@ class _GroupsHomeState extends State<GroupsHome> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          // TODO add a new category here
+          // Navigate to second route when tapped.
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CreateGroup()),
+          ).then((_) => GroupsHome());
         },
       ),
     );
@@ -109,8 +116,9 @@ class _GroupsListState extends State<GroupsList> {
   Widget build(BuildContext context) {
     if (widget.groups.length == 0) {
       return Center(
-        child:
-            Text("No groups found! Click the plus button below to create one!"),
+        child: Text(
+            "No groups found! Click the plus button below to create one!",
+            style: TextStyle(fontSize: 25)),
       );
     } else {
       return Scrollbar(
@@ -118,28 +126,19 @@ class _GroupsListState extends State<GroupsList> {
           shrinkWrap: true,
           itemCount: widget.groups.length,
           itemBuilder: (context, index) {
-            return GroupRow(widget.groups[index], index,
-                onDelete: () => removeItem(index));
+            return GroupRow(widget.groups[index], index);
           },
         ),
       );
     }
   }
-
-  void removeItem(int index) {
-    // removes an item from the local list of categories used in the CategoryList state
-    setState(() {
-      widget.groups.remove(widget.groups[index]);
-    });
-  }
 }
 
 class GroupRow extends StatelessWidget {
   final Group group;
-  final VoidCallback onDelete;
   final int index;
 
-  GroupRow(this.group, this.index, {this.onDelete});
+  GroupRow(this.group, this.index);
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +155,13 @@ class GroupRow extends StatelessWidget {
               group.groupName,
               style: TextStyle(fontSize: 30),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GroupPage(group: this.group)),
+              ).then((_) => GroupsHome());
+            },
           )
         ],
       ),
