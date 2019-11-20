@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/validator.dart';
+import 'package:frontEnd/utilities/utilities.dart';
+
+import 'models/category.dart';
 
 class GroupSettings extends StatefulWidget {
   final Group group;
@@ -46,10 +49,27 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   @override
   Widget build(BuildContext context) {
+    List<Category> categories = new List<Category>();
+    for (int i = 0; i < 20; i++) {
+      Category category = new Category.debug("123", "$i",
+          new Map<String, dynamic>(), new Map<String, dynamic>(), 1, "testing");
+      categories.add(category);
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text("${widget.group.groupName} Settings"),
+        actions: <Widget>[
+          Visibility(
+            visible: _editing,
+            child: RaisedButton.icon(
+                color: Colors.blue,
+                onPressed: validateInput,
+                icon: Icon(Icons.save),
+                label: Text("Save")),
+          )
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -183,19 +203,22 @@ class _GroupSettingsState extends State<GroupSettings> {
                     )
                   ],
                 ),
-                Visibility(
-                  visible: _editing,
-                  child: RaisedButton.icon(
-                      onPressed: validateInput,
-                      icon: Icon(Icons.save),
-                      label: Text("Save")),
-                )
+                CategoryDropdown("Categories", categories,
+                    callback: (category) => selectCategory(category)),
+                CategoryDropdown("Categories", categories,
+                    callback: (category) => selectCategory(category)),
               ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  void selectCategory(Category category) {
+    setState(() {
+      print(category);
+    });
   }
 
   void validateInput() {

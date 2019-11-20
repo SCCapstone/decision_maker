@@ -118,8 +118,6 @@ class _GroupPageState extends State<GroupPage> {
         MaterialPageRoute(
             builder: (context) => GroupSettings(group: widget.group)),
       ).then((_) => GroupPage(group: widget.group));
-      // TODO link to edit group
-      print('Settings');
     } else if (item == PREFERENCES_ITEM) {
       // TODO link to preferences
     }
