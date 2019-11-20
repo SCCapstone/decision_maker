@@ -143,30 +143,35 @@ class GroupRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: MediaQuery.of(context).size.height * .14,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           IconButton(
-            // TODO have picture
-            icon: Icon(Icons.accessibility),
-          ),
-          RaisedButton(
-            child: Text(
-              group.groupName,
-              style: TextStyle(fontSize: 30),
+            iconSize: MediaQuery.of(context).size.width * .20,
+            icon: Image(
+              image: AssetImage('assets/images/placeholder.jpg'),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => GroupPage(group: this.group)),
-              ).then((_) => GroupsHome());
-            },
+          ),
+          Expanded(
+            child: RaisedButton(
+              child: Text(
+                group.groupName,
+                style: TextStyle(fontSize: 25),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => GroupPage(group: this.group)),
+                ).then((_) => GroupsHome());
+              },
+            ),
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+//      decoration:
+//          new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
   }
 }

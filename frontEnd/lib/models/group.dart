@@ -1,7 +1,7 @@
 class Group {
   final String groupId;
   final String groupName;
-  final String groupIcon;
+  String groupIcon;
   final String groupCreator;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
