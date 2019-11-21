@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/category.dart';
 
-class CategoryRow extends StatelessWidget {
+class CategoryRow extends StatefulWidget {
   final Category category;
   final int index;
   final VoidCallback onSelect;
+  bool selected;
 
-  CategoryRow(this.category, this.index, {this.onSelect});
+  CategoryRow(this.category, this.index, this.selected, {this.onSelect});
+
+  @override
+  _CategoryRow createState() => new _CategoryRow();
+}
+
+class _CategoryRow extends State<CategoryRow> {
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +24,19 @@ class CategoryRow extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: Text(
-              category.categoryName,
+              widget.category.categoryName,
               style: TextStyle(fontSize: 20),
             ),
           ),
-          RaisedButton(
-            child: Text("Hey"),
-            onPressed: this.onSelect,
-          )
+          Checkbox(
+            value: widget.selected,
+            onChanged: (bool value){
+              this.widget.onSelect();
+              setState(() {
+                widget.selected = value;
+              });
+            },
+          ),
         ],
       ),
       decoration:

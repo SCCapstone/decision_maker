@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
+import 'package:frontEnd/widgets/users_dropdown.dart';
 
 import 'models/category.dart';
 
@@ -23,6 +26,10 @@ class _GroupSettingsState extends State<GroupSettings> {
   String _groupIcon;
   int _pollPassPercent;
   int _pollDuration;
+  List<String> users;
+  List<Category> categoriesToAdd = new List<Category>();
+  List<Category> categoriesTotal = new List<Category>();
+  bool owner;
 
   final _formKey = GlobalKey<FormState>();
   final _groupNameController = TextEditingController();
@@ -34,28 +41,35 @@ class _GroupSettingsState extends State<GroupSettings> {
   void dispose() {
     _groupNameController.dispose();
     _groupIconController.dispose();
+    _pollPassController.dispose();
+    _pollDurationController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
+    if(Globals.username == widget.group.groupCreator){
+      owner = true;
+    }
+    users = new List<String>();
+    users.add(widget.group.groupCreator);
     _groupIcon = widget.group
         .groupIcon; // assume icon isn't changed. This will change if user clicks on popup
     _groupNameController.text = widget.group.groupName;
     _pollPassController.text = widget.group.defaultPollPassPercent.toString();
     _pollDurationController.text = widget.group.defaultPollDuration.toString();
     // TODO get all categories from the users that are in this group
+    for (int i = 0; i < 5; i++) {
+      Category category = new Category.debug("123", "$i",
+          new Map<String, dynamic>(), new Map<String, dynamic>(), 1, "testing");
+      categoriesTotal.add(category);
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     List<Category> categories = new List<Category>();
-    for (int i = 0; i < 20; i++) {
-      Category category = new Category.debug("123", "$i",
-          new Map<String, dynamic>(), new Map<String, dynamic>(), 1, "testing");
-      categories.add(category);
-    }
 
     return Scaffold(
         resizeToAvoidBottomInset: true,
@@ -210,10 +224,21 @@ class _GroupSettingsState extends State<GroupSettings> {
                           )
                         ],
                       ),
-                      CategoryDropdown("Categories", categories,
+                      CategoryDropdown("Categories", categoriesTotal, categoriesToAdd,
                           callback: (category) => selectCategory(category)),
-                      CategoryDropdown("Users", categories,
-                          callback: (category) => selectCategory(category)),
+                      UsersDropdown("Users", users,
+                          deleteCallback: (user) => removeUser(user),
+                          addCallback: (user) => addUser(user)),
+                      Visibility(
+                        visible: owner,
+                        child: RaisedButton(
+                          child: Text("Delete Group"),
+                          color: Colors.red,
+                          onPressed: (){
+                            // TODO delete entire group, then go back to home page ()
+                          },
+                        ),
+                      )
                     ],
                   ),
                 ],
@@ -221,6 +246,18 @@ class _GroupSettingsState extends State<GroupSettings> {
             ),
           ),
         ]));
+  }
+
+  void addUser(String user) {
+    setState(() {
+      users.add(user);
+    });
+  }
+
+  void removeUser(String user) {
+    setState(() {
+      users.remove(user);
+    });
   }
 
   void selectCategory(Category category) {
@@ -231,7 +268,6 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void updateIcon(String iconUrl) {
     setState(() {
-      print("Icon url is valid");
       _groupIcon = iconUrl;
       _groupIconController.clear();
       _editing = true;

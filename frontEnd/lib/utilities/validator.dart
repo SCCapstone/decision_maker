@@ -1,3 +1,5 @@
+import 'package:frontEnd/imports/globals.dart';
+
 String validGroupIcon(String input) {
   if (!input.contains("http")) {
     return "Not a valid url";
@@ -41,6 +43,18 @@ String validPollDuration(String input) {
     return "Too small";
   } else if (num > 10000) {
     return "Too big";
+  } else {
+    return null;
+  }
+}
+
+String validUser(String user, List<String> users) {
+  if (user.isEmpty) {
+    return "Username cannot be empty!";
+  } else if (users.contains(user)) {
+    return "Username already added!";
+  } else if (user == Globals.username) {
+    return "Can't add youtself!";
   } else {
     return null;
   }

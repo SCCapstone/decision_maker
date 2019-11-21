@@ -2,12 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
 import 'package:frontEnd/models/group.dart';
-import 'imports/categories_manager.dart';
-import 'models/category.dart';
-import 'imports/globals.dart';
-
-const String SETTINGS_ITEM = "Settings";
-const String PREFERENCES_ITEM = "Preferences";
 
 class GroupPage extends StatefulWidget {
   final Group group;
@@ -19,11 +13,6 @@ class GroupPage extends StatefulWidget {
 }
 
 class _GroupPageState extends State<GroupPage> {
-  final List<String> dropdownChoices = <String>[
-    SETTINGS_ITEM,
-    PREFERENCES_ITEM
-  ];
-
   @override
   void initState() {
     // TODO load all the events
@@ -40,15 +29,14 @@ class _GroupPageState extends State<GroupPage> {
           style: TextStyle(fontSize: 35),
         ),
         actions: <Widget>[
-          PopupMenuButton(
-            onSelected: menuItemSelected,
-            itemBuilder: (BuildContext context) {
-              return dropdownChoices.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GroupSettings(group: widget.group)),
+              ).then((_) => GroupPage(group: widget.group));
             },
           ),
         ],
@@ -109,17 +97,5 @@ class _GroupPageState extends State<GroupPage> {
         ),
       ),
     );
-  }
-
-  void menuItemSelected(String item) {
-    if (item == SETTINGS_ITEM) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => GroupSettings(group: widget.group)),
-      ).then((_) => GroupPage(group: widget.group));
-    } else if (item == PREFERENCES_ITEM) {
-      // TODO link to preferences
-    }
   }
 }

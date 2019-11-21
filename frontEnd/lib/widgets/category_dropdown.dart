@@ -3,11 +3,13 @@ import 'package:frontEnd/models/category.dart';
 import 'category_row.dart';
 
 class CategoryDropdown extends StatelessWidget {
-  final List<Category> categories;
+  final List<Category> categoriesTotal;
+  final List<Category> categoriesToAdd;
   final Function callback;
   final String dropdownTitle;
+  bool checked;
 
-  CategoryDropdown(this.dropdownTitle, this.categories, {this.callback});
+  CategoryDropdown(this.dropdownTitle, this.categoriesTotal, this.categoriesToAdd, {this.callback});
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +20,17 @@ class CategoryDropdown extends StatelessWidget {
           height: MediaQuery.of(context).size.height * .2,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: categories.length,
+            itemCount: categoriesTotal.length,
             itemBuilder: (context, index) {
-              return CategoryRow(categories[index], index,
-                  onSelect: () => callback(categories[index]));
+              if(categoriesToAdd.contains(categoriesTotal[index])){
+                return CategoryRow(categoriesTotal[index], index, true,
+                    onSelect: () => callback(categoriesTotal[index]));
+              }
+              else{
+                // user hasn't selected it, so don't check the checkbox
+                return CategoryRow(categoriesTotal[index], index, false,
+                    onSelect: () => callback(categoriesTotal[index]));
+              }
             },
           ),
         ),
