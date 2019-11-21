@@ -1,6 +1,7 @@
 package utilities;
 
 public class ExceptionHelper {
+
   public static void LogException(Exception e) {
     //TODO instead of using dataOutputStream, that should be our log file or something like that. https://github.com/SCCapstone/decision_maker/issues/82
 //      dataOutputStream.writeUTF(e.toString() + "\n");

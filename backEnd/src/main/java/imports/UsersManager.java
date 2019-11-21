@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UsersManager extends DatabaseAccessManager {
+
   public static final String USER_FIELD_USERNAME = "Username";
   public static final String USER_FIELD_FIRSTNAME = "FirstName";
   public static final String USER_FIELD_LASTNAME = "LastName";
@@ -49,13 +50,14 @@ public class UsersManager extends DatabaseAccessManager {
 
   public boolean checkUser(String userName) {
     Item newItem;
-    try{
-      newItem = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), userName));
+    try {
+      newItem = super
+          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), userName));
       if (newItem == null) {
         return true;
       }
       return false;
-    } catch(ResourceNotFoundException e) {
+    } catch (ResourceNotFoundException e) {
       return false;
     }
   }
@@ -66,16 +68,16 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         String userName = (String) jsonMap.get(USER_FIELD_USERNAME);
 
-        if(this.checkUser(userName)) {
+        if (this.checkUser(userName)) {
           Item newUser = new Item()
-            .withString(USER_FIELD_USERNAME, userName)
-            .withString(USER_FIELD_FIRSTNAME,DEFAULT_FIRSTNAME)
-            .withString(USER_FIELD_LASTNAME,DEFAULT_LASTNAME)
-            .withBoolean(USER_FIELD_DARK_THEME,DEFAULT_DARK_THEME)
-            .withBoolean(USER_FIELD_MUTED,DEFAULT_MUTED);
+              .withString(USER_FIELD_USERNAME, userName)
+              .withString(USER_FIELD_FIRSTNAME, DEFAULT_FIRSTNAME)
+              .withString(USER_FIELD_LASTNAME, DEFAULT_LASTNAME)
+              .withBoolean(USER_FIELD_DARK_THEME, DEFAULT_DARK_THEME)
+              .withBoolean(USER_FIELD_MUTED, DEFAULT_MUTED);
 
           PutItemSpec putItemSpec = new PutItemSpec()
-            .withItem(newUser);
+              .withItem(newUser);
 
           super.putItem(putItemSpec);
 
@@ -85,7 +87,7 @@ public class UsersManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: "+e;
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
     } else {
       resultStatus.resultMessage = "Error: Required request keys not found.";
@@ -93,36 +95,35 @@ public class UsersManager extends DatabaseAccessManager {
 
     return resultStatus;
   }
-  
+
   public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
-    
+
     if (
         jsonMap.containsKey(USER_FIELD_USERNAME) &&
-        jsonMap.containsKey(REQUEST_FIELD_CATEGORYID) &&
-        jsonMap.containsKey(REQUEST_FIELD_RATINGS)
+            jsonMap.containsKey(REQUEST_FIELD_CATEGORYID) &&
+            jsonMap.containsKey(REQUEST_FIELD_RATINGS)
     ) {
       try {
         String categoryId = (String) jsonMap.get(REQUEST_FIELD_CATEGORYID);
-        Map<String,Object> ratings = (Map<String,Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
         String user = (String) jsonMap.get(USER_FIELD_USERNAME);
-        
+
         String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId = :map";
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
-        
+
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(super.getPrimaryKeyIndex(), user)
-          .withNameMap(new NameMap().with("#categoryId", categoryId))
-          .withUpdateExpression(updateExpression)
-          .withValueMap(valueMap);
-        
+            .withPrimaryKey(super.getPrimaryKeyIndex(), user)
+            .withNameMap(new NameMap().with("#categoryId", categoryId))
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
         super.updateItem(updateItemSpec);
-        
+
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
-      }
-      catch(Exception e) {
+      } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: "+e;
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -157,10 +158,10 @@ public class UsersManager extends DatabaseAccessManager {
         super.updateItem(updateItemSpec);
 
         resultStatus = new ResultStatus(true, "User ratings inserted successfully!");
-      }
-      catch(Exception e) {
+      } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. \n" + ExceptionHelper.getStackTrace(e);
+        resultStatus.resultMessage =
+            "Error: Unable to parse request. \n" + ExceptionHelper.getStackTrace(e);
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
