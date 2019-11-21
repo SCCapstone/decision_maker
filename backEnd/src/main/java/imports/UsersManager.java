@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.HashMap;
+import java.util.List;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -36,7 +37,7 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2);
   }
 
-  public ArrayList<String> getAllCategoryIds(String username) {
+  public List<String> getAllCategoryIds(String username) {
     Item dbData = super
         .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
 
@@ -46,14 +47,14 @@ public class UsersManager extends DatabaseAccessManager {
     return new ArrayList<String>(categoryMap.keySet());
   }
 
-  public ArrayList<String> getAllGroupIds(String username) {
+  public List<String> getAllGroupIds(String username) {
     Item dbData = super
         .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
 
     Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-    Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(GROUPS);
+    Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
 
-    return new ArrayList<String>(categoryMap.keySet());
+    return new ArrayList<String>(groupMap.keySet());
   }
 
   public boolean checkUser(String userName) {

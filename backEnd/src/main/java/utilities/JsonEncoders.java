@@ -1,5 +1,6 @@
 package utilities;
 
+import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public class JsonEncoders {
       outputString.append(JsonEncoders.convertStringToJson((String) value));
     } else if (value instanceof List) {
       outputString.append(JsonEncoders.convertListToJson((List) value));
+    } else if (value instanceof Number) {
+      outputString.append(JsonEncoders.convertStringToJson(value.toString()));
     } else {
       outputString.append("null"); // assuming null pointer
     }

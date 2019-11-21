@@ -25,8 +25,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = this.usersManager.getAllCategoryIds(username);
-    } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
+      groupIds = this.usersManager.getAllGroupIds(username);
+    } else if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
       groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
     } else {
       success = false;
@@ -34,10 +34,10 @@ public class GroupsManager extends DatabaseAccessManager {
     }
 
     // this will be a json string representing an array of objects
-    List<Item> groups = new ArrayList<Item>();
+    List<Map> groups = new ArrayList<Map>();
     for (String id : groupIds) {
       Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
-      groups.add(dbData);
+      groups.add(dbData.asMap());
     }
 
     if (success) {
