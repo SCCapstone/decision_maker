@@ -8,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+
 import java.util.HashMap;
 import java.util.List;
 import utilities.RequestFields;

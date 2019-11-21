@@ -119,8 +119,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         //move the next choice to be the next value up from the max
         nextChoiceNo++;
 
-        String updateExpression =
-            "set " + CHOICES + " = :map, " + NEXT_CHOICE_NO + " = :next";
+        String updateExpression = "set " + CHOICES + " = :map, " + NEXT_CHOICE_NO + " = :next";
         ValueMap valueMap = new ValueMap()
             .withMap(":map", choices)
             .withInt(":next", nextChoiceNo);
@@ -137,6 +136,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(UsersManager.USERNAME, activeUser);
         insertNewCatForOwner.put(CATEGORY_ID, categoryId);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+
         ResultStatus updatedUsersTableResult = this.usersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
@@ -180,7 +180,8 @@ public class CategoriesManager extends DatabaseAccessManager {
     // this will be a json string representing an array of objects
     StringBuilder outputString = new StringBuilder("[");
     for (String id : categoryIds) {
-      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      Item dbData = super
+          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
       Map<String, Object> categoryData = dbData.asMap();
       outputString.append("{");
       for (String categoryAttribute : categoryData.keySet()) {
@@ -193,7 +194,8 @@ public class CategoriesManager extends DatabaseAccessManager {
           if (mapAttribute.size() > 0) {
             for (Object key : mapAttribute.keySet()) {
               outputString.append(String.format("\\\"%s\\\":", key.toString()));
-              outputString.append(String.format("\\\"%s\\\",", mapAttribute.get(key).toString()));
+              outputString
+                  .append(String.format("\\\"%s\\\",", mapAttribute.get(key).toString()));
             }
             IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
           }
@@ -202,7 +204,8 @@ public class CategoriesManager extends DatabaseAccessManager {
           // no map found, so normal key value pair
           outputString.append(String.format("\\\"%s\\\":", categoryAttribute));
           outputString
-              .append(String.format("\\\"%s\\\",", categoryData.get(categoryAttribute).toString()));
+              .append(String
+                  .format("\\\"%s\\\",", categoryData.get(categoryAttribute).toString()));
         }
       }
       IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
@@ -229,6 +232,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         // Confirm that the username matches with the owner of the category before deleting it
         String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));
         String categoryId = (String) jsonMap.get(CATEGORY_ID);
+
         GetItemSpec getItemSpec = new GetItemSpec()
             .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
         Item item = super.getItem(getItemSpec);
