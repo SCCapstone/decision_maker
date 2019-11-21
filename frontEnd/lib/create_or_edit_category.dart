@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 import 'imports/categories_manager.dart';
@@ -133,9 +134,11 @@ class _StartScreenState extends State<CreateOrEditCategory> {
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(20.0),
-          child: Column(
-            children: choices,
-          ),
+          child: ListView(children: [
+            Column(
+              children: choices,
+            )
+          ]),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -159,13 +162,18 @@ class _StartScreenState extends State<CreateOrEditCategory> {
                         i.toString(), () => this.rates[i].text);
                   }
 
-                  CategoriesManager.addNewCategory(
-                      this.categoryNameController.text,
-                      labelsToSave,
-                      ratesToSave,
-                      (this.isEdit ? this.category : null),
-                      Globals.username,
-                      context);
+                  if (this.isCategoryOwner) {
+                    CategoriesManager.addOrEditCategory(
+                        this.categoryNameController.text,
+                        labelsToSave,
+                        ratesToSave,
+                        (this.isEdit ? this.category : null),
+                        Globals.username,
+                        context);
+                  } else {
+                    UsersManager.updateUserChoiceRatings(
+                        this.category.categoryId, ratesToSave, context);
+                  }
                 },
               )
             ],
@@ -194,9 +202,6 @@ class _StartScreenState extends State<CreateOrEditCategory> {
       );
     }
 
-//    children.add(Expanded(
-//      child: Text("Rating: " + r.text),
-//    ));
     children.add(Expanded(
       child: RaisedButton.icon(
         icon: Icon(Icons.edit),

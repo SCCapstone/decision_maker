@@ -9,22 +9,19 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
+import utilities.RequestFields;
 import utilities.ResultStatus;
 
 import java.util.*;
 
 public class CategoriesManager extends DatabaseAccessManager {
 
-  public static final String CATEGORY_FIELD_CATEGORY_ID = "CategoryId";
-  public static final String CATEGORY_FIELD_CATEGORY_NAME = "CategoryName";
-  public static final String CATEGORY_FIELD_CHOICES = "Choices";
-  public static final String CATEGORY_FIELD_GROUPS = "Groups";
-  public static final String CATEGORY_FIELD_NEXT_CHOICE = "NextChoiceNo";
-  public static final String CATEGORY_FIELD_OWNER = "Owner";
-
-  public static final String REQUEST_FIELD_ACTIVE_USER = "ActiveUser";
-  public static final String REQUEST_FIELD_CATEGORY_IDS = "CategoryIds";
-  public static final String REQUEST_FIELD_USER_RATINGS = "UserRatings";
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String CATEGORY_NAME = "CategoryName";
+  public static final String CHOICES = "Choices";
+  public static final String GROUPS = "Groups";
+  public static final String NEXT_CHOICE_NO = "NextChoiceNo";
+  public static final String OWNER = "Owner";
 
   private final UsersManager usersManager = new UsersManager();
 
@@ -38,29 +35,29 @@ public class CategoriesManager extends DatabaseAccessManager {
     //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
     if (
-        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_NAME) &&
-            jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
-            jsonMap.containsKey(REQUEST_FIELD_USER_RATINGS) &&
-            jsonMap.containsKey(REQUEST_FIELD_ACTIVE_USER)
+        jsonMap.containsKey(CATEGORY_NAME) &&
+            jsonMap.containsKey(CHOICES) &&
+            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
+            jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       this.uuid = UUID.randomUUID();
 
       try {
         String nextCategoryIndex = this.uuid.toString();
-        String categoryName = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_NAME);
-        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_USER_RATINGS);
+        String categoryName = (String) jsonMap.get(CATEGORY_NAME);
+        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
         Map<String, Object> groups = new HashMap<String, Object>();
         int nextChoiceNo = choices.size();
-        String owner = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
+        String owner = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
         Item newCategory = new Item()
-            .withPrimaryKey(CATEGORY_FIELD_CATEGORY_ID, nextCategoryIndex)
-            .withString(CATEGORY_FIELD_CATEGORY_NAME, categoryName)
-            .withMap(CATEGORY_FIELD_CHOICES, choices)
-            .withMap(CATEGORY_FIELD_GROUPS, groups)
-            .withInt(CATEGORY_FIELD_NEXT_CHOICE, nextChoiceNo)
-            .withString(CATEGORY_FIELD_OWNER, owner);
+            .withPrimaryKey(CATEGORY_ID, nextCategoryIndex)
+            .withString(CATEGORY_NAME, categoryName)
+            .withMap(CHOICES, choices)
+            .withMap(GROUPS, groups)
+            .withInt(NEXT_CHOICE_NO, nextChoiceNo)
+            .withString(OWNER, owner);
 
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newCategory);
@@ -69,11 +66,11 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //put the entered ratings in the users table
         Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
-        insertNewCatForOwner.put(UsersManager.USER_FIELD_USERNAME, owner);
-        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_CATEGORYID, nextCategoryIndex);
-        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_RATINGS, ratings);
+        insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
+        insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
+        insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
         ResultStatus updatedUsersTableResult = this.usersManager
-            .insertUserChoiceRatings(insertNewCatForOwner);
+            .updateUserChoiceRatings(insertNewCatForOwner);
 
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category created successfully!");
@@ -97,16 +94,16 @@ public class CategoriesManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     //validate data, log results as there should be some validation already on the front end
     if (
-        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&
-            jsonMap.containsKey(CATEGORY_FIELD_CHOICES) &&
-            jsonMap.containsKey(REQUEST_FIELD_USER_RATINGS) &&
-            jsonMap.containsKey(REQUEST_FIELD_ACTIVE_USER)
+        jsonMap.containsKey(CATEGORY_ID) &&
+            jsonMap.containsKey(CHOICES) &&
+            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
+            jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       try {
-        String categoryId = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_ID);
-        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CATEGORY_FIELD_CHOICES);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_USER_RATINGS);
-        String activeUser = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
+        String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
+        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
         //TODO check to see if the choices match what are there and if not, user needs to be owner (https://github.com/SCCapstone/decision_maker/issues/107)
 
@@ -123,7 +120,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         nextChoiceNo++;
 
         String updateExpression =
-            "set " + CATEGORY_FIELD_CHOICES + " = :map, " + CATEGORY_FIELD_NEXT_CHOICE + " = :next";
+            "set " + CHOICES + " = :map, " + NEXT_CHOICE_NO + " = :next";
         ValueMap valueMap = new ValueMap()
             .withMap(":map", choices)
             .withInt(":next", nextChoiceNo);
@@ -137,9 +134,9 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //put the entered ratings in the users table
         Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
-        insertNewCatForOwner.put(UsersManager.USER_FIELD_USERNAME, activeUser);
-        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_CATEGORYID, categoryId);
-        insertNewCatForOwner.put(UsersManager.REQUEST_FIELD_RATINGS, ratings);
+        insertNewCatForOwner.put(UsersManager.USERNAME, activeUser);
+        insertNewCatForOwner.put(CATEGORY_ID, categoryId);
+        insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
         ResultStatus updatedUsersTableResult = this.usersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
@@ -170,11 +167,11 @@ public class CategoriesManager extends DatabaseAccessManager {
     String resultMessage = "";
     List<String> categoryIds = new ArrayList<String>();
 
-    if (jsonMap.containsKey(REQUEST_FIELD_ACTIVE_USER)) {
-      String username = (String) jsonMap.get(REQUEST_FIELD_ACTIVE_USER);
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       categoryIds = this.usersManager.getAllCategoryIds(username);
-    } else if (jsonMap.containsKey(REQUEST_FIELD_CATEGORY_IDS)) {
-      categoryIds = (List<String>) jsonMap.get(REQUEST_FIELD_CATEGORY_IDS);
+    } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
+      categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
@@ -225,17 +222,17 @@ public class CategoriesManager extends DatabaseAccessManager {
     //TODO remove all mappings in the groups table and in users table (https://github.com/SCCapstone/decision_maker/issues/108)
     ResultStatus resultStatus = new ResultStatus();
     if (
-        jsonMap.containsKey(CATEGORY_FIELD_CATEGORY_ID) &&
-            jsonMap.containsKey(REQUEST_FIELD_ACTIVE_USER)
+        jsonMap.containsKey(CATEGORY_ID) &&
+            jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       try {
         // Confirm that the username matches with the owner of the category before deleting it
-        String username = (String) jsonMap.get((REQUEST_FIELD_ACTIVE_USER));
-        String categoryId = (String) jsonMap.get(CATEGORY_FIELD_CATEGORY_ID);
+        String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));
+        String categoryId = (String) jsonMap.get(CATEGORY_ID);
         GetItemSpec getItemSpec = new GetItemSpec()
             .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
         Item item = super.getItem(getItemSpec);
-        if (username.equals(item.getString(CATEGORY_FIELD_OWNER))) {
+        if (username.equals(item.getString(OWNER))) {
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
               .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
 
