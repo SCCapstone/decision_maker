@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class UsersPostHandler implements RequestStreamHandler {
+
   private final UsersManager UsersManager = new UsersManager();
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
@@ -38,23 +39,28 @@ public class UsersPostHandler implements RequestStreamHandler {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
 
-            IOStreamsHelper.writeToOutput(outputStream,resultStatus.toString());
+            IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
-            IOStreamsHelper.writeToOutput(outputStream,new ResultStatus(false,"Error: Unable to parse request. Exception message: "+ e).toString());
+            IOStreamsHelper.writeToOutput(outputStream,
+                new ResultStatus(false, "Error: Unable to parse request. Exception message: " + e)
+                    .toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          IOStreamsHelper.writeToOutput(outputStream,new ResultStatus(false,"Error: No action/payload entered.").toString());
+          IOStreamsHelper.writeToOutput(outputStream,
+              new ResultStatus(false, "Error: No action/payload entered.").toString());
         }
       } else {
         //probably want to log this somewhere as front end validation shouldn't have let this through
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        IOStreamsHelper.writeToOutput(outputStream,new ResultStatus(false,"Error: No data entered.").toString());
+        IOStreamsHelper.writeToOutput(outputStream,
+            new ResultStatus(false, "Error: No data entered.").toString());
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      IOStreamsHelper.writeToOutput(outputStream,new ResultStatus(false,"Error: Unable to handle request.").toString());
+      IOStreamsHelper.writeToOutput(outputStream,
+          new ResultStatus(false, "Error: Unable to handle request.").toString());
     }
   }
 }

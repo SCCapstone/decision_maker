@@ -8,6 +8,9 @@ void showPopupMessage(String message, BuildContext context) {
           title: Text("Response status:"),
           content: Text(message),
         );
-      }
-  );
+      });
+}
+
+Map<String, dynamic> getEmptyApiRequest() {
+  return {"action": "", "payload": {}};
 }

@@ -1,6 +1,7 @@
 package utilities;
 
 public class ResultStatus {
+
   public boolean success;
   public String resultMessage;
 
