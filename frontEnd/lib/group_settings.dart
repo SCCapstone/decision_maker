@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
+import 'package:frontEnd/widgets/category_dropdown.dart';
 
 import 'models/category.dart';
 
@@ -57,167 +58,186 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: Text("${widget.group.groupName} Settings"),
-        actions: <Widget>[
-          Visibility(
-            visible: _editing,
-            child: RaisedButton.icon(
-                color: Colors.blue,
-                onPressed: validateInput,
-                icon: Icon(Icons.save),
-                label: Text("Save")),
-          )
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        autovalidate: _autoValidate,
-        child: ListView(
-          padding: EdgeInsets.all(10.0),
-          children: <Widget>[
-            Column(
-              children: [
-                TextFormField(
-                  controller: _groupNameController,
-                  validator: validGroupName,
-                  onChanged: (String arg) {
-                    // the moment the user starts making changes, display the save button
-                    if (!(arg == widget.group.groupName)) {
-                      setState(() {
-                        _editing = true;
-                      });
-                    } else {
-                      setState(() {
-                        _editing = false;
-                      });
-                    }
-                  },
-                  onSaved: (String arg) {
-                    _groupName = arg;
-                  },
-                  style: TextStyle(fontSize: 35),
-                  decoration: InputDecoration(labelText: "Group Name"),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .01),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width * .5,
-                  height: MediaQuery.of(context).size.height * .3,
-                  alignment: Alignment.topRight,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          fit: BoxFit.fitHeight,
-                          image: NetworkImage(widget.group.groupIcon))),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.7),
-                        shape: BoxShape.circle),
-                    child: IconButton(
-                      icon: Icon(Icons.edit),
-                      color: Colors.blueAccent,
-                      onPressed: () {
-                        groupIconPopup(context);
-                      },
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .004),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(
-                      "Default poll duration (mins)",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * .25,
-                      child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        validator: validPollDuration,
-                        controller: _pollDurationController,
-                        onChanged: (String arg) {
-                          int num = int.parse(arg);
-                          // the moment the user starts making changes, display the save button
-                          if (!(num == widget.group.defaultPollDuration)) {
-                            setState(() {
-                              _editing = true;
-                            });
-                          } else {
-                            setState(() {
-                              _editing = false;
-                            });
-                          }
-                        },
-                        onSaved: (String arg) {
-                          _pollDuration = int.parse(arg);
-                        },
-                        decoration:
-                            InputDecoration(border: OutlineInputBorder()),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .004),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text(
-                      "Default pass percentage     ",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * .25,
-                      child: TextFormField(
-                        controller: _pollPassController,
-                        keyboardType: TextInputType.number,
-                        validator: validPassPercentage,
-                        onChanged: (String arg) {
-                          int num = int.parse(arg);
-                          // the moment the user starts making changes, display the save button
-                          if (!(num == widget.group.defaultPollPassPercent)) {
-                            setState(() {
-                              _editing = true;
-                            });
-                          } else {
-                            setState(() {
-                              _editing = false;
-                            });
-                          }
-                        },
-                        onSaved: (String arg) {
-                          _pollPassPercent = int.parse(arg);
-                        },
-                        decoration:
-                            InputDecoration(border: OutlineInputBorder()),
-                      ),
-                    )
-                  ],
-                ),
-                CategoryDropdown("Categories", categories,
-                    callback: (category) => selectCategory(category)),
-                CategoryDropdown("Categories", categories,
-                    callback: (category) => selectCategory(category)),
-              ],
-            ),
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          title: Text("${widget.group.groupName} Settings"),
+          actions: <Widget>[
+            Visibility(
+              visible: _editing,
+              child: RaisedButton.icon(
+                  color: Colors.blue,
+                  onPressed: validateInput,
+                  icon: Icon(Icons.save),
+                  label: Text("Save")),
+            )
           ],
         ),
-      ),
-    );
+        body: Column(children: <Widget>[
+          Form(
+            key: _formKey,
+            autovalidate: _autoValidate,
+            child: Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                padding: EdgeInsets.all(10.0),
+                children: <Widget>[
+                  Column(
+                    children: [
+                      TextFormField(
+                        controller: _groupNameController,
+                        validator: validGroupName,
+                        onChanged: (String arg) {
+                          // the moment the user starts making changes, display the save button
+                          if (!(arg == widget.group.groupName)) {
+                            setState(() {
+                              _editing = true;
+                            });
+                          } else {
+                            setState(() {
+                              _editing = false;
+                            });
+                          }
+                        },
+                        onSaved: (String arg) {
+                          _groupName = arg;
+                        },
+                        style: TextStyle(fontSize: 35),
+                        decoration: InputDecoration(labelText: "Group Name"),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .01),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * .5,
+                        height: MediaQuery.of(context).size.height * .3,
+                        alignment: Alignment.topRight,
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                fit: BoxFit.fitHeight,
+                                image: NetworkImage(widget.group.groupIcon))),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.7),
+                              shape: BoxShape.circle),
+                          child: IconButton(
+                            icon: Icon(Icons.edit),
+                            color: Colors.blueAccent,
+                            onPressed: () {
+                              groupIconPopup(context, _autoValidate,
+                                  _groupIconController, updateIcon);
+                            },
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .004),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Text(
+                            "Default poll duration (mins)",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * .25,
+                            child: TextFormField(
+                              keyboardType: TextInputType.number,
+                              validator: validPollDuration,
+                              controller: _pollDurationController,
+                              onChanged: (String arg) {
+                                int num = int.parse(arg);
+                                // the moment the user starts making changes, display the save button
+                                if (!(num ==
+                                    widget.group.defaultPollDuration)) {
+                                  setState(() {
+                                    _editing = true;
+                                  });
+                                } else {
+                                  setState(() {
+                                    _editing = false;
+                                  });
+                                }
+                              },
+                              onSaved: (String arg) {
+                                _pollDuration = int.parse(arg);
+                              },
+                              decoration:
+                                  InputDecoration(border: OutlineInputBorder()),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .004),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Text(
+                            "Default pass percentage     ",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * .25,
+                            child: TextFormField(
+                              controller: _pollPassController,
+                              keyboardType: TextInputType.number,
+                              validator: validPassPercentage,
+                              onChanged: (String arg) {
+                                int num = int.parse(arg);
+                                // the moment the user starts making changes, display the save button
+                                if (!(num ==
+                                    widget.group.defaultPollPassPercent)) {
+                                  setState(() {
+                                    _editing = true;
+                                  });
+                                } else {
+                                  setState(() {
+                                    _editing = false;
+                                  });
+                                }
+                              },
+                              onSaved: (String arg) {
+                                _pollPassPercent = int.parse(arg);
+                              },
+                              decoration:
+                                  InputDecoration(border: OutlineInputBorder()),
+                            ),
+                          )
+                        ],
+                      ),
+                      CategoryDropdown("Categories", categories,
+                          callback: (category) => selectCategory(category)),
+                      CategoryDropdown("Users", categories,
+                          callback: (category) => selectCategory(category)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ]));
   }
 
   void selectCategory(Category category) {
     setState(() {
       print(category);
+    });
+  }
+
+  void updateIcon(String iconUrl) {
+    setState(() {
+      print("Icon url is valid");
+      _groupIcon = iconUrl;
+      _groupIconController.clear();
+      _editing = true;
+      _validGroupIcon = true;
+      _autoValidate = true;
+      Navigator.of(context).pop();
     });
   }
 
@@ -234,60 +254,5 @@ class _GroupSettingsState extends State<GroupSettings> {
     } else {
       setState(() => _autoValidate = true);
     }
-  }
-
-  void groupIconPopup(BuildContext context) {
-    // displays a popup for editing the group icon's url
-    // putting this method in this class because need to set state when url is validated
-
-    final formKey = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return Form(
-            autovalidate: _autoValidate,
-            key: formKey,
-            child: AlertDialog(
-              title: Text("Edit Icon url"),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("Cancel"),
-                  onPressed: () {
-                    _groupIconController.clear();
-                    Navigator.of(context).pop();
-                  },
-                ),
-                FlatButton(
-                  child: Text("Submit"),
-                  onPressed: () {
-                    if (formKey.currentState.validate()) {
-                      setState(() {
-                        print("is valid");
-                        _groupIcon = _groupIconController.text;
-                        _groupIconController.clear();
-                        _editing = true;
-                        _validGroupIcon = true;
-                        _autoValidate = true;
-                        Navigator.of(context).pop();
-                      });
-                    }
-                  },
-                ),
-              ],
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextFormField(
-                      controller: _groupIconController,
-                      validator: validGroupIcon,
-                      keyboardType: TextInputType.url,
-                      decoration: InputDecoration(
-                        labelText: "Enter a icon link",
-                      )),
-                ],
-              ),
-            ),
-          );
-        });
   }
 }

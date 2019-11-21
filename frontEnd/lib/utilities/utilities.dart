@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/models/category.dart';
+import 'validator.dart';
 
 void showPopupMessage(String message, BuildContext context) {
   showDialog(
@@ -12,62 +12,49 @@ void showPopupMessage(String message, BuildContext context) {
       });
 }
 
-class CategoryRow extends StatelessWidget {
-  final Category category;
-  final int index;
-  final VoidCallback onSelect;
+void groupIconPopup(BuildContext context, bool validate,
+    TextEditingController controller, Function function) {
+  // displays a popup for editing the group icon's url
 
-  CategoryRow(this.category, this.index, {this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .07,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              category.categoryName,
-              style: TextStyle(fontSize: 20),
+  final formKey = GlobalKey<FormState>();
+  showDialog(
+      context: context,
+      builder: (context) {
+        return Form(
+          autovalidate: validate,
+          key: formKey,
+          child: AlertDialog(
+            title: Text("Edit Icon url"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  controller.clear();
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("Submit"),
+                onPressed: () {
+                  if (formKey.currentState.validate()) {
+                    function(controller.text);
+                  }
+                },
+              ),
+            ],
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                    controller: controller,
+                    validator: validGroupIcon,
+                    keyboardType: TextInputType.url,
+                    decoration: InputDecoration(
+                      labelText: "Enter a icon link",
+                    )),
+              ],
             ),
           ),
-          RaisedButton(
-            child: Text("Hey"),
-            onPressed: this.onSelect,
-          )
-        ],
-      ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
-    );
-  }
-}
-
-class CategoryDropdown extends StatelessWidget {
-  final List<Category> categories;
-  final Function callback;
-  final String dropdownTitle;
-
-  CategoryDropdown(this.dropdownTitle, this.categories, {this.callback});
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(dropdownTitle),
-      children: <Widget>[
-        SizedBox(
-          height: MediaQuery.of(context).size.height * .2,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return CategoryRow(categories[index], index,
-                  onSelect: () => callback(categories[index]));
-            },
-          ),
-        ),
-      ],
-    );
-  }
+        );
+      });
 }

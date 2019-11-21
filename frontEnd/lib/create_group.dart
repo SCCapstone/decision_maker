@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
+import 'package:frontEnd/widgets/category_dropdown.dart';
 
 import 'imports/dev_testing_manager.dart';
 
@@ -19,7 +20,6 @@ class _CreateGroupState extends State<CreateGroup> {
   List<Category> categoriesToAdd = new List<Category>();
   List<Category> categoriesTotal = new List<Category>();
   List<String> usersToAdd = new List<String>();
-  ScrollController _scrollController;
 
   final _formKey = GlobalKey<FormState>();
   final _groupNameController = TextEditingController();
@@ -29,7 +29,6 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   void dispose() {
-    _scrollController = ScrollController();
     _groupNameController.dispose();
     _imageLinkController.dispose();
     super.dispose();
@@ -51,7 +50,6 @@ class _CreateGroupState extends State<CreateGroup> {
         key: _formKey,
         autovalidate: _autoValidate,
         child: ListView(
-          controller: _scrollController,
           shrinkWrap: true,
           padding: EdgeInsets.all(20),
           children: <Widget>[
