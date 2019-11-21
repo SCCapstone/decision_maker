@@ -11,7 +11,7 @@ public class IOStreamsHelper {
     outputStream.write(message.getBytes(Charsets.UTF_8));
   }
 
-  //Causion: this actually modifies the reference so a return isn't necessary but keeping for clarity
+  //Caution: this actually modifies the reference so a return isn't necessary but keeping for clarity
   public static void removeLastInstanceOf(StringBuilder input, char toRemove) {
     String inputString = input.toString();
     int index = inputString.lastIndexOf(toRemove);
