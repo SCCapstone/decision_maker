@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/group_page.dart';
-import 'package:frontEnd/main.dart';
-import 'imports/categories_manager.dart';
 import 'models/group.dart';
 import 'imports/globals.dart';
 
@@ -170,8 +168,6 @@ class GroupRow extends StatelessWidget {
           )
         ],
       ),
-//      decoration:
-//          new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
   }
 }

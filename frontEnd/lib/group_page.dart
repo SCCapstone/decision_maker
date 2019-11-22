@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
 import 'package:frontEnd/models/group.dart';
@@ -15,7 +14,7 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   @override
   void initState() {
-    // TODO load all the events
+    // TODO load all the events (https://github.com/SCCapstone/decision_maker/issues/44)
     super.initState();
   }
 

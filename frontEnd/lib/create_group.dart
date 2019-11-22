@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/group.dart';
@@ -8,44 +9,40 @@ import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
 class CreateGroup extends StatefulWidget {
+  Future<List<Category>> categoriesTotal;
+
   @override
   _CreateGroupState createState() => _CreateGroupState();
 }
 
 class _CreateGroupState extends State<CreateGroup> {
-  bool _autoValidate = false;
-  String _groupName;
-  String _groupIcon;
-  int _pollPassPercent;
-  int _pollDuration;
+  bool autoValidate = false;
+  String groupName;
+  String groupIcon;
+  int pollPassPercent;
+  int pollDuration;
   List<Category> categoriesToAdd = new List<Category>();
-  List<Category> categoriesTotal = new List<Category>();
   List<String> users;
 
-  final _formKey = GlobalKey<FormState>();
-  final _groupNameController = TextEditingController();
-  final _groupIconController = TextEditingController();
-  final _pollPassController = TextEditingController();
-  final _pollDurationController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  final groupNameController = TextEditingController();
+  final groupIconController = TextEditingController();
+  final pollPassController = TextEditingController();
+  final pollDurationController = TextEditingController();
 
   @override
   void dispose() {
-    _groupNameController.dispose();
-    _groupIconController.dispose();
-    _pollPassController.dispose();
-    _pollDurationController.dispose();
+    groupNameController.dispose();
+    groupIconController.dispose();
+    pollPassController.dispose();
+    pollDurationController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     categoriesToAdd = new List<Category>();
-    // TODO actually get the categories from DB
-    for (int i = 0; i < 5; i++) {
-      Category category = new Category.debug("123", "$i",
-          new Map<String, dynamic>(), new Map<String, dynamic>(), 1, "testing");
-      categoriesTotal.add(category);
-    }
+    widget.categoriesTotal = CategoriesManager.getAllCategoriesList();
     users = new List<String>();
     super.initState();
   }
@@ -57,8 +54,8 @@ class _CreateGroupState extends State<CreateGroup> {
         title: Text("Add New Group"),
       ),
       body: Form(
-        key: _formKey,
-        autovalidate: _autoValidate,
+        key: formKey,
+        autovalidate: autoValidate,
         child: ListView(
           shrinkWrap: true,
           padding: EdgeInsets.all(20),
@@ -66,51 +63,63 @@ class _CreateGroupState extends State<CreateGroup> {
             Column(
               children: [
                 TextFormField(
-                  controller: _groupNameController,
+                  controller: groupNameController,
                   validator: validGroupName,
                   onSaved: (String arg) {
-                    _groupName = arg;
+                    groupName = arg;
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a group name",
                   ),
                 ),
                 TextFormField(
-                  controller: _groupIconController,
+                  controller: groupIconController,
                   keyboardType: TextInputType.url,
                   validator: validGroupIcon,
                   onSaved: (String arg) {
-                    _groupIcon = arg;
+                    groupIcon = arg;
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a icon link",
                   ),
                 ),
                 TextFormField(
-                  controller: _pollDurationController,
+                  controller: pollDurationController,
                   keyboardType: TextInputType.number,
                   validator: validPollDuration,
                   onSaved: (String arg) {
-                    _pollDuration = int.parse(arg);
+                    pollDuration = int.parse(arg);
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a default poll duration (in minutes)",
                   ),
                 ),
                 TextFormField(
-                  controller: _pollPassController,
+                  controller: pollPassController,
                   keyboardType: TextInputType.number,
                   validator: validPassPercentage,
                   onSaved: (String arg) {
-                    _pollPassPercent = int.parse(arg);
+                    pollPassPercent = int.parse(arg);
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a default poll pass percentage (0-100)",
                   ),
                 ),
-                CategoryDropdown(
-                    "Add categories", categoriesTotal, categoriesToAdd,
-                    callback: (category) => selectCategory(category)),
+                FutureBuilder(
+                    future: widget.categoriesTotal,
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData) {
+                        List<Category> categories = snapshot.data;
+                        return CategoryDropdown(
+                            "Add categories", categories, categoriesToAdd,
+                            callback: (category) => selectCategory(category));
+                      } else if (snapshot.hasError) {
+                        print(snapshot.error);
+                        return Text("Error: ${snapshot.error}");
+                      } else {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                    }),
                 UsersDropdown("Users", users,
                     deleteCallback: (user) => removeUser(user),
                     addCallback: (user) => addUser(user)),
@@ -149,7 +158,7 @@ class _CreateGroupState extends State<CreateGroup> {
   }
 
   void validateInput() {
-    final form = _formKey.currentState;
+    final form = formKey.currentState;
     if (form.validate()) {
       if (categoriesToAdd.isEmpty) {
         showErrorMessage("Invalid input",
@@ -163,26 +172,25 @@ class _CreateGroupState extends State<CreateGroup> {
           categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
               () => categoriesToAdd[i].categoryName);
         }
+        // it's okay to not have any inputted members, since creator is guaranteed to be there
         Map<String, String> usersMap = new Map<String, String>();
         for (int i = 0; i < users.length; i++) {
           usersMap.putIfAbsent(users[i], () => users[i]);
         }
-        print(categoriesMap);
         Group group = new Group(
-            groupName: _groupName,
+            groupName: groupName,
             groupCreator: Globals.username,
-            groupIcon: _groupIcon,
+            groupIcon: groupIcon,
             groupId: "Generate on backend",
             categories: categoriesMap,
             members: usersMap,
-            defaultPollDuration: _pollDuration,
-            defaultPollPassPercent: _pollPassPercent);
+            defaultPollDuration: pollDuration,
+            defaultPollPassPercent: pollPassPercent);
         print(group);
-        // it's okay to not have any members, since creator is guaranteed to be there
         // TODO create group and upload to DB
       }
     } else {
-      setState(() => _autoValidate = true);
+      setState(() => autoValidate = true);
     }
   }
 }

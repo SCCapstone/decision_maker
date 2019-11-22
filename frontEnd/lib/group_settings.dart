@@ -284,6 +284,7 @@ class _GroupSettingsState extends State<GroupSettings> {
       form.save();
       print(
           "New name: $_groupName New Duration: $_pollDuration New percentage: $_pollPassPercent");
+      // TODO, once done update all the controllers here and the title
       // TODO edit the Group object and update to DB ()
       // should also go back to last page and pass in the new Group object in constructor to avoid logic errors
       // (e.g. group name changed, so previous page would have the old group name when going back)
