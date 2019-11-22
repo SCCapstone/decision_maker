@@ -13,6 +13,7 @@ import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 
 public class PairUploader implements RequestStreamHandler {
+
   private final DevTestingManager devTestingManager = new DevTestingManager();
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
@@ -24,13 +25,13 @@ public class PairUploader implements RequestStreamHandler {
       // upload the data
       if (!jsonMap.isEmpty()) {
         this.devTestingManager.insertNewValuePairs(jsonMap);
-        IOStreamsHelper.writeToOutput(outputStream,"Data inserted successfully!");
+        IOStreamsHelper.writeToOutput(outputStream, "Data inserted successfully!");
       } else {
-        IOStreamsHelper.writeToOutput(outputStream,"No data entered.");
+        IOStreamsHelper.writeToOutput(outputStream, "No data entered.");
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      IOStreamsHelper.writeToOutput(outputStream,"Unable to handle request.\n");
+      IOStreamsHelper.writeToOutput(outputStream, "Unable to handle request.\n");
     }
   }
 }

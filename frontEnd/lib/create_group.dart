@@ -42,7 +42,7 @@ class _CreateGroupState extends State<CreateGroup> {
   @override
   void initState() {
     categoriesToAdd = new List<Category>();
-    widget.categoriesTotal = CategoriesManager.getAllCategoriesList();
+    widget.categoriesTotal = CategoriesManager.getAllCategoriesList(Globals.username);
     users = new List<String>();
     super.initState();
   }

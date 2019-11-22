@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 import java.util.Map;
 
 public class DevTestingManager extends DatabaseAccessManager {
+
   public DevTestingManager() {
     super("testing_tables", "DevName", Regions.US_EAST_2);
   }
@@ -27,7 +28,7 @@ public class DevTestingManager extends DatabaseAccessManager {
     // this will be a json string representing an array of objects
     StringBuilder outputString = new StringBuilder("[");
 
-    for (String s: dbDataMap.keySet()) {
+    for (String s : dbDataMap.keySet()) {
       outputString.append("{\"key\": \"");
       outputString.append(s);
       outputString.append("\", \"value\": \"");
@@ -41,13 +42,14 @@ public class DevTestingManager extends DatabaseAccessManager {
     return outputString.toString();
   }
 
-  public UpdateItemOutcome insertNewValuePairs(Map<String, Object> inputMap) throws ConditionalCheckFailedException {
+  public UpdateItemOutcome insertNewValuePairs(Map<String, Object> inputMap)
+      throws ConditionalCheckFailedException {
 
     String updateExpression = "set ";
     ValueMap valueMap = new ValueMap();
     char a = 'a';
 
-    for (String s: inputMap.keySet()) {
+    for (String s : inputMap.keySet()) {
       updateExpression += s + " = :" + a + ",";
       valueMap.with(":" + a, inputMap.get(s));
       a++;

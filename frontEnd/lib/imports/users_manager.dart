@@ -40,6 +40,7 @@ class UsersManager {
           context);
     }
   }
+
   static void updateUserChoiceRatings(int categoryId, List<String> choiceLabels, List<String>choiceRatings, String user, BuildContext context) async {
     if(choiceLabels.length != choiceRatings.length){
       showPopupMessage("Error, choice labels and choice ratings list nonequal", context);

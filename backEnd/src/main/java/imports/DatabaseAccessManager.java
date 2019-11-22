@@ -13,6 +13,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 
 public class DatabaseAccessManager {
+
   private final DynamoDB dynamoDb;
   private final String tableName;
   private final String primaryKeyIndex;

@@ -1,47 +1,77 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 import 'imports/categories_manager.dart';
 import 'imports/globals.dart';
+import 'models/category.dart';
 
 class CreateOrEditCategory extends StatefulWidget {
   final bool isEdit;
 
-  CreateOrEditCategory({this.isEdit});
+  final Category category;
+
+  CreateOrEditCategory({@required this.isEdit, this.category});
 
   @override
-  _StartScreenState createState() => _StartScreenState(isEdit: this.isEdit);
+  _StartScreenState createState() =>
+      _StartScreenState(isEdit: this.isEdit, category: this.category);
 }
 
 class _StartScreenState extends State<CreateOrEditCategory> {
   final TextEditingController categoryNameController = TextEditingController();
   final bool isEdit;
   final int defaultRate = 3;
+  final Category category;
 
-  int categoryId;
-  int numChoices = 1;
-  List<TextEditingController> labels = new List<TextEditingController>();
-  List<TextEditingController> rates = new List<TextEditingController>();
+  bool isCategoryOwner;
+  int nextChoiceValue;
+  Map<int, TextEditingController> labels =
+      new LinkedHashMap<int, TextEditingController>();
+  Map<int, TextEditingController> rates =
+      new LinkedHashMap<int, TextEditingController>();
 
-  _StartScreenState({@required this.isEdit, this.categoryId}) {
-    if (this.isEdit && this.categoryId == null) {
-      //error, the categoryId is required for an edit
+  _StartScreenState({@required this.isEdit, this.category}) {
+    if (this.isEdit && this.category == null) {
+      //error, the category is required for an edit
     }
-    TextEditingController t1 = new TextEditingController();
-    this.labels.add(t1);
 
-    TextEditingController t2 = new TextEditingController();
-    t2.text = "3";
-    this.rates.add(t2);
+    if (this.isEdit) {
+      this.isCategoryOwner = (this.category.owner == Globals.username);
+      this.categoryNameController.text = this.category.categoryName;
+      this.nextChoiceValue = this.category.nextChoiceNum;
+
+      for (String choiceId in this.category.choices.keys) {
+        TextEditingController t1 = new TextEditingController();
+        t1.text = this.category.choices[choiceId];
+        this.labels.putIfAbsent(int.parse(choiceId), () => t1);
+
+        TextEditingController t2 = new TextEditingController();
+        //todo: get user's choice rating for these instead of default (https://github.com/SCCapstone/decision_maker/issues/105)
+        t2.text = this.defaultRate.toString();
+        this.rates.putIfAbsent(int.parse(choiceId), () => t2);
+      }
+    } else {
+      this.isCategoryOwner = true; // you're creating the category so its urs
+      this.nextChoiceValue = 2;
+
+      TextEditingController t1 = new TextEditingController();
+      this.labels.putIfAbsent(1, () => t1);
+
+      TextEditingController t2 = new TextEditingController();
+      t2.text = this.defaultRate.toString();
+      this.rates.putIfAbsent(1, () => t2);
+    }
   }
 
   @override
   void dispose() {
     this.categoryNameController.dispose();
-    for (TextEditingController tec in this.labels) {
+    for (TextEditingController tec in this.labels.values) {
       tec.dispose();
     }
-    for (TextEditingController tec in this.rates) {
+    for (TextEditingController tec in this.rates.values) {
       tec.dispose();
     }
 
@@ -51,31 +81,50 @@ class _StartScreenState extends State<CreateOrEditCategory> {
   @override
   Widget build(BuildContext context) {
     List<Widget> choices = new List<Widget>();
-    choices.add(TextFormField(
-      controller: this.categoryNameController,
-      decoration: InputDecoration(
-        labelText: (this.isEdit ? "Edit" : "New") + " Category Name:",
-      ),
-    ));
-    for (int i = 0; i < this.numChoices; i++) {
-      choices.add(this.getChoiceRatingWidget(
-          labels.elementAt(i), rates.elementAt(i), i == this.numChoices - 1));
+
+    if (this.isCategoryOwner) {
+      choices.add(TextFormField(
+        controller: this.categoryNameController,
+        decoration: InputDecoration(
+          labelText: (this.isEdit ? "Edit" : "New") + " Category Name:",
+        ),
+      ));
+    } else {
+      choices.add(Row(children: [
+        Text(
+          "Category: " + this.category.categoryName,
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
+        ),
+        Spacer()
+      ]));
+      choices
+          .add(Row(children: [Text("By: " + this.category.owner), Spacer()]));
     }
-    choices.add(RaisedButton.icon(
-        onPressed: () {
-          setState(() {
-            TextEditingController t1 = new TextEditingController();
-            this.labels.add(t1);
 
-            TextEditingController t2 = new TextEditingController();
-            t2.text = "3";
-            this.rates.add(t2);
+    for (int i in this.labels.keys) {
+      choices.add(this.getChoiceRatingWidget(labels[i], rates[i], i));
+    }
 
-            this.numChoices++;
-          });
-        },
-        icon: Icon(Icons.add),
-        label: Text("Add Choice")));
+    if (this.isCategoryOwner) {
+      choices.add(RaisedButton.icon(
+          onPressed: () {
+            setState(() {
+              TextEditingController t1 = new TextEditingController();
+
+              this.labels.putIfAbsent(this.nextChoiceValue, () => t1);
+
+              TextEditingController t2 = new TextEditingController();
+              t2.text = "3";
+              this.rates.putIfAbsent(this.nextChoiceValue, () => t2);
+
+              this.nextChoiceValue++;
+            });
+          },
+          icon: Icon(Icons.add),
+          label: Text("Add Choice")));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -99,20 +148,24 @@ class _StartScreenState extends State<CreateOrEditCategory> {
                 icon: Icon(Icons.save),
                 label: Text((this.isEdit ? "Save" : "Create")),
                 onPressed: () {
-                  List<String> labelsToSave = new List<String>();
-                  List<String> ratesToSave = new List<String>();
-                  for (int i = 0; i < this.numChoices; i++) {
-                    labelsToSave.add(this.labels.elementAt(i).text);
-                    ratesToSave.add(this.rates.elementAt(i).text);
+                  Map<String, String> labelsToSave =
+                      new LinkedHashMap<String, String>();
+                  Map<String, String> ratesToSave =
+                      new LinkedHashMap<String, String>();
+                  for (int i in this.labels.keys) {
+                    labelsToSave.putIfAbsent(
+                        i.toString(), () => this.labels[i].text);
+                    ratesToSave.putIfAbsent(
+                        i.toString(), () => this.rates[i].text);
                   }
 
                   CategoriesManager.addNewCategory(
-                    this.categoryNameController.text,
-                    labelsToSave,
-                    ratesToSave,
-                    Globals.username,
-                    context
-                  );
+                      this.categoryNameController.text,
+                      labelsToSave,
+                      ratesToSave,
+                      (this.isEdit ? this.category : null),
+                      Globals.username,
+                      context);
                 },
               )
             ],
@@ -121,42 +174,48 @@ class _StartScreenState extends State<CreateOrEditCategory> {
   }
 
   Widget getChoiceRatingWidget(
-      TextEditingController l, TextEditingController r, bool isLast) {
-
+      TextEditingController l, TextEditingController r, int choiceNo) {
     //this builds the children for an input row of a choice
     List<Widget> children = new List<Widget>();
-    children.add(Expanded(
-      child: TextFormField(
-        controller: l,
-        decoration: InputDecoration(
-          labelText: "Choice",
+    if (this.isCategoryOwner) {
+      children.add(Expanded(
+        child: TextFormField(
+          controller: l,
+          decoration: InputDecoration(
+            labelText: "Choice",
+          ),
         ),
-      ),
-    ));
-    children.add(Expanded(
-      child: TextFormField(
-        controller: r,
-        decoration: InputDecoration(
-          labelText: "Rate",
+      ));
+    } else {
+      children.add(
+        Expanded(
+          child: Text("Choice: " + this.category.choices[choiceNo.toString()]),
         ),
-        onTap: () {
+      );
+    }
+
+//    children.add(Expanded(
+//      child: Text("Rating: " + r.text),
+//    ));
+    children.add(Expanded(
+      child: RaisedButton.icon(
+        icon: Icon(Icons.edit),
+        label: Text("Rating: " + r.text),
+        onPressed: () {
           this.displayRateSelector(r);
         },
       ),
     ));
 
-    if (isLast) {
-      children.add(IconButton(
-        icon: Icon(Icons.cancel),
-        onPressed: () {
-          setState(() {
-            this.labels.removeLast();
-            this.rates.removeLast();
-            this.numChoices--;
-          });
-        },
-      ));
-    }
+    children.add(IconButton(
+      icon: Icon(Icons.cancel),
+      onPressed: () {
+        setState(() {
+          this.labels.remove(choiceNo); // somehow get the last key in the set
+          this.rates.remove(choiceNo);
+        });
+      },
+    ));
 
     return Row(
       mainAxisSize: MainAxisSize.max,
@@ -176,9 +235,9 @@ class _StartScreenState extends State<CreateOrEditCategory> {
             initialIntegerValue: defaultRate,
           );
         }).then((int value) {
-          if (value != null) {
-            setState(() => r.text = value.toString());
-          }
+      if (value != null) {
+        setState(() => r.text = value.toString());
+      }
     });
   }
 }

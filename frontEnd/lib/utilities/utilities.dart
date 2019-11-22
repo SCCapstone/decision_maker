@@ -12,6 +12,10 @@ void showPopupMessage(String message, BuildContext context) {
       });
 }
 
+Map<String, dynamic> getEmptyApiRequest() {
+  return {"action": "", "payload": {}};
+}
+
 void groupIconPopup(BuildContext context, bool validate,
     TextEditingController controller, Function function) {
   // displays a popup for editing the group icon's url
