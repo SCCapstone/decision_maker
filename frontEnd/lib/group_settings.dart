@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
@@ -19,65 +20,63 @@ class GroupSettings extends StatefulWidget {
 }
 
 class _GroupSettingsState extends State<GroupSettings> {
-  bool _autoValidate = false;
-  bool _validGroupIcon = true; // assume user
-  bool _editing = false;
-  String _groupName;
-  String _groupIcon;
-  int _pollPassPercent;
-  int _pollDuration;
+  bool autoValidate = false;
+  bool validGroupIcon = true;
+  bool editing = false;
+  String groupName;
+  String groupIcon;
+  int pollPassPercent;
+  int pollDuration;
   List<String> users;
-  List<Category> categoriesToAdd = new List<Category>();
-  List<Category> categoriesTotal = new List<Category>();
+  List<Category> categoriesSelected = new List<Category>();
+  Future<List<Category>> categoriesTotal;
   bool owner;
 
-  final _formKey = GlobalKey<FormState>();
-  final _groupNameController = TextEditingController();
-  final _groupIconController = TextEditingController();
-  final _pollPassController = TextEditingController();
-  final _pollDurationController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  final groupNameController = TextEditingController();
+  final groupIconController = TextEditingController();
+  final pollPassController = TextEditingController();
+  final pollDurationController = TextEditingController();
 
   @override
   void dispose() {
-    _groupNameController.dispose();
-    _groupIconController.dispose();
-    _pollPassController.dispose();
-    _pollDurationController.dispose();
+    groupNameController.dispose();
+    groupIconController.dispose();
+    pollPassController.dispose();
+    pollDurationController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    if(Globals.username == widget.group.groupCreator){
+    if (Globals.username == widget.group.groupCreator) {
+      // to display the delete button, check if user owns this group
       owner = true;
     }
     users = new List<String>();
-    users.add(widget.group.groupCreator);
-    _groupIcon = widget.group
-        .groupIcon; // assume icon isn't changed. This will change if user clicks on popup
-    _groupNameController.text = widget.group.groupName;
-    _pollPassController.text = widget.group.defaultPollPassPercent.toString();
-    _pollDurationController.text = widget.group.defaultPollDuration.toString();
-    // TODO get all categories from the users that are in this group
-    for (int i = 0; i < 5; i++) {
-      Category category = new Category.debug("123", "$i",
-          new Map<String, dynamic>(), new Map<String, dynamic>(), 1, "testing");
-      categoriesTotal.add(category);
+    for (String key in widget.group.members.keys) {
+      // get all the users for this group into a list
+      users.add(widget.group.members[key]);
     }
+    groupName = widget.group.groupName;
+    groupIcon = widget.group
+        .groupIcon; // assume icon wont't change unless use clicks on popup to change it
+    groupNameController.text = widget.group.groupName;
+    pollPassController.text = widget.group.defaultPollPassPercent.toString();
+    pollDurationController.text = widget.group.defaultPollDuration.toString();
+    categoriesTotal = CategoriesManager.getAllCategoriesList(Globals.username);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Category> categories = new List<Category>();
-
     return Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text("${widget.group.groupName} Settings"),
+          title: Text("$groupName Settings"),
           actions: <Widget>[
             Visibility(
-              visible: _editing,
+              visible: editing,
               child: RaisedButton.icon(
                   color: Colors.blue,
                   onPressed: validateInput,
@@ -88,8 +87,8 @@ class _GroupSettingsState extends State<GroupSettings> {
         ),
         body: Column(children: <Widget>[
           Form(
-            key: _formKey,
-            autovalidate: _autoValidate,
+            key: formKey,
+            autovalidate: autoValidate,
             child: Expanded(
               child: ListView(
                 shrinkWrap: true,
@@ -98,22 +97,15 @@ class _GroupSettingsState extends State<GroupSettings> {
                   Column(
                     children: [
                       TextFormField(
-                        controller: _groupNameController,
+                        controller: groupNameController,
                         validator: validGroupName,
                         onChanged: (String arg) {
                           // the moment the user starts making changes, display the save button
-                          if (!(arg == widget.group.groupName)) {
-                            setState(() {
-                              _editing = true;
-                            });
-                          } else {
-                            setState(() {
-                              _editing = false;
-                            });
-                          }
+                          enableAutoValidation(
+                              !(arg == widget.group.groupName));
                         },
                         onSaved: (String arg) {
-                          _groupName = arg;
+                          groupName = arg;
                         },
                         style: TextStyle(fontSize: 35),
                         decoration: InputDecoration(labelText: "Group Name"),
@@ -129,7 +121,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         decoration: BoxDecoration(
                             image: DecorationImage(
                                 fit: BoxFit.fitHeight,
-                                image: NetworkImage(widget.group.groupIcon))),
+                                image: NetworkImage(groupIcon))),
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.grey.withOpacity(0.7),
@@ -138,8 +130,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                             icon: Icon(Icons.edit),
                             color: Colors.blueAccent,
                             onPressed: () {
-                              groupIconPopup(context, _autoValidate,
-                                  _groupIconController, updateIcon);
+                              groupIconPopup(context, autoValidate,
+                                  groupIconController, updateIcon);
                             },
                           ),
                         ),
@@ -160,23 +152,20 @@ class _GroupSettingsState extends State<GroupSettings> {
                             child: TextFormField(
                               keyboardType: TextInputType.number,
                               validator: validPollDuration,
-                              controller: _pollDurationController,
+                              controller: pollDurationController,
                               onChanged: (String arg) {
-                                int num = int.parse(arg);
-                                // the moment the user starts making changes, display the save button
-                                if (!(num ==
-                                    widget.group.defaultPollDuration)) {
-                                  setState(() {
-                                    _editing = true;
-                                  });
-                                } else {
-                                  setState(() {
-                                    _editing = false;
-                                  });
+                                int num = -1;
+                                try {
+                                  num = int.parse(arg);
+                                } catch (e) {
+                                  enableAutoValidation(true);
                                 }
+                                // the moment the user starts making changes, display the save button
+                                enableAutoValidation(
+                                    !(num == widget.group.defaultPollDuration));
                               },
                               onSaved: (String arg) {
-                                _pollDuration = int.parse(arg);
+                                pollDuration = int.parse(arg);
                               },
                               decoration:
                                   InputDecoration(border: OutlineInputBorder()),
@@ -198,25 +187,22 @@ class _GroupSettingsState extends State<GroupSettings> {
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
                             child: TextFormField(
-                              controller: _pollPassController,
+                              controller: pollPassController,
                               keyboardType: TextInputType.number,
                               validator: validPassPercentage,
                               onChanged: (String arg) {
-                                int num = int.parse(arg);
-                                // the moment the user starts making changes, display the save button
-                                if (!(num ==
-                                    widget.group.defaultPollPassPercent)) {
-                                  setState(() {
-                                    _editing = true;
-                                  });
-                                } else {
-                                  setState(() {
-                                    _editing = false;
-                                  });
+                                int num = -1;
+                                try {
+                                  num = int.parse(arg);
+                                } catch (e) {
+                                  enableAutoValidation(true);
                                 }
+                                // the moment the user starts making changes, display the save button
+                                enableAutoValidation(!(num ==
+                                    widget.group.defaultPollPassPercent));
                               },
                               onSaved: (String arg) {
-                                _pollPassPercent = int.parse(arg);
+                                pollPassPercent = int.parse(arg);
                               },
                               decoration:
                                   InputDecoration(border: OutlineInputBorder()),
@@ -224,8 +210,23 @@ class _GroupSettingsState extends State<GroupSettings> {
                           )
                         ],
                       ),
-                      CategoryDropdown("Categories", categoriesTotal, categoriesToAdd,
-                          callback: (category) => selectCategory(category)),
+                      FutureBuilder(
+                          future: categoriesTotal,
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasData) {
+                              List<Category> categories = snapshot.data;
+                              return CategoryDropdown("Add categories",
+                                  categories, categoriesSelected,
+                                  callback: (category) =>
+                                      selectCategory(category));
+                            } else if (snapshot.hasError) {
+                              print(snapshot.error);
+                              return Text("Error: ${snapshot.error}");
+                            } else {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                          }),
                       UsersDropdown("Users", users,
                           deleteCallback: (user) => removeUser(user),
                           addCallback: (user) => addUser(user)),
@@ -234,8 +235,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                         child: RaisedButton(
                           child: Text("Delete Group"),
                           color: Colors.red,
-                          onPressed: (){
-                            // TODO delete entire group, then go back to home page ()
+                          onPressed: () {
+                            tryDelete(context);
                           },
                         ),
                       )
@@ -248,48 +249,94 @@ class _GroupSettingsState extends State<GroupSettings> {
         ]));
   }
 
+  void tryDelete(BuildContext context) async {
+    // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
+    bool success =
+        await GroupsManager.deleteGroup(widget.group.groupId, context);
+  }
+
+  void enableAutoValidation(bool val) {
+    setState(() {
+      editing = val;
+    });
+  }
+
   void addUser(String user) {
     setState(() {
+      editing = true;
       users.add(user);
     });
   }
 
   void removeUser(String user) {
     setState(() {
+      editing = true;
       users.remove(user);
     });
   }
 
   void selectCategory(Category category) {
     setState(() {
-      print(category);
+      editing = true;
+      if (categoriesSelected.contains(category)) {
+        categoriesSelected.remove(category);
+      } else {
+        categoriesSelected.add(category);
+      }
     });
   }
 
   void updateIcon(String iconUrl) {
     setState(() {
-      _groupIcon = iconUrl;
-      _groupIconController.clear();
-      _editing = true;
-      _validGroupIcon = true;
-      _autoValidate = true;
+      groupIcon = iconUrl;
+      groupIconController.clear();
+      editing = true;
+      validGroupIcon = true;
+      autoValidate = true;
       Navigator.of(context).pop();
     });
   }
 
   void validateInput() {
-    final form = _formKey.currentState;
-    if (form.validate() && _validGroupIcon) {
+    final form = formKey.currentState;
+    if (form.validate() && validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
-      form.save();
-      print(
-          "New name: $_groupName New Duration: $_pollDuration New percentage: $_pollPassPercent");
-      // TODO, once done update all the controllers here and the title
-      // TODO edit the Group object and update to DB ()
-      // should also go back to last page and pass in the new Group object in constructor to avoid logic errors
-      // (e.g. group name changed, so previous page would have the old group name when going back)
+      if (categoriesSelected.isNotEmpty) {
+        form.save();
+        Map<String, String> categoriesMap = new Map<String, String>();
+        for (int i = 0; i < categoriesSelected.length; i++) {
+          categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
+              () => categoriesSelected[i].categoryName);
+        }
+        Map<String, String> usersMap = new Map<String, String>();
+        for (int i = 0; i < users.length; i++) {
+          usersMap.putIfAbsent(users[i], () => users[i]);
+        }
+        Group group = new Group(
+            groupName: groupName,
+            groupCreator: Globals.username,
+            groupIcon: groupIcon,
+            groupId: "Generate on backend",
+            categories: categoriesMap,
+            members: usersMap,
+            defaultPollDuration: pollDuration,
+            defaultPollPassPercent: pollPassPercent);
+        // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/117)
+        setState(() {
+          // reset everything and reflect changes made
+          groupNameController.text = groupName;
+          groupIconController.clear();
+          pollDurationController.text = pollDuration.toString();
+          pollPassController.text = pollPassPercent.toString();
+          editing = false;
+          autoValidate = false;
+        });
+      } else {
+        showErrorMessage("Invalid input",
+            "Must have at least one category in the group!", context);
+      }
     } else {
-      setState(() => _autoValidate = true);
+      setState(() => autoValidate = true);
     }
   }
 }

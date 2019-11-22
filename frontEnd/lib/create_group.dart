@@ -42,7 +42,8 @@ class _CreateGroupState extends State<CreateGroup> {
   @override
   void initState() {
     categoriesToAdd = new List<Category>();
-    widget.categoriesTotal = CategoriesManager.getAllCategoriesList(Globals.username);
+    widget.categoriesTotal =
+        CategoriesManager.getAllCategoriesList(Globals.username);
     users = new List<String>();
     super.initState();
   }
@@ -160,10 +161,7 @@ class _CreateGroupState extends State<CreateGroup> {
   void validateInput() {
     final form = formKey.currentState;
     if (form.validate()) {
-      if (categoriesToAdd.isEmpty) {
-        showErrorMessage("Invalid input",
-            "Must have at least one category in the group!", context);
-      } else {
+      if (categoriesToAdd.isNotEmpty) {
         form.save();
         users.add(Globals.username); // creator is obviously always in the group
         // convert the lists to maps for the json object that is sent to db
@@ -187,7 +185,19 @@ class _CreateGroupState extends State<CreateGroup> {
             defaultPollDuration: pollDuration,
             defaultPollPassPercent: pollPassPercent);
         print(group);
-        // TODO create group and upload to DB
+        // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/116)
+        setState(() {
+          // reset everything
+          groupNameController.clear();
+          groupIconController.clear();
+          categoriesToAdd.clear();
+          users.clear();
+          pollDurationController.clear();
+          pollPassController.clear();
+        });
+      } else {
+        showErrorMessage("Invalid input",
+            "Must have at least one category in the group!", context);
       }
     } else {
       setState(() => autoValidate = true);

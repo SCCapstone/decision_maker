@@ -14,10 +14,16 @@ class GroupsManager {
       "https://fsmedia.imgix.net/d9/01/91/f4/d5cb/420b/9036/9718a7f6609d/obiwan1jesusjpg.jpeg?rect=158%2C0%2C866%2C433&auto=format%2Ccompress&dpr=2&w=650";
 
   static Future<List<Group>> getAllGroupsList() async {
+    // TODO get actual groups, dummy data for now (https://github.com/SCCapstone/decision_maker/issues/113)
     List<Group> allCategories = new List<Group>();
     for (int i = 0; i < 15; i++) {
+      Map<String, String> usersMap = new Map<String, String>();
+      for (int i = 0; i < 4; i++) {
+        usersMap.putIfAbsent(i.toString(), () => i.toString());
+      }
+      usersMap.putIfAbsent(Globals.username, () => Globals.username);
       Group group = new Group.debug("123", "The Council", dummyPic, "testing",
-          new Map<String, dynamic>(), new Map<String, dynamic>(), 0, 10);
+          usersMap, new Map<String, dynamic>(), 0, 10);
       allCategories.add(group);
     }
     return allCategories;
@@ -37,6 +43,38 @@ class GroupsManager {
     } else {
       //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       throw Exception("Failed to load categories from the database.");
+    }
+  }
+
+  static Future<bool> deleteGroup(String groupId, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "deleteGroup";
+    jsonRequestBody["payload"]
+        .putIfAbsent("ActiveUser", () => Globals.username);
+    jsonRequestBody["payload"].putIfAbsent("GroupId", () => groupId);
+
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+          return true;
+        } else {
+          showPopupMessage("Error deleting the group (1).", context);
+          return false;
+        }
+      } catch (e) {
+        showPopupMessage("Error deleting the group (2).", context);
+        return false;
+      }
+    } else {
+      showPopupMessage("Unable to deleting group.", context);
+      return false;
     }
   }
 }
