@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,7 +13,15 @@ class CategoriesManager {
   static final String apiEndpoint =
       "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
 
-  static void addNewCategory(
+  //breaking style guide for consistency with backend vars
+  static final String CATEGORY_ID = "CategoryId";
+  static final String CATEGORY_NAME = "CategoryName";
+  static final String CHOICES = "Choices";
+  static final String GROUPS = "Groups";
+  static final String NEXT_CHOICE_NO = "NextChoiceNo";
+  static final String OWNER = "Owner";
+
+  static void addOrEditCategory(
       String categoryName,
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
@@ -47,16 +56,18 @@ class CategoriesManager {
     if (category != null) {
       jsonRequestBody["action"] = "editCategory";
       jsonRequestBody["payload"]
-          .putIfAbsent("CategoryId", () => category.categoryId);
+          .putIfAbsent(CATEGORY_ID, () => category.categoryId);
     } else {
       jsonRequestBody["action"] = "newCategory";
-      jsonRequestBody["payload"]
-          .putIfAbsent("CategoryName", () => categoryName);
     }
 
-    jsonRequestBody["payload"].putIfAbsent("Choices", () => choiceLabels);
-    jsonRequestBody["payload"].putIfAbsent("UserRatings", () => choiceRatings);
-    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => user);
+    jsonRequestBody["payload"]
+        .putIfAbsent(CATEGORY_NAME, () => categoryName);
+    jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => user);
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
@@ -82,7 +93,8 @@ class CategoriesManager {
   static Future<List<Category>> getAllCategoriesList(String username) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
-    jsonRequestBody["payload"].putIfAbsent("ActiveUser", () => username);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => username);
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
@@ -108,8 +120,9 @@ class CategoriesManager {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "deleteCategory";
     jsonRequestBody["payload"]
-        .putIfAbsent("ActiveUser", () => Globals.username);
-    jsonRequestBody["payload"].putIfAbsent("CategoryId", () => categoryId);
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    jsonRequestBody["payload"]
+        .putIfAbsent(CATEGORY_ID, () => categoryId);
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));

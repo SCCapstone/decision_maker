@@ -8,44 +8,54 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import utilities.ExceptionHelper;
+
+import java.util.HashMap;
+import java.util.List;
+import utilities.RequestFields;
 import utilities.ResultStatus;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 public class UsersManager extends DatabaseAccessManager {
 
-  public static final String USER_FIELD_USERNAME = "Username";
-  public static final String USER_FIELD_FIRSTNAME = "FirstName";
-  public static final String USER_FIELD_LASTNAME = "LastName";
-  public static final String USER_FIELD_DARK_THEME = "AppSetting_DarkTheme";
-  public static final String USER_FIELD_MUTED = "AppSetting_Muted";
-  public static final String USER_FIELD_CATEGORIES = "Categories";
-
-  public static final String REQUEST_FIELD_CATEGORYID = "CategoryId";
-  public static final String REQUEST_FIELD_RATINGS = "Ratings";
+  public static final String USERNAME = "Username";
+  public static final String FIRST_NAME = "FirstName";
+  public static final String LAST_NAME = "LastName";
+  public static final String APP_SETTING_DARK_THEME = "AppSetting_DarkTheme";
+  public static final String APP_SETTING_MUTED = "AppSetting_Muted";
+  public static final String GROUPS = "Groups";
+  public static final String CATEGORIES = "Categories";
 
   public static final String DEFAULT_FIRSTNAME = "DefFirstName";
   public static final String DEFAULT_LASTNAME = "DefLastName";
   public static final boolean DEFAULT_DARK_THEME = false;
   public static final boolean DEFAULT_MUTED = false;
 
-  public static final String CATEGORY_FIELD = "Categories";
-
+  public static final Map EMPTY_MAP = new HashMap();
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
   }
 
-  public ArrayList<String> getAllCategoryIds(String username) {
+  public List<String> getAllCategoryIds(String username) {
     Item dbData = super
         .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
+
     Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-    Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORY_FIELD);
-    ArrayList<String> ids = new ArrayList<String>(categoryMap.keySet());
-    return ids;
+    Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+
+    return new ArrayList<String>(categoryMap.keySet());
+  }
+
+  public List<String> getAllGroupIds(String username) {
+    Item dbData = super
+        .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
+
+    Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
+    Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
+
+    return new ArrayList<String>(groupMap.keySet());
   }
 
   public boolean checkUser(String userName) {
@@ -64,17 +74,19 @@ public class UsersManager extends DatabaseAccessManager {
 
   public ResultStatus addNewUser(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(USER_FIELD_USERNAME)) {
+    if (jsonMap.containsKey(USERNAME)) {
       try {
-        String userName = (String) jsonMap.get(USER_FIELD_USERNAME);
+        String userName = (String) jsonMap.get(USERNAME);
 
         if (this.checkUser(userName)) {
           Item newUser = new Item()
-              .withString(USER_FIELD_USERNAME, userName)
-              .withString(USER_FIELD_FIRSTNAME, DEFAULT_FIRSTNAME)
-              .withString(USER_FIELD_LASTNAME, DEFAULT_LASTNAME)
-              .withBoolean(USER_FIELD_DARK_THEME, DEFAULT_DARK_THEME)
-              .withBoolean(USER_FIELD_MUTED, DEFAULT_MUTED);
+              .withString(USERNAME, userName)
+              .withString(FIRST_NAME, DEFAULT_FIRSTNAME)
+              .withString(LAST_NAME, DEFAULT_LASTNAME)
+              .withBoolean(APP_SETTING_DARK_THEME, DEFAULT_DARK_THEME)
+              .withBoolean(APP_SETTING_MUTED, DEFAULT_MUTED)
+              .withMap(CATEGORIES, EMPTY_MAP)
+              .withMap(GROUPS, EMPTY_MAP);
 
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(newUser);
@@ -100,21 +112,22 @@ public class UsersManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     if (
-        jsonMap.containsKey(USER_FIELD_USERNAME) &&
-            jsonMap.containsKey(REQUEST_FIELD_CATEGORYID) &&
-            jsonMap.containsKey(REQUEST_FIELD_RATINGS)
+        jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
+            jsonMap.containsKey(CategoriesManager.CATEGORY_ID) &&
+            jsonMap.containsKey(RequestFields.USER_RATINGS)
     ) {
       try {
-        String categoryId = (String) jsonMap.get(REQUEST_FIELD_CATEGORYID);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
-        String user = (String) jsonMap.get(USER_FIELD_USERNAME);
+        String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
+        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
 
-        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId = :map";
+        String updateExpression = "set " + CATEGORIES + ".#categoryId = :map";
+        NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
             .withPrimaryKey(super.getPrimaryKeyIndex(), user)
-            .withNameMap(new NameMap().with("#categoryId", categoryId))
+            .withNameMap(nameMap)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
@@ -124,44 +137,6 @@ public class UsersManager extends DatabaseAccessManager {
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
-      }
-    } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
-    return resultStatus;
-  }
-
-  public ResultStatus insertUserChoiceRatings(Map<String, Object> jsonMap) {
-    ResultStatus resultStatus = new ResultStatus();
-
-    if (
-        jsonMap.containsKey(USER_FIELD_USERNAME) &&
-            jsonMap.containsKey(REQUEST_FIELD_CATEGORYID) &&
-            jsonMap.containsKey(REQUEST_FIELD_RATINGS)
-    ) {
-      try {
-        String user = (String) jsonMap.get(USER_FIELD_USERNAME);
-        String categoryId = (String) jsonMap.get(REQUEST_FIELD_CATEGORYID);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(REQUEST_FIELD_RATINGS);
-
-        String updateExpression = "set " + USER_FIELD_CATEGORIES + ".#categoryId = :map";
-        ValueMap valueMap = new ValueMap().withMap(":map", ratings);
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), user)
-            .withNameMap(new NameMap().with("#categoryId", categoryId))
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
-
-        super.updateItem(updateItemSpec);
-
-        resultStatus = new ResultStatus(true, "User ratings inserted successfully!");
-      } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage =
-            "Error: Unable to parse request. \n" + ExceptionHelper.getStackTrace(e);
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
