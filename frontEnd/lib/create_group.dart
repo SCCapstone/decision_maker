@@ -194,6 +194,7 @@ class _CreateGroupState extends State<CreateGroup> {
           users.clear();
           pollDurationController.clear();
           pollPassController.clear();
+          autoValidate = false;
         });
       } else {
         showErrorMessage("Invalid input",
