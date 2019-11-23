@@ -60,7 +60,7 @@ class CategoriesManager {
     } else {
       jsonRequestBody["action"] = "newCategory";
     }
-    
+
     jsonRequestBody["payload"].putIfAbsent(CATEGORY_NAME, () => categoryName);
     jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
     jsonRequestBody["payload"]
@@ -111,7 +111,6 @@ class CategoriesManager {
 
         return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {
-        print(e);
         //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
         return new List<Category>(); // returns empty list
       }

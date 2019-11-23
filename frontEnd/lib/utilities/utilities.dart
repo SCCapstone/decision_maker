@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 void showPopupMessage(String message, BuildContext context, {Function callback}) {
+  if (callback == null) {
+    callback = (_) => {};
+  }
+
   showDialog(
       context: context,
       builder: (context) {

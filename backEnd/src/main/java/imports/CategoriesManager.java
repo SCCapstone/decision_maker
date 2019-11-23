@@ -69,6 +69,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
         insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+
         ResultStatus updatedUsersTableResult = this.usersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
@@ -133,7 +134,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //put the entered ratings in the users table
         Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
-        insertNewCatForOwner.put(UsersManager.USERNAME, activeUser);
+        insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
         insertNewCatForOwner.put(CATEGORY_ID, categoryId);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
@@ -147,8 +148,6 @@ public class CategoriesManager extends DatabaseAccessManager {
               "Error: Unable to update this category's ratings in the users table. "
                   + updatedUsersTableResult.resultMessage;
         }
-
-        resultStatus = new ResultStatus(true, "Category updated successfully!");
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage =
