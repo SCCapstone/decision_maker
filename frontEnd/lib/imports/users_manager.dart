@@ -49,8 +49,8 @@ class UsersManager {
     }
   }
 
-  static void updateUserChoiceRatings(
-      String categoryId, Map<String, String> choiceRatings, BuildContext context) async {
+  static void updateUserChoiceRatings(String categoryId,
+      Map<String, String> choiceRatings, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "updateUserChoiceRatings";
     jsonRequestBody["payload"]
@@ -80,5 +80,42 @@ class UsersManager {
     } else {
       showPopupMessage("Unable to update user preferences.", context);
     }
+  }
+
+  static Future<Map<String, dynamic>> getUserRatings(
+      String categoryId, BuildContext context) async {
+    if (categoryId == null) {
+      return new Map<String, dynamic>();
+    }
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "getUserRatings";
+    jsonRequestBody["payload"]
+        .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> body = jsonDecode(response.body);
+
+      try {
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          return json.decode(responseItem.resultMessage);
+        } else {
+          showPopupMessage("Error getting user ratings (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error getting user ratings (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to get user ratings.", context);
+    }
+
+    return null;
   }
 }

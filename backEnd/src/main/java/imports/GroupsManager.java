@@ -37,7 +37,11 @@ public class GroupsManager extends DatabaseAccessManager {
     List<Map> groups = new ArrayList<Map>();
     for (String id : groupIds) {
       Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
-      groups.add(dbData.asMap());
+      if (dbData != null) {
+        groups.add(dbData.asMap());
+      } else {
+        //maybe log this idk, we probably shouldn't have ids that don't point to groups in the db?
+      }
     }
 
     if (success) {

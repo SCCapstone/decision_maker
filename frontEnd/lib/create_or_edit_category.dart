@@ -23,15 +23,17 @@ class CreateOrEditCategory extends StatefulWidget {
 class _StartScreenState extends State<CreateOrEditCategory> {
   final TextEditingController categoryNameController = TextEditingController();
   final bool isEdit;
-  final int defaultRate = 3;
   final Category category;
 
+  final int defaultRate = 3;
+  final Map<int, TextEditingController> labels =
+      new LinkedHashMap<int, TextEditingController>();
+  final Map<int, TextEditingController> rates =
+      new LinkedHashMap<int, TextEditingController>();
+
+  Future<Map<String, dynamic>> ratings;
   bool isCategoryOwner;
   int nextChoiceValue;
-  Map<int, TextEditingController> labels =
-      new LinkedHashMap<int, TextEditingController>();
-  Map<int, TextEditingController> rates =
-      new LinkedHashMap<int, TextEditingController>();
 
   _StartScreenState({@required this.isEdit, this.category}) {
     if (this.isEdit && this.category == null) {
@@ -81,6 +83,33 @@ class _StartScreenState extends State<CreateOrEditCategory> {
 
   @override
   Widget build(BuildContext context) {
+    this.ratings = UsersManager.getUserRatings(
+        (this.isEdit ? this.category.categoryId : null), context);
+
+    return FutureBuilder(
+      future: this.ratings,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          Map<String, dynamic> userRatings = snapshot.data;
+
+          //if the mapping exists in the user's table, override the default
+          for (int choiceId in this.labels.keys) {
+            if (userRatings.containsKey(choiceId.toString())) {
+              this.rates[choiceId].text =
+                  userRatings[choiceId.toString()].toString();
+            }
+          }
+
+          return this.getPageBody();
+        } else if (snapshot.hasError) {
+          return Text("Error: ${snapshot.error}");
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget getPageBody() {
     List<Widget> choices = new List<Widget>();
 
     if (this.isCategoryOwner) {

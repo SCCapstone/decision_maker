@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void showPopupMessage(String message, BuildContext context) {
+void showPopupMessage(String message, BuildContext context, {Function callback}) {
   showDialog(
       context: context,
       builder: (context) {
@@ -8,7 +8,7 @@ void showPopupMessage(String message, BuildContext context) {
           title: Text("Response status:"),
           content: Text(message),
         );
-      });
+      }).then(callback);
 }
 
 Map<String, dynamic> getEmptyApiRequest() {
