@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_home.dart';
 import 'categories_home.dart';
 
 import 'imports/user_tokens_manager.dart';
@@ -17,9 +18,9 @@ class MyApp extends StatelessWidget {
       Globals.android = false;
     }
     return new Container(
-        //We use a FutureBuilder here since the display of the widget depends on
-        //the asynchronous function hasValidTokensSet being able to fully execute
-        //and return a Future<bool>.
+      //We use a FutureBuilder here since the display of the widget depends on
+      //the asynchronous function hasValidTokensSet being able to fully execute
+      //and return a Future<bool>.
         child: new FutureBuilder<bool>(
             future: hasValidTokensSet(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
                     theme: ThemeData(
                       primarySwatch: Colors.green,
                     ),
-                    home: CategoriesHome(),
+                    home: GroupsHome(),
                   );
                 }
               }
