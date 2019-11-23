@@ -1,3 +1,5 @@
+import 'package:frontEnd/imports/users_manager.dart';
+
 class User {
   final String username;
   final String firstName;
@@ -21,13 +23,13 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-        username: json['Username'],
-        firstName: json['FirstName'],
-        lastName: json['LastName'],
-        darkTheme: json['AppSetting_DarkTheme'],
-        muted: json['AppSetting_Muted'],
-        groups: json['Groups'],
-        categories: json['Categories']);
+        username: json[UsersManager.USERNAME],
+        firstName: json[UsersManager.FIRST_NAME],
+        lastName: json[UsersManager.LAST_NAME],
+        darkTheme: json[UsersManager.APP_SETTING_DARK_THEME],
+        muted: json[UsersManager.APP_SETTING_MUTED],
+        groups: json[UsersManager.GROUPS],
+        categories: json[UsersManager.CATEGORIES]);
   }
 
   @override
