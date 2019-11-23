@@ -60,7 +60,7 @@ class CategoriesManager {
     } else {
       jsonRequestBody["action"] = "newCategory";
     }
-
+    
     jsonRequestBody["payload"].putIfAbsent(CATEGORY_NAME, () => categoryName);
     jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
     jsonRequestBody["payload"]
@@ -83,14 +83,10 @@ class CategoriesManager {
             showPopupMessage(responseItem.resultMessage, context,
                 callback: (_) => Navigator.pop(context));
           }
-          /*if (category == null) { // we've just created a category!
-            Navigator.pop(context);
-          }*/
         } else {
           showPopupMessage("Error saving the category (1).", context);
         }
       } catch (e) {
-        print(e);
         showPopupMessage("Error saving the category (2).", context);
       }
     } else {

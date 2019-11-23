@@ -8,7 +8,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import utilities.ExceptionHelper;
-import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
 import utilities.ResultStatus;
