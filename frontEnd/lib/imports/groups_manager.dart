@@ -15,7 +15,7 @@ class GroupsManager {
 
   static Future<List<Group>> getAllGroupsList() async {
     // TODO get actual groups, dummy data for now (https://github.com/SCCapstone/decision_maker/issues/113)
-    List<Group> allCategories = new List<Group>();
+    List<Group> allGroups = new List<Group>();
     for (int i = 0; i < 15; i++) {
       Map<String, String> usersMap = new Map<String, String>();
       for (int i = 0; i < 4; i++) {
@@ -24,16 +24,17 @@ class GroupsManager {
       usersMap.putIfAbsent(Globals.username, () => Globals.username);
       Group group = new Group.debug("123", "The Council", dummyPic, "testing",
           usersMap, new Map<String, dynamic>(), 0, 10);
-      allCategories.add(group);
+      allGroups.add(group);
     }
-    return allCategories;
+    return allGroups;
   }
 
   static Future<List<Group>> getGroups(String username, bool getAll) async {
-    String jsonBody = "{\"action\":\"getCategories\", ";
-    jsonBody += "\"payload\": {\"Username\" : \"$username\",";
-    jsonBody += "\"GetAll\" : \"$getAll\"}}";
-    http.Response response = await http.post(apiEndpoint, body: jsonBody);
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "getGroups";
+    jsonRequestBody["payload"]
+        .putIfAbsent("ActiveUser", () => Globals.username);
+    http.Response response = await http.post(apiEndpoint, body: jsonRequestBody);
 
     if (response.statusCode == 200) {
       Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
@@ -54,7 +55,7 @@ class GroupsManager {
     jsonRequestBody["payload"].putIfAbsent("GroupId", () => groupId);
 
     http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {

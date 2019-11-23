@@ -19,33 +19,31 @@ String validGroupName(String input) {
 }
 
 String validPassPercentage(String input) {
-  int num = -1;
+  String retVal = null;
   try {
-    num = int.parse(input);
+    int num = int.parse(input);
+    if (num < 0 || num > 100) {
+      retVal = "(0-100)";
+    }
   } catch (e) {
-    return "Not a number";
+    retVal = "Not a number";
   }
-  if (num < 0 || num > 100) {
-    return "(0-100)";
-  } else {
-    return null;
-  }
+  return retVal;
 }
 
 String validPollDuration(String input) {
-  int num = -1;
+  String retVal = null;
   try {
-    num = int.parse(input);
+    int num = int.parse(input);
+    if (num <= 0) {
+      retVal = "Too small";
+    } else if (num > 10000) {
+      retVal = "Too big";
+    }
   } catch (e) {
-    return "Not a number";
+    retVal = "Not a number";
   }
-  if (num <= 0) {
-    return "Too small";
-  } else if (num > 10000) {
-    return "Too big";
-  } else {
-    return null;
-  }
+  return retVal;
 }
 
 String validUser(String user, List<String> users) {

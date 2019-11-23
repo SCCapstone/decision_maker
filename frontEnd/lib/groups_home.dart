@@ -72,7 +72,6 @@ class _GroupsHomeState extends State<GroupsHome> {
                         List<Group> groups = snapshot.data;
                         return GroupsList(groups: groups);
                       } else if (snapshot.hasError) {
-                        print(snapshot.error);
                         return Text("Error: ${snapshot.error}");
                       }
                       return Center(child: CircularProgressIndicator());
@@ -116,7 +115,7 @@ class _GroupsListState extends State<GroupsList> {
       return Center(
         child: Text(
             "No groups found! Click the plus button below to create one!",
-            style: TextStyle(fontSize: 25)),
+            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
       );
     } else {
       return Scrollbar(

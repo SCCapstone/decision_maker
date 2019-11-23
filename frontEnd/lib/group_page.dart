@@ -25,7 +25,7 @@ class _GroupPageState extends State<GroupPage> {
         centerTitle: true,
         title: Text(
           widget.group.groupName,
-          style: TextStyle(fontSize: 35),
+          style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
         ),
         actions: <Widget>[
           IconButton(
@@ -88,7 +88,7 @@ class _GroupPageState extends State<GroupPage> {
             RaisedButton(
               child: Text(
                 "Create Event",
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {},
             )

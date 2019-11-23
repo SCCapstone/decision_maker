@@ -11,6 +11,7 @@ import 'package:frontEnd/widgets/users_dropdown.dart';
 import 'models/category.dart';
 
 class GroupSettings extends StatefulWidget {
+  @required
   final Group group;
 
   GroupSettings({Key key, this.group}) : super(key: key);
@@ -28,10 +29,10 @@ class _GroupSettingsState extends State<GroupSettings> {
   int pollPassPercent;
   int pollDuration;
   List<String> users;
-  List<Category> categoriesSelected = new List<Category>();
   Future<List<Category>> categoriesTotal;
   bool owner;
 
+  final List<Category> categoriesSelected = new List<Category>();
   final formKey = GlobalKey<FormState>();
   final groupNameController = TextEditingController();
   final groupIconController = TextEditingController();
@@ -52,6 +53,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     if (Globals.username == widget.group.groupCreator) {
       // to display the delete button, check if user owns this group
       owner = true;
+    } else {
+      owner = false;
     }
     users = new List<String>();
     for (String key in widget.group.members.keys) {
@@ -60,7 +63,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
     groupName = widget.group.groupName;
     groupIcon = widget.group
-        .groupIcon; // assume icon wont't change unless use clicks on popup to change it
+        .groupIcon; // assume icon won't change unless use clicks on popup to change it
     groupNameController.text = widget.group.groupName;
     pollPassController.text = widget.group.defaultPollPassPercent.toString();
     pollDurationController.text = widget.group.defaultPollDuration.toString();
@@ -107,7 +110,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         onSaved: (String arg) {
                           groupName = arg;
                         },
-                        style: TextStyle(fontSize: 35),
+                        style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
                         decoration: InputDecoration(labelText: "Group Name"),
                       ),
                       Padding(
@@ -145,7 +148,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         children: <Widget>[
                           Text(
                             "Default poll duration (mins)",
-                            style: TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
                           ),
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
@@ -154,15 +157,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                               validator: validPollDuration,
                               controller: pollDurationController,
                               onChanged: (String arg) {
-                                int num = -1;
                                 try {
-                                  num = int.parse(arg);
+                                  int num = int.parse(arg);
+                                  // the moment the user starts making changes, display the save button
+                                  enableAutoValidation(
+                                      num != widget.group.defaultPollDuration);
                                 } catch (e) {
                                   enableAutoValidation(true);
                                 }
-                                // the moment the user starts making changes, display the save button
-                                enableAutoValidation(
-                                    !(num == widget.group.defaultPollDuration));
                               },
                               onSaved: (String arg) {
                                 pollDuration = int.parse(arg);
@@ -182,7 +184,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         children: <Widget>[
                           Text(
                             "Default pass percentage     ",
-                            style: TextStyle(fontSize: 20),
+                            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
                           ),
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
@@ -191,15 +193,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                               keyboardType: TextInputType.number,
                               validator: validPassPercentage,
                               onChanged: (String arg) {
-                                int num = -1;
                                 try {
-                                  num = int.parse(arg);
+                                  int num = int.parse(arg);
+                                  enableAutoValidation(num !=
+                                      widget.group.defaultPollPassPercent);
                                 } catch (e) {
                                   enableAutoValidation(true);
                                 }
                                 // the moment the user starts making changes, display the save button
-                                enableAutoValidation(!(num ==
-                                    widget.group.defaultPollPassPercent));
                               },
                               onSaved: (String arg) {
                                 pollPassPercent = int.parse(arg);
@@ -221,7 +222,6 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   callback: (category) =>
                                       selectCategory(category));
                             } else if (snapshot.hasError) {
-                              print(snapshot.error);
                               return Text("Error: ${snapshot.error}");
                             } else {
                               return Center(child: CircularProgressIndicator());

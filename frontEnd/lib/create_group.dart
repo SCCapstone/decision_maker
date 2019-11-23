@@ -9,7 +9,7 @@ import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
 class CreateGroup extends StatefulWidget {
-  Future<List<Category>> categoriesTotal;
+  Future<List<Category>> addableCategories;
 
   @override
   _CreateGroupState createState() => _CreateGroupState();
@@ -21,9 +21,9 @@ class _CreateGroupState extends State<CreateGroup> {
   String groupIcon;
   int pollPassPercent;
   int pollDuration;
-  List<Category> categoriesToAdd = new List<Category>();
-  List<String> users;
 
+  final List<Category> categoriesToAdd = new List<Category>();
+  final List<String> users = new List<String>();
   final formKey = GlobalKey<FormState>();
   final groupNameController = TextEditingController();
   final groupIconController = TextEditingController();
@@ -41,10 +41,8 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   void initState() {
-    categoriesToAdd = new List<Category>();
-    widget.categoriesTotal =
+    widget.addableCategories =
         CategoriesManager.getAllCategoriesList(Globals.username);
-    users = new List<String>();
     super.initState();
   }
 
@@ -81,7 +79,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     groupIcon = arg;
                   },
                   decoration: InputDecoration(
-                    labelText: "Enter a icon link",
+                    labelText: "Enter an icon link",
                   ),
                 ),
                 TextFormField(
@@ -107,7 +105,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   ),
                 ),
                 FutureBuilder(
-                    future: widget.categoriesTotal,
+                    future: widget.addableCategories,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
                         List<Category> categories = snapshot.data;
@@ -115,7 +113,6 @@ class _CreateGroupState extends State<CreateGroup> {
                             "Add categories", categories, categoriesToAdd,
                             callback: (category) => selectCategory(category));
                       } else if (snapshot.hasError) {
-                        print(snapshot.error);
                         return Text("Error: ${snapshot.error}");
                       } else {
                         return Center(child: CircularProgressIndicator());
@@ -161,45 +158,39 @@ class _CreateGroupState extends State<CreateGroup> {
   void validateInput() {
     final form = formKey.currentState;
     if (form.validate()) {
-      if (categoriesToAdd.isNotEmpty) {
-        form.save();
-        users.add(Globals.username); // creator is obviously always in the group
-        // convert the lists to maps for the json object that is sent to db
-        Map<String, String> categoriesMap = new Map<String, String>();
-        for (int i = 0; i < categoriesToAdd.length; i++) {
-          categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
-              () => categoriesToAdd[i].categoryName);
-        }
-        // it's okay to not have any inputted members, since creator is guaranteed to be there
-        Map<String, String> usersMap = new Map<String, String>();
-        for (int i = 0; i < users.length; i++) {
-          usersMap.putIfAbsent(users[i], () => users[i]);
-        }
-        Group group = new Group(
-            groupName: groupName,
-            groupCreator: Globals.username,
-            groupIcon: groupIcon,
-            groupId: "Generate on backend",
-            categories: categoriesMap,
-            members: usersMap,
-            defaultPollDuration: pollDuration,
-            defaultPollPassPercent: pollPassPercent);
-        print(group);
-        // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/116)
-        setState(() {
-          // reset everything
-          groupNameController.clear();
-          groupIconController.clear();
-          categoriesToAdd.clear();
-          users.clear();
-          pollDurationController.clear();
-          pollPassController.clear();
-          autoValidate = false;
-        });
-      } else {
-        showErrorMessage("Invalid input",
-            "Must have at least one category in the group!", context);
+      form.save();
+      users.add(Globals.username); // creator is obviously always in the group
+      // convert the lists to maps for the json object that is sent to db
+      Map<String, String> categoriesMap = new Map<String, String>();
+      for (int i = 0; i < categoriesToAdd.length; i++) {
+        categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
+                () => categoriesToAdd[i].categoryName);
       }
+      // it's okay to not have any inputted members, since creator is guaranteed to be there
+      Map<String, String> usersMap = new Map<String, String>();
+      for (int i = 0; i < users.length; i++) {
+        usersMap.putIfAbsent(users[i], () => users[i]);
+      }
+      Group group = new Group(
+          groupName: groupName,
+          groupCreator: Globals.username,
+          groupIcon: groupIcon,
+          groupId: "Generate on backend",
+          categories: categoriesMap,
+          members: usersMap,
+          defaultPollDuration: pollDuration,
+          defaultPollPassPercent: pollPassPercent);
+      // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/116)
+      setState(() {
+        // reset everything
+        groupNameController.clear();
+        groupIconController.clear();
+        categoriesToAdd.clear();
+        users.clear();
+        pollDurationController.clear();
+        pollPassController.clear();
+        autoValidate = false;
+      });
     } else {
       setState(() => autoValidate = true);
     }
