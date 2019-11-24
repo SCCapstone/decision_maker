@@ -178,7 +178,7 @@ public class GroupsManager extends DatabaseAccessManager {
       isValid = false;
     }
 
-    if (defaultPollDuration < 0 || defaultPollDuration > 100) {
+    if (defaultPollDuration <= 0 || defaultPollDuration > 10000) {
       isValid = false;
     }
 
