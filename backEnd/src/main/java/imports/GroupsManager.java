@@ -82,7 +82,7 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
 
-    if (IOStreamsHelper.allKeysContainted(jsonMap,requiredKeys)) {
+    if (IOStreamsHelper.allKeysContainted(jsonMap, requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
@@ -112,9 +112,11 @@ public class GroupsManager extends DatabaseAccessManager {
             groupReplacementItem.put(CATEGORIES,
                 new AttributeValue().withM(this.getAttributeValueMapping(categories)));
             groupReplacementItem
-                .put(DEFAULT_POLL_PASS_PERCENT, new AttributeValue().withN(defaultPollPassPercent.toString()));
+                .put(DEFAULT_POLL_PASS_PERCENT,
+                    new AttributeValue().withN(defaultPollPassPercent.toString()));
             groupReplacementItem
-                .put(DEFAULT_POLL_DURATION, new AttributeValue().withN(defaultPollDuration.toString()));
+                .put(DEFAULT_POLL_DURATION,
+                    new AttributeValue().withN(defaultPollDuration.toString()));
 
             final Put groupReplacement = new Put()
                 .withTableName(this.getTableName())
@@ -152,8 +154,9 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final Map<String, Object> members, Integer defaultPollPassPercent,
-      Integer defaultPollDuration) {
+      final String groupCreator, final Map<String, Object> members,
+      final Integer defaultPollPassPercent,
+      final Integer defaultPollDuration) {
     boolean isValid = true;
 
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(activeUser)) {
@@ -197,8 +200,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private void addActionsForUsersDelta(final Collection<TransactWriteItem> actions,
       final Map<String, Object> oldMembers, final Map<String, Object> newMembers) {
-    List<String> newUsernames = new ArrayList<String>();
-    List<String> removedUsernames = new ArrayList<String>();
+    final List<String> newUsernames = new ArrayList<String>();
+    final List<String> removedUsernames = new ArrayList<String>();
 
     //loop over the input maps, look at their keys (the usernames) to calculate the above lists
 
@@ -208,8 +211,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private void addActionsForCategoriesDelta(final Collection<TransactWriteItem> actions,
       final Map<String, Object> oldCategories, final Map<String, Object> newCategories) {
-    List<String> newCategoryIds = new ArrayList<String>();
-    List<String> removedCategoryIds = new ArrayList<String>();
+    final List<String> newCategoryIds = new ArrayList<String>();
+    final List<String> removedCategoryIds = new ArrayList<String>();
 
     //loop over the input maps, look at their keys (the categoryIds) to calculate the above lists
 
@@ -219,7 +222,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private Map<String, AttributeValue> getAttributeValueMapping(final Map<String, Object> inputMap) {
     final Map<String, AttributeValue> returnMapping = new HashMap<String, AttributeValue>();
-    for (String key : inputMap.keySet()) {
+    for (final String key : inputMap.keySet()) {
       returnMapping.put(key, new AttributeValue((String) inputMap.get(key)));
     }
 

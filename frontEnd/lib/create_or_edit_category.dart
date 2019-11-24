@@ -83,7 +83,8 @@ class _StartScreenState extends State<CreateOrEditCategory> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.ratingsFromDb == null) { // only ping database on first page load
+    if (this.ratingsFromDb == null) {
+      // only ping database on first page load
       this.ratingsFromDb = UsersManager.getUserRatings(
           (this.isEdit ? this.category.categoryId : null), context);
     }

@@ -30,10 +30,10 @@ class UsersDropdown extends StatelessWidget {
         ),
       );
     } else {
-
       List<Widget> userRows = new List<Widget>();
       for (String username in this.users.keys) {
-        userRows.add(UserRow(users[username].toString(), username, deleteUser: () => deleteCallback(users[username])));
+        userRows.add(UserRow(users[username].toString(), username,
+            deleteUser: () => deleteCallback(users[username])));
       }
 
       return ExpansionTile(

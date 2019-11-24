@@ -158,12 +158,13 @@ class _CreateGroupState extends State<CreateGroup> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      users.putIfAbsent(Globals.username, () => "John Doe"); // creator is obviously always in the group
+      users.putIfAbsent(Globals.username,
+          () => "John Doe"); // creator is obviously always in the group
       // convert the lists to maps for the json object that is sent to db
       Map<String, String> categoriesMap = new Map<String, String>();
       for (int i = 0; i < categoriesToAdd.length; i++) {
         categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
-                () => categoriesToAdd[i].categoryName);
+            () => categoriesToAdd[i].categoryName);
       }
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Map<String, String> usersMap = new Map<String, String>();
