@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'validator.dart';
 
-void showPopupMessage(String message, BuildContext context) {
+void showPopupMessage(String message, BuildContext context, {Function callback}) {
+  if (callback == null) {
+    callback = (_) => {};
+  }
+
   showDialog(
       context: context,
       builder: (context) {
@@ -9,7 +13,7 @@ void showPopupMessage(String message, BuildContext context) {
           title: Text("Response status:"),
           content: Text(message),
         );
-      });
+      }).then(callback);
 }
 
 Map<String, dynamic> getEmptyApiRequest() {

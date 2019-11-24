@@ -61,6 +61,6 @@ public class JsonEncoders {
   }
 
   public static String convertStringToJson(String value) {
-    return "\"" + value + "\"";
+    return "\\\"" + value + "\\\"";
   }
 }

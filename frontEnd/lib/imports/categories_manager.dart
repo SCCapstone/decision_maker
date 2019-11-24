@@ -39,7 +39,7 @@ class CategoriesManager {
     }
 
     if (choiceLabels.length != choiceRatings.length) {
-      showPopupMessage("You must enter a rating for all choices", context);
+      showPopupMessage("You must enter a rating for all choices.", context);
       return;
     }
 
@@ -61,8 +61,7 @@ class CategoriesManager {
       jsonRequestBody["action"] = "newCategory";
     }
 
-    jsonRequestBody["payload"]
-        .putIfAbsent(CATEGORY_NAME, () => categoryName);
+    jsonRequestBody["payload"].putIfAbsent(CATEGORY_NAME, () => categoryName);
     jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
@@ -78,7 +77,12 @@ class CategoriesManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
+          if (category != null) {
+            showPopupMessage(responseItem.resultMessage, context);
+          } else {
+            showPopupMessage(responseItem.resultMessage, context,
+                callback: (_) => Navigator.pop(context));
+          }
         } else {
           showPopupMessage("Error saving the category (1).", context);
         }
@@ -121,8 +125,7 @@ class CategoriesManager {
     jsonRequestBody["action"] = "deleteCategory";
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
-    jsonRequestBody["payload"]
-        .putIfAbsent(CATEGORY_ID, () => categoryId);
+    jsonRequestBody["payload"].putIfAbsent(CATEGORY_ID, () => categoryId);
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
@@ -141,7 +144,7 @@ class CategoriesManager {
         showPopupMessage("Error deleting the category (2).", context);
       }
     } else {
-      showPopupMessage("Unable to deleting category.", context);
+      showPopupMessage("Unable to delete category.", context);
     }
   }
 }

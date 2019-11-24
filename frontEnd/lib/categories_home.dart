@@ -48,12 +48,12 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             },
           )
         ],
-        leading: IconButton(
-          icon: navIcon,
-          onPressed: () {
-            // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78
-          },
-        ),
+//        leading: IconButton(
+//          icon: navIcon,
+//          onPressed: () {
+//            // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78
+//          },
+//        ),
       ),
       body: Center(
         child: Column(
