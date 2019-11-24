@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/group_page.dart';
+import 'categories_home.dart';
 import 'models/group.dart';
 import 'imports/globals.dart';
 
@@ -61,6 +62,20 @@ class _GroupsHomeState extends State<GroupsHome> {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
+            RaisedButton(
+              child: Text(
+                "View all Categories",
+                style: TextStyle(
+                    fontSize:
+                        DefaultTextStyle.of(context).style.fontSize * 0.6),
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CategoriesHome()));
+              },
+            ),
             Expanded(
               child: new Container(
                   width: MediaQuery.of(context).size.width * .80,
@@ -115,7 +130,8 @@ class _GroupsListState extends State<GroupsList> {
       return Center(
         child: Text(
             "No groups found! Click the plus button below to create one!",
-            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
       );
     } else {
       return Scrollbar(
