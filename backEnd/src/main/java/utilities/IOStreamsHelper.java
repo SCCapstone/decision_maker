@@ -1,5 +1,7 @@
 package utilities;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.codec.Charsets;
 
 import java.io.IOException;
@@ -19,5 +21,14 @@ public class IOStreamsHelper {
     if (index >= 0) {
       input.deleteCharAt(index);
     }
+  }
+
+  public static boolean allKeysContainted(Map<String, Object> inputMap, List<String> keys) {
+    boolean allKeysContainted = true;
+    for (String k : keys) {
+      allKeysContainted = allKeysContainted && inputMap.containsKey(k);
+    }
+
+    return allKeysContainted;
   }
 }

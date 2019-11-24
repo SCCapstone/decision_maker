@@ -28,7 +28,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   String groupIcon;
   int pollPassPercent;
   int pollDuration;
-  List<String> users;
+  Map<String, dynamic> users;
   Future<List<Category>> categoriesTotal;
   bool owner;
 
@@ -56,14 +56,10 @@ class _GroupSettingsState extends State<GroupSettings> {
     } else {
       owner = false;
     }
-    users = new List<String>();
-    for (String key in widget.group.members.keys) {
-      // get all the users for this group into a list
-      users.add(widget.group.members[key]);
-    }
+    users = widget.group.members;
     groupName = widget.group.groupName;
     groupIcon = widget.group
-        .groupIcon; // assume icon won't change unless use clicks on popup to change it
+        .icon; // assume icon won't change unless use clicks on popup to change it
     groupNameController.text = widget.group.groupName;
     pollPassController.text = widget.group.defaultPollPassPercent.toString();
     pollDurationController.text = widget.group.defaultPollDuration.toString();
@@ -110,7 +106,10 @@ class _GroupSettingsState extends State<GroupSettings> {
                         onSaved: (String arg) {
                           groupName = arg;
                         },
-                        style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+                        style: TextStyle(
+                            fontSize:
+                                DefaultTextStyle.of(context).style.fontSize *
+                                    0.8),
                         decoration: InputDecoration(labelText: "Group Name"),
                       ),
                       Padding(
@@ -148,7 +147,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                         children: <Widget>[
                           Text(
                             "Default poll duration (mins)",
-                            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.4),
                           ),
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
@@ -184,7 +187,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                         children: <Widget>[
                           Text(
                             "Default pass percentage     ",
-                            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.4),
                           ),
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
@@ -264,7 +271,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void addUser(String user) {
     setState(() {
       editing = true;
-      users.add(user);
+      users.putIfAbsent(user, () => "new user");
     });
   }
 
@@ -301,40 +308,33 @@ class _GroupSettingsState extends State<GroupSettings> {
     final form = formKey.currentState;
     if (form.validate() && validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
-      if (categoriesSelected.isNotEmpty) {
-        form.save();
-        Map<String, String> categoriesMap = new Map<String, String>();
-        for (int i = 0; i < categoriesSelected.length; i++) {
-          categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
-              () => categoriesSelected[i].categoryName);
-        }
-        Map<String, String> usersMap = new Map<String, String>();
-        for (int i = 0; i < users.length; i++) {
-          usersMap.putIfAbsent(users[i], () => users[i]);
-        }
-        Group group = new Group(
-            groupName: groupName,
-            groupCreator: Globals.username,
-            groupIcon: groupIcon,
-            groupId: "Generate on backend",
-            categories: categoriesMap,
-            members: usersMap,
-            defaultPollDuration: pollDuration,
-            defaultPollPassPercent: pollPassPercent);
-        // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/117)
-        setState(() {
-          // reset everything and reflect changes made
-          groupNameController.text = groupName;
-          groupIconController.clear();
-          pollDurationController.text = pollDuration.toString();
-          pollPassController.text = pollPassPercent.toString();
-          editing = false;
-          autoValidate = false;
-        });
-      } else {
-        showErrorMessage("Invalid input",
-            "Must have at least one category in the group!", context);
+      form.save();
+      Map<String, String> categoriesMap = new Map<String, String>();
+      for (int i = 0; i < categoriesSelected.length; i++) {
+        categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
+            () => categoriesSelected[i].categoryName);
       }
+      Group group = new Group(
+          groupId: widget.group.groupId,
+          groupName: groupName,
+          groupCreator: Globals.username,
+          icon: groupIcon,
+          categories: categoriesMap,
+          members: users,
+          defaultPollDuration: pollDuration,
+          defaultPollPassPercent: pollPassPercent);
+
+      GroupsManager.editGroup(group, context);
+
+      setState(() {
+        // reset everything and reflect changes made
+        groupNameController.text = groupName;
+        groupIconController.clear();
+        pollDurationController.text = pollDuration.toString();
+        pollPassController.text = pollPassPercent.toString();
+        editing = false;
+        autoValidate = false;
+      });
     } else {
       setState(() => autoValidate = true);
     }

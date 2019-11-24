@@ -204,7 +204,6 @@ class _StartScreenState extends State<CreateOrEditCategory> {
                         labelsToSave,
                         ratesToSave,
                         (this.isEdit ? this.category : null),
-                        Globals.username,
                         context);
                   } else {
                     UsersManager.updateUserChoiceRatings(

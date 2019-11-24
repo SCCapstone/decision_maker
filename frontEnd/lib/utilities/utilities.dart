@@ -67,7 +67,7 @@ void groupIconPopup(BuildContext context, bool validate,
       });
 }
 
-void addUserPopup(BuildContext context, List<String> users, Function function) {
+void addUserPopup(BuildContext context, Map<String, String> users, Function function) {
   // displays a popup for adding a new user to a group
   TextEditingController controller = new TextEditingController();
   final formKey = GlobalKey<FormState>();

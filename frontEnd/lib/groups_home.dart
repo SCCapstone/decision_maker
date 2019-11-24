@@ -19,7 +19,7 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome> {
   @override
   void initState() {
-    widget.groups = GroupsManager.getAllGroupsList();
+    widget.groups = GroupsManager.getGroups(true);
     super.initState();
   }
 
