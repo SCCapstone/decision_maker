@@ -22,12 +22,17 @@ class GroupsManager {
   static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
 
-  static Future<List<Group>> getGroups(bool getAll,
-      {List<String> groupIds}) async {
+  static Future<List<Group>> getGroups({List<String> groupIds}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getGroups";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+
+    if (groupIds == null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    } else {
+      jsonRequestBody["payload"]
+          .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
+    }
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
@@ -38,16 +43,17 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          List<dynamic> responseJson =
-          json.decode(responseItem.resultMessage);
+          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
 
           return responseJson.map((m) => new Group.fromJson(m)).toList();
         } else {
-          //showPopupMessage("Error getting the  (1).", context);
+          //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
         }
       } catch (e) {
-        //showPopupMessage("Error saving the category (2).", context);
+        //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       }
+
+      return List<Group>(); // return empty list
     } else {
       //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
       throw Exception("Failed to load groups from the database.");

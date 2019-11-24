@@ -58,8 +58,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
     users = widget.group.members;
     groupName = widget.group.groupName;
-    groupIcon = widget.group
-        .icon; // assume icon won't change unless use clicks on popup to change it
+    groupIcon = widget.group.icon; // icon only changes via popup
     groupNameController.text = widget.group.groupName;
     pollPassController.text = widget.group.defaultPollPassPercent.toString();
     pollDurationController.text = widget.group.defaultPollDuration.toString();

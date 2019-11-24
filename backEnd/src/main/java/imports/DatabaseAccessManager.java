@@ -24,7 +24,8 @@ public class DatabaseAccessManager {
   private final Regions region;
   private final AmazonDynamoDBClient client;
 
-  public DatabaseAccessManager(String tableName, String primaryKeyIndex, Regions regions) {
+  public DatabaseAccessManager(final String tableName, final String primaryKeyIndex,
+      final Regions regions) {
     this.tableName = tableName;
     this.primaryKeyIndex = primaryKeyIndex;
     this.region = regions;
@@ -41,34 +42,34 @@ public class DatabaseAccessManager {
     return this.primaryKeyIndex;
   }
 
-  public Item getItem(GetItemSpec getItemSpec) {
+  public Item getItem(final GetItemSpec getItemSpec) {
     return this.dynamoDb.getTable(this.tableName).getItem(getItemSpec);
   }
 
-  public Item getItemByPrimaryKey(String primaryKey) {
+  public Item getItemByPrimaryKey(final String primaryKey) {
     return this.dynamoDb.getTable(this.tableName)
         .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
   }
 
-  public UpdateItemOutcome updateItem(UpdateItemSpec updateItemSpec) {
+  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) {
     return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
   }
 
-  public PutItemOutcome putItem(PutItemSpec putItemSpec) {
+  public PutItemOutcome putItem(final PutItemSpec putItemSpec) {
     return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
   }
 
-  public DeleteItemOutcome deleteItem(DeleteItemSpec deleteItemSpec) {
+  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
   }
 
   public TransactWriteItemsResult executeWriteTransaction(
-      TransactWriteItemsRequest transactWriteItemsRequest) {
+      final TransactWriteItemsRequest transactWriteItemsRequest) {
     return this.client.transactWriteItems(transactWriteItemsRequest);
   }
 
   public TransactGetItemsResult executeGetTransaction(
-      TransactGetItemsRequest transactGetItemsRequest) {
+      final TransactGetItemsRequest transactGetItemsRequest) {
     return this.client.transactGetItems(transactGetItemsRequest);
   }
 }
