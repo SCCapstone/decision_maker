@@ -3,6 +3,8 @@ package imports;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
@@ -218,6 +220,27 @@ public class GroupsManager extends DatabaseAccessManager {
 
     //once the lists are calculated, crated update/delete statements for the categories's table accordingly
     //add these to the 'actions' Collection
+  }
+
+  // This function is called when a category is deleted and updates each item in the groups table
+  // that was linked to the category accordingly.
+  public void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
+    try {
+      final String updateExpression = "remove Categories.#categoryId";
+      final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+      UpdateItemSpec updateItemSpec;
+      for (final String group : groupIds) {
+
+        updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), group)
+            .withNameMap(nameMap)
+            .withUpdateExpression(updateExpression);
+
+        super.updateItem(updateItemSpec);
+      }
+    } catch (Exception e) {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+    }
   }
 
   private Map<String, AttributeValue> getAttributeValueMapping(final Map<String, Object> inputMap) {
