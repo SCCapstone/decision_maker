@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
@@ -43,8 +42,7 @@ public class GroupsPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request.").toString() + '\n'
-                    + ExceptionHelper.getStackTrace(e));
+                new ResultStatus(false, "Error: Unable to parse request.").toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through

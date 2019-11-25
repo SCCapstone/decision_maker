@@ -19,7 +19,7 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome> {
   @override
   void initState() {
-    widget.groups = GroupsManager.getAllGroupsList();
+    widget.groups = GroupsManager.getGroups();
     super.initState();
   }
 
@@ -70,10 +70,8 @@ class _GroupsHomeState extends State<GroupsHome> {
                         DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CategoriesHome()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CategoriesHome()));
               },
             ),
             Expanded(

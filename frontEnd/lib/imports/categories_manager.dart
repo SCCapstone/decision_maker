@@ -26,7 +26,6 @@ class CategoriesManager {
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
       Category category,
-      String user,
       BuildContext context) async {
     if (categoryName == "") {
       showPopupMessage("Please enter a name for this category.", context);
@@ -40,12 +39,6 @@ class CategoriesManager {
 
     if (choiceLabels.length != choiceRatings.length) {
       showPopupMessage("You must enter a rating for all choices.", context);
-      return;
-    }
-
-    if (user == "") {
-      //not really sure how this would happen, either no active user or no owner
-      showPopupMessage("Internal error.", context);
       return;
     }
 
@@ -66,7 +59,7 @@ class CategoriesManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
     jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => user);
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
     http.Response response =
         await http.post(apiEndpoint, body: json.encode(jsonRequestBody));

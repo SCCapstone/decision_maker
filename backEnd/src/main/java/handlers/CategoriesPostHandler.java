@@ -3,7 +3,6 @@ package handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.CategoriesManager;
-import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
@@ -45,8 +44,7 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request.").toString() + '\n'
-                    + ExceptionHelper.getStackTrace(e));
+                new ResultStatus(false, "Error: Unable to parse request.").toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through

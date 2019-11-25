@@ -7,7 +7,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import utilities.ExceptionHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -150,8 +149,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage =
-            "Error: Unable to parse request." + '\n' + ExceptionHelper.getStackTrace(e);
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82

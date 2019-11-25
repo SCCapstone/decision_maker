@@ -74,8 +74,6 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                       return CategoryList(
                           categories: categories, sortType: _sortMethod);
                     } else if (snapshot.hasError) {
-                      print(snapshot.error);
-                      print(snapshot);
                       return Text("Error: ${snapshot.error}");
                     }
                     return Center(child: CircularProgressIndicator());
