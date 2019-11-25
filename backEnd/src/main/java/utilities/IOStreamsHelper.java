@@ -24,7 +24,7 @@ public class IOStreamsHelper {
     }
   }
 
-  public static boolean allKeysContainted(final Map<String, Object> inputMap,
+  public static boolean allKeysContained(final Map<String, Object> inputMap,
       final List<String> keys) {
     boolean allKeysContained = true;
     for (String k : keys) {

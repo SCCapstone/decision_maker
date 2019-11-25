@@ -52,7 +52,7 @@ String validUser(String user, Map<String, String> users) {
   } else if (users.keys.contains(user)) {
     return "Username already added!";
   } else if (user == Globals.username) {
-    return "Can't add youtself!";
+    return "Can't add yourself!";
   } else {
     return null;
   }

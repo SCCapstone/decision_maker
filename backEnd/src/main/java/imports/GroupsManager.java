@@ -82,7 +82,7 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
 
-    if (IOStreamsHelper.allKeysContainted(jsonMap, requiredKeys)) {
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
@@ -187,15 +187,15 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private boolean editInputHasPermissions(final Map<String, Object> dbGroupDataMap,
       final String activeUser, final String groupCreator) {
-    //the group create is not changed or it is changed and the active user is the current creator
-    boolean hasPemission = true;
+    //the group creator is not changed or it is changed and the active user is the current creator
+    boolean hasPermission = true;
 
     if (!dbGroupDataMap.get(GROUP_CREATOR).equals(groupCreator) && !dbGroupDataMap
         .get(GROUP_CREATOR).equals(activeUser)) {
-      hasPemission = false;
+      hasPermission = false;
     }
 
-    return hasPemission;
+    return hasPermission;
   }
 
   private void addActionsForUsersDelta(final Collection<TransactWriteItem> actions,
