@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:frontEnd/imports/response_item.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontEnd/models/group.dart';
@@ -22,8 +23,17 @@ class GroupsManager {
         usersMap.putIfAbsent(i.toString(), () => i.toString());
       }
       usersMap.putIfAbsent(Globals.username, () => Globals.username);
-      Group group = new Group.debug("123", "The Council", dummyPic, "testing",
-          usersMap, new Map<String, dynamic>(), 0, 10);
+      Group group = new Group.debug(
+          "123",
+          "The Council",
+          dummyPic,
+          "testing",
+          usersMap,
+          new Map<String, dynamic>(),
+          new Map<String, dynamic>(),
+          0,
+          10,
+          0);
       allGroups.add(group);
     }
     return allGroups;
@@ -34,9 +44,12 @@ class GroupsManager {
     jsonRequestBody["action"] = "getGroups";
     jsonRequestBody["payload"]
         .putIfAbsent("ActiveUser", () => Globals.username);
-    http.Response response = await http.post(apiEndpoint, body: jsonRequestBody);
+    print(jsonRequestBody);
+    http.Response response =
+        await http.post(apiEndpoint, body: jsonRequestBody);
 
     if (response.statusCode == 200) {
+      print(response.body);
       Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
       List<dynamic> responseJson =
           json.decode(fullResponseJson['resultMessage']);
@@ -77,5 +90,29 @@ class GroupsManager {
       showPopupMessage("Unable to deleting group.", context);
       return false;
     }
+  }
+
+  static List<Event> getGroupEvents(Group group) {
+    List<Event> events = new List<Event>();
+    List<String> optedIn = new List<String>();
+    for (int i = 0; i < 5; i++) {
+      optedIn.add(i.toString());
+    }
+    Event event = new Event.debug("1234", "Opt In Example", "2019-11-27 09:00:00",
+        "2019-11-27 09:20:00", 1, 10, 10, optedIn);
+    Event event1 = new Event.debug("12345", "Voting Example", "2019-11-27 09:10:00",
+        "2019-11-27 09:25:00", 1, 10, 10, optedIn);
+    Event event2 = new Event.debug("12346", "Finished Example", "2019-11-27 09:00:00",
+        "2019-11-27 09:25:00", 1, 10, 10, optedIn);
+    events.add(event);
+    events.add(event1);
+    events.add(event2);
+//    for (int i = 0; i < 10; i++) {
+//      Event event = new Event.debug("1234", "Event $i", "2019-11-27 0$i:16:53",
+//          "2019-11-27 0$i:16:53", 1, 10, 10, optedIn);
+//      events.add(event);
+//    }
+    events.sort((a, b) => DateTime.parse(b.eventStartDateTime).compareTo(DateTime.parse(a.eventStartDateTime)));
+    return events;
   }
 }

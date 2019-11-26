@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/widgets/events_list.dart';
 
 class GroupPage extends StatefulWidget {
   final Group group;
+  List<Event> events;
 
-  GroupPage({Key key, this.group}) : super(key: key);
+  GroupPage({Key key, this.group, this.events}) : super(key: key);
 
   @override
   _GroupPageState createState() => new _GroupPageState();
@@ -14,6 +18,7 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   @override
   void initState() {
+    widget.events = GroupsManager.getGroupEvents(widget.group);
     // TODO load all the events (https://github.com/SCCapstone/decision_maker/issues/44)
     super.initState();
   }
@@ -25,7 +30,8 @@ class _GroupPageState extends State<GroupPage> {
         centerTitle: true,
         title: Text(
           widget.group.groupName,
-          style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+          style: TextStyle(
+              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
         ),
         actions: <Widget>[
           IconButton(
@@ -48,35 +54,10 @@ class _GroupPageState extends State<GroupPage> {
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
             Container(
-              height: MediaQuery.of(context).size.height * .60,
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.all(10.0),
-                children: <Widget>[
-                  Container(
-                      width: MediaQuery.of(context).size.width * .80,
-                      height: MediaQuery.of(context).size.height * .25,
-                      color: Colors.green,
-                      child: Center(child: Text("Events will go here"))),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .01),
-                  ),
-                  Container(
-                      width: MediaQuery.of(context).size.width * .80,
-                      height: MediaQuery.of(context).size.height * .25,
-                      color: Colors.green,
-                      child: Center(child: Text("Events will go here"))),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .01),
-                  ),
-                  Container(
-                      width: MediaQuery.of(context).size.width * .80,
-                      height: MediaQuery.of(context).size.height * .25,
-                      color: Colors.green,
-                      child: Center(child: Text("Events will go here"))),
-                ],
+              height: MediaQuery.of(context).size.height * .70,
+              child: EventsList(
+                group: widget.group,
+                events: widget.events,
               ),
             ),
             Padding(
@@ -88,7 +69,9 @@ class _GroupPageState extends State<GroupPage> {
             RaisedButton(
               child: Text(
                 "Create Event",
-                style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
+                style: TextStyle(
+                    fontSize:
+                        DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {},
             )

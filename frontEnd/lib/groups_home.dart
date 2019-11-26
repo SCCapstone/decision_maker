@@ -18,7 +18,7 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome> {
   @override
   void initState() {
-    widget.groups = GroupsManager.getAllGroupsList();
+    widget.groups = GroupsManager.getGroups(Globals.username, true);
     super.initState();
   }
 
@@ -115,7 +115,8 @@ class _GroupsListState extends State<GroupsList> {
       return Center(
         child: Text(
             "No groups found! Click the plus button below to create one!",
-            style: TextStyle(fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
       );
     } else {
       return Scrollbar(
@@ -160,7 +161,10 @@ class GroupRow extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => GroupPage(group: this.group)),
+                      builder: (context) => GroupPage(
+                            group: this.group,
+                            events: GroupsManager.getGroupEvents(group),
+                          )),
                 ).then((_) => GroupsHome());
               },
             ),

@@ -5,8 +5,10 @@ class Group {
   final String groupCreator;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
+  final Map<String, dynamic> events;
   final int defaultPollPassPercent;
   final int defaultPollDuration;
+  final int nextEventId;
 
   Group(
       {this.groupId,
@@ -15,8 +17,10 @@ class Group {
       this.groupCreator,
       this.members,
       this.categories,
+      this.events,
       this.defaultPollPassPercent,
-      this.defaultPollDuration});
+      this.defaultPollDuration,
+      this.nextEventId});
 
   Group.debug(
       this.groupId,
@@ -25,8 +29,10 @@ class Group {
       this.groupCreator,
       this.members,
       this.categories,
+      this.events,
       this.defaultPollPassPercent,
-      this.defaultPollDuration);
+      this.defaultPollDuration,
+      this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
@@ -36,14 +42,17 @@ class Group {
         groupCreator: json['GroupCreator'],
         members: json['Members'],
         categories: json['Categories'],
+        events: json['Events'],
         defaultPollPassPercent: json['DefaultPollPassPercent'],
-        defaultPollDuration: json['DefaultPollDuration']);
+        defaultPollDuration: json['DefaultPollDuration'],
+        nextEventId: json['NextEventId']);
   }
 
   @override
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
-        "$groupIcon GroupCreator: $groupCreator Members: $members Categories: $categories "
-        "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration";
+        "$groupIcon GroupCreator: $groupCreator Members: $members Categories: $categories Events $events"
+        "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration "
+        "NextEventId $nextEventId";
   }
 }
