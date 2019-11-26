@@ -229,13 +229,12 @@ public class GroupsManager extends DatabaseAccessManager {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
       UpdateItemSpec updateItemSpec;
-      for (final String group : groupIds) {
 
+      for (final String groupId : groupIds) {
         updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), group)
+            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression);
-
         super.updateItem(updateItemSpec);
       }
     } catch (Exception e) {
