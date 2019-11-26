@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/group_page.dart';
+import 'categories_home.dart';
 import 'models/group.dart';
 import 'imports/globals.dart';
 
@@ -18,7 +19,7 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome> {
   @override
   void initState() {
-    widget.groups = GroupsManager.getGroups(Globals.username, true);
+    widget.groups = GroupsManager.getGroups();
     super.initState();
   }
 
@@ -60,6 +61,18 @@ class _GroupsHomeState extends State<GroupsHome> {
             Padding(
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+            ),
+            RaisedButton(
+              child: Text(
+                "View all Categories",
+                style: TextStyle(
+                    fontSize:
+                        DefaultTextStyle.of(context).style.fontSize * 0.6),
+              ),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CategoriesHome()));
+              },
             ),
             Expanded(
               child: new Container(

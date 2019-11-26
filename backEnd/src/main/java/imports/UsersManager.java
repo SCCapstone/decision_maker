@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 
 import java.util.HashMap;
 import java.util.List;
+import utilities.JsonEncoders;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -134,6 +135,39 @@ public class UsersManager extends DatabaseAccessManager {
         super.updateItem(updateItemSpec);
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+      }
+    } else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    return resultStatus;
+  }
+
+  public ResultStatus getUserRatings(Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+
+    if (
+        jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
+            jsonMap.containsKey(CategoriesManager.CATEGORY_ID)
+    ) {
+      try {
+        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
+
+        GetItemSpec getItemSpec = new GetItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), activeUser);
+        Item userDataRaw = super.getItem(getItemSpec);
+
+        Map<String, Object> userRatings = (Map<String, Object>) userDataRaw.asMap()
+            .get(UsersManager.CATEGORIES);
+
+        resultStatus = new ResultStatus(
+            true,
+            JsonEncoders.convertObjectToJson(userRatings.get(categoryId)));
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;

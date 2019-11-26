@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/models/user.dart';
 
 class UserRow extends StatelessWidget {
+  final String displayName;
   final String username;
-  final int index;
   final VoidCallback deleteUser;
 
-  UserRow(this.username, this.index, {this.deleteUser});
+  UserRow(this.displayName, this.username, {this.deleteUser});
 
   @override
   Widget build(BuildContext context) {
-    bool showDelete = true;
-    if(username == Globals.username){
-      showDelete = false;
-    }
+    bool showDelete = (this.username == Globals.username);
+
     return Container(
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
@@ -22,7 +19,7 @@ class UserRow extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: Text(
-              username,
+              this.displayName,
               style: TextStyle(fontSize: 20),
             ),
           ),

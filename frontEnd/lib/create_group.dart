@@ -3,7 +3,6 @@ import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
@@ -23,7 +22,7 @@ class _CreateGroupState extends State<CreateGroup> {
   int pollDuration;
 
   final List<Category> categoriesToAdd = new List<Category>();
-  final List<String> users = new List<String>();
+  final Map<String, String> users = new Map<String, String>();
   final formKey = GlobalKey<FormState>();
   final groupNameController = TextEditingController();
   final groupIconController = TextEditingController();
@@ -145,7 +144,7 @@ class _CreateGroupState extends State<CreateGroup> {
 
   void addUser(String user) {
     setState(() {
-      users.add(user);
+      users.putIfAbsent(user, () => "new user");
     });
   }
 
@@ -159,12 +158,13 @@ class _CreateGroupState extends State<CreateGroup> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      users.add(Globals.username); // creator is obviously always in the group
+      users.putIfAbsent(Globals.username,
+          () => "John Doe"); // creator is obviously always in the group
       // convert the lists to maps for the json object that is sent to db
       Map<String, String> categoriesMap = new Map<String, String>();
       for (int i = 0; i < categoriesToAdd.length; i++) {
         categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
-                () => categoriesToAdd[i].categoryName);
+            () => categoriesToAdd[i].categoryName);
       }
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Map<String, String> usersMap = new Map<String, String>();
@@ -174,7 +174,7 @@ class _CreateGroupState extends State<CreateGroup> {
       Group group = new Group(
           groupName: groupName,
           groupCreator: Globals.username,
-          groupIcon: groupIcon,
+          icon: groupIcon,
           groupId: "Generate on backend",
           categories: categoriesMap,
           members: usersMap,

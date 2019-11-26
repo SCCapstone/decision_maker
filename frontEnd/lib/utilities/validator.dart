@@ -19,7 +19,7 @@ String validGroupName(String input) {
 }
 
 String validPassPercentage(String input) {
-  String retVal = null;
+  String retVal;
   try {
     int num = int.parse(input);
     if (num < 0 || num > 100) {
@@ -32,7 +32,7 @@ String validPassPercentage(String input) {
 }
 
 String validPollDuration(String input) {
-  String retVal = null;
+  String retVal;
   try {
     int num = int.parse(input);
     if (num <= 0) {
@@ -46,13 +46,13 @@ String validPollDuration(String input) {
   return retVal;
 }
 
-String validUser(String user, List<String> users) {
+String validUser(String user, Map<String, String> users) {
   if (user.isEmpty) {
     return "Username cannot be empty!";
-  } else if (users.contains(user)) {
+  } else if (users.keys.contains(user)) {
     return "Username already added!";
   } else if (user == Globals.username) {
-    return "Can't add youtself!";
+    return "Can't add yourself!";
   } else {
     return null;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';

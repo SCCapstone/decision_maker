@@ -7,8 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import utilities.ExceptionHelper;
-import utilities.IOStreamsHelper;
+import utilities.JsonEncoders;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -69,6 +68,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
         insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+
         ResultStatus updatedUsersTableResult = this.usersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
@@ -133,7 +133,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //put the entered ratings in the users table
         Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
-        insertNewCatForOwner.put(UsersManager.USERNAME, activeUser);
+        insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
         insertNewCatForOwner.put(CATEGORY_ID, categoryId);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
@@ -147,12 +147,9 @@ public class CategoriesManager extends DatabaseAccessManager {
               "Error: Unable to update this category's ratings in the users table. "
                   + updatedUsersTableResult.resultMessage;
         }
-
-        resultStatus = new ResultStatus(true, "Category updated successfully!");
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage =
-            "Error: Unable to parse request." + '\n' + ExceptionHelper.getStackTrace(e);
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -177,45 +174,18 @@ public class CategoriesManager extends DatabaseAccessManager {
       resultMessage = "Error: query key not defined.";
     }
 
-    // this will be a json string representing an array of objects
-    StringBuilder outputString = new StringBuilder("[");
+    List<Map> categories = new ArrayList<Map>();
     for (String id : categoryIds) {
-      Item dbData = super
-          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
-      Map<String, Object> categoryData = dbData.asMap();
-      outputString.append("{");
-      for (String categoryAttribute : categoryData.keySet()) {
-        Object value = categoryData.get(categoryAttribute);
-        if (value instanceof Map) {
-          // found a map in the object, so now loop through each key/value in said map and format appropriately
-          outputString.append(String.format("\\\"%s\\\":", categoryAttribute));
-          Map<Object, Object> mapAttribute = (Map<Object, Object>) value;
-          outputString.append("{");
-          if (mapAttribute.size() > 0) {
-            for (Object key : mapAttribute.keySet()) {
-              outputString.append(String.format("\\\"%s\\\":", key.toString()));
-              outputString
-                  .append(String.format("\\\"%s\\\",", mapAttribute.get(key).toString()));
-            }
-            IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
-          }
-          outputString.append("},");
-        } else {
-          // no map found, so normal key value pair
-          outputString.append(String.format("\\\"%s\\\":", categoryAttribute));
-          outputString
-              .append(String
-                  .format("\\\"%s\\\",", categoryData.get(categoryAttribute).toString()));
-        }
+      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      if (dbData != null) {
+        categories.add(dbData.asMap());
+      } else {
+        //maybe log this idk, we probably shouldn't have ids that don't point to cats in the db?
       }
-      IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
-      outputString.append("},");
     }
-    IOStreamsHelper.removeLastInstanceOf(outputString, ','); // remove the last comma
-    outputString.append("]");
 
     if (success) {
-      resultMessage = outputString.toString();
+      resultMessage = JsonEncoders.convertListToJson(categories);
     }
 
     return new ResultStatus(success, resultMessage);

@@ -11,6 +11,10 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.model.TransactGetItemsRequest;
+import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
 
 public class DatabaseAccessManager {
 
@@ -18,15 +22,16 @@ public class DatabaseAccessManager {
   private final String tableName;
   private final String primaryKeyIndex;
   private final Regions region;
+  private final AmazonDynamoDBClient client;
 
-  public DatabaseAccessManager(String tableName, String primaryKeyIndex, Regions regions) {
+  public DatabaseAccessManager(final String tableName, final String primaryKeyIndex,
+      final Regions regions) {
     this.tableName = tableName;
     this.primaryKeyIndex = primaryKeyIndex;
     this.region = regions;
-
-    AmazonDynamoDBClient amazonDynamoDBClient =
-        (AmazonDynamoDBClient) AmazonDynamoDBClient.builder().withRegion(this.region).build();
-    this.dynamoDb = new DynamoDB(amazonDynamoDBClient);
+    this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder().withRegion(this.region)
+        .build();
+    this.dynamoDb = new DynamoDB(this.client);
   }
 
   public String getTableName() {
@@ -37,19 +42,34 @@ public class DatabaseAccessManager {
     return this.primaryKeyIndex;
   }
 
-  public Item getItem(GetItemSpec getItemSpec) {
+  public Item getItem(final GetItemSpec getItemSpec) {
     return this.dynamoDb.getTable(this.tableName).getItem(getItemSpec);
   }
 
-  public UpdateItemOutcome updateItem(UpdateItemSpec updateItemSpec) {
+  public Item getItemByPrimaryKey(final String primaryKey) {
+    return this.dynamoDb.getTable(this.tableName)
+        .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
+  }
+
+  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) {
     return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
   }
 
-  public PutItemOutcome putItem(PutItemSpec putItemSpec) {
+  public PutItemOutcome putItem(final PutItemSpec putItemSpec) {
     return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
   }
 
-  public DeleteItemOutcome deleteItem(DeleteItemSpec deleteItemSpec) {
+  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
+  }
+
+  public TransactWriteItemsResult executeWriteTransaction(
+      final TransactWriteItemsRequest transactWriteItemsRequest) {
+    return this.client.transactWriteItems(transactWriteItemsRequest);
+  }
+
+  public TransactGetItemsResult executeGetTransaction(
+      final TransactGetItemsRequest transactGetItemsRequest) {
+    return this.client.transactGetItems(transactGetItemsRequest);
   }
 }

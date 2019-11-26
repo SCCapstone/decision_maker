@@ -10,7 +10,6 @@ import 'models/category.dart';
 
 class CreateOrEditCategory extends StatefulWidget {
   final bool isEdit;
-
   final Category category;
 
   CreateOrEditCategory({@required this.isEdit, this.category});
@@ -23,15 +22,18 @@ class CreateOrEditCategory extends StatefulWidget {
 class _StartScreenState extends State<CreateOrEditCategory> {
   final TextEditingController categoryNameController = TextEditingController();
   final bool isEdit;
-  final int defaultRate = 3;
   final Category category;
 
+  final int defaultRate = 3;
+  final Map<int, TextEditingController> labels =
+      new LinkedHashMap<int, TextEditingController>();
+  final Map<int, TextEditingController> rates =
+      new LinkedHashMap<int, TextEditingController>();
+
+  Future<Map<String, dynamic>> ratingsFromDb;
   bool isCategoryOwner;
   int nextChoiceValue;
-  Map<int, TextEditingController> labels =
-      new LinkedHashMap<int, TextEditingController>();
-  Map<int, TextEditingController> rates =
-      new LinkedHashMap<int, TextEditingController>();
+  bool initialPageLoad = true;
 
   _StartScreenState({@required this.isEdit, this.category}) {
     if (this.isEdit && this.category == null) {
@@ -81,6 +83,41 @@ class _StartScreenState extends State<CreateOrEditCategory> {
 
   @override
   Widget build(BuildContext context) {
+    if (this.ratingsFromDb == null) {
+      // only ping database on first page load
+      this.ratingsFromDb = UsersManager.getUserRatings(
+          (this.isEdit ? this.category.categoryId : null), context);
+    }
+
+    return FutureBuilder(
+      future: this.ratingsFromDb,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          //we only override the rates text on the initial page load
+          if (this.initialPageLoad) {
+            Map<String, dynamic> userRatings = snapshot.data;
+
+            //if the mapping exists in the user's table, override the default
+            for (int choiceId in this.labels.keys) {
+              if (userRatings.containsKey(choiceId.toString())) {
+                this.rates[choiceId].text =
+                    userRatings[choiceId.toString()].toString();
+              }
+            }
+
+            this.initialPageLoad = false;
+          }
+
+          return this.getPageBody();
+        } else if (snapshot.hasError) {
+          return Text("Error: ${snapshot.error}");
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget getPageBody() {
     List<Widget> choices = new List<Widget>();
 
     if (this.isCategoryOwner) {
@@ -168,7 +205,6 @@ class _StartScreenState extends State<CreateOrEditCategory> {
                         labelsToSave,
                         ratesToSave,
                         (this.isEdit ? this.category : null),
-                        Globals.username,
                         context);
                   } else {
                     UsersManager.updateUserChoiceRatings(
