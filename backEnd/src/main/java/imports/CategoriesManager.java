@@ -23,6 +23,7 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String OWNER = "Owner";
 
   private final UsersManager usersManager = new UsersManager();
+  private final GroupsManager groupsManager = new GroupsManager();
 
   private UUID uuid;
 
@@ -192,7 +193,6 @@ public class CategoriesManager extends DatabaseAccessManager {
   }
 
   public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
-    //TODO remove all mappings in the groups table and in users table (https://github.com/SCCapstone/decision_maker/issues/108)
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
@@ -207,10 +207,15 @@ public class CategoriesManager extends DatabaseAccessManager {
             .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
         Item item = super.getItem(getItemSpec);
         if (username.equals(item.getString(OWNER))) {
+          List<String> groupIds = new ArrayList<String>(item.getMap(GROUPS).keySet());
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
               .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
 
           super.deleteItem(deleteItemSpec);
+
+          if (!groupIds.isEmpty()) {
+            groupsManager.removeCategoryFromGroups(groupIds, categoryId);
+          }
 
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
         } else {
