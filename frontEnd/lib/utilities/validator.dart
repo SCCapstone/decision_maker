@@ -46,7 +46,7 @@ String validPollDuration(String input) {
   return retVal;
 }
 
-String validUser(String user, Map<String, String> users) {
+String validUser(String user, Map<String, dynamic> users) {
   if (user.isEmpty) {
     return "Username cannot be empty!";
   } else if (users.keys.contains(user)) {

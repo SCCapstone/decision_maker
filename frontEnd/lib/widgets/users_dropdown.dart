@@ -7,8 +7,9 @@ class UsersDropdown extends StatelessWidget {
   final Function deleteCallback;
   final Function addCallback;
   final String dropdownTitle;
+  final bool activeUserIsGroupOwner;
 
-  UsersDropdown(this.dropdownTitle, this.users,
+  UsersDropdown(this.dropdownTitle, this.users, this.activeUserIsGroupOwner,
       {this.deleteCallback, this.addCallback});
 
   @override
@@ -32,8 +33,9 @@ class UsersDropdown extends StatelessWidget {
     } else {
       List<Widget> userRows = new List<Widget>();
       for (String username in this.users.keys) {
-        userRows.add(UserRow(users[username].toString(), username,
-            deleteUser: () => deleteCallback(users[username])));
+        userRows.add(UserRow(
+            users[username].toString(), username, activeUserIsGroupOwner,
+            deleteUser: () => deleteCallback(username)));
       }
 
       return ExpansionTile(

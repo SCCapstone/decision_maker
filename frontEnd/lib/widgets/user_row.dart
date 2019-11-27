@@ -4,13 +4,17 @@ import 'package:frontEnd/imports/globals.dart';
 class UserRow extends StatelessWidget {
   final String displayName;
   final String username;
+  final bool activeUserIsGroupOwner;
   final VoidCallback deleteUser;
 
-  UserRow(this.displayName, this.username, {this.deleteUser});
+  UserRow(this.displayName, this.username, this.activeUserIsGroupOwner,
+      {this.deleteUser});
 
   @override
   Widget build(BuildContext context) {
-    bool showDelete = (this.username == Globals.username);
+    bool showDelete = ((this.activeUserIsGroupOwner &&
+            this.username != Globals.username) ||
+        (!this.activeUserIsGroupOwner && this.username == Globals.username));
 
     return Container(
       height: MediaQuery.of(context).size.height * .07,
