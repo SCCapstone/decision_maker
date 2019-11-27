@@ -56,6 +56,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     } else {
       owner = false;
     }
+
     users = widget.group.members;
     groupName = widget.group.groupName;
     groupIcon = widget.group.icon; // icon only changes via popup
@@ -223,6 +224,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                               (BuildContext context, AsyncSnapshot snapshot) {
                             if (snapshot.hasData) {
                               List<Category> categories = snapshot.data;
+
+                              for (Category category in categories) {
+                                if (widget.group.categories.keys
+                                    .contains(category.categoryId)) {
+                                  categoriesSelected.add(category);
+                                }
+                              }
+
                               return CategoryDropdown("Add categories",
                                   categories, categoriesSelected,
                                   callback: (category) =>
@@ -234,6 +243,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             }
                           }),
                       UsersDropdown("Users", users,
+                          widget.group.groupCreator == Globals.username,
                           deleteCallback: (user) => removeUser(user),
                           addCallback: (user) => addUser(user)),
                       Visibility(
@@ -267,10 +277,10 @@ class _GroupSettingsState extends State<GroupSettings> {
     });
   }
 
-  void addUser(String user) {
+  void addUser(String username) {
     setState(() {
       editing = true;
-      users.putIfAbsent(user, () => "new user");
+      users.putIfAbsent(username, () => username);
     });
   }
 
@@ -313,6 +323,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
             () => categoriesSelected[i].categoryName);
       }
+
       Group group = new Group(
           groupId: widget.group.groupId,
           groupName: groupName,

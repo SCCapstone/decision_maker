@@ -117,7 +117,7 @@ class _CreateGroupState extends State<CreateGroup> {
                         return Center(child: CircularProgressIndicator());
                       }
                     }),
-                UsersDropdown("Users", users,
+                UsersDropdown("Users", users, true,
                     deleteCallback: (user) => removeUser(user),
                     addCallback: (user) => addUser(user)),
                 RaisedButton.icon(
@@ -175,7 +175,6 @@ class _CreateGroupState extends State<CreateGroup> {
           groupName: groupName,
           groupCreator: Globals.username,
           icon: groupIcon,
-          groupId: "Generate on backend",
           categories: categoriesMap,
           members: usersMap,
           defaultPollDuration: pollDuration,
