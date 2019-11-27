@@ -125,9 +125,10 @@ class GroupsManager {
     List<Event> events = new List<Event>();
     for (String key in group.events.keys) {
       Event event = new Event.fromJson(group.events[key]);
-      List<String> optInList = event.optedIn.cast();
-      if (optInList.contains(Globals.username)) {
+      Map<String, String> optInList = event.optedIn.cast();
+      if (optInList.keys.contains(Globals.username)) {
         // if user has opted out, don't display the name
+        print(event);
         events.add(event);
       }
     }

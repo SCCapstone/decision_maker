@@ -42,7 +42,6 @@ class _EventsListState extends State<EventsList> {
   }
 
   void selectEvent(Event event, String mode) {
-    print(mode);
     Navigator.push(
       context,
       MaterialPageRoute(

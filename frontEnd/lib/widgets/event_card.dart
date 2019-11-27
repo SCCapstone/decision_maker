@@ -8,7 +8,6 @@ class EventCard extends StatefulWidget {
   final Event event;
   final int index;
   final Function callback;
-  String mode;
 
   EventCard(this.event, this.index, {this.callback});
 
@@ -45,12 +44,12 @@ class _EventCardState extends State<EventCard> {
     EventsManager.updateEventMode(widget.event);
     getFormattedTimes();
 
-    if (widget.mode == EventsManager.optInMode) {
+    if (widget.event.mode == EventsManager.optInMode) {
       optIn = true;
       voting = false;
       finished = false;
       buttonText = "Respond";
-    } else if (widget.mode == EventsManager.votingMode) {
+    } else if (widget.event.mode == EventsManager.votingMode) {
       voting = true;
       optIn = false;
       finished = false;
@@ -91,7 +90,7 @@ class _EventCardState extends State<EventCard> {
             child: Text(buttonText),
             color: Colors.lightGreenAccent,
             onPressed: () {
-              widget.callback(widget.event, widget.mode);
+              widget.callback(widget.event, widget.event.mode);
             },
           )
         ],
@@ -108,7 +107,7 @@ class _EventCardState extends State<EventCard> {
         createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
     createTimeFormatted = Globals.formatter.format(createTime);
     pollBeginFormatted = Globals.formatter.format(pollBegin);
-    DateTime eventProposed = widget.event.eventStartDateTime;
-    pollFinishedFormatted = Globals.formatter.format(eventProposed);
+    pollFinishedFormatted =
+        Globals.formatter.format(widget.event.eventStartDateTime);
   }
 }
