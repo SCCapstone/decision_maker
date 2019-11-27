@@ -35,9 +35,9 @@ class _GroupsHomeState extends State<GroupsHome> {
     }
     return new Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
+          child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
           Container(
             height: 80.0,
             decoration: BoxDecoration(
@@ -47,13 +47,13 @@ class _GroupsHomeState extends State<GroupsHome> {
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
               leading: CircleAvatar(
-                //TODO let the user set their own avatar
+                //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
                 backgroundImage: AssetImage('assets/images/placeholder.jpg'),
               ),
               title: Text(Globals.username,
                   style: TextStyle(fontSize: 24, color: Colors.white)),
               onTap: () {
-                //TODO direct the user to something like profile settings
+                //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
               },
             ),
           ),
@@ -65,6 +65,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                   MaterialPageRoute(builder: (context) => CategoriesHome()));
             },
           ),
+          //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
           ListTile(
               leading: Icon(Icons.subdirectory_arrow_left),
               title: Text('Log out', style: TextStyle(fontSize: 16)),
