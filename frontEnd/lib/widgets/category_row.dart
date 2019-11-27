@@ -3,11 +3,10 @@ import 'package:frontEnd/models/category.dart';
 
 class CategoryRow extends StatefulWidget {
   final Category category;
-  final int index;
   final VoidCallback onSelect;
   bool selected;
 
-  CategoryRow(this.category, this.index, this.selected, {this.onSelect});
+  CategoryRow(this.category, this.selected, {this.onSelect});
 
   @override
   _CategoryRow createState() => new _CategoryRow();

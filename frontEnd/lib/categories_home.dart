@@ -139,7 +139,7 @@ class _CategoryListState extends State<CategoryList> {
         child: ListView.builder(
           shrinkWrap: true,
           itemCount: widget.categories.length,
-          itemBuilder: (context, index) {
+          itemBuilder: (BuildContext context, int index) {
             bool defaultCategory = false;
             if (widget.categories[index].owner.isEmpty) {
               defaultCategory = true;
