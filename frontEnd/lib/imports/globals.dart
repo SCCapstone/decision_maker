@@ -5,6 +5,6 @@ class Globals {
   static Color secondaryColor = Color(0xff106126);
   static String username;
   static bool android;
-  static DateFormat formatter = DateFormat('MM-dd-yyyy – hh:mm');
+  static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
 
 }

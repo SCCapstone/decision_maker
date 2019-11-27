@@ -12,8 +12,10 @@ class Event {
   final Map<String, dynamic> optedIn;
   final Map<String, dynamic> tentativeAlgorithmChoices;
   final Map<String, dynamic> votingNumbers;
+  final Map<String, dynamic> eventCreator;
   final String selectedChoice;
-  String mode;
+  String
+      mode; // used to determine if the event is being voted on, in opt in period, or finished
 
   Event(
       {this.categoryId,
@@ -27,7 +29,8 @@ class Event {
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
-      this.selectedChoice});
+      this.selectedChoice,
+      this.eventCreator});
 
   Event.debug(
       this.categoryId,
@@ -41,7 +44,8 @@ class Event {
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
-      this.selectedChoice);
+      this.selectedChoice,
+      this.eventCreator);
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
@@ -58,7 +62,8 @@ class Event {
         tentativeAlgorithmChoices:
             json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
-        votingNumbers: json[EventsManager.VOTING_NUMBERS]);
+        votingNumbers: json[EventsManager.VOTING_NUMBERS],
+        eventCreator: json[EventsManager.EVENT_CREATOR]);
   }
 
   int compareTo(Event other) {
@@ -74,6 +79,7 @@ class Event {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
         "$createdDateTime EventStartDateTime: $eventStartDateTime Type: $type PollDuration: $pollDuration "
         "PollPassPercent $pollPassPercent OptedIn: $optedIn Mode $mode SelectedChoice: $selectedChoice "
-        "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices";
+        "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
+        "EventCreator: $eventCreator";
   }
 }

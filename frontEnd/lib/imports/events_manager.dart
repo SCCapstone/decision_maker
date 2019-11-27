@@ -16,6 +16,7 @@ class EventsManager {
   static final String TENTATIVE_ALGORITHM_CHOICES = "TentativeAlgorithmChoices";
   static final String SELECTED_CHOICE = "SelectedChoice";
   static final String VOTING_NUMBERS = "VotingNumbers";
+  static final String EVENT_CREATOR = "EventCreator";
 
   static void updateEventMode(Event event) {
     DateTime timeNow = DateTime.now();

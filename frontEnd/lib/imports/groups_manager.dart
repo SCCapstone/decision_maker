@@ -128,7 +128,6 @@ class GroupsManager {
       Map<String, String> optInList = event.optedIn.cast();
       if (optInList.keys.contains(Globals.username)) {
         // if user has opted out, don't display the name
-        print(event);
         events.add(event);
       }
     }
