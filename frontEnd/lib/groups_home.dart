@@ -129,7 +129,7 @@ class _GroupsListState extends State<GroupsList> {
         child: Text(
             "No groups found! Click the plus button below to create one!",
             style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.7)),
       );
     } else {
       return Scrollbar(

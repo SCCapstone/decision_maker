@@ -7,7 +7,7 @@ class Group {
   final String groupCreator;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
-  final Map<String, dynamic> events;
+  final Map<dynamic, dynamic> events;
   final int defaultPollPassPercent;
   final int defaultPollDuration;
   final int nextEventId;
@@ -45,9 +45,9 @@ class Group {
         members: json['Members'],
         categories: json['Categories'],
         events: json['Events'],
-        defaultPollPassPercent: json['DefaultPollPassPercent'],
-        defaultPollDuration: json['DefaultPollDuration'],
-        nextEventId: json['NextEventId']);
+        defaultPollPassPercent: int.parse(json['DefaultPollPassPercent']),
+        defaultPollDuration: int.parse(json['DefaultPollDuration']),
+        nextEventId: int.parse(json['NextEventId']));
   }
 
   @override
@@ -66,8 +66,10 @@ class Group {
       GroupsManager.GROUP_CREATOR: this.groupCreator,
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
+      GroupsManager.EVENTS: this.events,
       GroupsManager.DEFAULT_POLL_PASS_PERCENT: this.defaultPollPassPercent,
-      GroupsManager.DEFAULT_POLL_DURATION: this.defaultPollDuration
+      GroupsManager.DEFAULT_POLL_DURATION: this.defaultPollDuration,
+      GroupsManager.NEXT_EVENT_ID: this.nextEventId
     };
   }
 }
