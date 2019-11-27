@@ -12,6 +12,7 @@ import 'globals.dart';
 class GroupsManager {
   static final String apiEndpoint =
       "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/groupsendpoint";
+
   //breaking style guide for consistency with backend vars
   static final String GROUP_ID = "GroupId";
   static final String GROUP_NAME = "GroupName";
@@ -122,25 +123,16 @@ class GroupsManager {
 
   static List<Event> getGroupEvents(Group group) {
     List<Event> events = new List<Event>();
-    List<String> optedIn = new List<String>();
-    for (int i = 0; i < 5; i++) {
-      optedIn.add(i.toString());
+    for (String key in group.events.keys) {
+      Event event = new Event.fromJson(group.events[key]);
+      List<String> optInList = event.optedIn.cast();
+      if (optInList.contains(Globals.username)) {
+        // if user has opted out, don't display the name
+        events.add(event);
+      }
     }
-    Event event = new Event.debug("1234", "Opt In Example", "2019-11-27 09:00:00",
-        "2019-11-27 09:20:00", 1, 10, 10, optedIn);
-    Event event1 = new Event.debug("12345", "Voting Example", "2019-11-27 09:10:00",
-        "2019-11-27 09:25:00", 1, 10, 10, optedIn);
-    Event event2 = new Event.debug("12346", "Finished Example", "2019-11-27 09:00:00",
-        "2019-11-27 09:25:00", 1, 10, 10, optedIn);
-    events.add(event);
-    events.add(event1);
-    events.add(event2);
-//    for (int i = 0; i < 10; i++) {
-//      Event event = new Event.debug("1234", "Event $i", "2019-11-27 0$i:16:53",
-//          "2019-11-27 0$i:16:53", 1, 10, 10, optedIn);
-//      events.add(event);
-//    }
-    events.sort((a, b) => DateTime.parse(b.eventStartDateTime).compareTo(DateTime.parse(a.eventStartDateTime)));
+    events.sort((a, b) => b.eventStartDateTime
+        .compareTo(a.eventStartDateTime)); // sorting on start date currently
     return events;
   }
 }

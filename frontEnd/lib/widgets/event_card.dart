@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:intl/intl.dart';
 
@@ -15,64 +17,78 @@ class EventCard extends StatefulWidget {
 }
 
 class _EventCardState extends State<EventCard> {
-  static final String votingMode = "Voting";
-  static final String optInMode = "OptIn";
-  static final String finishedMode = "Finished";
-  static final DateFormat formatter = DateFormat('MM-dd-yyyy – hh:mm');
   DateTime createTime;
   DateTime pollBegin;
-  DateTime eventFinished;
+  DateTime pollFinished;
   DateTime proposedTime;
   String createTimeFormatted;
   String pollBeginFormatted;
-  String eventFinishedFormatted;
+  String pollFinishedFormatted;
   String proposedTimeFormatted;
+  String buttonText;
+  bool optIn = false;
+  bool voting = false;
+  bool finished = false;
 
   @override
   void initState() {
-    proposedTime = DateTime.parse(widget.event.eventStartDateTime);
-    proposedTimeFormatted = formatter.format(proposedTime);
-    updateMode();
+    createTime = widget.event.createdDateTime;
+    proposedTime = widget.event.eventStartDateTime;
+    proposedTimeFormatted = Globals.formatter.format(proposedTime);
+    EventsManager.updateEventMode(widget.event);
+    getFormattedTimes();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    updateMode();
-    bool choiceChosen = true;
+    EventsManager.updateEventMode(widget.event);
+    getFormattedTimes();
+
+    if (widget.mode == EventsManager.optInMode) {
+      optIn = true;
+      voting = false;
+      finished = false;
+      buttonText = "Respond";
+    } else if (widget.mode == EventsManager.votingMode) {
+      voting = true;
+      optIn = false;
+      finished = false;
+      buttonText = "Vote";
+    } else {
+      finished = true;
+      optIn = false;
+      voting = false;
+      buttonText = "View results";
+    }
     return Container(
       height: MediaQuery.of(context).size.height * .27,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Expanded(
-            child: Text(
-              widget.event.eventName,
-              style: TextStyle(fontSize: 20),
-            ),
+          Text(
+            widget.event.eventName,
+            style: TextStyle(fontSize: 20),
           ),
-          Expanded(
-            child: Visibility(
-              visible: choiceChosen,
-              child: Text(
-                "Chosen Choice: Sushi"
-              ),
-            ),
+          Visibility(
+            visible: (voting || finished),
+            child: Text("Chosen Choice: Sushi"),
           ),
-          Expanded(
-            child: Text(
-              "Total attendees: ${widget.event.optedIn.length}",
-              style: TextStyle(fontSize: 20),
-            ),
+          Text(
+            "Total attendees: ${widget.event.optedIn.length}",
+            style: TextStyle(fontSize: 20),
           ),
-          Expanded(
-            child: Text("Proposed Date: $proposedTimeFormatted"),
-          ),
-          Expanded(
+          Text("Proposed Date: $proposedTimeFormatted"),
+          Visibility(
+            visible: (optIn),
             child: Text("Opt in in time ends: $pollBeginFormatted"),
           ),
+          Visibility(
+            visible: (voting),
+            child: Text("Voting time ends: $pollFinishedFormatted"),
+          ),
           RaisedButton(
-            child: Text("Respond"),
+            child: Text(buttonText),
             color: Colors.lightGreenAccent,
             onPressed: () {
               widget.callback(widget.event, widget.mode);
@@ -81,147 +97,18 @@ class _EventCardState extends State<EventCard> {
         ],
       ),
       decoration:
-      new BoxDecoration(border: new Border(bottom: new BorderSide())),
+          new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
-
-
-
-    if (widget.mode == optInMode) {
-      return Container(
-        height: MediaQuery.of(context).size.height * .27,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                widget.event.eventName,
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                "Total attendees: ${widget.event.optedIn.length}",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text("Proposed Date: $proposedTimeFormatted"),
-            ),
-            Expanded(
-              child: Text("Opt in in time ends: $pollBeginFormatted"),
-            ),
-            RaisedButton(
-              child: Text("Respond"),
-              color: Colors.lightGreenAccent,
-              onPressed: () {
-                widget.callback(widget.event, widget.mode);
-              },
-            )
-          ],
-        ),
-        decoration:
-            new BoxDecoration(border: new Border(bottom: new BorderSide())),
-      );
-    } else if(widget.mode == votingMode){
-      return Container(
-        height: MediaQuery.of(context).size.height * .27,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                widget.event.eventName,
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                "Total attendees: ${widget.event.optedIn.length}",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text("Proposed Date: $proposedTimeFormatted"),
-            ),
-            Expanded(
-              child: Text("Opt in in time ends: $pollBeginFormatted"),
-            ),
-            RaisedButton(
-              child: Text("Vote"),
-              color: Colors.lightGreenAccent,
-              onPressed: () {
-                widget.callback(widget.event, widget.mode);
-              },
-            )
-          ],
-        ),
-        decoration:
-        new BoxDecoration(border: new Border(bottom: new BorderSide())),
-      );
-    }
-    else{
-      return Container(
-        height: MediaQuery.of(context).size.height * .27,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                widget.event.eventName,
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                "Total attendees: ${widget.event.optedIn.length}",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-            Expanded(
-              child: Text("Proposed Date: $proposedTimeFormatted"),
-            ),
-            Expanded(
-              child: Text("Opt in in time ends: $pollBeginFormatted"),
-            ),
-            RaisedButton(
-              child: Text("View Results"),
-              color: Colors.lightGreenAccent,
-              onPressed: () {
-                widget.callback(widget.event, widget.mode);
-              },
-            )
-          ],
-        ),
-        decoration:
-        new BoxDecoration(border: new Border(bottom: new BorderSide())),
-      );
-    }
   }
 
-  void updateMode() {
-    // must be outside of init state in case the user navigates throughout the app.
-    createTime = DateTime.parse(widget.event.createdDateTime);
-    DateTime timeNow =
-        DateTime.parse(widget.event.createdDateTime); // TODO change back to now
-//    timeNow = timeNow.add(new Duration(minutes: 19));
+  void getFormattedTimes() {
     pollBegin =
         createTime.add(new Duration(minutes: widget.event.pollDuration));
-    print(pollBegin);
-    print("Current time $timeNow");
-    eventFinished =
+    pollFinished =
         createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    print("Event finished $eventFinished");
-    if (timeNow.isBefore(pollBegin)) {
-      widget.mode = optInMode;
-    } else if (timeNow.isAfter(pollBegin) && timeNow.isBefore(eventFinished)) {
-      widget.mode = votingMode;
-    } else {
-      widget.mode = finishedMode;
-    }
-    print(widget.mode);
-    createTimeFormatted = formatter.format(createTime);
-    pollBeginFormatted = formatter.format(pollBegin);
-    DateTime eventProposed = DateTime.parse(widget.event.eventStartDateTime);
-    eventFinishedFormatted = formatter.format(eventProposed);
+    createTimeFormatted = Globals.formatter.format(createTime);
+    pollBeginFormatted = Globals.formatter.format(pollBegin);
+    DateTime eventProposed = widget.event.eventStartDateTime;
+    pollFinishedFormatted = Globals.formatter.format(eventProposed);
   }
 }

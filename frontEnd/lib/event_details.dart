@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 
 class EventDetails extends StatefulWidget {
@@ -14,7 +16,8 @@ class EventDetails extends StatefulWidget {
 class _EventDetailsState extends State<EventDetails> {
   @override
   void initState() {
-    // TODO load all the events (https://github.com/SCCapstone/decision_maker/issues/44)
+    EventsManager.updateEventMode(widget
+        .event); // make this call in case now the event is in a different stage
     super.initState();
   }
 
@@ -39,13 +42,12 @@ class _EventDetailsState extends State<EventDetails> {
             ),
             Container(
               height: MediaQuery.of(context).size.height * .70,
-              child: Text("Hey"),
+              child: Text(
+                  Globals.formatter.format(widget.event.eventStartDateTime)),
             ),
           ],
         ),
       ),
     );
   }
-
-  void selectEvent() {}
 }

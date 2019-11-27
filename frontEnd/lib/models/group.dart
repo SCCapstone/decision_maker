@@ -7,7 +7,7 @@ class Group {
   final String groupCreator;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
-  final Map<dynamic, dynamic> events;
+  final Map<String, dynamic> events;
   final int defaultPollPassPercent;
   final int defaultPollDuration;
   final int nextEventId;
@@ -38,16 +38,16 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
-        groupId: json['GroupId'],
-        groupName: json['GroupName'],
-        icon: json['Icon'],
-        groupCreator: json['GroupCreator'],
-        members: json['Members'],
-        categories: json['Categories'],
-        events: json['Events'],
-        defaultPollPassPercent: int.parse(json['DefaultPollPassPercent']),
-        defaultPollDuration: int.parse(json['DefaultPollDuration']),
-        nextEventId: int.parse(json['NextEventId']));
+        groupId: json[GroupsManager.GROUP_ID],
+        groupName: json[GroupsManager.GROUP_NAME],
+        icon: json[GroupsManager.ICON],
+        groupCreator: json[GroupsManager.GROUP_CREATOR],
+        members: json[GroupsManager.MEMBERS],
+        categories: json[GroupsManager.CATEGORIES],
+        events: json[GroupsManager.EVENTS],
+        defaultPollPassPercent: int.parse(json[GroupsManager.DEFAULT_POLL_PASS_PERCENT]),
+        defaultPollDuration: int.parse(json[GroupsManager.DEFAULT_POLL_DURATION]),
+        nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
   }
 
   @override

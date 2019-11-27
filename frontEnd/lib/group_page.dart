@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
@@ -20,7 +19,6 @@ class _GroupPageState extends State<GroupPage> {
   @override
   void initState() {
     widget.events = GroupsManager.getGroupEvents(widget.group);
-    // TODO load all the events (https://github.com/SCCapstone/decision_maker/issues/44)
     super.initState();
   }
 

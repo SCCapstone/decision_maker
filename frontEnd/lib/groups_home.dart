@@ -161,7 +161,7 @@ class GroupRow extends StatelessWidget {
           IconButton(
             iconSize: MediaQuery.of(context).size.width * .20,
             icon: Image(
-              image: AssetImage('assets/images/placeholder.jpg'),
+              image: NetworkImage(group.icon),
             ),
           ),
           Expanded(
