@@ -35,47 +35,48 @@ class _GroupsHomeState extends State<GroupsHome> {
     }
     return new Scaffold(
       drawer: Drawer(
-          child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          Container(
-            height: 80.0,
-            decoration: BoxDecoration(
-              color: Globals.secondaryColor,
-            ),
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-              leading: CircleAvatar(
-                //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
-                backgroundImage: AssetImage('assets/images/placeholder.jpg'),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            Container(
+              height: 80.0,
+              decoration: BoxDecoration(
+                color: Globals.secondaryColor,
               ),
-              title: Text(Globals.username,
-                  style: TextStyle(fontSize: 24, color: Colors.white)),
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
+                leading: CircleAvatar(
+                  //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
+                  backgroundImage: AssetImage('assets/images/placeholder.jpg'),
+                ),
+                title: Text(Globals.username,
+                    style: TextStyle(fontSize: 24, color: Colors.white)),
+                onTap: () {
+                  //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
+                },
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.apps), // Placeholder icon
+              title: Text('Categories', style: TextStyle(fontSize: 16)),
               onTap: () {
-                //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CategoriesHome()));
               },
             ),
-          ),
-          ListTile(
-            leading: Icon(Icons.apps), // Placeholder icon
-            title: Text('Categories', style: TextStyle(fontSize: 16)),
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CategoriesHome()));
-            },
-          ),
-          //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
-          ListTile(
-              leading: Icon(Icons.subdirectory_arrow_left),
-              title: Text('Log out', style: TextStyle(fontSize: 16)),
-              onTap: () {
-                logOutUser();
-                Navigator.of(context).pushReplacement(
-                    new MaterialPageRoute(builder: (context) => LoginScreen()));
-              })
-        ],
-      )),
+            //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
+            ListTile(
+                leading: Icon(Icons.subdirectory_arrow_left),
+                title: Text('Log out', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  logOutUser();
+                  Navigator.of(context).pushReplacement(
+                      new MaterialPageRoute(builder: (context) => LoginScreen()));
+                })
+          ],
+        )
+      ),
       appBar: new AppBar(
         centerTitle: true,
         title: Text(
