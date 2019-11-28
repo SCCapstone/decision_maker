@@ -28,6 +28,7 @@ class _EventDetailsState extends State<EventDetails> {
   bool optIn = false;
   bool voting = false;
   bool finished = false;
+  bool closed = false;
 
   @override
   void initState() {
@@ -61,16 +62,21 @@ class _EventDetailsState extends State<EventDetails> {
       buttonQuestion = "Vote for the proposed choice:";
       buttonConfirm = "Yes";
       buttonDenial = "No";
-    } else {
+    } else if (widget.event.mode == EventsManager.pollFinishedMode) {
       finished = true;
       optIn = false;
       voting = false;
       buttonQuestion = "Will you be attending this event?";
       buttonConfirm = "Yes";
       buttonDenial = "No";
+    } else {
+      closed = true;
+      finished = false;
+      optIn = false;
+      voting = false;
     }
     getFormattedTimes();
-    return new Scaffold(
+    return Scaffold(
       appBar: new AppBar(
         centerTitle: true,
         title: Text(
@@ -80,51 +86,63 @@ class _EventDetailsState extends State<EventDetails> {
         ),
         leading: BackButton(),
       ),
-      body: Column(
+      body: ListView(
+        shrinkWrap: true,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-          ),
-          Expanded(
-            child: Container(
-              height: MediaQuery.of(context).size.height * .70,
-              child: Column(
+          Column(
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
-                  Text(
-                    "Date and Time:",
-                    style: TextStyle(
-                        fontSize:
-                            DefaultTextStyle.of(context).style.fontSize * 0.7,
-                        backgroundColor: Colors.lightGreen.withOpacity(0.7)),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: Text(
+                      closed ? "Occurred" : "Date and Time",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.8),
+                    ),
                   ),
                   Text(
                     Globals.formatter.format(widget.event.eventStartDateTime),
                     style: TextStyle(
                         fontSize:
-                            DefaultTextStyle.of(context).style.fontSize * 0.8),
-                  ),
-                  Text(
-                    "Chosen Category:",
-                    style: TextStyle(
-                        backgroundColor: Colors.lightGreen.withOpacity(0.7),
-                        fontSize:
                             DefaultTextStyle.of(context).style.fontSize * 0.7),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: Text(
+                      "Chosen Category",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.8),
+                    ),
                   ),
                   Text(
                     widget.event.categoryName,
                     style: TextStyle(
                         fontSize:
-                            DefaultTextStyle.of(context).style.fontSize * 0.8),
+                            DefaultTextStyle.of(context).style.fontSize * 0.7),
                   ),
                   Visibility(
                     visible: optIn,
-                    child: Text("Opt-In Time Ends:",
-                        style: TextStyle(
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                      child: Text("Opt-In Time Ends",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.7,
-                            backgroundColor:
-                                Colors.lightGreen.withOpacity(0.7))),
+                                    0.8,
+                          )),
+                    ),
                   ),
                   Visibility(
                     visible: optIn,
@@ -132,17 +150,21 @@ class _EventDetailsState extends State<EventDetails> {
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.8)),
+                                    0.7)),
                   ),
                   Visibility(
                     visible: voting,
-                    child: Text("Poll Ends:",
-                        style: TextStyle(
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                      child: Text("Poll Ends",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.7,
-                            backgroundColor:
-                                Colors.lightGreen.withOpacity(0.7))),
+                                    0.8,
+                          )),
+                    ),
                   ),
                   Visibility(
                     visible: voting,
@@ -150,17 +172,21 @@ class _EventDetailsState extends State<EventDetails> {
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.8)),
+                                    0.7)),
                   ),
                   Visibility(
                     visible: voting,
-                    child: Text("Proposed Choice:",
-                        style: TextStyle(
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                      child: Text("Proposed Choice",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.7,
-                            backgroundColor:
-                                Colors.lightGreen.withOpacity(0.7))),
+                                    0.8,
+                          )),
+                    ),
                   ),
                   Visibility(
                     visible: voting,
@@ -169,29 +195,33 @@ class _EventDetailsState extends State<EventDetails> {
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.8)),
+                                    0.7)),
                   ),
                   Visibility(
-                    visible: finished,
-                    child: Text("Selected Choice:",
-                        style: TextStyle(
+                    visible: (finished || closed),
+                    child: Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                      child: Text("Selected Choice",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.7,
-                            backgroundColor:
-                                Colors.lightGreen.withOpacity(0.7))),
+                                    0.8,
+                          )),
+                    ),
                   ),
                   Visibility(
-                    visible: finished,
+                    visible: (finished || closed),
                     child: Text(widget.event.selectedChoice,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.8)),
+                                    0.7)),
                   ),
                   Padding(
                     padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .015),
+                        MediaQuery.of(context).size.height * .01),
                   ),
                   Text("Event created by: $eventCreator",
                       style: TextStyle(
@@ -199,8 +229,7 @@ class _EventDetailsState extends State<EventDetails> {
                               DefaultTextStyle.of(context).style.fontSize *
                                   0.5)),
                   ExpansionTile(
-                    title: Text(
-                        "Current Attendees (${widget.event.optedIn.length})"),
+                    title: Text("Attendees (${widget.event.optedIn.length})"),
                     children: <Widget>[
                       SizedBox(
                         height: MediaQuery.of(context).size.height * .2,
@@ -213,31 +242,37 @@ class _EventDetailsState extends State<EventDetails> {
                   ),
                   Padding(
                     padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .015),
+                        MediaQuery.of(context).size.height * .01),
                   ),
-                  Text(buttonQuestion,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.4)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      RaisedButton(
-                        child: Text(buttonDenial),
-                        color: Colors.red,
-                        onPressed: () {},
-                      ),
-                      RaisedButton(
-                        child: Text(buttonConfirm),
-                        color: Colors.green,
-                        onPressed: () {},
-                      )
-                    ],
+                  Visibility(
+                    visible: (optIn || finished || voting),
+                    child: Text(buttonQuestion,
+                        style: TextStyle(
+                            fontSize:
+                                DefaultTextStyle.of(context).style.fontSize *
+                                    0.4)),
+                  ),
+                  Visibility(
+                    visible: (optIn || finished || voting),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        RaisedButton(
+                          child: Text(buttonDenial),
+                          color: Colors.red,
+                          onPressed: () {},
+                        ),
+                        RaisedButton(
+                          child: Text(buttonConfirm),
+                          color: Colors.green,
+                          onPressed: () {},
+                        )
+                      ],
+                    ),
                   )
                 ],
               ),
-            ),
+            ],
           ),
         ],
       ),

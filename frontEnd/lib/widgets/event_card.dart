@@ -28,6 +28,7 @@ class _EventCardState extends State<EventCard> {
   bool optIn = false;
   bool voting = false;
   bool finished = false;
+  bool closed = false;
 
   @override
   void initState() {
@@ -48,14 +49,23 @@ class _EventCardState extends State<EventCard> {
       optIn = true;
       voting = false;
       finished = false;
+      closed = false;
       buttonText = "Respond";
     } else if (widget.event.mode == EventsManager.votingMode) {
       voting = true;
       optIn = false;
       finished = false;
+      closed = false;
       buttonText = "Vote";
-    } else {
+    } else if (widget.event.mode == EventsManager.pollFinishedMode) {
       finished = true;
+      optIn = false;
+      voting = false;
+      closed = false;
+      buttonText = "View results";
+    } else {
+      closed = true;
+      finished = false;
       optIn = false;
       voting = false;
       buttonText = "View results";
@@ -71,7 +81,7 @@ class _EventCardState extends State<EventCard> {
           ),
           Visibility(
             visible: (voting || finished),
-            child: Text("Chosen Choice: Sushi"),
+            child: Text("Chosen Choice: ${widget.event.selectedChoice}"),
           ),
           Text(
             "Total attendees: ${widget.event.optedIn.length}",

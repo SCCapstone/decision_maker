@@ -3,7 +3,8 @@ import 'package:frontEnd/models/event.dart';
 class EventsManager {
   static final String votingMode = "Voting";
   static final String optInMode = "OptIn";
-  static final String finishedMode = "Finished";
+  static final String pollFinishedMode = "Finished";
+  static final String eventClosedMode = "Closed";
   static final String CATEGORY_ID = "CategoryId";
   static final String CATEGORY_NAME = "CategoryName";
   static final String EVENT_NAME = "EventName";
@@ -25,12 +26,16 @@ class EventsManager {
         createTime.add(new Duration(minutes: event.pollDuration));
     DateTime pollFinished =
         createTime.add(new Duration(minutes: (event.pollDuration) * 2));
+    DateTime eventClosed =
+        event.eventStartDateTime.add(new Duration(hours: 24));
     if (timeNow.isBefore(pollBegin)) {
       event.mode = optInMode;
     } else if (timeNow.isAfter(pollBegin) && timeNow.isBefore(pollFinished)) {
       event.mode = votingMode;
+    } else if (timeNow.isBefore(eventClosed)) {
+      event.mode = pollFinishedMode;
     } else {
-      event.mode = finishedMode;
+      event.mode = eventClosedMode;
     }
   }
 }
