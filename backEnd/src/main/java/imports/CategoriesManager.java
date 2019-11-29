@@ -96,12 +96,14 @@ public class CategoriesManager extends DatabaseAccessManager {
     //validate data, log results as there should be some validation already on the front end
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
+            jsonMap.containsKey(CATEGORY_NAME) &&
             jsonMap.containsKey(CHOICES) &&
             jsonMap.containsKey(RequestFields.USER_RATINGS) &&
             jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       try {
         String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        String categoryName = (String) jsonMap.get(CATEGORY_NAME);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
         Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
@@ -120,8 +122,11 @@ public class CategoriesManager extends DatabaseAccessManager {
         //move the next choice to be the next value up from the max
         nextChoiceNo++;
 
-        String updateExpression = "set " + CHOICES + " = :map, " + NEXT_CHOICE_NO + " = :next";
+        String updateExpression =
+            "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
+                + " = :next";
         ValueMap valueMap = new ValueMap()
+            .withString(":name", categoryName)
             .withMap(":map", choices)
             .withInt(":next", nextChoiceNo);
 

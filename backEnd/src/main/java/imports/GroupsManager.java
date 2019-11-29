@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
@@ -146,8 +145,7 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage =
-            "Error: Unable to parse request";
+        resultStatus.resultMessage = "Error: Unable to parse request";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -159,6 +157,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
   //Note we return the value for clarity in some uses, but the actual input is being updated
   private Map<String, Object> updateMembersMapForInsertion(final Map<String, Object> members) {
+    List<String> usernamesToDrop = new ArrayList<>();
+
     for (String username : members.keySet()) {
       Item user = this.usersManager.getUser(username);
 
@@ -173,11 +173,15 @@ public class GroupsManager extends DatabaseAccessManager {
         } catch (Exception e) {
           //couldn't get the user's data, don't add to the group rn
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          members.remove(username);
+          usernamesToDrop.add(username);
         }
       } else {
-        members.remove(username); // user not in db
+        usernamesToDrop.add(username); // user not in db
       }
+    }
+
+    for (String usernameToDrop : usernamesToDrop) {
+      members.remove(usernameToDrop);
     }
 
     return members;
