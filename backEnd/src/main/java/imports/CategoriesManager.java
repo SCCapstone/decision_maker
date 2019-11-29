@@ -175,6 +175,9 @@ public class CategoriesManager extends DatabaseAccessManager {
       categoryIds = this.usersManager.getAllCategoryIds(username);
     } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
+    } else if (jsonMap.containsKey(this.groupsManager.getPrimaryKeyIndex())) {
+      String groupId = (String) jsonMap.get(this.groupsManager.getPrimaryKeyIndex());
+      categoryIds = this.groupsManager.getAllCategoryIds(groupId);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
