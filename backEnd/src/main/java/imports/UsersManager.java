@@ -73,6 +73,10 @@ public class UsersManager extends DatabaseAccessManager {
     }
   }
 
+  public Item getUser(String username) {
+    return super.getItemByPrimaryKey(username);
+  }
+
   public ResultStatus addNewUser(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     if (jsonMap.containsKey(USERNAME)) {

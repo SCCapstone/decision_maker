@@ -72,7 +72,9 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                     if (snapshot.hasData) {
                       List<Category> categories = snapshot.data;
                       return CategoryList(
-                          categories: categories, sortType: _sortMethod);
+                          categories: categories,
+                          sortType: _sortMethod,
+                          refreshPage: this.refreshPage);
                     } else if (snapshot.hasError) {
                       return Text("Error: ${snapshot.error}");
                     }
@@ -102,25 +104,30 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                     MaterialPageRoute(
                         builder: (context) =>
                             CreateOrEditCategory(isEdit: false)),
-                  ).then((_) => setState(() {
-                        //TODO update this so that we don't have to requery the categories, we probably want some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
-                        widget.categories =
-                            CategoriesManager.getAllCategoriesList(
-                                Globals.username);
-                      }));
+                  ).then((_) => this.refreshPage());
                 })
           ],
         ),
       ),
     );
   }
+
+  void refreshPage() {
+    //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
+    setState(() {
+      widget.categories =
+          CategoriesManager.getAllCategoriesList(Globals.username);
+    });
+  }
 }
 
 class CategoryList extends StatefulWidget {
   final List<Category> categories;
   final String sortType;
+  final VoidCallback refreshPage;
 
-  CategoryList({Key key, this.categories, this.sortType}) : super(key: key);
+  CategoryList({Key key, this.categories, this.sortType, this.refreshPage})
+      : super(key: key);
 
   @override
   _CategoryListState createState() => _CategoryListState();
@@ -145,7 +152,8 @@ class _CategoryListState extends State<CategoryList> {
               defaultCategory = true;
             }
             return CategoryRow(widget.categories[index], index, defaultCategory,
-                onDelete: () => removeItem(index));
+                onDelete: () => removeItem(index),
+                afterEditCallback: widget.refreshPage);
           },
         ),
       );
@@ -165,10 +173,12 @@ class _CategoryListState extends State<CategoryList> {
 class CategoryRow extends StatelessWidget {
   final Category category;
   final VoidCallback onDelete;
+  final VoidCallback afterEditCallback;
   final int index;
   final bool defaultCategory;
 
-  CategoryRow(this.category, this.index, this.defaultCategory, {this.onDelete});
+  CategoryRow(this.category, this.index, this.defaultCategory,
+      {this.onDelete, this.afterEditCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +235,7 @@ class CategoryRow extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (context) => CreateOrEditCategory(
                               isEdit: true, category: this.category)),
-                    );
+                    ).then((_) => this.afterEditCallback());
                   },
                 ),
                 Padding(
