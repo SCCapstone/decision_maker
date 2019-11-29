@@ -104,6 +104,8 @@ public class GroupsManager extends DatabaseAccessManager {
             //all validation is successful, build transaction actions
             final List<TransactWriteItem> actions = new ArrayList<TransactWriteItem>();
 
+            this.updateMembersMapForInsertion(members); // this implicitly changes data
+
             final Map<String, AttributeValue> groupReplacementItem = new HashMap<String, AttributeValue>();
             groupReplacementItem.put(GROUP_ID, new AttributeValue(groupId));
             groupReplacementItem.put(GROUP_NAME, new AttributeValue(groupName));
@@ -153,6 +155,32 @@ public class GroupsManager extends DatabaseAccessManager {
     }
 
     return resultStatus;
+  }
+
+  //Note we return the value for clarity in some uses, but the actual input is being updated
+  private Map<String, Object> updateMembersMapForInsertion(final Map<String, Object> members) {
+    for (String username : members.keySet()) {
+      Item user = this.usersManager.getUser(username);
+
+      if (user != null) {
+        try {
+          //get user's actual name
+          Map<String, Object> userData = user.asMap();
+          String firstName = (String) userData.get(UsersManager.FIRST_NAME);
+          String lastName = (String) userData.get(UsersManager.LAST_NAME);
+
+          members.replace(username, firstName + " " + lastName);
+        } catch (Exception e) {
+          //couldn't get the user's data, don't add to the group rn
+          //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+          members.remove(username);
+        }
+      } else {
+        members.remove(username); // user not in db
+      }
+    }
+
+    return members;
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
