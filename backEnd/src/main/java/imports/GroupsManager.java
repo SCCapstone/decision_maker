@@ -254,6 +254,16 @@ public class GroupsManager extends DatabaseAccessManager {
     //add these to the 'actions' Collection
   }
 
+  public List<String> getAllCategoryIds(String groupId) {
+    Item dbData = super
+        .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), groupId));
+
+    Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
+    Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+
+    return new ArrayList<String>(categoryMap.keySet());
+  }
+
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
   public void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
