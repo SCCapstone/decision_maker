@@ -28,7 +28,6 @@ bool gotTokens = false;
 Future<bool> hasValidTokensSet() async {
   //check to see if the tokens are stored in local memory and to see if they can get
   //data from the user endpoint. if not, try to refresh. if can't refresh, return false
-
   try {
     //Initialize the SharedPreferences object and check for the existence of
     //the tokens.
@@ -84,7 +83,6 @@ Future<bool> hasValidTokensSet() async {
 Future<void> getUserTokens(String authorizationCode) async {
   //This will take the 'AUTHORIZATION_CODE' from the authorize endpoint and use
   //it to get tokens from the token endpoint, then store them via storeUserTokens.
-
   Map<String, String> headers = {
     "Content-Type": "application/x-www-form-urlencoded"
   };
@@ -139,4 +137,8 @@ void storeUserTokens(String accessToken, String refreshToken, String idToken) {
   _tokens.setString(accessTokenKey, accessToken);
   _tokens.setString(idTokenKey, idToken);
   _tokens.setString(refreshTokenKey, refreshToken);
+}
+
+void clearTokens() {
+  _tokens.clear();
 }

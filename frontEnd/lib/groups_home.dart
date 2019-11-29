@@ -4,8 +4,10 @@ import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/group_page.dart';
 import 'categories_home.dart';
+import 'login_page.dart';
 import 'models/group.dart';
 import 'imports/globals.dart';
+import 'log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groups;
@@ -32,10 +34,53 @@ class _GroupsHomeState extends State<GroupsHome> {
       navIcon = new Icon(Icons.arrow_back);
     }
     return new Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            Container(
+              height: 80.0,
+              decoration: BoxDecoration(
+                color: Globals.secondaryColor,
+              ),
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
+                leading: CircleAvatar(
+                  //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
+                  backgroundImage: AssetImage('assets/images/placeholder.jpg'),
+                ),
+                title: Text(Globals.username,
+                    style: TextStyle(fontSize: 24, color: Colors.white)),
+                onTap: () {
+                  //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
+                },
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.apps), // Placeholder icon
+              title: Text('Categories', style: TextStyle(fontSize: 16)),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CategoriesHome()));
+              },
+            ),
+            //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
+            ListTile(
+                leading: Icon(Icons.subdirectory_arrow_left),
+                title: Text('Log out', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  logOutUser();
+                  Navigator.of(context).pushReplacement(
+                      new MaterialPageRoute(builder: (context) => LoginScreen()));
+                })
+          ],
+        )
+      ),
       appBar: new AppBar(
         centerTitle: true,
         title: Text(
-          "PocketPoll",
+          "Pocket Poll",
           style: TextStyle(fontSize: 35),
         ),
         actions: <Widget>[
@@ -47,13 +92,6 @@ class _GroupsHomeState extends State<GroupsHome> {
             },
           )
         ],
-        leading: IconButton(
-          icon: navIcon,
-          iconSize: 40,
-          onPressed: () {
-            // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78)
-          },
-        ),
       ),
       body: Center(
         child: Column(
@@ -61,18 +99,6 @@ class _GroupsHomeState extends State<GroupsHome> {
             Padding(
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-            ),
-            RaisedButton(
-              child: Text(
-                "View all Categories",
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 0.6),
-              ),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CategoriesHome()));
-              },
             ),
             Expanded(
               child: new Container(

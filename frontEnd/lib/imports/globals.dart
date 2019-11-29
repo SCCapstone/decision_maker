@@ -7,4 +7,8 @@ class Globals {
   static bool android;
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
 
+  static void clearGlobals() {
+    username = null;
+    android = null;
+  }
 }
