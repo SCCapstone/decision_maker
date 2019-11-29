@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetails extends StatefulWidget {
   final Event event;
@@ -59,7 +60,7 @@ class _EventDetailsState extends State<EventDetails> {
       voting = true;
       optIn = false;
       finished = false;
-      buttonQuestion = "Vote for the proposed choice:";
+      buttonQuestion = "Vote for the proposed choice";
       buttonConfirm = "Yes";
       buttonDenial = "No";
     } else if (widget.event.mode == EventsManager.pollFinishedMode) {
@@ -260,12 +261,16 @@ class _EventDetailsState extends State<EventDetails> {
                         RaisedButton(
                           child: Text(buttonDenial),
                           color: Colors.red,
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
+                          },
                         ),
                         RaisedButton(
                           child: Text(buttonConfirm),
                           color: Colors.green,
-                          onPressed: () {},
+                          onPressed: () {
+                            // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
+                          },
                         )
                       ],
                     ),
@@ -286,34 +291,5 @@ class _EventDetailsState extends State<EventDetails> {
         createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
     pollBeginFormatted = Globals.formatter.format(pollBegin);
     pollFinishedFormatted = Globals.formatter.format(pollFinished);
-  }
-}
-
-class UserRow extends StatelessWidget {
-  final String displayName;
-  final String username;
-
-  UserRow(this.displayName, this.username);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .07,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(
-            child: Center(
-              child: Text(
-                this.displayName,
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-        ],
-      ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
-    );
   }
 }

@@ -45,8 +45,10 @@ class Group {
         members: json[GroupsManager.MEMBERS],
         categories: json[GroupsManager.CATEGORIES],
         events: json[GroupsManager.EVENTS],
-        defaultPollPassPercent: int.parse(json[GroupsManager.DEFAULT_POLL_PASS_PERCENT]),
-        defaultPollDuration: int.parse(json[GroupsManager.DEFAULT_POLL_DURATION]),
+        defaultPollPassPercent:
+            int.parse(json[GroupsManager.DEFAULT_POLL_PASS_PERCENT]),
+        defaultPollDuration:
+            int.parse(json[GroupsManager.DEFAULT_POLL_DURATION]),
         nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
   }
 

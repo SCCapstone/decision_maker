@@ -87,7 +87,9 @@ class _EventCardState extends State<EventCard> {
             "Total attendees: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
-          Text("Proposed Date: $proposedTimeFormatted"),
+          Text((voting || optIn || finished)
+              ? "Proposed Date: $proposedTimeFormatted"
+              : "Occurred: $proposedTimeFormatted"),
           Visibility(
             visible: (optIn),
             child: Text("Opt in in time ends: $pollBeginFormatted"),
@@ -98,7 +100,9 @@ class _EventCardState extends State<EventCard> {
           ),
           RaisedButton(
             child: Text(buttonText),
-            color: Colors.lightGreenAccent,
+            color: (voting || finished || optIn)
+                ? Colors.lightGreenAccent
+                : Colors.grey,
             onPressed: () {
               widget.callback(widget.event, widget.event.mode);
             },
@@ -111,13 +115,12 @@ class _EventCardState extends State<EventCard> {
   }
 
   void getFormattedTimes() {
+    createTimeFormatted = Globals.formatter.format(createTime);
     pollBegin =
         createTime.add(new Duration(minutes: widget.event.pollDuration));
     pollFinished =
         createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    createTimeFormatted = Globals.formatter.format(createTime);
     pollBeginFormatted = Globals.formatter.format(pollBegin);
-    pollFinishedFormatted =
-        Globals.formatter.format(widget.event.eventStartDateTime);
+    pollFinishedFormatted = Globals.formatter.format(pollFinished);
   }
 }

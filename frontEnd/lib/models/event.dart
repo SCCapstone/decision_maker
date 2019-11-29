@@ -15,7 +15,7 @@ class Event {
   final Map<String, dynamic> eventCreator;
   final String selectedChoice;
   String
-      mode; // used to determine if the event is being voted on, in opt in period, or finished
+      mode; // used to determine if the event is being voted on, in opt in period, finished, or closed
 
   Event(
       {this.categoryId,
