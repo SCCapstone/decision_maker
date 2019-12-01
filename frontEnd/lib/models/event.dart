@@ -74,24 +74,6 @@ class Event {
     return order;
   }
 
-  Map asMap() {
-    return {
-      EventsManager.EVENT_NAME: this.eventName,
-      EventsManager.CATEGORY_ID: this.categoryId,
-      EventsManager.CATEGORY_NAME: this.categoryName,
-      EventsManager.CREATED_DATE_TIME: this.createdDateTime.toString().substring(0, 19),
-      EventsManager.EVENT_START_DATE_TIME: this.eventStartDateTime.toString().substring(0, 19),
-      EventsManager.TYPE: this.type,
-      EventsManager.POLL_DURATION: this.pollDuration,
-      EventsManager.POLL_PASS_PERCENT: this.pollPassPercent,
-      EventsManager.OPTED_IN: this.optedIn,
-      EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
-      EventsManager.SELECTED_CHOICE: this.selectedChoice,
-      EventsManager.EVENT_CREATOR: this.eventCreator,
-      EventsManager.VOTING_NUMBERS: this.votingNumbers
-    };
-  }
-
   @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/group.dart';
@@ -181,17 +180,14 @@ class _CreateGroupState extends State<CreateGroup> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
       // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/116)
-      GroupsManager.createGroup(group, context);
       setState(() {
         // reset everything
-        /*
         groupNameController.clear();
         groupIconController.clear();
         categoriesToAdd.clear();
         users.clear();
         pollDurationController.clear();
         pollPassController.clear();
-        */
         autoValidate = false;
       });
     } else {

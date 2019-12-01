@@ -18,16 +18,6 @@ String validGroupName(String input) {
   }
 }
 
-String validEventName(String input) {
-  if (input.length == 0) {
-    return "Event name cannot be empty!";
-  } else if (input.length > 200) {
-    return "Event name is too large!";
-  } else {
-    return null;
-  }
-}
-
 String validPassPercentage(String input) {
   String retVal;
   try {

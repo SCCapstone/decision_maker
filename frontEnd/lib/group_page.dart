@@ -4,8 +4,6 @@ import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/widgets/events_list.dart';
 
-import 'create_event.dart';
-
 class GroupPage extends StatefulWidget {
   final Group group;
   final List<Event> events;
@@ -65,10 +63,7 @@ class _GroupPageState extends State<GroupPage> {
                         DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>
-                        CreateEvent(group: widget.group)))
-                    .then((_) => GroupPage(group: widget.group));
+                // TODO create a new event (https://github.com/SCCapstone/decision_maker/issues/48)
               },
             )
           ],

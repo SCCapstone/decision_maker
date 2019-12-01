@@ -4,11 +4,9 @@ import 'package:frontEnd/models/group.dart';
 import 'event_card.dart';
 import 'package:frontEnd/event_details.dart';
 import 'package:frontEnd/group_page.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
 
 class EventsList extends StatefulWidget {
-  //final List<Event> events;
-  List<Event> events;
+  final List<Event> events;
   final Group group;
 
   EventsList({Key key, this.group, this.events}) : super(key: key);
@@ -18,13 +16,6 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
-
-  @override
-  void initState() {
-    widget.events = GroupsManager.getGroupEvents(widget.group);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.events.length == 0) {
