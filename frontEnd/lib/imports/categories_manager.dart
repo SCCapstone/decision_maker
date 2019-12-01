@@ -8,6 +8,7 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 
 import 'globals.dart';
+import 'groups_manager.dart';
 
 class CategoriesManager {
   static final String apiEndpoint =
@@ -101,6 +102,32 @@ class CategoriesManager {
         Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
         List<dynamic> responseJson =
             json.decode(fullResponseJson['resultMessage']);
+
+        return responseJson.map((m) => new Category.fromJson(m)).toList();
+      } catch (e) {
+        //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
+        return new List<Category>(); // returns empty list
+      }
+    } else {
+      //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
+      throw Exception("Failed to load categories from the database.");
+    }
+  }
+
+  static Future<List<Category>> getAllCategoriesFromGroup(String groupId) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "getCategories";
+    jsonRequestBody["payload"]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
+        List<dynamic> responseJson =
+        json.decode(fullResponseJson['resultMessage']);
 
         return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {

@@ -70,6 +70,7 @@ class _EventCardState extends State<EventCard> {
       voting = false;
       buttonText = "View results";
     }
+
     return Container(
       height: MediaQuery.of(context).size.height * .27,
       child: Column(
