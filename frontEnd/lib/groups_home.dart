@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/group_page.dart';
+import 'package:frontEnd/widgets/groups_list.dart';
 import 'categories_home.dart';
 import 'login_page.dart';
 import 'models/group.dart';
@@ -133,79 +133,6 @@ class _GroupsHomeState extends State<GroupsHome> {
             MaterialPageRoute(builder: (context) => CreateGroup()),
           ).then((_) => GroupsHome());
         },
-      ),
-    );
-  }
-}
-
-class GroupsList extends StatefulWidget {
-  final List<Group> groups;
-
-  GroupsList({Key key, this.groups}) : super(key: key);
-
-  @override
-  _GroupsListState createState() => _GroupsListState();
-}
-
-class _GroupsListState extends State<GroupsList> {
-  @override
-  Widget build(BuildContext context) {
-    if (widget.groups.length == 0) {
-      return Center(
-        child: Text(
-            "No groups found! Click the plus button below to create one!",
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
-      );
-    } else {
-      return Scrollbar(
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.groups.length,
-          itemBuilder: (context, index) {
-            return GroupRow(widget.groups[index], index);
-          },
-        ),
-      );
-    }
-  }
-}
-
-class GroupRow extends StatelessWidget {
-  final Group group;
-  final int index;
-
-  GroupRow(this.group, this.index);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .14,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          IconButton(
-            iconSize: MediaQuery.of(context).size.width * .20,
-            icon: Image(
-              image: AssetImage('assets/images/placeholder.jpg'),
-            ),
-          ),
-          Expanded(
-            child: RaisedButton(
-              child: Text(
-                group.groupName,
-                style: TextStyle(fontSize: 25),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => GroupPage(group: this.group)),
-                ).then((_) => GroupsHome());
-              },
-            ),
-          )
-        ],
       ),
     );
   }

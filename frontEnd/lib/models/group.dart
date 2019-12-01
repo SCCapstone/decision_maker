@@ -7,8 +7,10 @@ class Group {
   final String groupCreator;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
+  final Map<String, dynamic> events;
   final int defaultPollPassPercent;
   final int defaultPollDuration;
+  final int nextEventId;
 
   Group(
       {this.groupId,
@@ -17,8 +19,10 @@ class Group {
       this.groupCreator,
       this.members,
       this.categories,
+      this.events,
       this.defaultPollPassPercent,
-      this.defaultPollDuration});
+      this.defaultPollDuration,
+      this.nextEventId});
 
   Group.debug(
       this.groupId,
@@ -27,26 +31,33 @@ class Group {
       this.groupCreator,
       this.members,
       this.categories,
+      this.events,
       this.defaultPollPassPercent,
-      this.defaultPollDuration);
+      this.defaultPollDuration,
+      this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     return Group(
-        groupId: json['GroupId'],
-        groupName: json['GroupName'],
-        icon: json['Icon'],
-        groupCreator: json['GroupCreator'],
-        members: json['Members'],
-        categories: json['Categories'],
-        defaultPollPassPercent: int.parse(json['DefaultPollPassPercent']),
-        defaultPollDuration: int.parse(json['DefaultPollDuration']));
+        groupId: json[GroupsManager.GROUP_ID],
+        groupName: json[GroupsManager.GROUP_NAME],
+        icon: json[GroupsManager.ICON],
+        groupCreator: json[GroupsManager.GROUP_CREATOR],
+        members: json[GroupsManager.MEMBERS],
+        categories: json[GroupsManager.CATEGORIES],
+        events: json[GroupsManager.EVENTS],
+        defaultPollPassPercent:
+            int.parse(json[GroupsManager.DEFAULT_POLL_PASS_PERCENT]),
+        defaultPollDuration:
+            int.parse(json[GroupsManager.DEFAULT_POLL_DURATION]),
+        nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
   }
 
   @override
   String toString() {
-    return "Groupid: $groupId GroupName: $groupName Icon: "
-        "$icon GroupCreator: $groupCreator Members: $members Categories: $categories "
-        "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration";
+    return "Groupid: $groupId GroupName: $groupName GroupIcon: "
+        "$icon GroupCreator: $groupCreator Members: $members Categories: $categories Events $events"
+        "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration "
+        "NextEventId $nextEventId";
   }
 
   Map asMap() {
@@ -57,8 +68,10 @@ class Group {
       GroupsManager.GROUP_CREATOR: this.groupCreator,
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
+      GroupsManager.EVENTS: this.events,
       GroupsManager.DEFAULT_POLL_PASS_PERCENT: this.defaultPollPassPercent,
-      GroupsManager.DEFAULT_POLL_DURATION: this.defaultPollDuration
+      GroupsManager.DEFAULT_POLL_DURATION: this.defaultPollDuration,
+      GroupsManager.NEXT_EVENT_ID: this.nextEventId
     };
   }
 }
