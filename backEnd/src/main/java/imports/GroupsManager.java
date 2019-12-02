@@ -2,6 +2,7 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -44,6 +45,8 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String POLL_PASS_PERCENT = "PollPassPercent";
   public static final String OPTED_IN = "OptedIn";
   
+  public static final Map EMPTY_MAP = new HashMap();
+  
   private UsersManager usersManager = new UsersManager();
 
   public GroupsManager() {
@@ -85,7 +88,45 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public ResultStatus createNewGroup(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String groupName = (String) jsonMap.get(GROUP_NAME);
+        final String icon = (String) jsonMap.get(ICON);
+        final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
+        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS);
+        final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
+        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
+        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+ 
+        Item newGroup = new Item()
+            .withString(GROUP_ID, groupId)
+            .withString(GROUP_NAME, groupName)
+            .withString(ICON, icon)
+            .withString(GROUP_CREATOR, groupCreator)
+            .withMap(MEMBERS, members)
+            .withMap(CATEGORIES, categories)
+            .withInt(DEFAULT_POLL_PASS_PERCENT,defaultPollPassPercent)
+            .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
+            .withMap(EVENTS, EMPTY_MAP);
 
+        PutItemSpec putItemSpec = new PutItemSpec()
+          .withItem(newGroup);
+
+        super.putItem(putItemSpec);
+
+        resultStatus = new ResultStatus(true, "Group created successfully!");
+        
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+      }
+    } else {
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
     return resultStatus;
   }
 
@@ -171,7 +212,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(EVENT_ID, EVENT_NAME, CATEGORY_ID, CREATED_DATE_TIME, EVENT_START_DATE_TIME, TYPE, POLL_DURATION,
-                POLL_PASS_PERCENT, OPTED_IN, RequestFields.ACTIVE_USER, GROUP_ID);
+                POLL_PASS_PERCENT, RequestFields.ACTIVE_USER, GROUP_ID);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -183,9 +224,24 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer type = (Integer) jsonMap.get(TYPE);
         final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
         final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
-        final Map<String, Object> optedIn = (Map<String, Object>) jsonMap.get(OPTED_IN);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(GROUP_ID);
+        
+        Map<String, Object> optedIn = new HashMap<String,Object>();
+        Item groupData = super
+          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), groupId));
+        if (groupData != null) {
+          Map<String, Object> groupDataMapped = groupData.asMap();
+          if (groupDataMapped.containsKey(MEMBERS)) {
+            optedIn = (Map<String,Object>)groupDataMapped.get(MEMBERS);
+          } else {
+            resultStatus.resultMessage = "Error: group has no members field";
+            return resultStatus;
+          }
+        } else {
+          resultStatus.resultMessage = "Error: group not found";
+          return resultStatus;
+        }
 
         if (this.makeEventInputIsValid(eventId, activeUser, groupId, categoryId, pollDuration,pollPassPercent)) {
           final Map<String,Object> eventMap = new HashMap<String,Object>();

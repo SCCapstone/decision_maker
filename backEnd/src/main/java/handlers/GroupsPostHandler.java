@@ -31,7 +31,7 @@ public class GroupsPostHandler implements RequestStreamHandler {
 
             if (action.equals("getGroups")) {
               resultStatus = this.groupsManager.getGroups(payloadJsonMap);
-            } else if (action.equals("createGroup")) {
+            } else if (action.equals("createNewGroup")) {
               resultStatus = this.groupsManager.createNewGroup(payloadJsonMap);
             } else if (action.equals("editGroup")) {
               resultStatus = this.groupsManager.editGroup(payloadJsonMap);
