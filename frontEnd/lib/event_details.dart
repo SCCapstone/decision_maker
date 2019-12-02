@@ -33,6 +33,7 @@ class _EventDetailsState extends State<EventDetails> {
 
   @override
   void initState() {
+    print(widget.event);
     createTime = widget.event.createdDateTime;
     proposedTime = widget.event.eventStartDateTime;
     EventsManager.updateEventMode(widget

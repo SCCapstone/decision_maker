@@ -126,7 +126,7 @@ class GroupsManager {
   static void addEvent(
       String groupId, Event event, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "addEvent";
+    jsonRequestBody["action"] = "newEvent";
     jsonRequestBody["payload"] = event.asMap();
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
@@ -141,7 +141,7 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-
+print(responseItem.resultMessage);
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context,
               callback: (_) => Navigator.pushAndRemoveUntil(
