@@ -173,4 +173,30 @@ class GroupsManager {
         .compareTo(a.eventStartDateTime)); // sorting on start date currently
     return events;
   }
+
+  static void createNewGroup(Group group, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "createNewGroup";
+    jsonRequestBody["payload"] = group.asMap();
+
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error creating group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create group.", context);
+    }
+  }
 }
