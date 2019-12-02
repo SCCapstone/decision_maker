@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -50,7 +51,9 @@ public class GroupsManager extends DatabaseAccessManager {
   
   public static final Map EMPTY_MAP = new HashMap();
 
-  private UsersManager usersManager = new UsersManager();
+  private final UsersManager usersManager = new UsersManager();
+
+  private UUID uuid;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -92,11 +95,11 @@ public class GroupsManager extends DatabaseAccessManager {
   public ResultStatus createNewGroup(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+        .asList(GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
+
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
-        final String groupId = (String) jsonMap.get(GROUP_ID);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final String icon = (String) jsonMap.get(ICON);
         final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
@@ -104,9 +107,12 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
- 
+
+        this.uuid = UUID.randomUUID();
+        final String newGroupId = this.uuid.toString();
+
         Item newGroup = new Item()
-            .withString(GROUP_ID, groupId)
+            .withPrimaryKey(super.getPrimaryKeyIndex(), newGroupId)
             .withString(GROUP_NAME, groupName)
             .withString(ICON, icon)
             .withString(GROUP_CREATOR, groupCreator)
@@ -114,7 +120,8 @@ public class GroupsManager extends DatabaseAccessManager {
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_POLL_PASS_PERCENT,defaultPollPassPercent)
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
-            .withMap(EVENTS, EMPTY_MAP);
+            .withMap(EVENTS, EMPTY_MAP)
+            .withInt(NEXT_EVENT_ID, 1);
 
         PutItemSpec putItemSpec = new PutItemSpec()
           .withItem(newGroup);

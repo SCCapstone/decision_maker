@@ -123,8 +123,8 @@ class GroupsManager {
     }
   }
 
-  static void addEvent(String groupId, Event event,
-      BuildContext context) async {
+  static void addEvent(
+      String groupId, Event event, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "addEvent";
     jsonRequestBody["payload"] = event.asMap();
@@ -144,10 +144,11 @@ class GroupsManager {
 
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context,
-              callback: (_) => Navigator.pushAndRemoveUntil(context,
+              callback: (_) => Navigator.pushAndRemoveUntil(
+                  context,
                   new MaterialPageRoute(
                       builder: (BuildContext context) => GroupsHome()),
-                      (Route<dynamic> route) => false));
+                  (Route<dynamic> route) => false));
         } else {
           showPopupMessage("Error creating event (1).", context);
         }
@@ -180,12 +181,14 @@ class GroupsManager {
     jsonRequestBody["payload"] = group.asMap();
 
     http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        print(responseItem.resultMessage);
 
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context);

@@ -102,4 +102,4 @@ class Event {
         "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
         "EventCreator: $eventCreator";
   }
-}r
+}
