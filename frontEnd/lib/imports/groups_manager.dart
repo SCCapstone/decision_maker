@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_home.dart';
 import 'package:frontEnd/imports/response_item.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
@@ -21,11 +24,12 @@ class GroupsManager {
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  static final String NEXT_EVENT_ID = "NextEventId";
+  static final String EVENTS = "Events";
 
   static Future<List<Group>> getGroups({List<String> groupIds}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getGroups";
-
     if (groupIds == null) {
       jsonRequestBody["payload"]
           .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
@@ -44,7 +48,6 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-
           return responseJson.map((m) => new Group.fromJson(m)).toList();
         } else {
           //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
@@ -118,5 +121,56 @@ class GroupsManager {
     } else {
       showPopupMessage("Unable to save group.", context);
     }
+  }
+
+  static void addEvent(String groupId, Event event,
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "addEvent";
+    jsonRequestBody["payload"] = event.asMap();
+    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+
+    http.Response response = await http.post(apiEndpoint,
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json"
+        },
+        body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context,
+              callback: (_) => Navigator.pushAndRemoveUntil(context,
+                  new MaterialPageRoute(
+                      builder: (BuildContext context) => GroupsHome()),
+                      (Route<dynamic> route) => false));
+        } else {
+          showPopupMessage("Error creating event (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating event (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create event.", context);
+    }
+  }
+
+  static List<Event> getGroupEvents(Group group) {
+    List<Event> events = new List<Event>();
+    for (String key in group.events.keys) {
+      Event event = new Event.fromJson(group.events[key]);
+      Map<String, String> optInList = event.optedIn.cast();
+      if (optInList.keys.contains(Globals.username)) {
+        // if user has opted in, display the event to them
+        events.add(event);
+      }
+    }
+    events.sort((a, b) => b.eventStartDateTime
+        .compareTo(a.eventStartDateTime)); // sorting on start date currently
+    return events;
   }
 }
