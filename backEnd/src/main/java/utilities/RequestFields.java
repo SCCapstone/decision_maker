@@ -6,5 +6,4 @@ public class RequestFields {
   public static final String CATEGORY_IDS = "CategoryIds";
   public static final String USER_RATINGS = "UserRatings";
   public static final String GROUP_IDS = "GroupIds";
-  public static final String EVENTS = "Events";
 }
