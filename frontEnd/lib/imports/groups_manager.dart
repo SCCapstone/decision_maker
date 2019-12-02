@@ -203,16 +203,19 @@ class GroupsManager {
     }
   }
 
-  static void optInOutOfEvent(String groupId, String eventId, bool participating,
-      BuildContext context) async {
+  static void optInOutOfEvent(String groupId, String eventId,
+      bool participating, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "optUserInOut";
-    jsonRequestBody["payload"].putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
-    jsonRequestBody["payload"].putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    //TODO get display name globally and maybe allow for it to be editable somewhere (https://github.com/SCCapstone/decision_maker/issues/148)
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
