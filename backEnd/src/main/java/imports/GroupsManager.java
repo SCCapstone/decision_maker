@@ -229,13 +229,14 @@ public class GroupsManager extends DatabaseAccessManager {
   public ResultStatus newEvent(final Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(EVENT_NAME, CATEGORY_ID, CREATED_DATE_TIME, EVENT_START_DATE_TIME, TYPE,
-            POLL_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
+        .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
+            TYPE, POLL_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String eventName = (String) jsonMap.get(EVENT_NAME);
         final String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
         final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
         final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
         final Integer type = (Integer) jsonMap.get(TYPE);
@@ -270,7 +271,7 @@ public class GroupsManager extends DatabaseAccessManager {
           final Map<String, Object> eventMap = new HashMap<>();
 
           eventMap.put(CATEGORY_ID, categoryId);
-          eventMap.put(CATEGORY_NAME, "Dummy name");
+          eventMap.put(CATEGORY_NAME, categoryName);
           eventMap.put(EVENT_NAME, eventName);
           eventMap.put(CREATED_DATE_TIME, createdDateTime);
           eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
@@ -279,9 +280,10 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, eventCreator);
-          eventMap.put(SELECTED_CHOICE, "lkj");
+          eventMap.put(SELECTED_CHOICE, "calculating...");
 
-          String updateExpression = "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId";
+          String updateExpression =
+              "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
