@@ -7,6 +7,8 @@ import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
+import 'imports/groups_manager.dart';
+
 class CreateGroup extends StatefulWidget {
   Future<List<Category>> addableCategories;
 
@@ -179,7 +181,9 @@ class _CreateGroupState extends State<CreateGroup> {
           members: usersMap,
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
-      // TODO upload to DB (https://github.com/SCCapstone/decision_maker/issues/116)
+
+      GroupsManager.createNewGroup(group, context);
+
       setState(() {
         // reset everything
         groupNameController.clear();

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_home.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
@@ -121,6 +123,42 @@ class GroupsManager {
     }
   }
 
+  static void addEvent(String groupId, Event event,
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "addEvent";
+    jsonRequestBody["payload"] = event.asMap();
+    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+
+    http.Response response = await http.post(apiEndpoint,
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json"
+        },
+        body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context,
+              callback: (_) => Navigator.pushAndRemoveUntil(context,
+                  new MaterialPageRoute(
+                      builder: (BuildContext context) => GroupsHome()),
+                      (Route<dynamic> route) => false));
+        } else {
+          showPopupMessage("Error creating event (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating event (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create event.", context);
+    }
+  }
+
   static List<Event> getGroupEvents(Group group) {
     List<Event> events = new List<Event>();
     for (String key in group.events.keys) {
@@ -134,5 +172,31 @@ class GroupsManager {
     events.sort((a, b) => b.eventStartDateTime
         .compareTo(a.eventStartDateTime)); // sorting on start date currently
     return events;
+  }
+
+  static void createNewGroup(Group group, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "createNewGroup";
+    jsonRequestBody["payload"] = group.asMap();
+
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error creating group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create group.", context);
+    }
   }
 }
