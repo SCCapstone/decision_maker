@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
@@ -25,12 +26,9 @@ class _CreateEventState extends State<CreateEvent> {
   String pollDuration;
   String pollPassPercent;
   final TextEditingController eventNameController = TextEditingController();
-
-  // These TextEditingControllers must be non-final so that I can initialize
-  // them with the default values in initState() while still having them be
-  // accessible for the whole class
-  TextEditingController pollDurationController;
-  TextEditingController passPercentageController;
+  final TextEditingController pollDurationController = TextEditingController();
+  final TextEditingController passPercentageController =
+      TextEditingController();
 
   Future<List<Category>> categoriesInGroup;
   bool autoValidate = false;
@@ -74,10 +72,9 @@ class _CreateEventState extends State<CreateEvent> {
         CategoriesManager.getAllCategoriesFromGroup(widget.group.groupId);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
-    pollDurationController = new TextEditingController(
-        text: widget.group.defaultPollDuration.toString());
-    passPercentageController = new TextEditingController(
-        text: widget.group.defaultPollPassPercent.toString());
+    pollDurationController.text = widget.group.defaultPollDuration.toString();
+    passPercentageController.text =
+        widget.group.defaultPollPassPercent.toString();
     super.initState();
   }
 
@@ -87,10 +84,9 @@ class _CreateEventState extends State<CreateEvent> {
         initialDate: DateTime.parse(eventStartDate),
         firstDate: new DateTime(currentDate.year),
         lastDate: new DateTime(currentDate.year + 30));
-    if ((selectedDate.isAfter(currentDate) ||
-        (selectedDate.day == currentDate.day) &&
-            (selectedDate.year == currentDate.year) &&
-            (selectedDate.month == currentDate.month))) {
+    DateTime currentDateMinusOneDay =
+        currentDate.subtract(new Duration(days: 1));
+    if ((selectedDate.isAfter(currentDateMinusOneDay))) {
       setState(() {
         eventStartDate = convertDateToString(selectedDate);
       });
@@ -105,18 +101,25 @@ class _CreateEventState extends State<CreateEvent> {
         initialTime: new TimeOfDay(
             hour: getHour(eventStartTime), minute: getMinute(eventStartTime)));
     DateTime parsedStartDate = DateTime.parse(eventStartDate);
-    if ((parsedStartDate.year == currentDate.year &&
-            parsedStartDate.month == currentDate.month &&
-            parsedStartDate.day == currentDate.day) &&
-        ((selectedTime.hour < currentTime.hour) ||
-            (selectedTime.hour == currentTime.hour &&
-                selectedTime.minute < currentTime.minute))) {
+    if (startTimeIsInvalid(parsedStartDate, selectedTime)) {
       showPopupMessage("Start time must be after current time.", context);
     } else {
       setState(() {
         eventStartTime = convertTimeToString(selectedTime);
       });
     }
+  }
+
+  bool startTimeIsInvalid(DateTime startDate, TimeOfDay startTime) {
+    // Check if the start time is on the earlier in the day than the current
+    // time (in other words, same date as current day && earlier time means 
+    // the start time is invalid)
+    return ((startDate.year == currentDate.year &&
+        startDate.month == currentDate.month &&
+        startDate.day == currentDate.day)) &&
+        ((startTime.hour < currentTime.hour) ||
+            (startTime.hour == currentTime.hour &&
+                startTime.minute < currentTime.minute));
   }
 
   @override
@@ -237,22 +240,13 @@ class _CreateEventState extends State<CreateEvent> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      // We want the initial votingNumbers attribute value to be a map where
-      // each key-value pair is the number of the choice and the number of votes
-      // that choice has (starting at 0).
-      Map<String, dynamic> votingNumbers = new Map<String, dynamic>();
-      for (String key in this.categoriesSelected.first.choices.keys) {
-        votingNumbers[key] = 0;
-      }
       Map<String, dynamic> eventCreator = new Map<String, dynamic>();
       eventCreator.putIfAbsent(
           Globals.username, () => widget.group.members[Globals.username]);
-      int nextEventId = widget.group.nextEventId;
 
       Event event = new Event(
         eventName: this.eventName,
         categoryId: this.categoriesSelected.first.categoryId,
-        categoryName: this.categoriesSelected.first.categoryName,
         createdDateTime:
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(
@@ -260,14 +254,10 @@ class _CreateEventState extends State<CreateEvent> {
         type: 0, // all events are non-recurring for now
         pollDuration: int.parse(this.pollDuration),
         pollPassPercent: int.parse(this.pollPassPercent),
-        optedIn: widget.group.members,
-        tentativeAlgorithmChoices: this.categoriesSelected.first.choices,
-        votingNumbers: votingNumbers,
-        selectedChoice: "null", // note: we can't add an empty string to database
         eventCreator: eventCreator,
       );
 
-      GroupsManager.addEvent(widget.group.groupId, event, nextEventId, context);
+      GroupsManager.addEvent(widget.group.groupId, event, context);
       setState(() {
         autoValidate = false;
       });

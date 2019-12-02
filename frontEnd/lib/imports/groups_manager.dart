@@ -123,13 +123,12 @@ class GroupsManager {
     }
   }
 
-  static void addEvent(String groupId, Event event, int nextEventId,
+  static void addEvent(String groupId, Event event,
       BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "addEvent";
     jsonRequestBody["payload"] = event.asMap();
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
-    jsonRequestBody["payload"].putIfAbsent(NEXT_EVENT_ID, () => nextEventId);
 
     http.Response response = await http.post(apiEndpoint,
         headers: {
