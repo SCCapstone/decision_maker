@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
@@ -31,7 +32,18 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String CATEGORIES = "Categories";
   public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  public static final String EVENTS = "Events";
 
+  public static final String EVENT_ID = "EventId";
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String EVENT_NAME = "EventName";
+  public static final String CREATED_DATE_TIME = "CreatedDateTime";
+  public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String TYPE = "Type";
+  public static final String POLL_DURATION = "PollDuration";
+  public static final String POLL_PASS_PERCENT = "PollPassPercent";
+  public static final String OPTED_IN = "OptedIn";
+  
   private UsersManager usersManager = new UsersManager();
 
   public GroupsManager() {
@@ -145,13 +157,72 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request";
+        resultStatus.resultMessage = "Error: Unable to parse request in manager";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    return resultStatus;
+  }
+  
+  public ResultStatus makeEvent(final Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(EVENT_ID, EVENT_NAME, CATEGORY_ID, CREATED_DATE_TIME, EVENT_START_DATE_TIME, TYPE, POLL_DURATION,
+                POLL_PASS_PERCENT, OPTED_IN, RequestFields.ACTIVE_USER, GROUP_ID);
+
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String eventId = (String) jsonMap.get(EVENT_ID);
+        final String eventName = (String) jsonMap.get(EVENT_NAME);
+        final String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
+        final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
+        final Integer type = (Integer) jsonMap.get(TYPE);
+        final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
+        final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
+        final Map<String, Object> optedIn = (Map<String, Object>) jsonMap.get(OPTED_IN);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+
+        if (this.makeEventInputIsValid(eventId, activeUser, groupId, categoryId, pollDuration,pollPassPercent)) {
+          final Map<String,AttributeValue> eventMap = new HashMap<String,AttributeValue>();
+          
+          eventMap.put(CATEGORY_ID, new AttributeValue(categoryId));
+          eventMap.put(EVENT_NAME, new AttributeValue(eventName));
+          eventMap.put(CREATED_DATE_TIME, new AttributeValue(createdDateTime));
+          eventMap.put(EVENT_START_DATE_TIME, new AttributeValue(eventStartDateTime));
+          eventMap.put(TYPE, new AttributeValue().withN(type.toString()));
+          eventMap.put(POLL_DURATION, new AttributeValue().withN(pollDuration.toString()));
+          eventMap.put(POLL_PASS_PERCENT, new AttributeValue().withN(pollPassPercent.toString()));
+          eventMap.put(OPTED_IN, new AttributeValue().withM(this.getAttributeValueMapping(optedIn)));
+          
+          String updateExpression = "set " + EVENTS + ".#eventId = :map";
+          NameMap nameMap = new NameMap().with("#eventId", eventId);
+          ValueMap valueMap = new ValueMap().withMap(":map", eventMap);
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+            .withNameMap(nameMap)
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
+          super.updateItem(updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "event added successfully!");      
+        } else {
+          resultStatus.resultMessage = "Invalid request, bad input.";
+        }
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request in manager. Message:"+e;
+      }
+    } else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
     return resultStatus;
   }
 
@@ -219,6 +290,26 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
+  private boolean makeEventInputIsValid(final String eventId, final String activeUser, final String groupId,
+                                        final String categoryId, final Integer pollDuration,
+                                        final Integer pollPassPercent) {
+    boolean isValid = true;
+    
+    if (StringUtils.isNullOrEmpty(eventId) || StringUtils.isNullOrEmpty(activeUser) ||
+        StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
+      isValid = false;
+    }
+    
+    if (pollPassPercent < 0 || pollPassPercent > 100) {
+     isValid = false; 
+    }
+    
+    if (pollDuration <=0 || pollDuration > 10000) {
+      isValid = false;
+    }
+    return isValid;
+  }
+                                          
   private boolean editInputHasPermissions(final Map<String, Object> dbGroupDataMap,
       final String activeUser, final String groupCreator) {
     //the group creator is not changed or it is changed and the active user is the current creator

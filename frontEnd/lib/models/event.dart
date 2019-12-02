@@ -6,6 +6,7 @@ class Event {
   final String eventName;
   final DateTime createdDateTime;
   final DateTime eventStartDateTime;
+
   final int type;
   final int pollDuration;
   final int pollPassPercent;
@@ -103,3 +104,4 @@ class Event {
         "EventCreator: $eventCreator";
   }
 }
+
