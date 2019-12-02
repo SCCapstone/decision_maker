@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
@@ -140,7 +139,7 @@ public class GroupsManager extends DatabaseAccessManager {
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
       resultStatus.resultMessage = "Error: Required request keys not found.";
@@ -303,7 +302,7 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request in manager. Message:" + e;
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -426,8 +425,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean makeEventInputIsValid(final String eventId, final String activeUser,
-      final String groupId,
-      final String categoryId, final Integer pollDuration,
+      final String groupId, final String categoryId, final Integer pollDuration,
       final Integer pollPassPercent) {
     boolean isValid = true;
 

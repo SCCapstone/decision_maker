@@ -178,8 +178,6 @@ class _CreateGroupState extends State<CreateGroup> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 
-      print(group.toString());
-
       GroupsManager.createNewGroup(group, context);
 
       setState(() {

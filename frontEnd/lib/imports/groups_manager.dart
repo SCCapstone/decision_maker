@@ -141,7 +141,7 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-        print(responseItem.resultMessage);
+
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context,
               callback: (_) => Navigator.pushAndRemoveUntil(
@@ -190,8 +190,6 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        print(responseItem.resultMessage);
-
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context);
         } else {
@@ -225,8 +223,6 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        print(responseItem.resultMessage);
 
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context);

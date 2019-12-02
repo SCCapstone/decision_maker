@@ -36,7 +36,6 @@ class _EventDetailsState extends State<EventDetails> {
 
   @override
   void initState() {
-    print(widget.event);
     createTime = widget.event.createdDateTime;
     proposedTime = widget.event.eventStartDateTime;
     EventsManager.updateEventMode(widget
@@ -266,7 +265,6 @@ class _EventDetailsState extends State<EventDetails> {
                           child: Text(buttonDenial),
                           color: Colors.red,
                           onPressed: () {
-                            // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
                             GroupsManager.optInOutOfEvent(widget.groupId, widget.eventId, false, context);
                           },
                         ),
@@ -274,7 +272,6 @@ class _EventDetailsState extends State<EventDetails> {
                           child: Text(buttonConfirm),
                           color: Colors.green,
                           onPressed: () {
-                            // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
                             GroupsManager.optInOutOfEvent(widget.groupId, widget.eventId, true, context);
                           },
                         )
