@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetails extends StatefulWidget {
+  final String groupId;
   final Event event;
+  final String eventId;
   final String mode;
   final List<Widget> userRows = new List<Widget>();
 
-  EventDetails({Key key, this.event, this.mode}) : super(key: key);
+  EventDetails({Key key, this.groupId, this.event, this.eventId, this.mode}) : super(key: key);
 
   @override
   _EventDetailsState createState() => new _EventDetailsState();
@@ -264,6 +267,7 @@ class _EventDetailsState extends State<EventDetails> {
                           color: Colors.red,
                           onPressed: () {
                             // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
+                            GroupsManager.optInOutOfEvent(widget.groupId, widget.eventId, false, context);
                           },
                         ),
                         RaisedButton(
@@ -271,6 +275,7 @@ class _EventDetailsState extends State<EventDetails> {
                           color: Colors.green,
                           onPressed: () {
                             // TODO opt in if in that stage (https://github.com/SCCapstone/decision_maker/issues/45)
+                            GroupsManager.optInOutOfEvent(widget.groupId, widget.eventId, true, context);
                           },
                         )
                       ],

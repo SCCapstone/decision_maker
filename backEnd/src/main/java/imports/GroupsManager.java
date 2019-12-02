@@ -348,12 +348,14 @@ public class GroupsManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         super.updateItem(updateItemSpec);
-        resultStatus = new ResultStatus(true, "User was opted in/out successfully");
+        resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
-        resultStatus.resultMessage = e + ExceptionHelper.getStackTrace(e);
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     return resultStatus;

@@ -141,7 +141,7 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response.body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-print(responseItem.resultMessage);
+        print(responseItem.resultMessage);
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context,
               callback: (_) => Navigator.pushAndRemoveUntil(
@@ -160,18 +160,20 @@ print(responseItem.resultMessage);
     }
   }
 
-  static List<Event> getGroupEvents(Group group) {
-    List<Event> events = new List<Event>();
-    for (String key in group.events.keys) {
-      Event event = new Event.fromJson(group.events[key]);
+  static Map<String, Event> getGroupEvents(Group group) {
+    Map<String, Event> events = new Map<String, Event>();
+    for (String eventId in group.events.keys) {
+      Event event = new Event.fromJson(group.events[eventId]);
       Map<String, String> optInList = event.optedIn.cast();
       if (optInList.keys.contains(Globals.username)) {
         // if user has opted in, display the event to them
-        events.add(event);
+        events.putIfAbsent(eventId, () => event);
       }
     }
-    events.sort((a, b) => b.eventStartDateTime
-        .compareTo(a.eventStartDateTime)); // sorting on start date currently
+
+    //TODO make the events sortable on their respective page
+//    events.sort((a, b) => b.eventStartDateTime
+//        .compareTo(a.eventStartDateTime)); // sorting on start date currently
     return events;
   }
 
@@ -200,6 +202,42 @@ print(responseItem.resultMessage);
       }
     } else {
       showPopupMessage("Unable to create group.", context);
+    }
+  }
+
+  static void optInOutOfEvent(String groupId, String eventId, bool participating,
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "optUserInOut";
+    jsonRequestBody["payload"].putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody["payload"].putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
+
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        print(responseItem.resultMessage);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error opting in/out (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error opting in/out (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to opt in/out.", context);
     }
   }
 }
