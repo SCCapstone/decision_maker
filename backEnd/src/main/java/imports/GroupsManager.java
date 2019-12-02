@@ -5,17 +5,20 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.util.StringUtils;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
@@ -31,6 +34,9 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String CATEGORIES = "Categories";
   public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  public static final String EVENTS = "Events";
+  public static final String NEXT_EVENT_ID = "NextEventId";
+  public static final String OPTED_IN = "OptedIn";
 
   private UsersManager usersManager = new UsersManager();
 
@@ -150,6 +156,52 @@ public class GroupsManager extends DatabaseAccessManager {
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    return resultStatus;
+  }
+
+  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, RequestFields.PARTICIPATING, RequestFields.EVENT_ID,
+            RequestFields.ACTIVE_USER, RequestFields.DISPLAY_NAME);
+
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Boolean participating = (Boolean) jsonMap.get(RequestFields.PARTICIPATING);
+        final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String displayName = (String) jsonMap.get(RequestFields.DISPLAY_NAME);
+
+        String updateExpression;
+        ValueMap valueMap = null;
+
+        if (participating) { // add the user to the optIn
+          updateExpression = "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :displayName";
+          valueMap = new ValueMap().withString(":displayName", displayName);
+        } else {
+          updateExpression = "remove " + EVENTS + ".#eventId." + OPTED_IN + ".#username";
+        }
+
+        final NameMap nameMap = new NameMap()
+            .with("#eventId", eventId)
+            .with("#username", activeUser);
+
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
+
+        super.updateItem(updateItemSpec);
+        resultStatus = new ResultStatus(true, "User was opted in/out successfully");
+      } catch (Exception e) {
+        resultStatus.resultMessage = e + ExceptionHelper.getStackTrace(e);
+      }
+    } else {
+
     }
 
     return resultStatus;
