@@ -188,16 +188,16 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
 
         if (this.makeEventInputIsValid(eventId, activeUser, groupId, categoryId, pollDuration,pollPassPercent)) {
-          final Map<String,AttributeValue> eventMap = new HashMap<String,AttributeValue>();
+          final Map<String,Object> eventMap = new HashMap<String,Object>();
           
-          eventMap.put(CATEGORY_ID, new AttributeValue(categoryId));
-          eventMap.put(EVENT_NAME, new AttributeValue(eventName));
-          eventMap.put(CREATED_DATE_TIME, new AttributeValue(createdDateTime));
-          eventMap.put(EVENT_START_DATE_TIME, new AttributeValue(eventStartDateTime));
-          eventMap.put(TYPE, new AttributeValue().withN(type.toString()));
-          eventMap.put(POLL_DURATION, new AttributeValue().withN(pollDuration.toString()));
-          eventMap.put(POLL_PASS_PERCENT, new AttributeValue().withN(pollPassPercent.toString()));
-          eventMap.put(OPTED_IN, new AttributeValue().withM(this.getAttributeValueMapping(optedIn)));
+          eventMap.put(CATEGORY_ID, categoryId);
+          eventMap.put(EVENT_NAME, eventName);
+          eventMap.put(CREATED_DATE_TIME, createdDateTime);
+          eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
+          eventMap.put(TYPE, type);
+          eventMap.put(POLL_DURATION, pollDuration);
+          eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
+          eventMap.put(OPTED_IN, optedIn);
           
           String updateExpression = "set " + EVENTS + ".#eventId = :map";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
