@@ -55,9 +55,9 @@ class Group {
   @override
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
-        "$icon GroupCreator: $groupCreator Members: $members Categories: $categories Events $events"
+        "$icon GroupCreator: $groupCreator Members: $members Categories: $categories Events: $events"
         "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration "
-        "NextEventId $nextEventId";
+        "NextEventId: $nextEventId";
   }
 
   Map asMap() {

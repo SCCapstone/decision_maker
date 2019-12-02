@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
-import 'package:intl/intl.dart';
 
 class EventCard extends StatefulWidget {
+  final String groupId;
   final Event event;
-  final int index;
+  final String eventId;
   final Function callback;
 
-  EventCard(this.event, this.index, {this.callback});
+  EventCard(this.groupId, this.event, this.eventId, {this.callback});
 
   @override
   _EventCardState createState() => new _EventCardState();
@@ -104,7 +104,7 @@ class _EventCardState extends State<EventCard> {
                 ? Colors.lightGreenAccent
                 : Colors.grey,
             onPressed: () {
-              widget.callback(widget.event, widget.event.mode);
+              widget.callback(widget.groupId, widget.event, widget.eventId);
             },
           )
         ],

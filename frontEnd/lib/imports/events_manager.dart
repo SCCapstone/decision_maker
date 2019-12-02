@@ -5,6 +5,7 @@ class EventsManager {
   static final String optInMode = "OptIn";
   static final String pollFinishedMode = "Finished";
   static final String eventClosedMode = "Closed";
+  static final String EVENT_ID = "EventId";
   static final String CATEGORY_ID = "CategoryId";
   static final String CATEGORY_NAME = "CategoryName";
   static final String EVENT_NAME = "EventName";

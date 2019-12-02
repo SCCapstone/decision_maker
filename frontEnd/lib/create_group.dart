@@ -24,7 +24,7 @@ class _CreateGroupState extends State<CreateGroup> {
   int pollDuration;
 
   final List<Category> categoriesToAdd = new List<Category>();
-  final Map<String, String> users = new Map<String, String>();
+  final Map<String, dynamic> users = new Map<String, dynamic>();
   final formKey = GlobalKey<FormState>();
   final groupNameController = TextEditingController();
   final groupIconController = TextEditingController();
@@ -169,16 +169,12 @@ class _CreateGroupState extends State<CreateGroup> {
             () => categoriesToAdd[i].categoryName);
       }
       // it's okay to not have any inputted members, since creator is guaranteed to be there
-      Map<String, String> usersMap = new Map<String, String>();
-      for (int i = 0; i < users.length; i++) {
-        usersMap.putIfAbsent(users[i], () => users[i]);
-      }
       Group group = new Group(
           groupName: groupName,
           groupCreator: Globals.username,
           icon: groupIcon,
           categories: categoriesMap,
-          members: usersMap,
+          members: users,
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 

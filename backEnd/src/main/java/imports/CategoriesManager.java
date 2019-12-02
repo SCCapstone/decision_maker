@@ -47,7 +47,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         String categoryName = (String) jsonMap.get(CATEGORY_NAME);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
         Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
-        Map<String, Object> groups = new HashMap<String, Object>();
+        Map<String, Object> groups = new HashMap<>();
         int nextChoiceNo = choices.size();
         String owner = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
@@ -175,7 +175,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       categoryIds = this.usersManager.getAllCategoryIds(username);
     } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
-    } else if (jsonMap.containsKey(this.groupsManager.getPrimaryKeyIndex())) {
+    } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
       String groupId = (String) jsonMap.get(this.groupsManager.getPrimaryKeyIndex());
       categoryIds = this.groupsManager.getAllCategoryIds(groupId);
     } else {

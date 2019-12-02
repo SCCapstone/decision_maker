@@ -5,5 +5,7 @@ class RequestFields {
   static final String CATEGORY_IDS = "CategoryIds";
   static final String USER_RATINGS = "UserRatings";
   static final String GROUP_IDS = "GroupIds";
-  static final String GROUP_ID = "GroupId";
+  static final String EVENT_ID = "EventId";
+  static final String PARTICIPATING = "Participating";
+  static final String DISPLAY_NAME = "DisplayName";
 }
