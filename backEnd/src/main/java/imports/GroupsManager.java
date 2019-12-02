@@ -2,6 +2,7 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -35,8 +36,19 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
   public static final String EVENTS = "Events";
-  public static final String NEXT_EVENT_ID = "NextEventId";
+
+  public static final String EVENT_ID = "EventId";
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String EVENT_NAME = "EventName";
+  public static final String CREATED_DATE_TIME = "CreatedDateTime";
+  public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String TYPE = "Type";
+  public static final String POLL_DURATION = "PollDuration";
+  public static final String POLL_PASS_PERCENT = "PollPassPercent";
   public static final String OPTED_IN = "OptedIn";
+  public static final String NEXT_EVENT_ID = "NextEventId";
+  
+  public static final Map EMPTY_MAP = new HashMap();
 
   private UsersManager usersManager = new UsersManager();
 
@@ -79,7 +91,45 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public ResultStatus createNewGroup(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String groupName = (String) jsonMap.get(GROUP_NAME);
+        final String icon = (String) jsonMap.get(ICON);
+        final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
+        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS);
+        final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
+        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
+        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+ 
+        Item newGroup = new Item()
+            .withString(GROUP_ID, groupId)
+            .withString(GROUP_NAME, groupName)
+            .withString(ICON, icon)
+            .withString(GROUP_CREATOR, groupCreator)
+            .withMap(MEMBERS, members)
+            .withMap(CATEGORIES, categories)
+            .withInt(DEFAULT_POLL_PASS_PERCENT,defaultPollPassPercent)
+            .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
+            .withMap(EVENTS, EMPTY_MAP);
 
+        PutItemSpec putItemSpec = new PutItemSpec()
+          .withItem(newGroup);
+
+        super.putItem(putItemSpec);
+
+        resultStatus = new ResultStatus(true, "Group created successfully!");
+        
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+      }
+    } else {
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
     return resultStatus;
   }
 
@@ -151,13 +201,87 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request";
+        resultStatus.resultMessage = "Error: Unable to parse request in manager";
       }
     } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    return resultStatus;
+  }
+  
+  public ResultStatus makeEvent(final Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(EVENT_ID, EVENT_NAME, CATEGORY_ID, CREATED_DATE_TIME, EVENT_START_DATE_TIME, TYPE, POLL_DURATION,
+                POLL_PASS_PERCENT, RequestFields.ACTIVE_USER, GROUP_ID);
+
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String eventId = (String) jsonMap.get(EVENT_ID);
+        final String eventName = (String) jsonMap.get(EVENT_NAME);
+        final String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
+        final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
+        final Integer type = (Integer) jsonMap.get(TYPE);
+        final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
+        final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        
+        Map<String, Object> optedIn = new HashMap<String,Object>();
+        Item groupData = super
+          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), groupId));
+        if (groupData != null) {
+          Map<String, Object> groupDataMapped = groupData.asMap();
+          if (groupDataMapped.containsKey(MEMBERS)) {
+            optedIn = (Map<String,Object>)groupDataMapped.get(MEMBERS);
+          } else {
+            resultStatus.resultMessage = "Error: group has no members field";
+            return resultStatus;
+          }
+        } else {
+          resultStatus.resultMessage = "Error: group not found";
+          return resultStatus;
+        }
+
+        if (this.makeEventInputIsValid(eventId, activeUser, groupId, categoryId, pollDuration,pollPassPercent)) {
+          final Map<String,Object> eventMap = new HashMap<String,Object>();
+          
+          eventMap.put(CATEGORY_ID, categoryId);
+          eventMap.put(EVENT_NAME, eventName);
+          eventMap.put(CREATED_DATE_TIME, createdDateTime);
+          eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
+          eventMap.put(TYPE, type);
+          eventMap.put(POLL_DURATION, pollDuration);
+          eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
+          eventMap.put(OPTED_IN, optedIn);
+          
+          String updateExpression = "set " + EVENTS + ".#eventId = :map";
+          NameMap nameMap = new NameMap().with("#eventId", eventId);
+          ValueMap valueMap = new ValueMap().withMap(":map", eventMap);
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+            .withNameMap(nameMap)
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
+          super.updateItem(updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "event added successfully!");      
+        } else {
+          resultStatus.resultMessage = "Invalid request, bad input.";
+        }
+      } catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request in manager. Message:"+e;
+      }
+    } else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
     return resultStatus;
   }
 
@@ -271,6 +395,26 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
+  private boolean makeEventInputIsValid(final String eventId, final String activeUser, final String groupId,
+                                        final String categoryId, final Integer pollDuration,
+                                        final Integer pollPassPercent) {
+    boolean isValid = true;
+    
+    if (StringUtils.isNullOrEmpty(eventId) || StringUtils.isNullOrEmpty(activeUser) ||
+        StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
+      isValid = false;
+    }
+    
+    if (pollPassPercent < 0 || pollPassPercent > 100) {
+     isValid = false; 
+    }
+    
+    if (pollDuration <=0 || pollDuration > 10000) {
+      isValid = false;
+    }
+    return isValid;
+  }
+                                          
   private boolean editInputHasPermissions(final Map<String, Object> dbGroupDataMap,
       final String activeUser, final String groupCreator) {
     //the group creator is not changed or it is changed and the active user is the current creator

@@ -31,10 +31,12 @@ public class GroupsPostHandler implements RequestStreamHandler {
 
             if (action.equals("getGroups")) {
               resultStatus = this.groupsManager.getGroups(payloadJsonMap);
-            } else if (action.equals("createGroup")) {
+            } else if (action.equals("createNewGroup")) {
               resultStatus = this.groupsManager.createNewGroup(payloadJsonMap);
             } else if (action.equals("editGroup")) {
               resultStatus = this.groupsManager.editGroup(payloadJsonMap);
+            } else if (action.equals("makeEvent")) {
+              resultStatus = this.groupsManager.makeEvent(payloadJsonMap);
             } else if (action.equals("optUserInOut")) {
               resultStatus = this.groupsManager.optInOutOfEvent(payloadJsonMap);
             } else {
@@ -44,7 +46,7 @@ public class GroupsPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request.").toString());
+                new ResultStatus(false, "Error: Unable to parse request in handler.").toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
