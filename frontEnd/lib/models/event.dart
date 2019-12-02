@@ -6,7 +6,6 @@ class Event {
   final String eventName;
   final DateTime createdDateTime;
   final DateTime eventStartDateTime;
-
   final int type;
   final int pollDuration;
   final int pollPassPercent;
@@ -103,5 +102,4 @@ class Event {
         "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
         "EventCreator: $eventCreator";
   }
-}
-
+}r

@@ -26,8 +26,8 @@ class EventsManager {
         createTime.add(new Duration(minutes: event.pollDuration));
     DateTime pollFinished =
         createTime.add(new Duration(minutes: (event.pollDuration) * 2));
-    DateTime eventClosed =
-        event.eventStartDateTime.add(new Duration(hours: 24)); // assumption that after 24 hours the event is done
+    DateTime eventClosed = event.eventStartDateTime.add(new Duration(
+        hours: 24)); // assumption that after 24 hours the event is done
     if (timeNow.isBefore(pollBegin)) {
       event.mode = optInMode;
     } else if (timeNow.isAfter(pollBegin) && timeNow.isBefore(pollFinished)) {
