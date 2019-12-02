@@ -81,8 +81,10 @@ class Event {
       EventsManager.EVENT_NAME: this.eventName,
       EventsManager.CATEGORY_ID: this.categoryId,
       EventsManager.CATEGORY_NAME: this.categoryName,
-      EventsManager.CREATED_DATE_TIME: this.createdDateTime.toString().substring(0, 19),
-      EventsManager.EVENT_START_DATE_TIME: this.eventStartDateTime.toString().substring(0, 19),
+      EventsManager.CREATED_DATE_TIME:
+          this.createdDateTime.toString().substring(0, 19),
+      EventsManager.EVENT_START_DATE_TIME:
+          this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.TYPE: this.type,
       EventsManager.POLL_DURATION: this.pollDuration,
       EventsManager.POLL_PASS_PERCENT: this.pollPassPercent,

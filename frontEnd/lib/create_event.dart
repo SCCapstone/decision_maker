@@ -246,6 +246,7 @@ class _CreateEventState extends State<CreateEvent> {
       Event event = new Event(
         eventName: this.eventName,
         categoryId: this.categoriesSelected.first.categoryId,
+        categoryName: this.categoriesSelected.first.categoryName,
         createdDateTime:
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(

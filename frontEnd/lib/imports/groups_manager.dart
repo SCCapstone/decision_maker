@@ -123,10 +123,10 @@ class GroupsManager {
     }
   }
 
-  static void addEvent(String groupId, Event event,
-      BuildContext context) async {
+  static void addEvent(
+      String groupId, Event event, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "addEvent";
+    jsonRequestBody["action"] = "newEvent";
     jsonRequestBody["payload"] = event.asMap();
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
@@ -144,10 +144,11 @@ class GroupsManager {
 
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context,
-              callback: (_) => Navigator.pushAndRemoveUntil(context,
+              callback: (_) => Navigator.pushAndRemoveUntil(
+                  context,
                   new MaterialPageRoute(
                       builder: (BuildContext context) => GroupsHome()),
-                      (Route<dynamic> route) => false));
+                  (Route<dynamic> route) => false));
         } else {
           showPopupMessage("Error creating event (1).", context);
         }
@@ -159,18 +160,20 @@ class GroupsManager {
     }
   }
 
-  static List<Event> getGroupEvents(Group group) {
-    List<Event> events = new List<Event>();
-    for (String key in group.events.keys) {
-      Event event = new Event.fromJson(group.events[key]);
+  static Map<String, Event> getGroupEvents(Group group) {
+    Map<String, Event> events = new Map<String, Event>();
+    for (String eventId in group.events.keys) {
+      Event event = new Event.fromJson(group.events[eventId]);
       Map<String, String> optInList = event.optedIn.cast();
       if (optInList.keys.contains(Globals.username)) {
         // if user has opted in, display the event to them
-        events.add(event);
+        events.putIfAbsent(eventId, () => event);
       }
     }
-    events.sort((a, b) => b.eventStartDateTime
-        .compareTo(a.eventStartDateTime)); // sorting on start date currently
+
+    //TODO make the events sortable on their respective page
+//    events.sort((a, b) => b.eventStartDateTime
+//        .compareTo(a.eventStartDateTime)); // sorting on start date currently
     return events;
   }
 
@@ -180,7 +183,7 @@ class GroupsManager {
     jsonRequestBody["payload"] = group.asMap();
 
     http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
 
     if (response.statusCode == 200) {
       try {
@@ -197,6 +200,43 @@ class GroupsManager {
       }
     } else {
       showPopupMessage("Unable to create group.", context);
+    }
+  }
+
+  static void optInOutOfEvent(String groupId, String eventId,
+      bool participating, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "optUserInOut";
+    jsonRequestBody["payload"]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    //TODO get display name globally and maybe allow for it to be editable somewhere (https://github.com/SCCapstone/decision_maker/issues/148)
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
+
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error opting in/out (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error opting in/out (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to opt in/out.", context);
     }
   }
 }

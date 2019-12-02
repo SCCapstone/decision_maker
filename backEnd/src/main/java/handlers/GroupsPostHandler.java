@@ -35,8 +35,10 @@ public class GroupsPostHandler implements RequestStreamHandler {
               resultStatus = this.groupsManager.createNewGroup(payloadJsonMap);
             } else if (action.equals("editGroup")) {
               resultStatus = this.groupsManager.editGroup(payloadJsonMap);
-            } else if (action.equals("makeEvent")) {
-              resultStatus = this.groupsManager.makeEvent(payloadJsonMap);
+            } else if (action.equals("newEvent")) {
+              resultStatus = this.groupsManager.newEvent(payloadJsonMap);
+            } else if (action.equals("optUserInOut")) {
+              resultStatus = this.groupsManager.optInOutOfEvent(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

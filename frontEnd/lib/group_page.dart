@@ -8,7 +8,7 @@ import 'create_event.dart';
 
 class GroupPage extends StatefulWidget {
   final Group group;
-  final List<Event> events;
+  final Map<String, Event> events;
 
   GroupPage({Key key, this.group, this.events}) : super(key: key);
 

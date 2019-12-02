@@ -6,7 +6,7 @@ import 'package:frontEnd/event_details.dart';
 import 'package:frontEnd/group_page.dart';
 
 class EventsList extends StatefulWidget {
-  final List<Event> events;
+  final Map<String, Event> events;
   final Group group;
 
   EventsList({Key key, this.group, this.events}) : super(key: key);
@@ -22,36 +22,40 @@ class _EventsListState extends State<EventsList> {
       return Center(
         child: Text("No events found! Click the button below to create one!",
             style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5)),
+                fontSize: DefaultTextStyle
+                    .of(context)
+                    .style
+                    .fontSize * 0.5)),
       );
     } else {
+      List<EventCard> eventCards = new List<EventCard>();
+      for (String eventId in widget.events.keys) {
+        eventCards.add(new EventCard(widget.group.groupId, widget.events[eventId], eventId,
+            callback: (String groupId, Event event, String eventId) => selectEvent(groupId, event, eventId)));
+      }
+
       return Scrollbar(
-        child: ListView.builder(
+        child: ListView(
           shrinkWrap: true,
-          itemCount: widget.events.length,
-          itemBuilder: (context, index) {
-            return EventCard(
-              widget.events[index],
-              index,
-              callback: (event, mode) => selectEvent(event, mode),
-            );
-          },
-        ),
+          children: eventCards
+        )
       );
     }
-  }
-
-  void selectEvent(Event event, String mode) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => EventDetails(
-                event: event,
-                mode: mode,
-              )),
-    ).then((_) => GroupPage(
-          group: widget.group,
-          events: widget.events,
-        ));
-  }
 }
+
+void selectEvent(String groupId, Event event, String eventId) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (context) =>
+            EventDetails(
+              groupId: groupId,
+              event: event,
+              eventId: eventId,
+            )),
+  ).then((_) =>
+      GroupPage(
+        group: widget.group,
+        events: widget.events,
+      ));
+}}
