@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -170,11 +171,13 @@ class GroupsManager {
         events.putIfAbsent(eventId, () => event);
       }
     }
-
-    //TODO make the events sortable on their respective page
-//    events.sort((a, b) => b.eventStartDateTime
-//        .compareTo(a.eventStartDateTime)); // sorting on start date currently
-    return events;
+    // sorting based on create time for now, most recently created at the top
+    var sortedKeys = events.keys.toList(growable: false)
+      ..sort((k1, k2) =>
+          events[k2].createdDateTime.compareTo(events[k1].createdDateTime));
+    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
+        key: (k) => k, value: (k) => events[k]);
+    return sortedMap.cast();
   }
 
   static void createNewGroup(Group group, BuildContext context) async {

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 class UserRow extends StatelessWidget {
   final String displayName;
-  final String username;
 
-  UserRow(this.displayName, this.username);
+  UserRow(this.displayName);
 
   @override
   Widget build(BuildContext context) {
