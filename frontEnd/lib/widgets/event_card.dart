@@ -33,14 +33,14 @@ class _EventCardState extends State<EventCard> {
   void initState() {
     proposedTime = widget.event.eventStartDateTime;
     proposedTimeFormatted = Globals.formatter.format(proposedTime);
-    widget.event.mode = EventsManager.updateEventMode(widget.event);
     getFormattedTimes();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    EventsManager.updateEventMode(widget.event);
+    widget.event.mode = EventsManager.updateEventMode(
+        widget.event); // needed here for the refresh
     getFormattedTimes();
 
     if (widget.event.mode == EventsManager.optInMode) {

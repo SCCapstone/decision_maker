@@ -192,6 +192,7 @@ class _CreateEventState extends State<CreateEvent> {
                   Container(height: 10),
                   TextFormField(
                     controller: pollDurationController,
+                    keyboardType: TextInputType.number,
                     validator: validPollDuration,
                     onSaved: (String arg) {
                       pollDuration = arg;
@@ -201,6 +202,7 @@ class _CreateEventState extends State<CreateEvent> {
                   ),
                   TextFormField(
                     controller: passPercentageController,
+                    keyboardType: TextInputType.number,
                     validator: validPassPercentage,
                     onSaved: (String arg) {
                       pollPassPercent = arg;

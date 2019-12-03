@@ -21,41 +21,32 @@ class _EventsListState extends State<EventsList> {
     if (widget.events.length == 0) {
       return Center(
         child: Text("No events found! Click the button below to create one!",
-            style: TextStyle(
-                fontSize: DefaultTextStyle
-                    .of(context)
-                    .style
-                    .fontSize * 0.5)),
+            style: TextStyle(fontSize: 30)),
       );
     } else {
       List<EventCard> eventCards = new List<EventCard>();
       for (String eventId in widget.events.keys) {
-        eventCards.add(new EventCard(widget.group.groupId, widget.events[eventId], eventId,
-            callback: (String groupId, Event event, String eventId) => selectEvent(groupId, event, eventId)));
+        eventCards.add(new EventCard(
+            widget.group.groupId, widget.events[eventId], eventId,
+            callback: (String groupId, Event event, String eventId) =>
+                selectEvent(groupId, event, eventId)));
       }
-
-      return Scrollbar(
-        child: ListView(
-          shrinkWrap: true,
-          children: eventCards
-        )
-      );
+      return Scrollbar(child: ListView(shrinkWrap: true, children: eventCards));
     }
-}
+  }
 
-void selectEvent(String groupId, Event event, String eventId) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-        builder: (context) =>
-            EventDetails(
-              groupId: groupId,
-              event: event,
-              eventId: eventId,
-            )),
-  ).then((_) =>
-      GroupPage(
-        group: widget.group,
-        events: widget.events,
-      ));
-}}
+  void selectEvent(String groupId, Event event, String eventId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => EventDetails(
+                groupId: groupId,
+                event: event,
+                eventId: eventId,
+              )),
+    ).then((_) => GroupPage(
+          group: widget.group,
+          events: widget.events,
+        ));
+  }
+}

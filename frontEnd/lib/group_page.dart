@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as prefix0;
 import 'package:frontEnd/group_settings.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
@@ -49,9 +50,12 @@ class _GroupPageState extends State<GroupPage> {
             ),
             Container(
               height: MediaQuery.of(context).size.height * .70,
-              child: EventsList(
-                group: widget.group,
-                events: widget.events,
+              child: RefreshIndicator(
+                child: EventsList(
+                  group: widget.group,
+                  events: widget.events,
+                ),
+                onRefresh: refreshList,
               ),
             ),
             Padding(
@@ -65,9 +69,11 @@ class _GroupPageState extends State<GroupPage> {
                         DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>
-                        CreateEvent(group: widget.group)))
+                Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                CreateEvent(group: widget.group)))
                     .then((_) => GroupPage(group: widget.group));
               },
             )
@@ -75,5 +81,11 @@ class _GroupPageState extends State<GroupPage> {
         ),
       ),
     );
+  }
+
+  Future<Null> refreshList() async {
+    await Future.delayed(
+        Duration(milliseconds: 70)); // required to remove the loading animation
+    setState(() {});
   }
 }
