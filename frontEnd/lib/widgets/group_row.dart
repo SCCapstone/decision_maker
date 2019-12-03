@@ -18,11 +18,20 @@ class GroupRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           IconButton(
-            iconSize: MediaQuery.of(context).size.width * .20,
-            icon: Image(
-              image: NetworkImage(group.icon),
-            ),
-          ),
+              iconSize: MediaQuery.of(context).size.width * .20,
+              icon: Image(
+                image: NetworkImage(group.icon),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => GroupPage(
+                            group: this.group,
+                            events: GroupsManager.getGroupEvents(group),
+                          )),
+                ).then((_) => GroupsHome());
+              }),
           Expanded(
             child: RaisedButton(
               child: Text(

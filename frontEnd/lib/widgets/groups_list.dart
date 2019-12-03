@@ -4,8 +4,9 @@ import 'group_row.dart';
 
 class GroupsList extends StatefulWidget {
   final List<Group> groups;
+  final bool searching;
 
-  GroupsList({Key key, this.groups}) : super(key: key);
+  GroupsList({Key key, this.groups, this.searching}) : super(key: key);
 
   @override
   _GroupsListState createState() => _GroupsListState();
@@ -17,9 +18,10 @@ class _GroupsListState extends State<GroupsList> {
     if (widget.groups.length == 0) {
       return Center(
         child: Text(
-            "No groups found! Click the plus button below to create one!",
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.7)),
+            (widget.searching)
+                ? "Group not found"
+                : "No groups found! Click the plus button below to create one!",
+            style: TextStyle(fontSize: 30)),
       );
     } else {
       return Scrollbar(
