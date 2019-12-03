@@ -66,14 +66,6 @@ class Event {
         eventCreator: json[EventsManager.EVENT_CREATOR]);
   }
 
-  int compareTo(Event other) {
-    DateTime otherTime = other.eventStartDateTime;
-    DateTime thisTime = this.eventStartDateTime;
-    int order = thisTime.compareTo(otherTime);
-    if (order == 0) order = thisTime.compareTo(otherTime);
-    return order;
-  }
-
   Map asMap() {
     return {
       // Need the DateTime objects to be Strings when used in the API request

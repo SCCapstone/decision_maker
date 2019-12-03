@@ -16,7 +16,6 @@ class EventCard extends StatefulWidget {
 }
 
 class _EventCardState extends State<EventCard> {
-  DateTime createTime;
   DateTime pollBegin;
   DateTime pollFinished;
   DateTime proposedTime;
@@ -32,10 +31,9 @@ class _EventCardState extends State<EventCard> {
 
   @override
   void initState() {
-    createTime = widget.event.createdDateTime;
     proposedTime = widget.event.eventStartDateTime;
     proposedTimeFormatted = Globals.formatter.format(proposedTime);
-    EventsManager.updateEventMode(widget.event);
+    widget.event.mode = EventsManager.updateEventMode(widget.event);
     getFormattedTimes();
     super.initState();
   }
@@ -63,7 +61,7 @@ class _EventCardState extends State<EventCard> {
       voting = false;
       closed = false;
       buttonText = "View results";
-    } else {
+    } else if (widget.event.mode == EventsManager.eventClosedMode) {
       closed = true;
       finished = false;
       optIn = false;
@@ -115,11 +113,12 @@ class _EventCardState extends State<EventCard> {
   }
 
   void getFormattedTimes() {
-    createTimeFormatted = Globals.formatter.format(createTime);
-    pollBegin =
-        createTime.add(new Duration(minutes: widget.event.pollDuration));
-    pollFinished =
-        createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
+    createTimeFormatted =
+        Globals.formatter.format(widget.event.createdDateTime);
+    pollBegin = widget.event.createdDateTime
+        .add(new Duration(minutes: widget.event.pollDuration));
+    pollFinished = widget.event.createdDateTime
+        .add(new Duration(minutes: (widget.event.pollDuration) * 2));
     pollBeginFormatted = Globals.formatter.format(pollBegin);
     pollFinishedFormatted = Globals.formatter.format(pollFinished);
   }

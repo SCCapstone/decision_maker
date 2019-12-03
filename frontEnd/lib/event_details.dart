@@ -9,10 +9,9 @@ class EventDetails extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
-  final String mode;
   final List<Widget> userRows = new List<Widget>();
 
-  EventDetails({Key key, this.groupId, this.event, this.eventId, this.mode}) : super(key: key);
+  EventDetails({Key key, this.groupId, this.event, this.eventId}) : super(key: key);
 
   @override
   _EventDetailsState createState() => new _EventDetailsState();
@@ -41,7 +40,7 @@ class _EventDetailsState extends State<EventDetails> {
     EventsManager.updateEventMode(widget
         .event); // make this call in case now the event is in a different stage
     for (String username in widget.event.optedIn.keys) {
-      widget.userRows.add(UserRow(widget.event.optedIn[username], username));
+      widget.userRows.add(UserRow(widget.event.optedIn[username]));
     }
     for (String username in widget.event.eventCreator.keys) {
       eventCreator = widget.event.eventCreator[username];
