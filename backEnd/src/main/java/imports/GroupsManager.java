@@ -496,7 +496,8 @@ public class GroupsManager extends DatabaseAccessManager {
           usersManager.updateItem(updateItemSpec);
         }
       } else if (!newGroupName.equals(oldGroupName)) {
-        // If the group name was changed, update every user in newMembers to reflect that
+        // If the group name was changed, update every user in newMembers to reflect that.
+        // In this case, both the list of members and the group name were changed.
         updateExpression = "set Groups.#groupId = :groupName";
         NameMap nameMap = new NameMap().with("#groupId", groupId);
         ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
@@ -523,7 +524,8 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       }
     } else if (!newGroupName.equals(oldGroupName)) {
-      // If the group name was changed, update every user in newMembers to reflect that
+      // If the group name was changed, update every user in newMembers to reflect that.
+      // In this case, the list of members wasn't changed, but the group name was.
       final UsersManager usersManager = new UsersManager();
       UpdateItemSpec updateItemSpec;
       String updateExpression = "set Groups.#groupId = :groupName";
@@ -572,7 +574,8 @@ public class GroupsManager extends DatabaseAccessManager {
           categoriesManager.updateItem(updateItemSpec);
         }
       } else if (!newGroupName.equals(oldGroupName)) {
-        // If the group name was changed, update every category in newCategories to reflect that
+        // If the group name was changed, update every category in newCategories to reflect that.
+        // In this case, both the list of categories and the group name were changed.
         updateExpression = "set Groups.#groupId = :groupName";
         NameMap nameMap = new NameMap().with("#groupId", groupId);
         ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
@@ -599,7 +602,8 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       }
     } else if (!newGroupName.equals(oldGroupName)) {
-      // If the group name was changed, update every category in newCategories to reflect that
+      // If the group name was changed, update every category in newCategories to reflect that.
+      // In this case, the list of categories wasn't changed, but the group name was.
       final CategoriesManager categoriesManager = new CategoriesManager();
       UpdateItemSpec updateItemSpec;
       String updateExpression = "set Groups.#groupId = :groupName";
