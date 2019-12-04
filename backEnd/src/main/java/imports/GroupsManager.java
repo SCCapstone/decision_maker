@@ -16,8 +16,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -133,9 +135,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
         GROUPS_MANAGER.putItem(putItemSpec);
 
-        final List dummyList = new ArrayList<>();
-        GROUPS_MANAGER.addActionsForUsersDelta(dummyList, EMPTY_MAP, members);
-        GROUPS_MANAGER.addActionsForCategoriesDelta(dummyList, EMPTY_MAP, categories);
+        GROUPS_MANAGER.updateUsersTable(EMPTY_MAP, members, newGroupId, "", groupName);
+        GROUPS_MANAGER.updateCategoriesTable(EMPTY_MAP, categories, newGroupId, "", groupName);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
@@ -175,12 +176,12 @@ public class GroupsManager extends DatabaseAccessManager {
             //all validation is successful, build transaction actions
             GROUPS_MANAGER.updateMembersMapForInsertion(members); // this implicitly changes data
 
-            //add other actions to this transaction for adding/removing groups to/from the users/categories table
-            GROUPS_MANAGER.addActionsForUsersDelta(new ArrayList<>(),
-                (Map<String, Object>) dbGroupDataMap.get(MEMBERS),
-                members);
-            GROUPS_MANAGER.addActionsForCategoriesDelta(new ArrayList<>(),
-                (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories);
+            //update mappings in users and categories tables
+            GROUPS_MANAGER.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
+                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName);
+            GROUPS_MANAGER.updateCategoriesTable(
+                (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
+                (String) dbGroupDataMap.get(GROUP_NAME), groupName);
 
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + ICON + " = :icon, " + GROUP_CREATOR
@@ -466,26 +467,156 @@ public class GroupsManager extends DatabaseAccessManager {
     return hasPermission;
   }
 
-  private void addActionsForUsersDelta(final Collection<TransactWriteItem> actions,
-      final Map<String, Object> oldMembers, final Map<String, Object> newMembers) {
-    final List<String> newUsernames = new ArrayList<String>();
-    final List<String> removedUsernames = new ArrayList<String>();
+  private void updateUsersTable(final Map<String, Object> oldMembers,
+      final Map<String, Object> newMembers,
+      final String groupId, final String oldGroupName, final String newGroupName) {
+    if (!oldMembers.keySet().equals(newMembers.keySet())) {
+      final UsersManager usersManager = new UsersManager();
+      // Make copies of the key sets and use removeAll to figure out where they differ
+      final Set<String> newUsernames = new HashSet<>(newMembers.keySet());
+      final Set<String> removedUsernames = new HashSet<>(oldMembers.keySet());
 
-    //loop over the input maps, look at their keys (the usernames) to calculate the above lists
+      // Note: using removeAll on a HashSet has linear time complexity when
+      // another HashSet is passed in
+      newUsernames.removeAll(oldMembers.keySet());
+      removedUsernames.removeAll((newMembers.keySet()));
 
-    //once the lists are calculated, crated update/delete statements for the user's table accordingly
-    //add these to the 'actions' Collection
+      String updateExpression;
+      UpdateItemSpec updateItemSpec;
+
+      if (newGroupName.equals(oldGroupName) && !newUsernames.isEmpty()) {
+        // If the group name wasn't changed and we're adding new users, then only perform
+        // updates for the newly added users
+        updateExpression = "set Groups.#groupId = :groupName";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+        ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+        for (final String member : newUsernames) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(usersManager.getPrimaryKeyIndex(), member)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap)
+              .withUpdateExpression(updateExpression);
+          usersManager.updateItem(updateItemSpec);
+        }
+      } else if (!newGroupName.equals(oldGroupName)) {
+        // If the group name was changed, update every user in newMembers to reflect that
+        updateExpression = "set Groups.#groupId = :groupName";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+        ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+        for (final String member : newMembers.keySet()) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(usersManager.getPrimaryKeyIndex(), member)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap)
+              .withUpdateExpression(updateExpression);
+          usersManager.updateItem(updateItemSpec);
+        }
+      }
+
+      if (!removedUsernames.isEmpty()) {
+        updateExpression = "remove Groups.#groupId";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+
+        for (final String member : removedUsernames) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(usersManager.getPrimaryKeyIndex(), member)
+              .withNameMap(nameMap)
+              .withUpdateExpression(updateExpression);
+          usersManager.updateItem(updateItemSpec);
+        }
+      }
+    } else if (!newGroupName.equals(oldGroupName)) {
+      // If the group name was changed, update every user in newMembers to reflect that
+      final UsersManager usersManager = new UsersManager();
+      UpdateItemSpec updateItemSpec;
+      String updateExpression = "set Groups.#groupId = :groupName";
+      NameMap nameMap = new NameMap().with("#groupId", groupId);
+      ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+      for (final String member : newMembers.keySet()) {
+        updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(usersManager.getPrimaryKeyIndex(), member)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap)
+            .withUpdateExpression(updateExpression);
+        usersManager.updateItem(updateItemSpec);
+      }
+    }
   }
 
-  private void addActionsForCategoriesDelta(final Collection<TransactWriteItem> actions,
-      final Map<String, Object> oldCategories, final Map<String, Object> newCategories) {
-    final List<String> newCategoryIds = new ArrayList<String>();
-    final List<String> removedCategoryIds = new ArrayList<String>();
+  private void updateCategoriesTable(final Map<String, Object> oldCategories,
+      final Map<String, Object> newCategories, final String groupId, final String oldGroupName,
+      final String newGroupName) {
+    if (!oldCategories.keySet().equals(newCategories.keySet())) {
+      final CategoriesManager categoriesManager = new CategoriesManager();
+      // Make copies of the key sets and use removeAll to figure out where they differ
+      final Set<String> newCategoryIds = new HashSet<>(newCategories.keySet());
+      final Set<String> removedCategoryIds = new HashSet<>(oldCategories.keySet());
 
-    //loop over the input maps, look at their keys (the categoryIds) to calculate the above lists
+      // Note: using removeAll on a HashSet has linear time complexity when
+      // another HashSet is passed in
+      newCategoryIds.removeAll(oldCategories.keySet());
+      removedCategoryIds.removeAll((newCategories.keySet()));
 
-    //once the lists are calculated, crated update/delete statements for the categories's table accordingly
-    //add these to the 'actions' Collection
+      String updateExpression;
+      UpdateItemSpec updateItemSpec;
+
+      if (newGroupName.equals(oldGroupName) && !newCategoryIds.isEmpty()) {
+        // If the group name wasn't changed and we're adding new categories, then only perform
+        // updates for the newly added categories
+        updateExpression = "set Groups.#groupId = :groupName";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+        ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+        for (final String categoryId : newCategoryIds) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap)
+              .withUpdateExpression(updateExpression);
+          categoriesManager.updateItem(updateItemSpec);
+        }
+      } else if (!newGroupName.equals(oldGroupName)) {
+        // If the group name was changed, update every category in newCategories to reflect that
+        updateExpression = "set Groups.#groupId = :groupName";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+        ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+        for (final String categoryId : newCategories.keySet()) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap)
+              .withUpdateExpression(updateExpression);
+          categoriesManager.updateItem(updateItemSpec);
+        }
+      }
+
+      if (!removedCategoryIds.isEmpty()) {
+        updateExpression = "remove Groups.#groupId";
+        NameMap nameMap = new NameMap().with("#groupId", groupId);
+
+        for (final String categoryId : removedCategoryIds) {
+          updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId)
+              .withNameMap(nameMap)
+              .withUpdateExpression(updateExpression);
+          categoriesManager.updateItem(updateItemSpec);
+        }
+      }
+    } else if (!newGroupName.equals(oldGroupName)) {
+      // If the group name was changed, update every category in newCategories to reflect that
+      final CategoriesManager categoriesManager = new CategoriesManager();
+      UpdateItemSpec updateItemSpec;
+      String updateExpression = "set Groups.#groupId = :groupName";
+      NameMap nameMap = new NameMap().with("#groupId", groupId);
+      ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
+      for (final String categoryId : newCategories.keySet()) {
+        updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap)
+            .withUpdateExpression(updateExpression);
+        categoriesManager.updateItem(updateItemSpec);
+      }
+    }
   }
 
   public static List<String> getAllCategoryIds(String groupId) {
