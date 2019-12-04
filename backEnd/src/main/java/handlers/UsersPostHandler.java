@@ -6,15 +6,12 @@ import imports.UsersManager;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
 public class UsersPostHandler implements RequestStreamHandler {
-
-  private final UsersManager UsersManager = new UsersManager();
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
@@ -31,11 +28,11 @@ public class UsersPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("newUser")) {
-              resultStatus = this.UsersManager.addNewUser(payloadJsonMap);
+              resultStatus = UsersManager.addNewUser(payloadJsonMap);
             } else if (action.equals("updateUserChoiceRatings")) {
-              resultStatus = this.UsersManager.updateUserChoiceRatings(payloadJsonMap);
+              resultStatus = UsersManager.updateUserChoiceRatings(payloadJsonMap);
             } else if (action.equals("getUserRatings")) {
-              resultStatus = this.UsersManager.getUserRatings(payloadJsonMap);
+              resultStatus = UsersManager.getUserRatings(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

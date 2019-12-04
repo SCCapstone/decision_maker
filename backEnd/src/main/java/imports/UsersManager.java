@@ -35,57 +35,46 @@ public class UsersManager extends DatabaseAccessManager {
 
   public static final Map EMPTY_MAP = new HashMap();
 
+  public static final UsersManager USERS_MANAGER = new UsersManager();
+
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
   }
 
-  public List<String> getAllCategoryIds(String username) {
-    Item dbData = super
-        .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
+  public static List<String> getAllCategoryIds(String username) {
+    Item dbData = USERS_MANAGER
+        .getItem(new GetItemSpec().withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), username));
 
     Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
     Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
 
-    return new ArrayList<String>(categoryMap.keySet());
+    return new ArrayList<>(categoryMap.keySet());
   }
 
-  public List<String> getAllGroupIds(String username) {
-    Item dbData = super
-        .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), username));
+  public static List<String> getAllGroupIds(String username) {
+    Item dbData = USERS_MANAGER
+        .getItem(new GetItemSpec().withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), username));
 
     Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
     Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
 
-    return new ArrayList<String>(groupMap.keySet());
+    return new ArrayList<>(groupMap.keySet());
   }
 
-  public boolean checkUser(String userName) {
-    Item newItem;
-    try {
-      newItem = super
-          .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), userName));
-      if (newItem == null) {
-        return true;
-      }
-      return false;
-    } catch (ResourceNotFoundException e) {
-      return false;
-    }
+  public static Item getUser(String username) {
+    return USERS_MANAGER.getItemByPrimaryKey(username);
   }
 
-  public Item getUser(String username) {
-    return super.getItemByPrimaryKey(username);
-  }
-
-  public ResultStatus addNewUser(Map<String, Object> jsonMap) {
+  public static ResultStatus addNewUser(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     if (jsonMap.containsKey(USERNAME)) {
       try {
-        String userName = (String) jsonMap.get(USERNAME);
+        String username = (String) jsonMap.get(USERNAME);
 
-        if (this.checkUser(userName)) {
+        Item user = UsersManager.getUser(username);
+        if (user == null) {
           Item newUser = new Item()
-              .withString(USERNAME, userName)
+              .withString(USERNAME, username)
               .withString(FIRST_NAME, DEFAULT_FIRSTNAME)
               .withString(LAST_NAME, DEFAULT_LASTNAME)
               .withBoolean(APP_SETTING_DARK_THEME, DEFAULT_DARK_THEME)
@@ -96,7 +85,7 @@ public class UsersManager extends DatabaseAccessManager {
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(newUser);
 
-          super.putItem(putItemSpec);
+          USERS_MANAGER.putItem(putItemSpec);
 
           resultStatus = new ResultStatus(true, "User added successfully!");
         } else {
@@ -113,7 +102,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
+  public static ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     if (
@@ -131,12 +120,12 @@ public class UsersManager extends DatabaseAccessManager {
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), user)
+            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), user)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
-        super.updateItem(updateItemSpec);
+        USERS_MANAGER.updateItem(updateItemSpec);
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
@@ -151,7 +140,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getUserRatings(Map<String, Object> jsonMap) {
+  public static ResultStatus getUserRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     if (
@@ -163,8 +152,8 @@ public class UsersManager extends DatabaseAccessManager {
         String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
 
         GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), activeUser);
-        Item userDataRaw = super.getItem(getItemSpec);
+            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+        Item userDataRaw = USERS_MANAGER.getItem(getItemSpec);
 
         Map<String, Object> userRatings = (Map<String, Object>) userDataRaw.asMap()
             .get(UsersManager.CATEGORIES);

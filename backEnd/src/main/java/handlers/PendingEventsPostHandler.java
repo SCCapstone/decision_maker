@@ -2,16 +2,20 @@ package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import imports.GroupsManager;
+import imports.PendingEventsManager;
+import utilities.IOStreamsHelper;
+import utilities.JsonParsers;
+import utilities.ResultStatus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-import utilities.IOStreamsHelper;
-import utilities.JsonParsers;
-import utilities.ResultStatus;
 
-public class GroupsPostHandler implements RequestStreamHandler {
+//NOTICE: I don't think this will ever need to be actually connected to an api endpoint,
+//This file really just exists as a testing group that gives access to code in
+//PendingEventsManager from Lambda
+
+public class PendingEventsPostHandler implements RequestStreamHandler {
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
@@ -27,16 +31,8 @@ public class GroupsPostHandler implements RequestStreamHandler {
 
             ResultStatus resultStatus;
 
-            if (action.equals("getGroups")) {
-              resultStatus = GroupsManager.getGroups(payloadJsonMap);
-            } else if (action.equals("createNewGroup")) {
-              resultStatus = GroupsManager.createNewGroup(payloadJsonMap);
-            } else if (action.equals("editGroup")) {
-              resultStatus = GroupsManager.editGroup(payloadJsonMap);
-            } else if (action.equals("newEvent")) {
-              resultStatus = GroupsManager.newEvent(payloadJsonMap);
-            } else if (action.equals("optUserInOut")) {
-              resultStatus = GroupsManager.optInOutOfEvent(payloadJsonMap);
+            if (action.equals("newPendingEvent")) {
+              resultStatus = PendingEventsManager.addPendingEvent(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
@@ -44,7 +40,8 @@ public class GroupsPostHandler implements RequestStreamHandler {
             IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
             IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request in handler.").toString());
+                new ResultStatus(false, "Error: Unable to parse request. Exception message: " + e)
+                    .toString());
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
