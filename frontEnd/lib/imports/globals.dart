@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/models/group.dart';
 import 'package:intl/intl.dart';
 
 class Globals {
@@ -6,6 +7,7 @@ class Globals {
   static String username;
   static bool android;
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
+  static Group currentGroup;
 
   static void clearGlobals() {
     username = null;

@@ -46,6 +46,8 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   @override
   Widget build(BuildContext context) {
+    // to catch any changes that may have been made when editing
+    widget.groupsFuture = GroupsManager.getGroups();
     return Scaffold(
       drawer: Drawer(
         child: ListView(

@@ -11,10 +11,7 @@ import 'package:frontEnd/widgets/users_dropdown.dart';
 import 'models/category.dart';
 
 class GroupSettings extends StatefulWidget {
-  @required
-  final Group group;
-
-  GroupSettings({Key key, this.group}) : super(key: key);
+  GroupSettings({Key key}) : super(key: key);
 
   @override
   _GroupSettingsState createState() => _GroupSettingsState();
@@ -29,7 +26,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   int pollPassPercent;
   int pollDuration;
   Map<String, dynamic> users;
-  Future<List<Category>> categoriesTotal;
+  Future<List<Category>> categoriesTotalFuture;
   bool owner;
 
   final List<Category> categoriesSelected = new List<Category>();
@@ -50,20 +47,23 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   @override
   void initState() {
-    if (Globals.username == widget.group.groupCreator) {
+    if (Globals.username == Globals.currentGroup.groupCreator) {
       // to display the delete button, check if user owns this group
       owner = true;
     } else {
       owner = false;
     }
 
-    users = widget.group.members;
-    groupName = widget.group.groupName;
-    groupIcon = widget.group.icon; // icon only changes via popup
-    groupNameController.text = widget.group.groupName;
-    pollPassController.text = widget.group.defaultPollPassPercent.toString();
-    pollDurationController.text = widget.group.defaultPollDuration.toString();
-    categoriesTotal = CategoriesManager.getAllCategoriesList(Globals.username);
+    users = Globals.currentGroup.members;
+    groupName = Globals.currentGroup.groupName;
+    groupIcon = Globals.currentGroup.icon; // icon only changes via popup
+    groupNameController.text = Globals.currentGroup.groupName;
+    pollPassController.text =
+        Globals.currentGroup.defaultPollPassPercent.toString();
+    pollDurationController.text =
+        Globals.currentGroup.defaultPollDuration.toString();
+    categoriesTotalFuture =
+        CategoriesManager.getAllCategoriesList(Globals.username);
     super.initState();
   }
 
@@ -101,7 +101,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         onChanged: (String arg) {
                           // the moment the user starts making changes, display the save button
                           enableAutoValidation(
-                              !(arg == widget.group.groupName));
+                              !(arg == Globals.currentGroup.groupName));
                         },
                         onSaved: (String arg) {
                           groupName = arg;
@@ -163,8 +163,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 try {
                                   int num = int.parse(arg);
                                   // the moment the user starts making changes, display the save button
-                                  enableAutoValidation(
-                                      num != widget.group.defaultPollDuration);
+                                  enableAutoValidation(num !=
+                                      Globals.currentGroup.defaultPollDuration);
                                 } catch (e) {
                                   enableAutoValidation(true);
                                 }
@@ -203,7 +203,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 try {
                                   int num = int.parse(arg);
                                   enableAutoValidation(num !=
-                                      widget.group.defaultPollPassPercent);
+                                      Globals
+                                          .currentGroup.defaultPollPassPercent);
                                 } catch (e) {
                                   enableAutoValidation(true);
                                 }
@@ -219,19 +220,20 @@ class _GroupSettingsState extends State<GroupSettings> {
                         ],
                       ),
                       FutureBuilder(
-                          future: categoriesTotal,
+                          future: categoriesTotalFuture,
                           builder:
                               (BuildContext context, AsyncSnapshot snapshot) {
                             if (snapshot.hasData) {
                               List<Category> categories = snapshot.data;
-
-                              for (Category category in categories) {
-                                if (widget.group.categories.keys
-                                    .contains(category.categoryId)) {
-                                  categoriesSelected.add(category);
+                              categories = snapshot.data;
+                              if (!editing) {
+                                for (Category category in categories) {
+                                  if (Globals.currentGroup.categories.keys
+                                      .contains(category.categoryId)) {
+                                    categoriesSelected.add(category);
+                                  }
                                 }
                               }
-
                               return CategoryDropdown("Add categories",
                                   categories, categoriesSelected,
                                   callback: (category) =>
@@ -243,7 +245,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             }
                           }),
                       UsersDropdown("Users", users,
-                          widget.group.groupCreator == Globals.username,
+                          Globals.currentGroup.groupCreator == Globals.username,
                           deleteCallback: (user) => removeUser(user),
                           addCallback: (user) => addUser(user)),
                       Visibility(
@@ -268,7 +270,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void tryDelete(BuildContext context) async {
     // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
     bool success =
-        await GroupsManager.deleteGroup(widget.group.groupId, context);
+        await GroupsManager.deleteGroup(Globals.currentGroup.groupId, context);
   }
 
   void enableAutoValidation(bool val) {
@@ -325,15 +327,18 @@ class _GroupSettingsState extends State<GroupSettings> {
       }
 
       Group group = new Group(
-          groupId: widget.group.groupId,
+          groupId: Globals.currentGroup.groupId,
           groupName: groupName,
-          groupCreator: Globals.username,
+          groupCreator: Globals.currentGroup.groupCreator,
           icon: groupIcon,
           categories: categoriesMap,
           members: users,
+          events: Globals.currentGroup.events,
           defaultPollDuration: pollDuration,
-          defaultPollPassPercent: pollPassPercent);
+          defaultPollPassPercent: pollPassPercent,
+          nextEventId: Globals.currentGroup.nextEventId);
 
+      Globals.currentGroup = group;
       GroupsManager.editGroup(group, context);
 
       setState(() {
