@@ -7,11 +7,15 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-import java.util.*;
 
 public class CategoriesManager extends DatabaseAccessManager {
 
@@ -22,16 +26,13 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String NEXT_CHOICE_NO = "NextChoiceNo";
   public static final String OWNER = "Owner";
 
-  private final UsersManager usersManager = new UsersManager();
-  private final GroupsManager groupsManager = new GroupsManager();
-
-  private UUID uuid;
+  public static final CategoriesManager CATEGORIES_MANAGER = new CategoriesManager();
 
   public CategoriesManager() {
     super("categories", "CategoryId", Regions.US_EAST_2);
   }
 
-  public ResultStatus addNewCategory(Map<String, Object> jsonMap) {
+  public static ResultStatus addNewCategory(Map<String, Object> jsonMap) {
     //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
     if (
@@ -40,10 +41,10 @@ public class CategoriesManager extends DatabaseAccessManager {
             jsonMap.containsKey(RequestFields.USER_RATINGS) &&
             jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
-      this.uuid = UUID.randomUUID();
+      final UUID uuid = UUID.randomUUID();
 
       try {
-        String nextCategoryIndex = this.uuid.toString();
+        String nextCategoryIndex = uuid.toString();
         String categoryName = (String) jsonMap.get(CATEGORY_NAME);
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
         Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
@@ -62,15 +63,15 @@ public class CategoriesManager extends DatabaseAccessManager {
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newCategory);
 
-        super.putItem(putItemSpec);
+        CATEGORIES_MANAGER.putItem(putItemSpec);
 
         //put the entered ratings in the users table
-        Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
+        Map<String, Object> insertNewCatForOwner = new HashMap<>();
         insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
         insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
-        ResultStatus updatedUsersTableResult = this.usersManager
+        ResultStatus updatedUsersTableResult = UsersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
         if (updatedUsersTableResult.success) {
@@ -91,7 +92,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus editCategory(Map<String, Object> jsonMap) {
+  public static ResultStatus editCategory(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     //validate data, log results as there should be some validation already on the front end
     if (
@@ -131,19 +132,19 @@ public class CategoriesManager extends DatabaseAccessManager {
             .withInt(":next", nextChoiceNo);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId)
+            .withPrimaryKey(CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
-        super.updateItem(updateItemSpec);
+        CATEGORIES_MANAGER.updateItem(updateItemSpec);
 
         //put the entered ratings in the users table
-        Map<String, Object> insertNewCatForOwner = new HashMap<String, Object>();
+        Map<String, Object> insertNewCatForOwner = new HashMap<>();
         insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
         insertNewCatForOwner.put(CATEGORY_ID, categoryId);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
-        ResultStatus updatedUsersTableResult = this.usersManager
+        ResultStatus updatedUsersTableResult = UsersManager
             .updateUserChoiceRatings(insertNewCatForOwner);
 
         if (updatedUsersTableResult.success) {
@@ -165,27 +166,29 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getCategories(Map<String, Object> jsonMap) {
+  public static ResultStatus getCategories(Map<String, Object> jsonMap) {
     boolean success = true;
     String resultMessage = "";
-    List<String> categoryIds = new ArrayList<String>();
+    List<String> categoryIds = new ArrayList<>();
 
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      categoryIds = this.usersManager.getAllCategoryIds(username);
+      categoryIds = UsersManager.getAllCategoryIds(username);
     } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
     } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
-      String groupId = (String) jsonMap.get(this.groupsManager.getPrimaryKeyIndex());
-      categoryIds = this.groupsManager.getAllCategoryIds(groupId);
+      //I agree the GroupsManager.GROUPS_MANAGER looks funny but it works for POC
+      String groupId = (String) jsonMap.get(GroupsManager.GROUPS_MANAGER.getPrimaryKeyIndex());
+      categoryIds = GroupsManager.getAllCategoryIds(groupId);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
     }
 
-    List<Map> categories = new ArrayList<Map>();
+    List<Map> categories = new ArrayList<>();
     for (String id : categoryIds) {
-      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      Item dbData = CATEGORIES_MANAGER
+          .getItem(new GetItemSpec().withPrimaryKey(CATEGORIES_MANAGER.getPrimaryKeyIndex(), id));
       if (dbData != null) {
         categories.add(dbData.asMap());
       } else {
@@ -200,7 +203,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
+  public static ResultStatus deleteCategory(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
@@ -211,18 +214,16 @@ public class CategoriesManager extends DatabaseAccessManager {
         String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));
         String categoryId = (String) jsonMap.get(CATEGORY_ID);
 
-        GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
-        Item item = super.getItem(getItemSpec);
+        Item item = CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
         if (username.equals(item.getString(OWNER))) {
-          List<String> groupIds = new ArrayList<String>(item.getMap(GROUPS).keySet());
+          List<String> groupIds = new ArrayList<>(item.getMap(GROUPS).keySet());
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
-              .withPrimaryKey(super.getPrimaryKeyIndex(), categoryId);
+              .withPrimaryKey(CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId);
 
-          super.deleteItem(deleteItemSpec);
+          CATEGORIES_MANAGER.deleteItem(deleteItemSpec);
 
           if (!groupIds.isEmpty()) {
-            groupsManager.removeCategoryFromGroups(groupIds, categoryId);
+            GroupsManager.removeCategoryFromGroups(groupIds, categoryId);
           }
 
           resultStatus = new ResultStatus(true, "Category deleted successfully!");

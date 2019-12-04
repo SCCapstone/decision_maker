@@ -1,6 +1,5 @@
 package utilities;
 
-import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.List;
 import java.util.Map;
 

@@ -13,8 +13,6 @@ import java.util.Map;
 
 public class CategoriesPostHandler implements RequestStreamHandler {
 
-  private final CategoriesManager categoriesManager = new CategoriesManager();
-
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
 
@@ -30,13 +28,13 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("newCategory")) {
-              resultStatus = this.categoriesManager.addNewCategory(payloadJsonMap);
+              resultStatus = CategoriesManager.addNewCategory(payloadJsonMap);
             } else if (action.equals("editCategory")) {
-              resultStatus = this.categoriesManager.editCategory(payloadJsonMap);
+              resultStatus = CategoriesManager.editCategory(payloadJsonMap);
             } else if (action.equals("getCategories")) {
-              resultStatus = this.categoriesManager.getCategories(payloadJsonMap);
+              resultStatus = CategoriesManager.getCategories(payloadJsonMap);
             } else if (action.equals("deleteCategory")) {
-              resultStatus = this.categoriesManager.deleteCategory(payloadJsonMap);
+              resultStatus = CategoriesManager.deleteCategory(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

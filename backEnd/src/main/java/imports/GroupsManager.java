@@ -11,7 +11,6 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.util.StringUtils;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,22 +53,20 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public static final Map EMPTY_MAP = new HashMap();
 
-  private final UsersManager usersManager = new UsersManager();
-
-  private UUID uuid;
+  public static final GroupsManager GROUPS_MANAGER = new GroupsManager();
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
   }
 
-  public ResultStatus getGroups(Map<String, Object> jsonMap) {
+  public static ResultStatus getGroups(Map<String, Object> jsonMap) {
     boolean success = true;
     String resultMessage = "";
     List<String> groupIds = new ArrayList<String>();
 
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = this.usersManager.getAllGroupIds(username);
+      groupIds = UsersManager.getAllGroupIds(username);
     } else if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
       groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
     } else {
@@ -80,7 +77,8 @@ public class GroupsManager extends DatabaseAccessManager {
     // this will be a json string representing an array of objects
     List<Map> groups = new ArrayList<Map>();
     for (String id : groupIds) {
-      Item dbData = super.getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), id));
+      Item dbData = GROUPS_MANAGER
+          .getItem(new GetItemSpec().withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), id));
       if (dbData != null) {
         groups.add(dbData.asMap());
       } else {
@@ -95,7 +93,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus createNewGroup(Map<String, Object> jsonMap) {
+  public static ResultStatus createNewGroup(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
@@ -111,14 +109,14 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
 
-        this.uuid = UUID.randomUUID();
-        final String newGroupId = this.uuid.toString();
+        final UUID uuid = UUID.randomUUID();
+        final String newGroupId = uuid.toString();
         final Date currentDate = new Date(); // UTC
 
-        this.updateMembersMapForInsertion(members);
+        GROUPS_MANAGER.updateMembersMapForInsertion(members);
 
         Item newGroup = new Item()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), newGroupId)
+            .withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), newGroupId)
             .withString(GROUP_NAME, groupName)
             .withString(ICON, icon)
             .withString(GROUP_CREATOR, groupCreator)
@@ -128,16 +126,16 @@ public class GroupsManager extends DatabaseAccessManager {
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
-            .withString(LAST_ACTIVITY, super.getDbDateFormatter().format(currentDate));
+            .withString(LAST_ACTIVITY, GROUPS_MANAGER.getDbDateFormatter().format(currentDate));
 
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newGroup);
 
-        super.putItem(putItemSpec);
+        GROUPS_MANAGER.putItem(putItemSpec);
 
         final List dummyList = new ArrayList<>();
-        this.addActionsForUsersDelta(dummyList, EMPTY_MAP, members);
-        this.addActionsForCategoriesDelta(dummyList, EMPTY_MAP, categories);
+        GROUPS_MANAGER.addActionsForUsersDelta(dummyList, EMPTY_MAP, members);
+        GROUPS_MANAGER.addActionsForCategoriesDelta(dummyList, EMPTY_MAP, categories);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
@@ -150,7 +148,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus editGroup(final Map<String, Object> jsonMap) {
+  public static ResultStatus editGroup(final Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
@@ -168,19 +166,20 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
+        if (GROUPS_MANAGER.editInputIsValid(groupId, activeUser, groupCreator, members,
             defaultPollPassPercent, defaultPollDuration)) {
-          final Map<String, Object> dbGroupDataMap = super.getItemByPrimaryKey(groupId).asMap();
+          final Map<String, Object> dbGroupDataMap = GROUPS_MANAGER.getItemByPrimaryKey(groupId)
+              .asMap();
 
-          if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
+          if (GROUPS_MANAGER.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
-            this.updateMembersMapForInsertion(members); // this implicitly changes data
+            GROUPS_MANAGER.updateMembersMapForInsertion(members); // this implicitly changes data
 
             //add other actions to this transaction for adding/removing groups to/from the users/categories table
-            this.addActionsForUsersDelta(new ArrayList<>(),
+            GROUPS_MANAGER.addActionsForUsersDelta(new ArrayList<>(),
                 (Map<String, Object>) dbGroupDataMap.get(MEMBERS),
                 members);
-            this.addActionsForCategoriesDelta(new ArrayList<>(),
+            GROUPS_MANAGER.addActionsForCategoriesDelta(new ArrayList<>(),
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories);
 
             String updateExpression =
@@ -198,11 +197,11 @@ public class GroupsManager extends DatabaseAccessManager {
                 .withInt(":defaultPollPassPercent", defaultPollPassPercent);
 
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+                .withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
                 .withUpdateExpression(updateExpression)
                 .withValueMap(valueMap);
 
-            super.updateItem(updateItemSpec);
+            GROUPS_MANAGER.updateItem(updateItemSpec);
 
             //TODO update the users and categories tables accordinly (https://github.com/SCCapstone/decision_maker/issues/118)
 
@@ -225,7 +224,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus newEvent(final Map<String, Object> jsonMap) {
+  public static ResultStatus newEvent(final Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
@@ -249,8 +248,9 @@ public class GroupsManager extends DatabaseAccessManager {
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
 
-        Item groupData = super
-            .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), groupId));
+        Item groupData = GROUPS_MANAGER
+            .getItem(
+                new GetItemSpec().withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId));
         if (groupData != null) {
           Map<String, Object> groupDataMapped = groupData.asMap();
           if (groupDataMapped.containsKey(MEMBERS)) {
@@ -267,8 +267,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.makeEventInputIsValid(eventId, "Not empty", groupId, categoryId, pollDuration,
-            pollPassPercent)) {
+        if (GROUPS_MANAGER
+            .makeEventInputIsValid(eventId, "Not empty", groupId, categoryId, pollDuration,
+                pollPassPercent)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
           eventMap.put(CATEGORY_ID, categoryId);
@@ -290,15 +291,19 @@ public class GroupsManager extends DatabaseAccessManager {
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
               .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)))
-              .withString(":lastActivity", super.getDbDateFormatter().format(currentDate));
+              .withString(":lastActivity", GROUPS_MANAGER.getDbDateFormatter().format(currentDate));
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+              .withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
               .withNameMap(nameMap)
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap);
 
-          super.updateItem(updateItemSpec);
+          GROUPS_MANAGER.updateItem(updateItemSpec);
+
+          //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
+          ResultStatus pendingEventAdded = PendingEventsManager
+              .addPendingEvent(groupId, eventId, currentDate, pollDuration);
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
@@ -315,7 +320,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap) {
+  public static ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, RequestFields.PARTICIPATING, RequestFields.EVENT_ID,
@@ -345,12 +350,12 @@ public class GroupsManager extends DatabaseAccessManager {
             .with("#username", activeUser);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+            .withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
             .withUpdateExpression(updateExpression)
             .withNameMap(nameMap)
             .withValueMap(valueMap);
 
-        super.updateItem(updateItemSpec);
+        GROUPS_MANAGER.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -369,7 +374,7 @@ public class GroupsManager extends DatabaseAccessManager {
     List<String> usernamesToDrop = new ArrayList<>();
 
     for (String username : members.keySet()) {
-      Item user = this.usersManager.getUser(username);
+      Item user = UsersManager.getUser(username);
 
       if (user != null) {
         try {
@@ -483,9 +488,9 @@ public class GroupsManager extends DatabaseAccessManager {
     //add these to the 'actions' Collection
   }
 
-  public List<String> getAllCategoryIds(String groupId) {
-    Item dbData = super
-        .getItem(new GetItemSpec().withPrimaryKey(super.getPrimaryKeyIndex(), groupId));
+  public static List<String> getAllCategoryIds(String groupId) {
+    Item dbData = GROUPS_MANAGER
+        .getItem(new GetItemSpec().withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId));
 
     Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
     Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
@@ -495,7 +500,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
+  public static void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
     try {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
@@ -503,22 +508,13 @@ public class GroupsManager extends DatabaseAccessManager {
 
       for (final String groupId : groupIds) {
         updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+            .withPrimaryKey(GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression);
-        super.updateItem(updateItemSpec);
+        GROUPS_MANAGER.updateItem(updateItemSpec);
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
     }
-  }
-
-  private Map<String, AttributeValue> getAttributeValueMapping(final Map<String, Object> inputMap) {
-    final Map<String, AttributeValue> returnMapping = new HashMap<String, AttributeValue>();
-    for (final String key : inputMap.keySet()) {
-      returnMapping.put(key, new AttributeValue((String) inputMap.get(key)));
-    }
-
-    return returnMapping;
   }
 }
