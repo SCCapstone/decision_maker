@@ -8,13 +8,11 @@ import 'imports/groups_manager.dart';
 import 'imports/globals.dart';
 import 'models/category.dart';
 import 'models/event.dart';
-import 'models/group.dart';
 
 class CreateEvent extends StatefulWidget {
   @required
-  final Group group;
 
-  CreateEvent({Key key, this.group}) : super(key: key);
+  CreateEvent({Key key}) : super(key: key);
 
   @override
   _CreateEventState createState() => _CreateEventState();
@@ -68,12 +66,12 @@ class _CreateEventState extends State<CreateEvent> {
   @override
   void initState() {
     categoriesInGroup =
-        CategoriesManager.getAllCategoriesFromGroup(widget.group.groupId);
+        CategoriesManager.getAllCategoriesFromGroup(Globals.currentGroup.groupId);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
-    pollDurationController.text = widget.group.defaultPollDuration.toString();
+    pollDurationController.text = Globals.currentGroup.defaultPollDuration.toString();
     passPercentageController.text =
-        widget.group.defaultPollPassPercent.toString();
+        Globals.currentGroup.defaultPollPassPercent.toString();
     super.initState();
   }
 
@@ -243,7 +241,7 @@ class _CreateEventState extends State<CreateEvent> {
       form.save();
       Map<String, dynamic> eventCreator = new Map<String, dynamic>();
       eventCreator.putIfAbsent(
-          Globals.username, () => widget.group.members[Globals.username]);
+          Globals.username, () => Globals.currentGroup.members[Globals.username]);
 
       Event event = new Event(
         eventName: this.eventName,
@@ -259,7 +257,7 @@ class _CreateEventState extends State<CreateEvent> {
         eventCreator: eventCreator,
       );
 
-      GroupsManager.addEvent(widget.group.groupId, event, context);
+      GroupsManager.addEvent(Globals.currentGroup.groupId, event, context);
       setState(() {
         autoValidate = false;
       });

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart' as prefix0;
 import 'package:frontEnd/group_settings.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/widgets/events_list.dart';
@@ -8,10 +8,9 @@ import 'package:frontEnd/widgets/events_list.dart';
 import 'create_event.dart';
 
 class GroupPage extends StatefulWidget {
-  final Group group;
   final Map<String, Event> events;
 
-  GroupPage({Key key, this.group, this.events}) : super(key: key);
+  GroupPage({Key key, this.events}) : super(key: key);
 
   @override
   _GroupPageState createState() => new _GroupPageState();
@@ -24,7 +23,7 @@ class _GroupPageState extends State<GroupPage> {
       appBar: new AppBar(
         centerTitle: true,
         title: Text(
-          widget.group.groupName,
+          Globals.currentGroup.groupName,
           style: TextStyle(
               fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
         ),
@@ -35,8 +34,8 @@ class _GroupPageState extends State<GroupPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => GroupSettings(group: widget.group)),
-              ).then((_) => GroupPage(group: widget.group));
+                    builder: (context) => GroupSettings()),
+              ).then((_) => GroupPage());
             },
           ),
         ],
@@ -52,7 +51,7 @@ class _GroupPageState extends State<GroupPage> {
               height: MediaQuery.of(context).size.height * .70,
               child: RefreshIndicator(
                 child: EventsList(
-                  group: widget.group,
+                  group: Globals.currentGroup,
                   events: widget.events,
                 ),
                 onRefresh: refreshList,
@@ -73,8 +72,8 @@ class _GroupPageState extends State<GroupPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                CreateEvent(group: widget.group)))
-                    .then((_) => GroupPage(group: widget.group));
+                                CreateEvent()))
+                    .then((_) => GroupPage());
               },
             )
           ],
