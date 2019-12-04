@@ -26,7 +26,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   int pollPassPercent;
   int pollDuration;
   Map<String, dynamic> users;
-  Future<List<Category>> categoriesTotal;
+  Future<List<Category>> categoriesTotalFuture;
   bool owner;
 
   final List<Category> categoriesSelected = new List<Category>();
@@ -62,7 +62,8 @@ class _GroupSettingsState extends State<GroupSettings> {
         Globals.currentGroup.defaultPollPassPercent.toString();
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
-    categoriesTotal = CategoriesManager.getAllCategoriesList(Globals.username);
+    categoriesTotalFuture =
+        CategoriesManager.getAllCategoriesList(Globals.username);
     super.initState();
   }
 
@@ -219,19 +220,20 @@ class _GroupSettingsState extends State<GroupSettings> {
                         ],
                       ),
                       FutureBuilder(
-                          future: categoriesTotal,
+                          future: categoriesTotalFuture,
                           builder:
                               (BuildContext context, AsyncSnapshot snapshot) {
                             if (snapshot.hasData) {
                               List<Category> categories = snapshot.data;
-
-                              for (Category category in categories) {
-                                if (Globals.currentGroup.categories.keys
-                                    .contains(category.categoryId)) {
-                                  categoriesSelected.add(category);
+                              categories = snapshot.data;
+                              if (!editing) {
+                                for (Category category in categories) {
+                                  if (Globals.currentGroup.categories.keys
+                                      .contains(category.categoryId)) {
+                                    categoriesSelected.add(category);
+                                  }
                                 }
                               }
-
                               return CategoryDropdown("Add categories",
                                   categories, categoriesSelected,
                                   callback: (category) =>
