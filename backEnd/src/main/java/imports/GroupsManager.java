@@ -113,6 +113,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         this.uuid = UUID.randomUUID();
         final String newGroupId = this.uuid.toString();
+        final Date currentDate = new Date(); // UTC
 
         this.updateMembersMapForInsertion(members);
 
@@ -126,7 +127,8 @@ public class GroupsManager extends DatabaseAccessManager {
             .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
             .withMap(EVENTS, EMPTY_MAP)
-            .withInt(NEXT_EVENT_ID, 1);
+            .withInt(NEXT_EVENT_ID, 1)
+            .withString(LAST_ACTIVITY, super.getDbDateFormatter().format(currentDate));
 
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newGroup);
