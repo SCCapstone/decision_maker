@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import '../group_page.dart';
@@ -23,11 +24,11 @@ class GroupRow extends StatelessWidget {
                 image: NetworkImage(group.icon),
               ),
               onPressed: () {
+                Globals.currentGroup = group;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => GroupPage(
-                            group: this.group,
                             events: GroupsManager.getGroupEvents(group),
                           )),
                 ).then((_) => GroupsHome());
@@ -39,11 +40,11 @@ class GroupRow extends StatelessWidget {
                 style: TextStyle(fontSize: 25),
               ),
               onPressed: () {
+                Globals.currentGroup = group;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => GroupPage(
-                            group: this.group,
                             events: GroupsManager.getGroupEvents(group),
                           )),
                 ).then((_) => GroupsHome());

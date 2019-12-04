@@ -45,7 +45,6 @@ class _EventsListState extends State<EventsList> {
                 eventId: eventId,
               )),
     ).then((_) => GroupPage(
-          group: widget.group,
           events: widget.events,
         ));
   }
