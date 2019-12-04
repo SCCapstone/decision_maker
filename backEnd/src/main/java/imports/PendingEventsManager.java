@@ -1,12 +1,23 @@
 package imports;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import com.amazonaws.services.stepfunctions.AWSStepFunctions;
+import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
+import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
+import com.amazonaws.util.ImmutableMapParameter;
 import utilities.ExceptionHelper;
+import utilities.JsonEncoders;
+import utilities.RequestFields;
 import utilities.ResultStatus;
 
 public class PendingEventsManager extends DatabaseAccessManager {
@@ -15,8 +26,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
   private static final Integer MINUTE = 60 * 1000; // milliseconds
   private static final PendingEventsManager PENDING_EVENTS_MANAGER = new PendingEventsManager();
 
+  private static final String STEP_FUNCTION_ARN = "aws:states:us-east-2:871532548613:stateMachine:EventResolver";
+
+  private final AWSStepFunctions client = AWSStepFunctionsClientBuilder.defaultClient();
+
   public PendingEventsManager() {
     super("pending_events", "ScannerId", Regions.US_EAST_2);
+  }
+
+  private void startStepMachineExecution(String groupId, String eventId) {
+    this.client.startExecution(new StartExecutionRequest()
+            .withStateMachineArn(STEP_FUNCTION_ARN)
+            .withInput(JsonEncoders.convertObjectToJson(ImmutableMapParameter.of(GroupsManager.GROUP_ID, groupId, RequestFields.EVENT_ID, eventId))));
   }
 
   public static ResultStatus addPendingEvent(final String groupId, final String eventId,
@@ -50,6 +71,39 @@ public class PendingEventsManager extends DatabaseAccessManager {
     }
 
     return resultStatus;
+  }
+
+  public static void scanPendingEvents(String scannerId) {
+    try {
+      Item pendingEvents = PENDING_EVENTS_MANAGER.getItemByPrimaryKey(scannerId);
+
+      if (pendingEvents != null) {
+        Map<String, Object> pendingEventsData = pendingEvents.asMap();
+        Date currentDate = new Date(), resolutionDate;
+
+        String groupId, eventId;
+        List<String> keyPair;
+        for (String key : pendingEventsData.keySet()) {
+          resolutionDate = PENDING_EVENTS_MANAGER.getDbDateFormatter().parse((String) pendingEventsData.get(key));
+
+          if (currentDate.after(resolutionDate)) {
+            keyPair = Arrays.asList(key.split(";"));
+
+            if (keyPair.size() == 2) {
+              groupId = keyPair.get(0);
+              eventId = keyPair.get(1);
+
+              PENDING_EVENTS_MANAGER.startStepMachineExecution(groupId, eventId);
+            } else {
+              //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+              //we inserted this wrong, fix this
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+    }
   }
 
   //This method is purely for testing purposes -> hardcoded strings
