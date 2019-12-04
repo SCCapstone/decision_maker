@@ -8,9 +8,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
-import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.util.StringUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -171,40 +169,37 @@ public class GroupsManager extends DatabaseAccessManager {
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
-            final List<TransactWriteItem> actions = new ArrayList<TransactWriteItem>();
-
             this.updateMembersMapForInsertion(members); // this implicitly changes data
 
-            final Map<String, AttributeValue> groupReplacementItem = new HashMap<String, AttributeValue>();
-            groupReplacementItem.put(GROUP_ID, new AttributeValue(groupId));
-            groupReplacementItem.put(GROUP_NAME, new AttributeValue(groupName));
-            groupReplacementItem.put(ICON, new AttributeValue(icon));
-            groupReplacementItem.put(GROUP_CREATOR, new AttributeValue(groupCreator));
-            groupReplacementItem
-                .put(MEMBERS, new AttributeValue().withM(this.getAttributeValueMapping(members)));
-            groupReplacementItem.put(CATEGORIES,
-                new AttributeValue().withM(this.getAttributeValueMapping(categories)));
-            groupReplacementItem
-                .put(DEFAULT_POLL_PASS_PERCENT,
-                    new AttributeValue().withN(defaultPollPassPercent.toString()));
-            groupReplacementItem
-                .put(DEFAULT_POLL_DURATION,
-                    new AttributeValue().withN(defaultPollDuration.toString()));
-
-            final Put groupReplacement = new Put()
-                .withTableName(this.getTableName())
-                .withItem(groupReplacementItem);
-
-            actions.add(new TransactWriteItem().withPut(groupReplacement));
-
             //add other actions to this transaction for adding/removing groups to/from the users/categories table
-            this.addActionsForUsersDelta(actions, (Map<String, Object>) dbGroupDataMap.get(MEMBERS),
+            this.addActionsForUsersDelta(new ArrayList<>(),
+                (Map<String, Object>) dbGroupDataMap.get(MEMBERS),
                 members);
-            this.addActionsForCategoriesDelta(actions,
+            this.addActionsForCategoriesDelta(new ArrayList<>(),
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories);
 
-            super.executeWriteTransaction(
-                new TransactWriteItemsRequest().withTransactItems(actions));
+            String updateExpression =
+                "set " + GROUP_NAME + " = :name, " + ICON + " = :icon, " + GROUP_CREATOR
+                    + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
+                    + DEFAULT_POLL_DURATION + " = :defaultPollDuration, "
+                    + DEFAULT_POLL_PASS_PERCENT + " = :defaultPollPassPercent";
+            ValueMap valueMap = new ValueMap()
+                .withString(":name", groupName)
+                .withString(":icon", icon)
+                .withString(":creator", groupCreator)
+                .withMap(":members", members)
+                .withMap(":categories", categories)
+                .withInt(":defaultPollDuration", defaultPollDuration)
+                .withInt(":defaultPollPassPercent", defaultPollPassPercent);
+
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
+                .withUpdateExpression(updateExpression)
+                .withValueMap(valueMap);
+
+            super.updateItem(updateItemSpec);
+
+            //TODO update the users and categories tables accordinly (https://github.com/SCCapstone/decision_maker/issues/118)
 
             resultStatus = new ResultStatus(true, "The group was saved successfully!");
           } else {
