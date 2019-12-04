@@ -524,7 +524,7 @@ public class GroupsManager extends DatabaseAccessManager {
       final Map<String, Object> newCategories, final String groupId, final String oldGroupName,
       final String newGroupName) {
     final CategoriesManager categoriesManager = new CategoriesManager();
-    final Set<String> usersToUpdate = new HashSet<>();
+    final Set<String> categoriesToUpdate = new HashSet<>();
     String updateExpression;
     NameMap nameMap = new NameMap().with("#groupId", groupId);
     ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
@@ -543,11 +543,11 @@ public class GroupsManager extends DatabaseAccessManager {
       if (newGroupName.equals(oldGroupName) && !newCategoryIds.isEmpty()) {
         // If the group name wasn't changed and we're adding new categories, then only perform
         // updates for the newly added categories
-        usersToUpdate.addAll(newCategoryIds);
+        categoriesToUpdate.addAll(newCategoryIds);
       } else if (!newGroupName.equals(oldGroupName)) {
         // If the group name was changed, update every category in newCategories to reflect that.
         // In this case, both the list of categories and the group name were changed.
-        usersToUpdate.addAll(newCategories.keySet());
+        categoriesToUpdate.addAll(newCategories.keySet());
       }
 
       if (!removedCategoryIds.isEmpty()) {
@@ -561,14 +561,14 @@ public class GroupsManager extends DatabaseAccessManager {
     } else if (!newGroupName.equals(oldGroupName)) {
       // If the group name was changed, update every category in newCategories to reflect that.
       // In this case, the list of categories wasn't changed, but the group name was.
-      usersToUpdate.addAll(newCategories.keySet());
+      categoriesToUpdate.addAll(newCategories.keySet());
     }
 
-    if (!usersToUpdate.isEmpty()) {
+    if (!categoriesToUpdate.isEmpty()) {
       updateExpression = "set Groups.#groupId = :groupName";
       updateItemSpec.withUpdateExpression(updateExpression).withValueMap(valueMap);
-      for (final String member : usersToUpdate) {
-        updateItemSpec.withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), member);
+      for (final String categoryId : categoriesToUpdate) {
+        updateItemSpec.withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId);
         categoriesManager.updateItem(updateItemSpec);
       }
     }
