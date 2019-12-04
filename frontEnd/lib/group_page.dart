@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/group_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
-import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/widgets/events_list.dart';
 
 import 'create_event.dart';
@@ -33,8 +32,7 @@ class _GroupPageState extends State<GroupPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => GroupSettings()),
+                MaterialPageRoute(builder: (context) => GroupSettings()),
               ).then((_) => GroupPage());
             },
           ),
@@ -68,11 +66,8 @@ class _GroupPageState extends State<GroupPage> {
                         DefaultTextStyle.of(context).style.fontSize * 0.6),
               ),
               onPressed: () {
-                Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                CreateEvent()))
+                Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => CreateEvent()))
                     .then((_) => GroupPage());
               },
             )
