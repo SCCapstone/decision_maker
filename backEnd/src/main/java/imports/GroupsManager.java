@@ -11,9 +11,11 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.util.StringUtils;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
   public static final String EVENTS = "Events";
+  public static final String LAST_ACTIVITY = "LastActivity";
 
   public static final String EVENT_ID = "EventId";
   public static final String CATEGORY_ID = "CategoryId";
@@ -239,6 +242,8 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
 
+        Date currentDate = new Date(); // no args gives current date
+
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
 
@@ -277,11 +282,13 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(SELECTED_CHOICE, "calculating...");
 
           String updateExpression =
-              "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId";
+              "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "
+                  + LAST_ACTIVITY + " = :lastActivity";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
-              .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)));
+              .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)))
+              .withString(":lastActivity", super.getDbDateFormatter().format(currentDate));
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(super.getPrimaryKeyIndex(), groupId)
