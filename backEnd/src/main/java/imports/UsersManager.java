@@ -144,7 +144,8 @@ public class UsersManager extends DatabaseAccessManager {
   public static ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
+           (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String settingToChange = "";
@@ -167,7 +168,7 @@ public class UsersManager extends DatabaseAccessManager {
           }
         } else {
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          resultStatus.resultMessage = "Error: Invalid/missing keys/values";
+          resultStatus.resultMessage = "Error: Invalid values for setting or user";
           return resultStatus;
         }
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
