@@ -16,11 +16,14 @@ public class IOStreamsHelper {
 
   //Caution: this actually modifies the reference so a return isn't necessary but keeping for clarity
   public static void removeLastInstanceOf(final StringBuilder input, final char toRemove) {
-    final String inputString = input.toString();
-    final int index = inputString.lastIndexOf(toRemove);
+    if (input.lastIndexOf(toRemove + "") >= 0) {
+      input.deleteCharAt(input.lastIndexOf(toRemove + ""));
+    }
+  }
 
-    if (index >= 0) {
-      input.deleteCharAt(index);
+  public static void removeAllInstancesOf(final StringBuilder input, final char toRemove) {
+    while (input.lastIndexOf(toRemove + "") != -1) {
+      input.deleteCharAt(input.lastIndexOf(toRemove + ""));
     }
   }
 
