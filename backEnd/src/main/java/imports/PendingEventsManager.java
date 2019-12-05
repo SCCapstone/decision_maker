@@ -81,12 +81,16 @@ public class PendingEventsManager extends DatabaseAccessManager {
               .get(CategoriesManager.CHOICES);
           String result = (String) choices.values().toArray()[0];
 
+          Date currentDate = new Date();
+
           //update the event
           String updateExpression =
               "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
-                  + " = :result";
+                  + " = :result, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
-          ValueMap valueMap = new ValueMap().withString(":result", result);
+          ValueMap valueMap = new ValueMap().withString(":result", result)
+              .withString(":currentDate",
+                  PENDING_EVENTS_MANAGER.getDbDateFormatter().format(currentDate));
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
