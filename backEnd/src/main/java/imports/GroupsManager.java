@@ -2,8 +2,8 @@ package imports;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -36,7 +36,6 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
 
-  public static final String EVENT_ID = "EventId";
   public static final String CATEGORY_ID = "CategoryId";
   public static final String CATEGORY_NAME = "CategoryName";
   public static final String EVENT_NAME = "EventName";
