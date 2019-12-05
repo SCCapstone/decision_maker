@@ -23,8 +23,10 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String USERNAME = "Username";
   public static final String FIRST_NAME = "FirstName";
   public static final String LAST_NAME = "LastName";
-  public static final String APP_SETTING_DARK_THEME = "AppSetting_DarkTheme";
-  public static final String APP_SETTING_MUTED = "AppSetting_Muted";
+  public static final String APP_SETTINGS = "AppSettings";
+  public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
+  public static final String APP_SETTINGS_MUTED = "Muted";
+  public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   public static final String GROUPS = "Groups";
   public static final String CATEGORIES = "Categories";
 
@@ -32,9 +34,9 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String DEFAULT_LASTNAME = "DefLastName";
   public static final boolean DEFAULT_DARK_THEME = false;
   public static final boolean DEFAULT_MUTED = false;
+  public static final int DEFAULT_GROUP_SORT = 0;
 
   public static final Map EMPTY_MAP = new HashMap();
-
   public static final UsersManager USERS_MANAGER = new UsersManager();
 
   public UsersManager() {
@@ -77,8 +79,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(USERNAME, username)
               .withString(FIRST_NAME, DEFAULT_FIRSTNAME)
               .withString(LAST_NAME, DEFAULT_LASTNAME)
-              .withBoolean(APP_SETTING_DARK_THEME, DEFAULT_DARK_THEME)
-              .withBoolean(APP_SETTING_MUTED, DEFAULT_MUTED)
+              .withMap(APP_SETTINGS, getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP);
 
@@ -139,6 +140,55 @@ public class UsersManager extends DatabaseAccessManager {
 
     return resultStatus;
   }
+  
+  public static ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
+           (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
+      try {
+        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        String settingToChange = "";
+        ValueMap valueMap = new ValueMap();
+        if (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) {
+          settingToChange = APP_SETTINGS_DARK_THEME;
+          valueMap.withBoolean(":value", (Boolean) jsonMap.get(APP_SETTINGS_DARK_THEME));
+        } else if (jsonMap.containsKey(APP_SETTINGS_MUTED)) {
+          settingToChange = APP_SETTINGS_MUTED;
+          valueMap.withBoolean(":value", (Boolean) jsonMap.get(APP_SETTINGS_MUTED));
+        } else if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
+          settingToChange = APP_SETTINGS_GROUP_SORT;
+          Integer sortSetting = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
+          if (sortSetting == 0 || sortSetting == 1) {
+            valueMap.withInt(":value", sortSetting);
+          } else {
+            //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+            resultStatus.resultMessage = "Error: Invalid input for sorting value";
+            return resultStatus;
+          }
+        } else {
+          //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+          resultStatus.resultMessage = "Error: Invalid values for setting or user";
+          return resultStatus;
+        }
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
+            .withValueMap(valueMap);
+        
+        USERS_MANAGER.updateItem(updateItemSpec);
+        resultStatus = new ResultStatus(true, "User settings updated successfully!");
+      }
+      catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+       resultStatus.resultMessage = "Error: Unable to parse request."; 
+      }
+    } else {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: required request keys not found";
+    }
+    return resultStatus;
+  }
 
   public static ResultStatus getUserRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
@@ -171,5 +221,13 @@ public class UsersManager extends DatabaseAccessManager {
     }
 
     return resultStatus;
+  }
+  
+  private static Map<String, Object> getDefaultAppSettings(){
+    Map<String, Object> retMap = new HashMap<String, Object>();
+    retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
+    retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
+    retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
+    return retMap;
   }
 }
