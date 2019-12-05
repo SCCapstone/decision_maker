@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.RequestFields;
@@ -149,8 +148,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
-      resultStatus.resultMessage =
-          "Error adding pending event. Exception: " + e + "\n" + ExceptionHelper.getStackTrace(e);
+      resultStatus.resultMessage = "Error adding pending event.";
     }
 
     return resultStatus;
