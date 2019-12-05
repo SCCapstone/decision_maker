@@ -165,7 +165,7 @@ public class UsersManager extends DatabaseAccessManager {
             return resultStatus;
           }
         } else {
-          resultStatus.resultMessage = "Error: Invalid/missing keys/values";
+          resultStatus.resultMessage = "Error: Invalid setting key";
           return resultStatus;
         }
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
