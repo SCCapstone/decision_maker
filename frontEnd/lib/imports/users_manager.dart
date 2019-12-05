@@ -8,7 +8,6 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 
-import '../utilities/utilities.dart';
 import 'globals.dart';
 
 class UsersManager {
