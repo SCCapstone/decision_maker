@@ -161,10 +161,12 @@ public class UsersManager extends DatabaseAccessManager {
           if (sortSetting == 0 || sortSetting == 1) {
             valueMap.withInt(":value", sortSetting);
           } else {
+            //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
             resultStatus.resultMessage = "Error: Invalid input for sorting value";
             return resultStatus;
           }
         } else {
+          //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
           resultStatus.resultMessage = "Error: Invalid/missing keys/values";
           return resultStatus;
         }
@@ -177,6 +179,7 @@ public class UsersManager extends DatabaseAccessManager {
         resultStatus = new ResultStatus(true, "User settings updated successfully!");
       }
       catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
        resultStatus.resultMessage = "Error: Unable to parse request."; 
       }
     } else {
