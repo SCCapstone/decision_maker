@@ -5,6 +5,7 @@ class Group {
   final String groupName;
   final String icon;
   final String groupCreator;
+  final String lastActivity;
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
   final Map<String, dynamic> events;
@@ -17,6 +18,7 @@ class Group {
       this.groupName,
       this.icon,
       this.groupCreator,
+      this.lastActivity,
       this.members,
       this.categories,
       this.events,
@@ -29,6 +31,7 @@ class Group {
       this.groupName,
       this.icon,
       this.groupCreator,
+      this.lastActivity,
       this.members,
       this.categories,
       this.events,
@@ -42,6 +45,7 @@ class Group {
         groupName: json[GroupsManager.GROUP_NAME],
         icon: json[GroupsManager.ICON],
         groupCreator: json[GroupsManager.GROUP_CREATOR],
+        lastActivity: json[GroupsManager.LAST_ACTIVITY],
         members: json[GroupsManager.MEMBERS],
         categories: json[GroupsManager.CATEGORIES],
         events: json[GroupsManager.EVENTS],
@@ -55,7 +59,7 @@ class Group {
   @override
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
-        "$icon GroupCreator: $groupCreator Members: $members Categories: $categories Events: $events"
+        "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"
         "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration "
         "NextEventId: $nextEventId";
   }
@@ -66,6 +70,7 @@ class Group {
       GroupsManager.GROUP_NAME: this.groupName,
       GroupsManager.ICON: this.icon,
       GroupsManager.GROUP_CREATOR: this.groupCreator,
+      GroupsManager.LAST_ACTIVITY: this.lastActivity,
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: this.events,
