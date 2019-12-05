@@ -8,6 +8,7 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:http/http.dart' as http;
 
+import '../utilities/utilities.dart';
 import 'globals.dart';
 
 class UsersManager {
@@ -18,8 +19,10 @@ class UsersManager {
   static final String USERNAME = "Username";
   static final String FIRST_NAME = "FirstName";
   static final String LAST_NAME = "LastName";
-  static final String APP_SETTING_DARK_THEME = "AppSetting_DarkTheme";
-  static final String APP_SETTING_MUTED = "AppSetting_Muted";
+  static final String APP_SETTINGS = "AppSettings";
+  static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
+  static final String APP_SETTINGS_MUTED = "Muted";
+  static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
 
@@ -49,6 +52,66 @@ class UsersManager {
     }
   }
 
+  static void updateUserAppSettingsBool(String settingToUpdate, bool updateVal,
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "updateUserAppSettings";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    jsonRequestBody["payload"]
+        .putIfAbsent(settingToUpdate, () => updateVal);
+    http.Response response =
+        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> body = jsonDecode(response.body);
+
+      try {
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error updating user settings (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error updating user settings (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to update user settings.", context);
+    }
+  }
+
+  static void updateUserAppSettingsInt(String settingToUpdate, int updateVal,
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "updateUserAppSettings";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+    jsonRequestBody["payload"]
+        .putIfAbsent(settingToUpdate, () => updateVal);
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> body = jsonDecode(response.body);
+
+      try {
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error updating user settings (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error updating user settings (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to update user settings.", context);
+    }
+  }
+
   static void updateUserChoiceRatings(String categoryId,
       Map<String, String> choiceRatings, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -72,13 +135,13 @@ class UsersManager {
         if (responseItem.success) {
           showPopupMessage(responseItem.resultMessage, context);
         } else {
-          showPopupMessage("Error updating user ratings(1).", context);
+          showPopupMessage("Error updating user ratings (1).", context);
         }
       } catch (e) {
-        showPopupMessage("Error updating user preferences (2).", context);
+        showPopupMessage("Error updating user ratings (2).", context);
       }
     } else {
-      showPopupMessage("Unable to update user preferences.", context);
+      showPopupMessage("Unable to update user ratings.", context);
     }
   }
 
