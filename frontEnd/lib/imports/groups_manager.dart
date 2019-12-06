@@ -21,6 +21,7 @@ class GroupsManager {
   static final String GROUP_NAME = "GroupName";
   static final String ICON = "Icon";
   static final String GROUP_CREATOR = "GroupCreator";
+  static final String LAST_ACTIVITY = "LastActivity";
   static final String MEMBERS = "Members";
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
@@ -240,6 +241,68 @@ class GroupsManager {
       }
     } else {
       showPopupMessage("Unable to opt in/out.", context);
+    }
+  }
+
+  static double convertLastActivity(Group groupA){
+    String dateTimeA = groupA.lastActivity;
+
+    List<String> listDateTimeA = dateTimeA.split(" ");
+
+    List<String> listDateA = listDateTimeA[0].split("-");
+    List<String> listTimeA = listDateTimeA[1].split(":");
+
+    double yearA = double.parse(listDateA[0]);
+    double monthA = double.parse(listDateA[1]);
+    double dayA = double.parse(listDateA[2]);
+    double hourA = double.parse(listTimeA[0]);
+    double minA = double.parse(listTimeA[1]);
+    double secA = double.parse(listTimeA[2]);
+
+
+    double dateValA = dayA + monthToDay(monthA, yearA) + yearToDay(yearA);
+    double timeValA = hourA + (minA / 60) + (secA / 3600);
+    double totalDaysA = dateValA + (timeValA / 24);
+
+    return totalDaysA;
+  }
+
+
+  static List<Group> sortByDate(List<Group> groups){
+    List<Group> retGroups = groups;
+    retGroups.sort((a,b) =>
+        convertLastActivity(b).compareTo(convertLastActivity(a)));
+    return retGroups;
+  }
+
+  static List<Group> sortByAlpha(List<Group> groups) {
+    List<Group> retGroups = groups;
+    retGroups.sort((a,b) =>
+        a.groupName.compareTo(b.groupName));
+    return retGroups;
+  }
+
+  static double monthToDay(double month, double year) {
+    if((month == 1.0)||(month == 3.0) || (month == 5.0) || (month == 7.0) ||
+        (month == 8.0) || (month == 10.0) || (month == 12.0)) {
+      return 31.0;
+    } else if (month == 2.0) {
+      if (year % 4 == 0) {
+        return 29.0;
+      } else {
+        return 28.0;
+      }
+    } else {
+      return 30.0;
+    }
+  }
+
+  static double yearToDay(double year) {
+    if (year % 4.0 == 0.0) {
+      return 366.0;
+    }
+    else {
+      return 365.0;
     }
   }
 }

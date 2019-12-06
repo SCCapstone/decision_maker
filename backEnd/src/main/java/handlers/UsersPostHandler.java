@@ -35,6 +35,8 @@ public class UsersPostHandler implements RequestStreamHandler {
               resultStatus = UsersManager.getUserRatings(payloadJsonMap);
             } else if (action.equals("updateUserAppSettings")) {
               resultStatus = UsersManager.updateUserAppSettings(payloadJsonMap);
+            } else if (action.equals("getUserAppSettings")) {
+              resultStatus = UsersManager.getUserAppSettings(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

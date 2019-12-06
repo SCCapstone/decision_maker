@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
@@ -51,37 +52,7 @@ class UsersManager {
     }
   }
 
-  static void updateUserAppSettingsBool(String settingToUpdate, bool updateVal,
-      BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
-    jsonRequestBody["payload"]
-        .putIfAbsent(settingToUpdate, () => updateVal);
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
-
-      try {
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
-          showPopupMessage("Error updating user settings (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error updating user settings (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to update user settings.", context);
-    }
-  }
-
-  static void updateUserAppSettingsInt(String settingToUpdate, int updateVal,
+  static void updateUserAppSettings(String settingToUpdate, int updateVal,
       BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "updateUserAppSettings";
@@ -176,6 +147,38 @@ class UsersManager {
       }
     } else {
       showPopupMessage("Unable to get user ratings.", context);
+    }
+
+    return null;
+  }
+
+  static Future<AppSettings> getUserAppSettings(
+      BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "getUserAppSettings";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
+
+    http.Response response =
+    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> body = jsonDecode(response.body);
+
+      try {
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          Map<String, dynamic> responseJson = json.decode(responseItem.resultMessage);
+          return new AppSettings.fromJson(responseJson);
+        } else {
+          showPopupMessage("Error getting user app settings (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error getting user app settings (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to get user app settings.", context);
     }
 
     return null;

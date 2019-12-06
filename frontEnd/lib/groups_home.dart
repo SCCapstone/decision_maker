@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/create_group.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/widgets/groups_list.dart';
 import 'categories_home.dart';
 import 'login_page.dart';
 import 'models/group.dart';
+import 'models/app_settings.dart';
 import 'imports/globals.dart';
 import 'log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
+  Future<AppSettings> settingsFuture;
 
   GroupsHome({Key key, this.groupsFuture}) : super(key: key);
 
@@ -23,12 +26,14 @@ class _GroupsHomeState extends State<GroupsHome> {
   String searchInput = "";
   List<Group> displayedGroups = new List<Group>();
   List<Group> totalGroups = new List<Group>();
+  AppSettings userSettings = new AppSettings();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
 
   @override
   void initState() {
     widget.groupsFuture = GroupsManager.getGroups();
+    widget.settingsFuture = UsersManager.getUserAppSettings(context);
     searchBar.addListener(() {
       if (searchBar.text.isEmpty) {
         setState(() {
@@ -48,6 +53,7 @@ class _GroupsHomeState extends State<GroupsHome> {
   Widget build(BuildContext context) {
     // to catch any changes that may have been made when editing
     widget.groupsFuture = GroupsManager.getGroups();
+    widget.settingsFuture = UsersManager.getUserAppSettings(context);
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -150,7 +156,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                       if (snapshot.hasData) {
                         totalGroups = snapshot.data;
                         displayedGroups = snapshot.data;
-                        return buildList();
+                        return buildListFuture();
                       } else if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       }
@@ -178,7 +184,26 @@ class _GroupsHomeState extends State<GroupsHome> {
     );
   }
 
+  Widget buildListFuture() {
+    return FutureBuilder (
+        future: widget.settingsFuture,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            userSettings = snapshot.data;
+            return buildList();
+          } else if (snapshot.hasError) {
+            return Text("Error: ${snapshot.error}");
+          }
+          return Center(child: CircularProgressIndicator());
+        });
+  }
+
   Widget buildList() {
+    if (userSettings.groupSort == 0) {
+      displayedGroups = GroupsManager.sortByDate(displayedGroups);
+    } else if (userSettings.groupSort == 1) {
+      displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
+    }
     if (searchInput.isNotEmpty) {
       List<Group> temp = new List<Group>();
       for (int i = 0; i < displayedGroups.length; i++) {
@@ -199,6 +224,7 @@ class _GroupsHomeState extends State<GroupsHome> {
   Future<Null> refreshList() async {
     setState(() {
       widget.groupsFuture = GroupsManager.getGroups();
+      widget.settingsFuture = UsersManager.getUserAppSettings(context);
     });
   }
 

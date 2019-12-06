@@ -32,8 +32,8 @@ public class UsersManager extends DatabaseAccessManager {
 
   public static final String DEFAULT_FIRSTNAME = "DefFirstName";
   public static final String DEFAULT_LASTNAME = "DefLastName";
-  public static final boolean DEFAULT_DARK_THEME = false;
-  public static final boolean DEFAULT_MUTED = false;
+  public static final int DEFAULT_DARK_THEME = 0;
+  public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
 
   public static final Map EMPTY_MAP = new HashMap();
@@ -144,40 +144,39 @@ public class UsersManager extends DatabaseAccessManager {
   public static ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
-           (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && ((jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
+           (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)))) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String settingToChange = "";
         ValueMap valueMap = new ValueMap();
         if (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) {
           settingToChange = APP_SETTINGS_DARK_THEME;
-          valueMap.withBoolean(":value", (Boolean) jsonMap.get(APP_SETTINGS_DARK_THEME));
         } else if (jsonMap.containsKey(APP_SETTINGS_MUTED)) {
           settingToChange = APP_SETTINGS_MUTED;
-          valueMap.withBoolean(":value", (Boolean) jsonMap.get(APP_SETTINGS_MUTED));
         } else if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
           settingToChange = APP_SETTINGS_GROUP_SORT;
-          Integer sortSetting = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
-          if (sortSetting == 0 || sortSetting == 1) {
-            valueMap.withInt(":value", sortSetting);
-          } else {
-            //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-            resultStatus.resultMessage = "Error: Invalid input for sorting value";
-            return resultStatus;
-          }
         } else {
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
           resultStatus.resultMessage = "Error: Invalid values for setting or user";
           return resultStatus;
         }
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser)
-            .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
-            .withValueMap(valueMap);
         
-        USERS_MANAGER.updateItem(updateItemSpec);
-        resultStatus = new ResultStatus(true, "User settings updated successfully!");
+        Integer settingVal = (Integer) jsonMap.get(settingToChange);
+        
+        if (checkAppSettingsVals(settingToChange, settingVal)) {
+          valueMap.withInt(":value", settingVal);
+        
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
+              .withValueMap(valueMap);
+        
+          USERS_MANAGER.updateItem(updateItemSpec);
+          resultStatus = new ResultStatus(true, "User settings updated successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: Invalid values for settings";
+        }
       }
       catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -223,6 +222,35 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
   
+  public static ResultStatus getUserAppSettings(Map<String, Object> jsonMap) {
+    ResultStatus resultStatus = new ResultStatus();
+    
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      try {
+        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        
+        GetItemSpec getItemSpec = new GetItemSpec()
+            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+        Item userDataRaw = USERS_MANAGER.getItem(getItemSpec);
+        
+        Map<String, Object> userSettings = (Map<String, Object>) userDataRaw.asMap()
+          .get(UsersManager.APP_SETTINGS);
+        
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(userSettings));
+      }
+      catch (Exception e) {
+        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+      }
+    }
+    else {
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+    
+    return resultStatus;
+  }
+  
   private static Map<String, Object> getDefaultAppSettings(){
     Map<String, Object> retMap = new HashMap<String, Object>();
     retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
@@ -230,4 +258,23 @@ public class UsersManager extends DatabaseAccessManager {
     retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
     return retMap;
   }
+  
+  private static boolean checkAppSettingsVals(String setting, int settingVal) {
+    boolean retbool = false;
+    
+    if (setting.equals(APP_SETTINGS_DARK_THEME)) {
+      if (settingVal == 0 || settingVal == 1) {
+      retbool = true;
+      } 
+    } else if (setting.equals(APP_SETTINGS_MUTED)) {
+      if (settingVal == 0 || settingVal == 1) {
+      retbool = true;
+      }
+    } else if (setting.equals(APP_SETTINGS_GROUP_SORT)) {
+      if (settingVal == 0 || settingVal == 1) {
+      retbool = true;
+      }
+    }
+    return retbool;
+  }             
 }
