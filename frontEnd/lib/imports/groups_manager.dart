@@ -271,7 +271,7 @@ class GroupsManager {
   static List<Group> sortByDate(List<Group> groups){
     List<Group> retGroups = groups;
     retGroups.sort((a,b) =>
-        convertLastActivity(a).compareTo(convertLastActivity(b)));
+        convertLastActivity(b).compareTo(convertLastActivity(a)));
     return retGroups;
   }
 
