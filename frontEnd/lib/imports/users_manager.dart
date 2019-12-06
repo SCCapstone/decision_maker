@@ -26,7 +26,7 @@ class UsersManager {
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
 
-  static void insertNewUser(String username, BuildContext context) async {
+  static void insertNewUser(String username, {BuildContext context}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "newUser";
     jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
@@ -40,15 +40,23 @@ class UsersManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
+          if (context != null) {
+            showPopupMessage(responseItem.resultMessage, context);
+          }
         } else {
-          showPopupMessage("Error adding the new user (1).", context);
+          if (context != null) {
+            showPopupMessage("Error adding the new user (1).", context);
+          }
         }
       } catch (e) {
-        showPopupMessage("Error adding the new user (2).", context);
+        if (context != null) {
+          showPopupMessage("Error adding the new user (2).", context);
+        }
       }
     } else {
-      showPopupMessage("Unable to add the new user.", context);
+      if (context != null) {
+        showPopupMessage("Unable to add the new user.", context);
+      }
     }
   }
 
