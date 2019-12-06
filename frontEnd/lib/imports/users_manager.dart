@@ -152,7 +152,7 @@ class UsersManager {
     return null;
   }
 
-  static Future<List<AppSettings>> getUserAppSettings(
+  static Future<AppSettings> getUserAppSettings(
       BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserAppSettings";
@@ -169,8 +169,8 @@ class UsersManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          return responseJson.map((m) => new AppSettings.fromJson(m)).toList();
+          Map<String, dynamic> responseJson = json.decode(responseItem.resultMessage);
+          return new AppSettings.fromJson(responseJson);
         } else {
           showPopupMessage("Error getting user app settings (1).", context);
         }

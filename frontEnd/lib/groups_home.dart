@@ -13,7 +13,7 @@ import 'log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
-  Future<List<AppSettings>> settingsFuture;
+  Future<AppSettings> settingsFuture;
 
   GroupsHome({Key key, this.groupsFuture}) : super(key: key);
 
@@ -156,7 +156,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                       if (snapshot.hasData) {
                         totalGroups = snapshot.data;
                         displayedGroups = snapshot.data;
-                        return buildList();
+                        return buildListFuture();
                       } else if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       }
@@ -182,6 +182,20 @@ class _GroupsHomeState extends State<GroupsHome> {
         },
       ),
     );
+  }
+
+  Widget buildListFuture() {
+    return FutureBuilder (
+        future: widget.settingsFuture,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            userSettings = snapshot.data;
+            return buildList();
+          } else if (snapshot.hasError) {
+            return Text("Error: ${snapshot.error}");
+          }
+          return Center(child: CircularProgressIndicator());
+        });
   }
 
   Widget buildList() {
