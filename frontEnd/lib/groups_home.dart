@@ -199,9 +199,9 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Widget buildList() {
-    if (userSettings.darkTheme == 0) {
+    if (userSettings.groupSort == 0) {
       displayedGroups = GroupsManager.sortByDate(displayedGroups);
-    } else if (userSettings.darkTheme == 1) {
+    } else if (userSettings.groupSort == 1) {
       displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
     }
     if (searchInput.isNotEmpty) {
