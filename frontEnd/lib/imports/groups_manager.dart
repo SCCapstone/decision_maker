@@ -167,10 +167,8 @@ class GroupsManager {
     for (String eventId in group.events.keys) {
       Event event = new Event.fromJson(group.events[eventId]);
       Map<String, String> optInList = event.optedIn.cast();
-      if (optInList.keys.contains(Globals.username)) {
-        // if user has opted in, display the event to them
-        events.putIfAbsent(eventId, () => event);
-      }
+      // if user has opted in, display the event to them
+      events.putIfAbsent(eventId, () => event);
     }
     // sorting based on create time for now, most recently created at the top
     var sortedKeys = events.keys.toList(growable: false)
