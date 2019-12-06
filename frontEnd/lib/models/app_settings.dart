@@ -14,9 +14,9 @@ class AppSettings {
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     return AppSettings(
-        muted: json[UsersManager.APP_SETTINGS_MUTED],
-        darkTheme: json[UsersManager.APP_SETTINGS_DARK_THEME],
-        groupSort: json[UsersManager.APP_SETTINGS_GROUP_SORT]);
+        muted: int.parse(json[UsersManager.APP_SETTINGS_MUTED]),
+        darkTheme: int.parse(json[UsersManager.APP_SETTINGS_DARK_THEME]),
+        groupSort: int.parse(json[UsersManager.APP_SETTINGS_GROUP_SORT]));
   }
 
   @override

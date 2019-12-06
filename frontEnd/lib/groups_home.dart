@@ -13,7 +13,7 @@ import 'log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
-  Future<List<AppSettings>> settingsFuture;
+  Future<AppSettings> settingsFuture;
 
   GroupsHome({Key key, this.groupsFuture}) : super(key: key);
 
