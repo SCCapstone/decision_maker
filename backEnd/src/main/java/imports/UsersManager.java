@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
-import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 
 import java.util.HashMap;
@@ -37,7 +36,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final int DEFAULT_GROUP_SORT = 0;
 
   public static final Map EMPTY_MAP = new HashMap();
-  public static final UsersManager USERS_MANAGER = new UsersManager();
+  public static UsersManager USERS_MANAGER = new UsersManager();
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -140,12 +139,14 @@ public class UsersManager extends DatabaseAccessManager {
 
     return resultStatus;
   }
-  
+
   public static ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
-    
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && ((jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
-           (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)))) {
+
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && ((jsonMap.containsKey(APP_SETTINGS_MUTED))
+        ||
+        (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap
+        .containsKey(APP_SETTINGS_GROUP_SORT)))) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String settingToChange = "";
@@ -161,30 +162,29 @@ public class UsersManager extends DatabaseAccessManager {
           resultStatus.resultMessage = "Error: Invalid values for setting or user";
           return resultStatus;
         }
-        
+
         Integer settingVal = (Integer) jsonMap.get(settingToChange);
-        
+
         if (checkAppSettingsVals(settingToChange, settingVal)) {
           valueMap.withInt(":value", settingVal);
-        
+
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser)
               .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
               .withValueMap(valueMap);
-        
+
           USERS_MANAGER.updateItem(updateItemSpec);
           resultStatus = new ResultStatus(true, "User settings updated successfully!");
         } else {
           resultStatus.resultMessage = "Error: Invalid values for settings";
         }
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-       resultStatus.resultMessage = "Error: Unable to parse request."; 
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: required request keys not found";
+      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      resultStatus.resultMessage = "Error: required request keys not found";
     }
     return resultStatus;
   }
@@ -221,60 +221,58 @@ public class UsersManager extends DatabaseAccessManager {
 
     return resultStatus;
   }
-  
+
   public static ResultStatus getUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
-    
+
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        
+
         GetItemSpec getItemSpec = new GetItemSpec()
             .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
         Item userDataRaw = USERS_MANAGER.getItem(getItemSpec);
-        
+
         Map<String, Object> userSettings = (Map<String, Object>) userDataRaw.asMap()
-          .get(UsersManager.APP_SETTINGS);
-        
+            .get(UsersManager.APP_SETTINGS);
+
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(userSettings));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
-    }
-    else {
+    } else {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-    
+
     return resultStatus;
   }
-  
-  private static Map<String, Object> getDefaultAppSettings(){
+
+  private static Map<String, Object> getDefaultAppSettings() {
     Map<String, Object> retMap = new HashMap<String, Object>();
     retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
     retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
     retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
     return retMap;
   }
-  
+
   private static boolean checkAppSettingsVals(String setting, int settingVal) {
     boolean retbool = false;
-    
+
     if (setting.equals(APP_SETTINGS_DARK_THEME)) {
       if (settingVal == 0 || settingVal == 1) {
-      retbool = true;
-      } 
+        retbool = true;
+      }
     } else if (setting.equals(APP_SETTINGS_MUTED)) {
       if (settingVal == 0 || settingVal == 1) {
-      retbool = true;
+        retbool = true;
       }
     } else if (setting.equals(APP_SETTINGS_GROUP_SORT)) {
       if (settingVal == 0 || settingVal == 1) {
-      retbool = true;
+        retbool = true;
       }
     }
     return retbool;
-  }             
+  }
 }
