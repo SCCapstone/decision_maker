@@ -16,8 +16,6 @@ public class GroupsPostHandler implements RequestStreamHandler {
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
 
-    System.out.println("top of handle requests in GroupsPostHandler");
-
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
 

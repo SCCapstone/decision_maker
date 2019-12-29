@@ -42,31 +42,45 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public List<String> getAllCategoryIds(String username) {
-    Item dbData = this.getItemByPrimaryKey(username);
+    try {
+      Item dbData = this.getItemByPrimaryKey(username);
 
-    if (dbData != null) {
-      try {
-        Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-        Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+      if (dbData != null) {
+        try {
+          Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
+          Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
 
-        return new ArrayList<>(categoryMap.keySet());
-      } catch (Exception e) {
-        //we probably need to log this - something couldn't be mapped it seems like
+          return new ArrayList<>(categoryMap.keySet());
+        } catch (Exception e) {
+          //we probably need to log this - something couldn't be mapped it seems like
+        }
+      } else {
+        //bad username? - may need to log for investigation
       }
-    } else {
-      //db down?
+    } catch (Exception e) {
+      //definitely log this, db is probably down or disconnected
     }
 
     return new ArrayList<>();
   }
 
   public List<String> getAllGroupIds(String username) {
-    Item dbData = this.getItemByPrimaryKey(username);
+    try {
+      Item dbData = this.getItemByPrimaryKey(username);
 
-    Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-    Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
+      if (dbData != null) {
+        Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
+        Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
 
-    return new ArrayList<>(groupMap.keySet());
+        return new ArrayList<>(groupMap.keySet());
+      } else {
+        //probably need to log this for investigation - bad username
+      }
+    } catch (Exception e) {
+      //log this, either bad db con or unable to parse out data
+    }
+
+    return new ArrayList<>();
   }
 
   public Item getUser(String username) {

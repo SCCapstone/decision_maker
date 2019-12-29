@@ -580,18 +580,22 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public List<String> getAllCategoryIds(String groupId) {
-    Item dbData = this.getItemByPrimaryKey(groupId);
+    try {
+      Item dbData = this.getItemByPrimaryKey(groupId);
 
-    if (dbData != null) {
-      try {
-        Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
-        Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
-        return new ArrayList<>(categoryMap.keySet());
-      } catch (Exception e) {
-        //we probably need to log this - something couldn't be mapped it seems like
+      if (dbData != null) {
+        try {
+          Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
+          Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+          return new ArrayList<>(categoryMap.keySet());
+        } catch (Exception e) {
+          //we probably need to log this - something couldn't be mapped it seems like
+        }
+      } else {
+        //bad group id? - may need to log for investigation
       }
-    } else {
-      //db down?
+    } catch (Exception e) {
+      //definitely log this, db is probably down or disconnected
     }
 
     return new ArrayList<>();

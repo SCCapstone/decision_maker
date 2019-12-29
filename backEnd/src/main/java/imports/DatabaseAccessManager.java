@@ -69,7 +69,7 @@ public class DatabaseAccessManager {
 
   public Item getItemByPrimaryKey(final String primaryKey) {
     return this.dynamoDb.getTable(this.tableName)
-          .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
+        .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
   }
 
   public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) {
