@@ -2,7 +2,7 @@ package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import imports.CategoriesManager;
+import imports.DatabaseManagers;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
 import utilities.ResultStatus;
@@ -16,6 +16,8 @@ public class CategoriesPostHandler implements RequestStreamHandler {
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
 
+    System.out.println("top of handle requests in CategoriesPostHandler");
+
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
 
@@ -28,13 +30,13 @@ public class CategoriesPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("newCategory")) {
-              resultStatus = CategoriesManager.addNewCategory(payloadJsonMap);
+              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap);
             } else if (action.equals("editCategory")) {
-              resultStatus = CategoriesManager.editCategory(payloadJsonMap);
+              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap);
             } else if (action.equals("getCategories")) {
-              resultStatus = CategoriesManager.getCategories(payloadJsonMap);
+              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.getCategories(payloadJsonMap);
             } else if (action.equals("deleteCategory")) {
-              resultStatus = CategoriesManager.deleteCategory(payloadJsonMap);
+              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

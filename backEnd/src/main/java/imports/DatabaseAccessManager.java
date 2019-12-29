@@ -1,5 +1,6 @@
 package imports;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -31,9 +32,23 @@ public class DatabaseAccessManager {
     this.tableName = tableName;
     this.primaryKeyIndex = primaryKeyIndex;
     this.region = regions;
-    this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder().withRegion(this.region)
+    this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder()
+        .withRegion(this.region)
+        .withCredentials(new EnvironmentVariableCredentialsProvider())
         .build();
     this.dynamoDb = new DynamoDB(this.client);
+  }
+
+  public DatabaseAccessManager(final String tableName, final String primaryKeyIndex,
+      final Regions regions, final DynamoDB dynamoDB) {
+    this.tableName = tableName;
+    this.primaryKeyIndex = primaryKeyIndex;
+    this.region = regions;
+    this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder()
+        .withRegion(this.region)
+        .withCredentials(new EnvironmentVariableCredentialsProvider())
+        .build();
+    this.dynamoDb = dynamoDB;
   }
 
   public String getTableName() {
@@ -54,7 +69,7 @@ public class DatabaseAccessManager {
 
   public Item getItemByPrimaryKey(final String primaryKey) {
     return this.dynamoDb.getTable(this.tableName)
-        .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
+          .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
   }
 
   public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) {

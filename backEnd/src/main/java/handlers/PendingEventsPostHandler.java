@@ -2,6 +2,7 @@ package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import imports.DatabaseManagers;
 import imports.PendingEventsManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,7 @@ public class PendingEventsPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("newPendingEvent")) {
-              resultStatus = PendingEventsManager.addPendingEvent(payloadJsonMap);
+              resultStatus = DatabaseManagers.PENDING_EVENTS_MANAGER.addPendingEvent(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }

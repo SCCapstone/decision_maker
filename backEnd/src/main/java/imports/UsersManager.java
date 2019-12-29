@@ -36,25 +36,32 @@ public class UsersManager extends DatabaseAccessManager {
   public static final int DEFAULT_GROUP_SORT = 0;
 
   public static final Map EMPTY_MAP = new HashMap();
-  public static UsersManager USERS_MANAGER = new UsersManager();
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
   }
 
-  public static List<String> getAllCategoryIds(String username) {
-    Item dbData = USERS_MANAGER
-        .getItem(new GetItemSpec().withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), username));
+  public List<String> getAllCategoryIds(String username) {
+    Item dbData = this.getItemByPrimaryKey(username);
 
-    Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-    Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+    if (dbData != null) {
+      try {
+        Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
+        Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
 
-    return new ArrayList<>(categoryMap.keySet());
+        return new ArrayList<>(categoryMap.keySet());
+      } catch (Exception e) {
+        //we probably need to log this - something couldn't be mapped it seems like
+      }
+    } else {
+      //db down?
+    }
+
+    return new ArrayList<>();
   }
 
-  public static List<String> getAllGroupIds(String username) {
-    Item dbData = USERS_MANAGER
-        .getItem(new GetItemSpec().withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), username));
+  public List<String> getAllGroupIds(String username) {
+    Item dbData = this.getItemByPrimaryKey(username);
 
     Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
     Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
@@ -62,17 +69,17 @@ public class UsersManager extends DatabaseAccessManager {
     return new ArrayList<>(groupMap.keySet());
   }
 
-  public static Item getUser(String username) {
-    return USERS_MANAGER.getItemByPrimaryKey(username);
+  public Item getUser(String username) {
+    return this.getItemByPrimaryKey(username);
   }
 
-  public static ResultStatus addNewUser(Map<String, Object> jsonMap) {
+  public ResultStatus addNewUser(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
     if (jsonMap.containsKey(USERNAME)) {
       try {
         String username = (String) jsonMap.get(USERNAME);
 
-        Item user = UsersManager.getUser(username);
+        Item user = this.getUser(username);
         if (user == null) {
           Item newUser = new Item()
               .withString(USERNAME, username)
@@ -85,7 +92,7 @@ public class UsersManager extends DatabaseAccessManager {
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(newUser);
 
-          USERS_MANAGER.putItem(putItemSpec);
+          this.putItem(putItemSpec);
 
           resultStatus = new ResultStatus(true, "User added successfully!");
         } else {
@@ -102,7 +109,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
+  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     if (
@@ -120,12 +127,12 @@ public class UsersManager extends DatabaseAccessManager {
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), user)
+            .withPrimaryKey(this.getPrimaryKeyIndex(), user)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
-        USERS_MANAGER.updateItem(updateItemSpec);
+        this.updateItem(updateItemSpec);
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
@@ -140,13 +147,13 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
+  public ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && ((jsonMap.containsKey(APP_SETTINGS_MUTED))
-        ||
-        (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) || (jsonMap
-        .containsKey(APP_SETTINGS_GROUP_SORT)))) {
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
+        (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
+            (jsonMap.containsKey(APP_SETTINGS_DARK_THEME))||
+            (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)))) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String settingToChange = "";
@@ -169,11 +176,11 @@ public class UsersManager extends DatabaseAccessManager {
           valueMap.withInt(":value", settingVal);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser)
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
               .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
               .withValueMap(valueMap);
 
-          USERS_MANAGER.updateItem(updateItemSpec);
+          this.updateItem(updateItemSpec);
           resultStatus = new ResultStatus(true, "User settings updated successfully!");
         } else {
           resultStatus.resultMessage = "Error: Invalid values for settings";
@@ -189,7 +196,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static ResultStatus getUserRatings(Map<String, Object> jsonMap) {
+  public ResultStatus getUserRatings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     if (
@@ -201,8 +208,8 @@ public class UsersManager extends DatabaseAccessManager {
         String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
 
         GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-        Item userDataRaw = USERS_MANAGER.getItem(getItemSpec);
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser);
+        Item userDataRaw = this.getItem(getItemSpec);
 
         Map<String, Object> userRatings = (Map<String, Object>) userDataRaw.asMap()
             .get(UsersManager.CATEGORIES);
@@ -222,7 +229,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static ResultStatus getUserAppSettings(Map<String, Object> jsonMap) {
+  public ResultStatus getUserAppSettings(Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
@@ -230,8 +237,8 @@ public class UsersManager extends DatabaseAccessManager {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
         GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-        Item userDataRaw = USERS_MANAGER.getItem(getItemSpec);
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser);
+        Item userDataRaw = this.getItem(getItemSpec);
 
         Map<String, Object> userSettings = (Map<String, Object>) userDataRaw.asMap()
             .get(UsersManager.APP_SETTINGS);
@@ -249,7 +256,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private static Map<String, Object> getDefaultAppSettings() {
+  private Map<String, Object> getDefaultAppSettings() {
     Map<String, Object> retMap = new HashMap<String, Object>();
     retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
     retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
@@ -257,7 +264,7 @@ public class UsersManager extends DatabaseAccessManager {
     return retMap;
   }
 
-  private static boolean checkAppSettingsVals(String setting, int settingVal) {
+  private boolean checkAppSettingsVals(String setting, int settingVal) {
     boolean retbool = false;
 
     if (setting.equals(APP_SETTINGS_DARK_THEME)) {

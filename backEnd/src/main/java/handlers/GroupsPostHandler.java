@@ -2,7 +2,7 @@ package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import imports.GroupsManager;
+import imports.DatabaseManagers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,6 +16,8 @@ public class GroupsPostHandler implements RequestStreamHandler {
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
 
+    System.out.println("top of handle requests in GroupsPostHandler");
+
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
 
@@ -28,15 +30,15 @@ public class GroupsPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("getGroups")) {
-              resultStatus = GroupsManager.getGroups(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER.getGroups(payloadJsonMap);
             } else if (action.equals("createNewGroup")) {
-              resultStatus = GroupsManager.createNewGroup(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap);
             } else if (action.equals("editGroup")) {
-              resultStatus = GroupsManager.editGroup(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap);
             } else if (action.equals("newEvent")) {
-              resultStatus = GroupsManager.newEvent(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap);
             } else if (action.equals("optUserInOut")) {
-              resultStatus = GroupsManager.optInOutOfEvent(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
