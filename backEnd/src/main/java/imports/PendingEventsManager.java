@@ -1,5 +1,6 @@
 package imports;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
@@ -8,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
-import com.amazonaws.util.ImmutableMapParameter;
+import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,14 +30,17 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   private static final String STEP_FUNCTION_ARN = "arn:aws:states:us-east-2:871532548613:stateMachine:EventResolver";
 
-  private final AWSStepFunctions client = AWSStepFunctionsClientBuilder.defaultClient();
+  private final AWSStepFunctions client = AWSStepFunctionsClientBuilder.standard()
+      .withCredentials(new EnvironmentVariableCredentialsProvider())
+      .withRegion(Regions.US_EAST_2)
+      .build();
 
   public PendingEventsManager() {
     super("pending_events", SCANNER_ID, Regions.US_EAST_2);
   }
 
   private void startStepMachineExecution(String groupId, String eventId, String scannerId) {
-    Map<String, Object> input = ImmutableMapParameter
+    Map<String, Object> input = ImmutableMap
         .of(GroupsManager.GROUP_ID, groupId, RequestFields.EVENT_ID, eventId, SCANNER_ID,
             scannerId);
 
@@ -49,7 +53,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         .withInput(escapedInput.toString()));
   }
 
-  public static ResultStatus processPendingEvent(final Map<String, Object> jsonMap) {
+  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap) {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
@@ -61,7 +65,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String scannerId = (String) jsonMap.get(SCANNER_ID);
 
-        final Item groupData = GroupsManager.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
+        final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
           //Dumb algorithm simply gets first choice from category!
 
@@ -73,7 +77,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
               .get(eventId);
 
           String categoryId = (String) eventDataMapped.get(GroupsManager.CATEGORY_ID);
-          Item categoryData = CategoriesManager.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
+          Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
           Map<String, Object> categoryDataMapped = categoryData.asMap();
 
           //with the category, we can now get the first choice in the category which is our result
@@ -98,7 +102,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
               .withNameMap(nameMap)
               .withValueMap(valueMap);
 
-          GroupsManager.GROUPS_MANAGER.updateItem(updateItemSpec);
+          DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
           //remove the pending entry from the pending events table
           updateExpression = "remove #groupEventKey";
@@ -125,7 +129,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static ResultStatus addPendingEvent(final String groupId, final String eventId,
+  public ResultStatus addPendingEvent(final String groupId, final String eventId,
       final Date creationDate,
       final Integer pollDuration) {
     ResultStatus resultStatus = new ResultStatus();
@@ -158,7 +162,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public static void scanPendingEvents(String scannerId) {
+  public void scanPendingEvents(String scannerId) {
     try {
       Item pendingEvents = PENDING_EVENTS_MANAGER.getItemByPrimaryKey(scannerId);
 
@@ -201,8 +205,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   //This method is purely for testing purposes -> hardcoded strings
-  public static ResultStatus addPendingEvent(final Map<String, Object> jsonMap) {
-    return PendingEventsManager.addPendingEvent(
+  public ResultStatus addPendingEvent(final Map<String, Object> jsonMap) {
+    return this.addPendingEvent(
         (String) jsonMap.get("GroupId"),
         (String) jsonMap.get("EventId"),
         new Date(),

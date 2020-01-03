@@ -2,7 +2,7 @@ package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import imports.UsersManager;
+import imports.DatabaseManagers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,15 +28,15 @@ public class UsersPostHandler implements RequestStreamHandler {
             ResultStatus resultStatus;
 
             if (action.equals("newUser")) {
-              resultStatus = UsersManager.addNewUser(payloadJsonMap);
+              resultStatus = DatabaseManagers.USERS_MANAGER.addNewUser(payloadJsonMap);
             } else if (action.equals("updateUserChoiceRatings")) {
-              resultStatus = UsersManager.updateUserChoiceRatings(payloadJsonMap);
+              resultStatus = DatabaseManagers.USERS_MANAGER.updateUserChoiceRatings(payloadJsonMap);
             } else if (action.equals("getUserRatings")) {
-              resultStatus = UsersManager.getUserRatings(payloadJsonMap);
+              resultStatus = DatabaseManagers.USERS_MANAGER.getUserRatings(payloadJsonMap);
             } else if (action.equals("updateUserAppSettings")) {
-              resultStatus = UsersManager.updateUserAppSettings(payloadJsonMap);
+              resultStatus = DatabaseManagers.USERS_MANAGER.updateUserAppSettings(payloadJsonMap);
             } else if (action.equals("getUserAppSettings")) {
-              resultStatus = UsersManager.getUserAppSettings(payloadJsonMap);
+              resultStatus = DatabaseManagers.USERS_MANAGER.getUserAppSettings(payloadJsonMap);
             } else {
               resultStatus = new ResultStatus(false, "Error: Invalid action entered");
             }
