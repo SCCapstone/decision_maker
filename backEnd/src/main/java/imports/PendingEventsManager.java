@@ -10,8 +10,10 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import utilities.IOStreamsHelper;
@@ -24,9 +26,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
   public static final String SCANNER_ID = "ScannerId";
 
   public static final String DELIM = ";";
-  private static final Integer NUMBER_OF_PARTITIONS = 1;
-  private static final Integer MINUTE = 60 * 1000; // milliseconds
-  private static final PendingEventsManager PENDING_EVENTS_MANAGER = new PendingEventsManager();
+  private static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
 
   private static final String STEP_FUNCTION_ARN = "arn:aws:states:us-east-2:871532548613:stateMachine:EventResolver";
 
@@ -78,44 +78,48 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
           String categoryId = (String) eventDataMapped.get(GroupsManager.CATEGORY_ID);
           Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
-          Map<String, Object> categoryDataMapped = categoryData.asMap();
+          if (categoryData != null) {
+            Map<String, Object> categoryDataMapped = categoryData.asMap();
 
-          //with the category, we can now get the first choice in the category which is our result
-          Map<String, Object> choices = (Map<String, Object>) categoryDataMapped
-              .get(CategoriesManager.CHOICES);
-          String result = (String) choices.values().toArray()[0];
+            //with the category, we can now get the first choice in the category which is our result
+            Map<String, Object> choices = (Map<String, Object>) categoryDataMapped
+                .get(CategoriesManager.CHOICES);
+            String result = (String) choices.values()
+                .toArray()[0]; // assuming we can never have empty choices
 
-          Date currentDate = new Date();
+            //update the event
+            String updateExpression =
+                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
+                    + " = :result, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+            NameMap nameMap = new NameMap().with("#eventId", eventId);
+            ValueMap valueMap = new ValueMap().withString(":result", result)
+                .withString(":currentDate",
+                    LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
-          //update the event
-          String updateExpression =
-              "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
-                  + " = :result, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
-          NameMap nameMap = new NameMap().with("#eventId", eventId);
-          ValueMap valueMap = new ValueMap().withString(":result", result)
-              .withString(":currentDate",
-                  PENDING_EVENTS_MANAGER.getDbDateFormatter().format(currentDate));
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap)
+                .withValueMap(valueMap);
 
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
-              .withUpdateExpression(updateExpression)
-              .withNameMap(nameMap)
-              .withValueMap(valueMap);
+            DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
-          DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+            //remove the pending entry from the pending events table
+            updateExpression = "remove #groupEventKey";
+            nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
 
-          //remove the pending entry from the pending events table
-          updateExpression = "remove #groupEventKey";
-          nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
+            updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), scannerId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap);
 
-          updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(SCANNER_ID, scannerId)
-              .withUpdateExpression(updateExpression)
-              .withNameMap(nameMap);
+            this.updateItem(updateItemSpec);
 
-          PENDING_EVENTS_MANAGER.updateItem(updateItemSpec);
-
-          resultStatus = new ResultStatus(true, "Pending event processed successfully.");
+            resultStatus = new ResultStatus(true, "Pending event processed successfully.");
+          } else {
+            // we have an event pointing to a non existent category
+            resultStatus.resultMessage = "Associated category no longer exists?";
+          }
         }
       } catch (Exception e) {
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
@@ -130,29 +134,28 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
-      final Date creationDate,
       final Integer pollDuration) {
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      final String partitionKey = PENDING_EVENTS_MANAGER.getPartitionKey(creationDate);
-      final Date expirationDate = new Date(creationDate.getTime() + pollDuration * MINUTE);
-
-      final String attributeValue = groupId + DELIM + eventId;
+      final String partitionKey = this.getPartitionKey();
+      final LocalDateTime expirationDate = LocalDateTime.now(ZoneId.of("UTC"))
+          .plus(pollDuration, ChronoUnit.MINUTES);
 
       final String updateExpression = "set #key = :date";
       final ValueMap valueMap = new ValueMap()
-          .withString(":date", PENDING_EVENTS_MANAGER.getDbDateFormatter().format(expirationDate));
+          .withString(":date",
+              expirationDate.format(this.getDateTimeFormatter()));
       final NameMap nameMap = new NameMap()
-          .with("#key", attributeValue);
+          .with("#key", groupId + DELIM + eventId);
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(PENDING_EVENTS_MANAGER.getPrimaryKeyIndex(), partitionKey)
+          .withPrimaryKey(this.getPrimaryKeyIndex(), partitionKey)
           .withUpdateExpression(updateExpression)
           .withNameMap(nameMap)
           .withValueMap(valueMap); // only modifying my row
 
-      PENDING_EVENTS_MANAGER.updateItem(updateItemSpec);
+      this.updateItem(updateItemSpec);
 
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
@@ -164,28 +167,28 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   public void scanPendingEvents(String scannerId) {
     try {
-      Item pendingEvents = PENDING_EVENTS_MANAGER.getItemByPrimaryKey(scannerId);
+      Item pendingEvents = this.getItemByPrimaryKey(scannerId);
 
       if (pendingEvents != null) {
         Map<String, Object> pendingEventsData = pendingEvents.asMap();
-        Date resolutionDate, currentDate = new Date();
+        LocalDateTime resolutionDate, currentDate = LocalDateTime.now(ZoneId.of("UTC"));
 
         String groupId, eventId;
         List<String> keyPair;
         for (String key : pendingEventsData.keySet()) {
-          if (!key.equals(SCANNER_ID)) {
+          if (!key.equals(this.getPartitionKey())) {
             try {
-              resolutionDate = PENDING_EVENTS_MANAGER.getDbDateFormatter()
-                  .parse((String) pendingEventsData.get(key));
+              resolutionDate = LocalDateTime
+                  .parse((String) pendingEventsData.get(key), this.getDateTimeFormatter());
 
-              if (currentDate.after(resolutionDate)) {
+              if (currentDate.isAfter(resolutionDate)) {
                 keyPair = Arrays.asList(key.split(DELIM));
 
                 if (keyPair.size() == 2) {
                   groupId = keyPair.get(0);
                   eventId = keyPair.get(1);
 
-                  PENDING_EVENTS_MANAGER.startStepMachineExecution(groupId, eventId, scannerId);
+                  this.startStepMachineExecution(groupId, eventId, scannerId);
                 } else {
                   //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
                   //we inserted this wrong, fix this
@@ -209,13 +212,14 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return this.addPendingEvent(
         (String) jsonMap.get("GroupId"),
         (String) jsonMap.get("EventId"),
-        new Date(),
         (Integer) jsonMap.get("Duration")
     );
   }
 
-  private String getPartitionKey(Date creationDate) {
-    //this gives a randomized key based on the time of the input.
-    return Long.toString(creationDate.getTime() % NUMBER_OF_PARTITIONS + 1);
+  private String getPartitionKey() {
+    //this gives a 'randomized' key based on the system's clock time.
+    return Long.toString(
+        (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))
+            + 1);
   }
 }

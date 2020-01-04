@@ -9,9 +9,10 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.util.StringUtils;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,7 +115,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final UUID uuid = UUID.randomUUID();
         final String newGroupId = uuid.toString();
-        final Date currentDate = new Date(); // UTC
 
         this.updateMembersMapForInsertion(members);
 
@@ -129,7 +129,8 @@ public class GroupsManager extends DatabaseAccessManager {
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
-            .withString(LAST_ACTIVITY, this.getDbDateFormatter().format(currentDate));
+            .withString(LAST_ACTIVITY,
+                LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
         PutItemSpec putItemSpec = new PutItemSpec()
             .withItem(newGroup);
@@ -245,8 +246,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
 
-        Date currentDate = new Date(); // no args gives current date
-
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
 
@@ -290,7 +289,8 @@ public class GroupsManager extends DatabaseAccessManager {
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
               .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)))
-              .withString(":lastActivity", this.getDbDateFormatter().format(currentDate));
+              .withString(":lastActivity",
+                  LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -302,7 +302,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, currentDate, pollDuration);
+              .addPendingEvent(groupId, eventId, pollDuration);
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
