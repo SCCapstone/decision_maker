@@ -16,7 +16,8 @@ public class CategoriesPostHandler implements
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
-    ResultStatus resultStatus;
+    ResultStatus resultStatus = new ResultStatus();
+
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
 
@@ -40,27 +41,27 @@ public class CategoriesPostHandler implements
               } else if (action.equals("deleteCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
               } else {
-                resultStatus = new ResultStatus(false, "Error: Invalid action entered");
+                resultStatus.resultMessage = "Error: Invalid action entered";
               }
             } else {
-              resultStatus = new ResultStatus(false, "Error: Invalid key in payload.");
+              resultStatus.resultMessage = "Error: Invalid key in payload.";
             }
           } catch (Exception e) {
-            resultStatus = new ResultStatus(false, "Error: Unable to parse request.");
+            resultStatus.resultMessage = "Error: Unable to parse request.";
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          resultStatus = new ResultStatus(false, "Error: No action/payload entered.");
+          resultStatus.resultMessage = "Error: No action/payload entered.";
         }
       } else {
         //probably want to log this somewhere as front end validation shouldn't have let this through
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus = new ResultStatus(false, "Error: No data entered.");
+        resultStatus.resultMessage = "Error: No data entered.";
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus = new ResultStatus(false, "Error: Unable to handle request.");
+      resultStatus.resultMessage = "Error: Unable to handle request.";
     }
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());

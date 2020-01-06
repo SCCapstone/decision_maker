@@ -35,5 +35,4 @@ public class GetActiveUser {
 
     return jwt.getClaim("cognito:username").asString();
   }
-
 }
