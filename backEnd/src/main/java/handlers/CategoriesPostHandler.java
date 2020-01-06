@@ -1,65 +1,68 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
-import utilities.IOStreamsHelper;
+import utilities.GetActiveUser;
 import utilities.JsonParsers;
+import utilities.RequestFields;
 import utilities.ResultStatus;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
-public class CategoriesPostHandler implements RequestStreamHandler {
+public class CategoriesPostHandler implements
+    RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-  public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
-      throws IOException {
-
+  public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
+      Context context) {
+    ResultStatus resultStatus;
     try {
-      Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
+      Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
 
       if (!jsonMap.isEmpty()) {
         if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
           try {
-            String action = (String) jsonMap.get("action");
             Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
 
-            ResultStatus resultStatus;
+            if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+              payloadJsonMap
+                  .put(RequestFields.ACTIVE_USER, GetActiveUser.getActiveUserFromRequest(request));
 
-            if (action.equals("newCategory")) {
-              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap);
-            } else if (action.equals("editCategory")) {
-              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap);
-            } else if (action.equals("getCategories")) {
-              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.getCategories(payloadJsonMap);
-            } else if (action.equals("deleteCategory")) {
-              resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
+              String action = (String) jsonMap.get("action");
+
+              if (action.equals("newCategory")) {
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap);
+              } else if (action.equals("editCategory")) {
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap);
+              } else if (action.equals("getCategories")) {
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.getCategories(payloadJsonMap);
+              } else if (action.equals("deleteCategory")) {
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
+              } else {
+                resultStatus = new ResultStatus(false, "Error: Invalid action entered");
+              }
             } else {
-              resultStatus = new ResultStatus(false, "Error: Invalid action entered");
+              resultStatus = new ResultStatus(false, "Error: Invalid key in payload.");
             }
-
-            IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
           } catch (Exception e) {
-            IOStreamsHelper.writeToOutput(outputStream,
-                new ResultStatus(false, "Error: Unable to parse request.").toString());
+            resultStatus = new ResultStatus(false, "Error: Unable to parse request.");
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
           //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          IOStreamsHelper.writeToOutput(outputStream,
-              new ResultStatus(false, "Error: No action/payload entered.").toString());
+          resultStatus = new ResultStatus(false, "Error: No action/payload entered.");
         }
       } else {
         //probably want to log this somewhere as front end validation shouldn't have let this through
         //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        IOStreamsHelper.writeToOutput(outputStream,
-            new ResultStatus(false, "Error: No data entered.").toString());
+        resultStatus = new ResultStatus(false, "Error: No data entered.");
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      IOStreamsHelper.writeToOutput(outputStream,
-          new ResultStatus(false, "Error: Unable to handle request.").toString());
+      resultStatus = new ResultStatus(false, "Error: Unable to handle request.");
     }
+
+    return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }
 }
