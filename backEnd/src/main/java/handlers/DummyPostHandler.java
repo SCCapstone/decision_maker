@@ -19,11 +19,12 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import utilities.ExceptionHelper;
+import utilities.JsonEncoders;
 import utilities.ResultStatus;
 
 public class DummyPostHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-    String resultStatus = "bad";
+    ResultStatus resultStatus = new ResultStatus();
     try {
       Map<String, String> headers = request.getHeaders();
       String authorization = headers.get("Authorization");
@@ -33,11 +34,12 @@ public class DummyPostHandler implements RequestHandler<APIGatewayProxyRequestEv
       System.out.println("Token is: " + token);
       String username = this.getUsername(token);
       System.out.println(("Username is: " + username));
-      resultStatus = "Username is: " + username;
+      resultStatus = new ResultStatus(true, "Username is: " + username);
     } catch (Exception e) {
-      resultStatus = ExceptionHelper.getStackTrace(e);
+      resultStatus.resultMessage = ExceptionHelper.getStackTrace(e);
     }
-    APIGatewayProxyResponseEvent apiGatewayProxyResponseEvent = new APIGatewayProxyResponseEvent().withBody(resultStatus);
+    APIGatewayProxyResponseEvent apiGatewayProxyResponseEvent = new APIGatewayProxyResponseEvent().withBody(
+        resultStatus.toString());
     return apiGatewayProxyResponseEvent;
   }
 
