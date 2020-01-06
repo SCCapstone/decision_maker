@@ -63,24 +63,24 @@ public class DatabaseAccessManager {
     return this.dbDateFormatter;
   }
 
-  public Item getItem(final GetItemSpec getItemSpec) {
+  public Item getItem(final GetItemSpec getItemSpec) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).getItem(getItemSpec);
   }
 
-  public Item getItemByPrimaryKey(final String primaryKey) {
+  public Item getItemByPrimaryKey(final String primaryKey) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName)
         .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
   }
 
-  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) {
+  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
   }
 
-  public PutItemOutcome putItem(final PutItemSpec putItemSpec) {
+  public PutItemOutcome putItem(final PutItemSpec putItemSpec) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
   }
 
-  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) {
+  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
   }
 

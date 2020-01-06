@@ -172,14 +172,15 @@ public class CategoriesManager extends DatabaseAccessManager {
     String resultMessage = "";
     List<String> categoryIds = new ArrayList<>();
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      categoryIds = DatabaseManagers.USERS_MANAGER.getAllCategoryIds(username);
-    } else if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
+    //notice, due to how the ActiveUser key is set for every call, it's check must be last!
+    if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
     } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
       String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
       categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId);
+    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+      categoryIds = DatabaseManagers.USERS_MANAGER.getAllCategoryIds(username);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
