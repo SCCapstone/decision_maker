@@ -13,8 +13,7 @@ import 'api_manager.dart';
 import 'globals.dart';
 
 class GroupsManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/groupsendpoint";
+  static final String apiEndpoint = "groupsendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String GROUP_ID = "GroupId";

@@ -7,12 +7,10 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
-import 'globals.dart';
 import 'groups_manager.dart';
 
 class CategoriesManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
+  static final String apiEndpoint = "categoriesendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String CATEGORY_ID = "CategoryId";

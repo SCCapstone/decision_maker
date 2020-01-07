@@ -12,8 +12,7 @@ import 'api_manager.dart';
 import 'globals.dart';
 
 class UsersManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/usersendpoint";
+  static final String apiEndpoint = "usersendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String USERNAME = "Username";

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:frontEnd/imports/user_tokens_manager.dart';
+import 'package:frontEnd/utilities/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +26,7 @@ Future<String> makeApiRequest(String apiEndpoint, Map<String, dynamic> requestCo
       return response.body;
     } else if (firstAttempt) { // in case the id_token has expired
       refreshUserTokens();
-      return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
+      return makeApiRequest(Config.apiRootUrl + Config.apiDeployment + apiEndpoint, requestContent, firstAttempt: false);
     }
   } else {
     //clear navigation stack and head to the login page?
