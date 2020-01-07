@@ -8,7 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 SharedPreferences tokens;
 final String idTokenKey = "id";
 
-Future<String> makeApiRequest(String apiEndpoint, Map<String, dynamic> requestContent,
+Future<String> makeApiRequest(
+    String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
   if (tokens == null) {
     tokens = await SharedPreferences.getInstance();
@@ -19,14 +20,18 @@ Future<String> makeApiRequest(String apiEndpoint, Map<String, dynamic> requestCo
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
 
-    http.Response response =
-    await http.post(apiEndpoint, headers: headers, body: json.encode(requestContent));
+    http.Response response = await http.post(apiEndpoint,
+        headers: headers, body: json.encode(requestContent));
 
     if (response.statusCode == 200) {
       return response.body;
-    } else if (firstAttempt) { // in case the id_token has expired
+    } else if (firstAttempt) {
+      // in case the id_token has expired
       refreshUserTokens();
-      return makeApiRequest(Config.apiRootUrl + Config.apiDeployment + apiEndpoint, requestContent, firstAttempt: false);
+      return makeApiRequest(
+          Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
+          requestContent,
+          firstAttempt: false);
     }
   } else {
     //clear navigation stack and head to the login page?

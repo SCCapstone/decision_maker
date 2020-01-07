@@ -106,7 +106,8 @@ class CategoriesManager {
     }
   }
 
-  static Future<List<Category>> getAllCategoriesFromGroup(String groupId) async {
+  static Future<List<Category>> getAllCategoriesFromGroup(
+      String groupId) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
     jsonRequestBody["payload"]
@@ -118,7 +119,7 @@ class CategoriesManager {
       try {
         Map<String, dynamic> fullResponseJson = jsonDecode(response);
         List<dynamic> responseJson =
-        json.decode(fullResponseJson['resultMessage']);
+            json.decode(fullResponseJson['resultMessage']);
 
         return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {
