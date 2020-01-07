@@ -29,6 +29,7 @@ frontEnd/.packages
 frontEnd/.pub-cache/
 frontEnd/.pub/
 frontEnd/build/
+frontEnd/lib/utilities/config.dart
 
 # Backend related
 backend/target/
