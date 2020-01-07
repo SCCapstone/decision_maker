@@ -20,18 +20,17 @@ Future<String> makeApiRequest(
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
 
-    http.Response response = await http.post(apiEndpoint,
-        headers: headers, body: json.encode(requestContent));
+    http.Response response = await http.post(
+        Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
+        headers: headers,
+        body: json.encode(requestContent));
 
     if (response.statusCode == 200) {
       return response.body;
     } else if (firstAttempt) {
       // in case the id_token has expired
       refreshUserTokens();
-      return makeApiRequest(
-          Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
-          requestContent,
-          firstAttempt: false);
+      return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
     }
   } else {
     //clear navigation stack and head to the login page?
