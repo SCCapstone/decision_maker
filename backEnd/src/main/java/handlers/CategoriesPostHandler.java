@@ -28,7 +28,8 @@ public class CategoriesPostHandler implements
 
             if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
               payloadJsonMap
-                  .put(RequestFields.ACTIVE_USER, GetActiveUser.getActiveUserFromRequest(request));
+                  .put(RequestFields.ACTIVE_USER,
+                      GetActiveUser.getActiveUserFromRequest(request, context));
 
               String action = (String) jsonMap.get("action");
 
