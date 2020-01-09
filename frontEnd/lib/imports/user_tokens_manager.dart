@@ -141,6 +141,7 @@ Future<void> refreshUserTokens() async {
         "FAILED REFRESH RESPONSE WITH CODE: " + response.statusCode.toString());
     debugPrint(response.toString());
     debugPrint(response.body);
+    clearTokens(); // if there was anything there, it is junk so clear it
   }
 }
 

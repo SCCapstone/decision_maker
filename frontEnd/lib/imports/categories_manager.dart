@@ -5,14 +5,12 @@ import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-import 'package:http/http.dart' as http;
 
-import 'globals.dart';
+import 'api_manager.dart';
 import 'groups_manager.dart';
 
 class CategoriesManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/categoriesendpoint";
+  static final String apiEndpoint = "categoriesendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String CATEGORY_ID = "CategoryId";
@@ -59,15 +57,12 @@ class CategoriesManager {
     jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -88,18 +83,15 @@ class CategoriesManager {
     }
   }
 
-  static Future<List<Category>> getAllCategoriesList(String username) async {
+  static Future<List<Category>> getAllCategoriesList() async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
+        Map<String, dynamic> fullResponseJson = jsonDecode(response);
         List<dynamic> responseJson =
             json.decode(fullResponseJson['resultMessage']);
 
@@ -114,20 +106,20 @@ class CategoriesManager {
     }
   }
 
-  static Future<List<Category>> getAllCategoriesFromGroup(String groupId) async {
+  static Future<List<Category>> getAllCategoriesFromGroup(
+      String groupId) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
     jsonRequestBody["payload"]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
-    http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> fullResponseJson = jsonDecode(response.body);
+        Map<String, dynamic> fullResponseJson = jsonDecode(response);
         List<dynamic> responseJson =
-        json.decode(fullResponseJson['resultMessage']);
+            json.decode(fullResponseJson['resultMessage']);
 
         return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {
@@ -143,16 +135,13 @@ class CategoriesManager {
   static void deleteCategory(String categoryId, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "deleteCategory";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
     jsonRequestBody["payload"].putIfAbsent(CATEGORY_ID, () => categoryId);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {

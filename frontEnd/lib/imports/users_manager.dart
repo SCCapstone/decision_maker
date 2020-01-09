@@ -7,13 +7,12 @@ import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-import 'package:http/http.dart' as http;
 
+import 'api_manager.dart';
 import 'globals.dart';
 
 class UsersManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/usersendpoint";
+  static final String apiEndpoint = "usersendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String USERNAME = "Username";
@@ -31,11 +30,10 @@ class UsersManager {
     jsonRequestBody["action"] = "newUser";
     jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
+    if (response != "") {
+      Map<String, dynamic> body = jsonDecode(response);
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
@@ -60,19 +58,18 @@ class UsersManager {
     }
   }
 
-  static void updateUserAppSettings(String settingToUpdate, int updateVal,
-      BuildContext context) async {
+  static void updateUserAppSettings(
+      String settingToUpdate, int updateVal, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "updateUserAppSettings";
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
-    jsonRequestBody["payload"]
-        .putIfAbsent(settingToUpdate, () => updateVal);
-    http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    jsonRequestBody["payload"].putIfAbsent(settingToUpdate, () => updateVal);
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      Map<String, dynamic> body = jsonDecode(response);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -101,11 +98,10 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
+    if (response != "") {
+      Map<String, dynamic> body = jsonDecode(response);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -136,11 +132,10 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
+    if (response != "") {
+      Map<String, dynamic> body = jsonDecode(response);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -160,24 +155,23 @@ class UsersManager {
     return null;
   }
 
-  static Future<AppSettings> getUserAppSettings(
-      BuildContext context) async {
+  static Future<AppSettings> getUserAppSettings(BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserAppSettings";
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
-    http.Response response =
-    await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> body = jsonDecode(response.body);
+    if (response != "") {
+      Map<String, dynamic> body = jsonDecode(response);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          Map<String, dynamic> responseJson = json.decode(responseItem.resultMessage);
+          Map<String, dynamic> responseJson =
+              json.decode(responseItem.resultMessage);
           return new AppSettings.fromJson(responseJson);
         } else {
           showPopupMessage("Error getting user app settings (1).", context);

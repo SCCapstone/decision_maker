@@ -63,7 +63,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
     categoriesTotalFuture =
-        CategoriesManager.getAllCategoriesList(Globals.username);
+        CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 

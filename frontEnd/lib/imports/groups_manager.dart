@@ -8,13 +8,12 @@ import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-import 'package:http/http.dart' as http;
 import 'package:frontEnd/models/group.dart';
+import 'api_manager.dart';
 import 'globals.dart';
 
 class GroupsManager {
-  static final String apiEndpoint =
-      "https://9zh1udqup3.execute-api.us-east-2.amazonaws.com/beta/groupsendpoint";
+  static final String apiEndpoint = "groupsendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String GROUP_ID = "GroupId";
@@ -40,12 +39,11 @@ class GroupsManager {
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -72,12 +70,11 @@ class GroupsManager {
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -104,12 +101,11 @@ class GroupsManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -132,16 +128,11 @@ class GroupsManager {
     jsonRequestBody["payload"] = event.asMap();
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
-    http.Response response = await http.post(apiEndpoint,
-        headers: {
-          "Accept": "application/json",
-          "content-type": "application/json"
-        },
-        body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -184,12 +175,11 @@ class GroupsManager {
     jsonRequestBody["action"] = "createNewGroup";
     jsonRequestBody["payload"] = group.asMap();
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -221,12 +211,11 @@ class GroupsManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
-    http.Response response =
-        await http.post(apiEndpoint, body: json.encode(jsonRequestBody));
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response.statusCode == 200) {
+    if (response != "") {
       try {
-        Map<String, dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -242,17 +231,16 @@ class GroupsManager {
     }
   }
 
-  static List<Group> sortByDate(List<Group> groups){
+  static List<Group> sortByDate(List<Group> groups) {
     List<Group> retGroups = groups;
-    retGroups.sort((a,b) =>
-        DateTime.parse(b.lastActivity).compareTo(DateTime.parse(a.lastActivity)));
+    retGroups.sort((a, b) => DateTime.parse(b.lastActivity)
+        .compareTo(DateTime.parse(a.lastActivity)));
     return retGroups;
   }
 
   static List<Group> sortByAlpha(List<Group> groups) {
     List<Group> retGroups = groups;
-    retGroups.sort((a,b) =>
-        a.groupName.compareTo(b.groupName));
+    retGroups.sort((a, b) => a.groupName.compareTo(b.groupName));
     return retGroups;
   }
 }
