@@ -170,10 +170,10 @@ public class CategoriesManager extends DatabaseAccessManager {
   }
 
   public ResultStatus getCategories(Map<String, Object> jsonMap, Metrics metrics,
-      LambdaLogger lambdaLogger) throws Exception {
+      LambdaLogger lambdaLogger) {
     metrics.setFunctionName("CategoriesManager.getCategories");
     metrics.initTimeMetric("Time", System.currentTimeMillis());
-    metrics.addIntegerMetric("Invocations",1);
+    metrics.incrementMetric("Invocations");
 
     boolean success = true;
     String resultMessage = "";
