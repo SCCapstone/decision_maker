@@ -7,12 +7,14 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import utilities.JsonEncoders;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -167,7 +169,12 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getCategories(Map<String, Object> jsonMap) {
+  public ResultStatus getCategories(Map<String, Object> jsonMap, Metrics metrics,
+      LambdaLogger lambdaLogger) throws Exception {
+    metrics.setFunctionName("CategoriesManager.getCategories");
+    metrics.initTimeMetric("Time", System.currentTimeMillis());
+    metrics.addIntegerMetric("Invocations",1);
+
     boolean success = true;
     String resultMessage = "";
     List<String> categoryIds = new ArrayList<>();
@@ -179,6 +186,8 @@ public class CategoriesManager extends DatabaseAccessManager {
       String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
       categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+
+
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       categoryIds = DatabaseManagers.USERS_MANAGER.getAllCategoryIds(username);
     } else {
@@ -203,6 +212,8 @@ public class CategoriesManager extends DatabaseAccessManager {
     if (success) {
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
+
+    metrics.finalizeTimeMetric("Time", System.currentTimeMillis());
 
     return new ResultStatus(success, resultMessage);
   }
