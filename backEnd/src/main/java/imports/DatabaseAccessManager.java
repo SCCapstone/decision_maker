@@ -16,7 +16,7 @@ import com.amazonaws.services.dynamodbv2.model.TransactGetItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 
 public class DatabaseAccessManager {
 
@@ -25,7 +25,7 @@ public class DatabaseAccessManager {
   private final String primaryKeyIndex;
   private final Regions region;
   private final AmazonDynamoDBClient client;
-  private final SimpleDateFormat dbDateFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+  private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   public DatabaseAccessManager(final String tableName, final String primaryKeyIndex,
       final Regions regions) {
@@ -59,8 +59,8 @@ public class DatabaseAccessManager {
     return this.primaryKeyIndex;
   }
 
-  public SimpleDateFormat getDbDateFormatter() {
-    return this.dbDateFormatter;
+  public DateTimeFormatter getDateTimeFormatter() {
+    return this.dateTimeFormatter;
   }
 
   public Item getItem(final GetItemSpec getItemSpec) throws NullPointerException {
