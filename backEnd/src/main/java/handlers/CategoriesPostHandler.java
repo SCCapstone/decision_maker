@@ -19,7 +19,7 @@ public class CategoriesPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    Metrics metrics = new Metrics();
+    Metrics metrics = new Metrics(context.getAwsRequestId());
     LambdaLogger lambdaLogger = context.getLogger();
 
     try {

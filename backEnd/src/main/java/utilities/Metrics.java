@@ -8,12 +8,15 @@ public class Metrics {
 
   private static final String METRIC_MARKER = "METRIC";
 
+  private String requestId;
+
   private String functionName;
   private Map<String, Map<String, Boolean>> booleanMetrics;
   private Map<String, Map<String, Integer>> countMetrics;
   private Map<String, Map<String, Long>> timeMetrics;
 
-  public Metrics() {
+  public Metrics(String requestId) {
+    this.requestId = requestId;
     this.functionName = "";
     this.booleanMetrics = new HashMap<>();
     this.countMetrics = new HashMap<>();
@@ -99,7 +102,7 @@ public class Metrics {
     for (String funcName : this.booleanMetrics.keySet()) {
       for (String metricName : this.booleanMetrics.get(funcName).keySet()) {
         logger.log(String
-            .format("%s %s %s %s", METRIC_MARKER, funcName, metricName,
+            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
                 this.booleanMetrics.get(funcName).get(metricName)));
       }
     }
@@ -107,7 +110,7 @@ public class Metrics {
     for (String funcName : this.countMetrics.keySet()) {
       for (String metricName : this.countMetrics.get(funcName).keySet()) {
         logger.log(String
-            .format("%s %s %s %s", METRIC_MARKER, funcName, metricName,
+            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
                 this.countMetrics.get(funcName).get(metricName)));
       }
     }
@@ -115,7 +118,7 @@ public class Metrics {
     for (String funcName : this.timeMetrics.keySet()) {
       for (String metricName : this.timeMetrics.get(funcName).keySet()) {
         logger.log(String
-            .format("%s %s %s %s", METRIC_MARKER, funcName, metricName,
+            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
                 this.timeMetrics.get(funcName).get(metricName)));
       }
     }
