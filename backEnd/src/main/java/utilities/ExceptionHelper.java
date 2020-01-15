@@ -3,7 +3,7 @@ package utilities;
 public class ExceptionHelper {
 
   public static String getStackTrace(Exception e) {
-    StringBuilder ret = new StringBuilder(e.getMessage() + "\n");
+    StringBuilder ret = new StringBuilder(e.toString() + "\n");
 
     StackTraceElement[] stackTraceElements = e.getStackTrace();
     for (StackTraceElement stackTraceElement : stackTraceElements) {

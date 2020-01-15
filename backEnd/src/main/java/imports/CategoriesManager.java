@@ -7,12 +7,15 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -167,7 +170,13 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getCategories(Map<String, Object> jsonMap) {
+  public ResultStatus getCategories(Map<String, Object> jsonMap, Metrics metrics,
+      LambdaLogger lambdaLogger) {
+    final String classMethod = "CategoriesManager.getCategories";
+    metrics.setFunctionName(classMethod);
+    metrics.initTimeMetric(Metrics.TIME);
+    metrics.incrementMetric(Metrics.INVOCATIONS);
+
     boolean success = true;
     String resultMessage = "";
     List<String> categoryIds = new ArrayList<>();
@@ -184,6 +193,8 @@ public class CategoriesManager extends DatabaseAccessManager {
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "lookup key not in request payload/active user not set").toString());
     }
 
     List<Map> categories = new ArrayList<>();
@@ -194,15 +205,22 @@ public class CategoriesManager extends DatabaseAccessManager {
           categories.add(dbData.asMap());
         } else {
           //maybe log this idk, we probably shouldn't have ids that don't point to cats in the db?
+          lambdaLogger.log(new ErrorDescriptor<>(id, classMethod, metrics.getRequestId(),
+              "CategoryId lookup returned null").toString());
         }
       } catch (Exception e) {
         //definitely need to log this, most likely a db down error
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     }
 
     if (success) {
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
+
+    metrics.addBooleanMetric(success);
+    metrics.finalizeTimeMetric(Metrics.TIME);
 
     return new ResultStatus(success, resultMessage);
   }

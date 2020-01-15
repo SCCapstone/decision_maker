@@ -1,12 +1,14 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
 import utilities.GetActiveUser;
 import utilities.JsonParsers;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 import java.util.Map;
@@ -17,6 +19,8 @@ public class CategoriesPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
+    Metrics metrics = new Metrics(context.getAwsRequestId());
+    LambdaLogger lambdaLogger = context.getLogger();
 
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
@@ -38,7 +42,8 @@ public class CategoriesPostHandler implements
               } else if (action.equals("editCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap);
               } else if (action.equals("getCategories")) {
-                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.getCategories(payloadJsonMap);
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER
+                    .getCategories(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("deleteCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
               } else {
@@ -64,6 +69,8 @@ public class CategoriesPostHandler implements
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Unable to handle request.";
     }
+
+    metrics.logMetrics(lambdaLogger);
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

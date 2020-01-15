@@ -15,6 +15,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -86,6 +88,12 @@ public class CategoriesManagerTest {
 
   @Mock
   private GroupsManager groupsManager;
+
+  @Mock
+  private LambdaLogger lambdaLogger;
+
+  @Mock
+  private Metrics metrics;
 
   @BeforeEach
   private void init() {
@@ -244,7 +252,7 @@ public class CategoriesManagerTest {
         .getAllCategoryIds(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .getCategories(this.getCategoriesGoodInputActiveUser);
+        .getCategories(this.getCategoriesGoodInputActiveUser, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1)).getAllCategoryIds(any(String.class));
@@ -259,7 +267,7 @@ public class CategoriesManagerTest {
     doReturn(null, new Item()).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .getCategories(this.getCategoriesGoodInputCategoryIds);
+        .getCategories(this.getCategoriesGoodInputCategoryIds, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     assertEquals(resultStatus.resultMessage, "[{}]");
@@ -278,7 +286,7 @@ public class CategoriesManagerTest {
         .getAllCategoryIds(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .getCategories(this.getCategoriesGoodInputGroupId);
+        .getCategories(this.getCategoriesGoodInputGroupId, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(1)).getAllCategoryIds(any(String.class));
@@ -292,7 +300,7 @@ public class CategoriesManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .getCategories(this.getCategoriesGoodInputCategoryIds);
+        .getCategories(this.getCategoriesGoodInputCategoryIds, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     assertEquals(resultStatus.resultMessage,
@@ -304,7 +312,7 @@ public class CategoriesManagerTest {
 
   @Test
   public void getCategories_missingKey_failureResult() {
-    ResultStatus resultStatus = this.categoriesManager.getCategories(this.badInput);
+    ResultStatus resultStatus = this.categoriesManager.getCategories(this.badInput, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0)).getAllCategoryIds(any(String.class));
