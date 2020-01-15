@@ -88,20 +88,20 @@ public class Metrics {
     }
   }
 
-  public void initTimeMetric(String metricName, Long time) {
+  public void initTimeMetric(String metricName) {
     this.ensureFunctionKeyExists(this.timeMetrics);
 
     if (!this.timeMetrics.get(this.functionName).containsKey(metricName)) {
-      this.timeMetrics.get(this.functionName).put(metricName, time);
+      this.timeMetrics.get(this.functionName).put(metricName, System.currentTimeMillis());
     }
   }
 
-  public void finalizeTimeMetric(String metricName, Long time) {
+  public void finalizeTimeMetric(String metricName) {
     this.ensureFunctionKeyExists(this.timeMetrics);
 
     if (this.timeMetrics.get(this.functionName).containsKey(metricName)) {
       this.timeMetrics.get(this.functionName)
-          .replace(metricName, time - this.timeMetrics.get(this.functionName).get(metricName));
+          .replace(metricName, System.currentTimeMillis() - this.timeMetrics.get(this.functionName).get(metricName));
     }
   }
 

@@ -174,8 +174,8 @@ public class CategoriesManager extends DatabaseAccessManager {
       LambdaLogger lambdaLogger) {
     final String classMethod = "CategoriesManager.getCategories";
     metrics.setFunctionName(classMethod);
+    metrics.initTimeMetric(Metrics.TIME);
     metrics.incrementMetric(Metrics.INVOCATIONS);
-    metrics.initTimeMetric(Metrics.TIME, System.currentTimeMillis());
 
     boolean success = true;
     String resultMessage = "";
@@ -219,8 +219,8 @@ public class CategoriesManager extends DatabaseAccessManager {
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
 
-    metrics.finalizeTimeMetric("Time", System.currentTimeMillis());
     metrics.addBooleanMetric(success);
+    metrics.finalizeTimeMetric(Metrics.TIME);
 
     return new ResultStatus(success, resultMessage);
   }
