@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -171,9 +172,10 @@ public class CategoriesManager extends DatabaseAccessManager {
 
   public ResultStatus getCategories(Map<String, Object> jsonMap, Metrics metrics,
       LambdaLogger lambdaLogger) {
-    metrics.setFunctionName("CategoriesManager.getCategories");
-    metrics.initTimeMetric("Time", System.currentTimeMillis());
-    metrics.incrementMetric("Invocations");
+    final String classMethod = "CategoriesManager.getCategories";
+    metrics.setFunctionName(classMethod);
+    metrics.initTimeMetric(Metrics.TIME, System.currentTimeMillis());
+    metrics.incrementMetric(Metrics.INVOCATIONS);
 
     boolean success = true;
     String resultMessage = "";
@@ -191,6 +193,8 @@ public class CategoriesManager extends DatabaseAccessManager {
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "lookup key not in request payload/active user not set").toString());
     }
 
     List<Map> categories = new ArrayList<>();
@@ -201,9 +205,13 @@ public class CategoriesManager extends DatabaseAccessManager {
           categories.add(dbData.asMap());
         } else {
           //maybe log this idk, we probably shouldn't have ids that don't point to cats in the db?
+          lambdaLogger.log(new ErrorDescriptor<>(id, classMethod, metrics.getRequestId(),
+              "CategoryId lookup returned null").toString());
         }
       } catch (Exception e) {
         //definitely need to log this, most likely a db down error
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     }
 
@@ -211,6 +219,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
 
+    metrics.addBooleanMetric(success);
     metrics.finalizeTimeMetric("Time", System.currentTimeMillis());
 
     return new ResultStatus(success, resultMessage);

@@ -6,14 +6,20 @@ import java.util.Map;
 
 public class Metrics {
 
+  //To limit hard coded metrics names/variations, I'm writing some constant ones here
+  public static final String TIME = "Time";
+  public static final String SUCCESS = "Success";
+  public static final String FAILURE = "Failure";
+  public static final String INVOCATIONS = "Invocations";
+
   private static final String METRIC_MARKER = "METRIC";
 
-  private String requestId;
-
   private String functionName;
-  private Map<String, Map<String, Boolean>> booleanMetrics;
-  private Map<String, Map<String, Integer>> countMetrics;
-  private Map<String, Map<String, Long>> timeMetrics;
+
+  private final String requestId;
+  private final Map<String, Map<String, Boolean>> booleanMetrics;
+  private final Map<String, Map<String, Integer>> countMetrics;
+  private final Map<String, Map<String, Long>> timeMetrics;
 
   public Metrics(String requestId) {
     this.requestId = requestId;
@@ -27,20 +33,23 @@ public class Metrics {
     this.functionName = functionName;
   }
 
+  public String getRequestId() {
+    return this.requestId;
+  }
+
   private void ensureFunctionKeyExists(Map input) {
     if (!input.containsKey(this.functionName)) {
       input.put(this.functionName, new HashMap<>());
     }
   }
 
-  public void addBooleanMetric(String metricName, Boolean value) {
-    this.ensureFunctionKeyExists(this.booleanMetrics);
-
-    if (this.booleanMetrics.get(this.functionName).containsKey(metricName)) {
-      this.booleanMetrics.get(this.functionName).replace(metricName, value);
-    } else {
-      this.booleanMetrics.get(this.functionName).put(metricName, value);
+  public void addBooleanMetric(Boolean value) {
+    String metricName = FAILURE;
+    if (value) {
+      metricName = SUCCESS;
     }
+
+    this.addIntegerMetric(metricName, 1);
   }
 
   public void addIntegerMetric(String metricName, Integer value) {
