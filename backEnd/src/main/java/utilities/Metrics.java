@@ -17,14 +17,12 @@ public class Metrics {
   private String functionName;
 
   private final String requestId;
-  private final Map<String, Map<String, Boolean>> booleanMetrics;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
 
   public Metrics(String requestId) {
     this.requestId = requestId;
     this.functionName = "";
-    this.booleanMetrics = new HashMap<>();
     this.countMetrics = new HashMap<>();
     this.timeMetrics = new HashMap<>();
   }
@@ -108,14 +106,6 @@ public class Metrics {
   }
 
   public void logMetrics(LambdaLogger logger) {
-    for (String funcName : this.booleanMetrics.keySet()) {
-      for (String metricName : this.booleanMetrics.get(funcName).keySet()) {
-        logger.log(String
-            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
-                this.booleanMetrics.get(funcName).get(metricName)));
-      }
-    }
-
     for (String funcName : this.countMetrics.keySet()) {
       for (String metricName : this.countMetrics.get(funcName).keySet()) {
         logger.log(String
