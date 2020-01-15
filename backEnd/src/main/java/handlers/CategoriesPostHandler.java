@@ -23,7 +23,6 @@ public class CategoriesPostHandler implements
     LambdaLogger lambdaLogger = context.getLogger();
 
     try {
-      lambdaLogger.log("From lambda logger!");
       Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
 
       if (!jsonMap.isEmpty()) {
