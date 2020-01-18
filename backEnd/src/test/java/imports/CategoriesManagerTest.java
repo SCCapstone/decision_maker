@@ -75,7 +75,7 @@ public class CategoriesManagerTest {
       GroupsManager.GROUP_ID, "groupId"
   );
 
-  private CategoriesManager categoriesManager;// = new CategoriesManager(new EnvironmentVariableCredentialsProvider());
+  private CategoriesManager categoriesManager;
 
   @Mock
   private Table table;
@@ -259,6 +259,7 @@ public class CategoriesManagerTest {
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
   }
 
   @Test
@@ -276,6 +277,7 @@ public class CategoriesManagerTest {
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
   }
 
   @Test
@@ -293,6 +295,7 @@ public class CategoriesManagerTest {
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
   }
 
   @Test
@@ -308,6 +311,7 @@ public class CategoriesManagerTest {
     verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
   }
 
   @Test
@@ -319,6 +323,7 @@ public class CategoriesManagerTest {
     verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   ///////////////////////////

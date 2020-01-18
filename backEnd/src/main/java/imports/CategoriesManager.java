@@ -170,12 +170,10 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getCategories(Map<String, Object> jsonMap, Metrics metrics,
-      LambdaLogger lambdaLogger) {
+  public ResultStatus getCategories(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     final String classMethod = "CategoriesManager.getCategories";
-    metrics.setFunctionName(classMethod);
-    metrics.initTimeMetric(Metrics.TIME);
-    metrics.incrementMetric(Metrics.INVOCATIONS);
+    metrics.commonSetup(classMethod);
 
     boolean success = true;
     String resultMessage = "";
@@ -219,8 +217,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
 
-    metrics.addBooleanMetric(success);
-    metrics.finalizeTimeMetric(Metrics.TIME);
+    metrics.commonClose(success);
 
     return new ResultStatus(success, resultMessage);
   }

@@ -1,6 +1,7 @@
 package imports;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
@@ -8,9 +9,12 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.HashMap;
 import java.util.List;
+import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -41,6 +45,10 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2);
   }
 
+  public UsersManager(final DynamoDB dynamoDB) {
+    super("users", "Username", Regions.US_EAST_2, dynamoDB);
+  }
+
   public List<String> getAllCategoryIds(String username) {
     try {
       Item dbData = this.getItemByPrimaryKey(username);
@@ -64,27 +72,36 @@ public class UsersManager extends DatabaseAccessManager {
     return new ArrayList<>();
   }
 
-  public List<String> getAllGroupIds(String username) {
+  public List<String> getAllGroupIds(final String username, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.getAllGroupIds";
+    metrics.commonSetup(classMethod);
+
+    List<String> groupIds = new ArrayList<>();
+    boolean success = false;
+
     try {
-      Item dbData = this.getItemByPrimaryKey(username);
+      Item user = this.getItemByPrimaryKey(username);
 
-      if (dbData != null) {
-        Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-        Map<String, String> groupMap = (Map<String, String>) dbDataMap.get(GROUPS);
+      if (user != null) {
+        Map<String, Object> userMapped = user.asMap(); // specific user record as a map
+        Map<String, String> groupMap = (Map<String, String>) userMapped.get(GROUPS);
 
-        return new ArrayList<>(groupMap.keySet());
+        groupIds = new ArrayList<>(groupMap.keySet());
+        success = true;
       } else {
         //probably need to log this for investigation - bad username
+        lambdaLogger.log(new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(),
+            "user lookup returned null").toString());
       }
     } catch (Exception e) {
-      //log this, either bad db con or unable to parse out data
+      lambdaLogger.log(
+          new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
     }
 
-    return new ArrayList<>();
-  }
+    metrics.commonClose(success);
 
-  public Item getUser(String username) {
-    return this.getItemByPrimaryKey(username);
+    return groupIds;
   }
 
   public ResultStatus addNewUser(Map<String, Object> jsonMap) {
@@ -93,7 +110,7 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         String username = (String) jsonMap.get(USERNAME);
 
-        Item user = this.getUser(username);
+        Item user = this.getItemByPrimaryKey(username);
         if (user == null) {
           Item newUser = new Item()
               .withString(USERNAME, username)
@@ -166,7 +183,7 @@ public class UsersManager extends DatabaseAccessManager {
 
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
         (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
-            (jsonMap.containsKey(APP_SETTINGS_DARK_THEME))||
+            (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) ||
             (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)))) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);

@@ -1,6 +1,7 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.DatabaseManagers;
 import java.io.IOException;
@@ -9,12 +10,16 @@ import java.io.OutputStream;
 import java.util.Map;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
+import utilities.Metrics;
 import utilities.ResultStatus;
 
 public class GroupsPostHandler implements RequestStreamHandler {
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
+    ResultStatus resultStatus = new ResultStatus();
+    Metrics metrics = new Metrics(context.getAwsRequestId());
+    LambdaLogger lambdaLogger = context.getLogger();
 
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
@@ -25,10 +30,9 @@ public class GroupsPostHandler implements RequestStreamHandler {
             String action = (String) jsonMap.get("action");
             Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
 
-            ResultStatus resultStatus;
-
             if (action.equals("getGroups")) {
-              resultStatus = DatabaseManagers.GROUPS_MANAGER.getGroups(payloadJsonMap);
+              resultStatus = DatabaseManagers.GROUPS_MANAGER
+                  .getGroups(payloadJsonMap, metrics, lambdaLogger);
             } else if (action.equals("createNewGroup")) {
               resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap);
             } else if (action.equals("editGroup")) {
