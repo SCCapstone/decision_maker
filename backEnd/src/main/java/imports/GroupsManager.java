@@ -66,13 +66,13 @@ public class GroupsManager extends DatabaseAccessManager {
       final LambdaLogger lambdaLogger) {
     boolean success = true;
     String resultMessage = "";
-    List<String> groupIds = new ArrayList<String>();
+    List<String> groupIds = new ArrayList<>();
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+    if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
+      groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
+    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics, lambdaLogger);
-    } else if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
-      groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
