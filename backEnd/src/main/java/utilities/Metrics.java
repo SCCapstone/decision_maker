@@ -35,6 +35,17 @@ public class Metrics {
     return this.requestId;
   }
 
+  public void commonSetup(String functionName) {
+    this.setFunctionName(functionName);
+    this.initTimeMetric(Metrics.TIME);
+    this.incrementMetric(Metrics.INVOCATIONS);
+  }
+
+  public void commonClose(boolean success) {
+    this.addBooleanMetric(success);
+    this.finalizeTimeMetric(Metrics.TIME);
+  }
+
   private void ensureFunctionKeyExists(Map input) {
     if (!input.containsKey(this.functionName)) {
       input.put(this.functionName, new HashMap<>());

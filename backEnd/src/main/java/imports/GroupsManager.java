@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -60,16 +62,17 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus getGroups(Map<String, Object> jsonMap) {
+  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     boolean success = true;
     String resultMessage = "";
-    List<String> groupIds = new ArrayList<String>();
+    List<String> groupIds = new ArrayList<>();
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username);
-    } else if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
+    if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
       groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
+    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics, lambdaLogger);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
@@ -374,7 +377,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     for (String username : members.keySet()) {
       try {
-        Item user = DatabaseManagers.USERS_MANAGER.getUser(username);
+        Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
 
         if (user != null) {
           try {

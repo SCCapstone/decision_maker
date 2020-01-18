@@ -6,12 +6,12 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
+import java.util.Map;
 import utilities.GetActiveUser;
 import utilities.JsonParsers;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
-import java.util.Map;
 
 public class CategoriesPostHandler implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
