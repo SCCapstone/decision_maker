@@ -135,7 +135,9 @@ public class UsersManagerTest {
   // updateUserAppSettings tests //
   /////////////////////////////////
 
-  //<editor-fold name=“getUserRatings tests>
+  /////////////////////////// region
+  // getUserRatings tests //
+  //////////////////////////
   @Test
   public void getUserRatings_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -144,7 +146,7 @@ public class UsersManagerTest {
         .when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -153,12 +155,12 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void getUserRatings_badKeys_failureResult() {
+  public void getUserRatings_badUsername_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -173,7 +175,7 @@ public class UsersManagerTest {
         .getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -200,7 +202,6 @@ public class UsersManagerTest {
         .getUserRatings(this.badInput, metrics, lambdaLogger);
     assertFalse(resultStatus.success);
 
-    this.badInput.remove(CategoriesManager.CATEGORY_ID);
     this.badInput.put(RequestFields.ACTIVE_USER, "testId");
     resultStatus = this.usersManager.getUserRatings(this.badInput, metrics, lambdaLogger);
     assertFalse(resultStatus.success);
@@ -209,7 +210,7 @@ public class UsersManagerTest {
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false);
   }
-  //</editor-fold>
+  //endregion
 
   //////////////////////////////
   // getUserAppSettings tests //

@@ -233,7 +233,6 @@ public class UsersManager extends DatabaseAccessManager {
     final String classMethod = "UsersManager.getUserRatings";
     metrics.commonSetup(classMethod);
 
-    boolean success = true;
     if (
         jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
             jsonMap.containsKey(CategoriesManager.CATEGORY_ID)
@@ -255,25 +254,22 @@ public class UsersManager extends DatabaseAccessManager {
               true,
               JsonEncoders.convertObjectToJson(userRatings));
         } else {
-          success = false;
           lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "CategoryId produced a null value returned from DB").toString());
+              "CategoryId produced a null value returned from DB.").toString());
           resultStatus.resultMessage = "Error with given categoryId: " + categoryId;
         }
       } catch (Exception e) {
-        success = false;
-        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Error when trying to get item from db " + e).toString());
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
     } else {
-      success = false;
       lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Error with request fields").toString());
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    metrics.commonClose(success);
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
