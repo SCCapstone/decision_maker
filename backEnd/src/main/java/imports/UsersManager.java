@@ -227,8 +227,11 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getUserRatings(Map<String, Object> jsonMap) {
+  public ResultStatus getUserRatings(Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
+    final String classMethod = "UsersManager.getUserRatings";
+    metrics.commonSetup(classMethod);
 
     if (
         jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
@@ -242,21 +245,31 @@ public class UsersManager extends DatabaseAccessManager {
             .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser);
         Item userDataRaw = this.getItem(getItemSpec);
 
-        Map<String, Object> userRatings = (Map<String, Object>) userDataRaw.asMap()
+        Map<String, Object> userCategories = (Map<String, Object>) userDataRaw.asMap()
             .get(UsersManager.CATEGORIES);
 
-        resultStatus = new ResultStatus(
-            true,
-            JsonEncoders.convertObjectToJson(userRatings.get(categoryId)));
+        Map<String, Object> userRatings = (Map<String, Object>) userCategories.get(categoryId);
+        if (userRatings != null) {
+          resultStatus = new ResultStatus(
+              true,
+              JsonEncoders.convertObjectToJson(userRatings));
+        } else {
+          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "CategoryId produced a null value returned from DB.").toString());
+          resultStatus.resultMessage = "Error with given categoryId: " + categoryId;
+        }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

@@ -43,7 +43,8 @@ public class UsersPostHandler implements
                 resultStatus = DatabaseManagers.USERS_MANAGER
                     .updateUserChoiceRatings(payloadJsonMap);
               } else if (action.equals("getUserRatings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER.getUserRatings(payloadJsonMap);
+                resultStatus = DatabaseManagers.USERS_MANAGER
+                    .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("updateUserAppSettings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER.updateUserAppSettings(payloadJsonMap);
               } else if (action.equals("getUserAppSettings")) {
@@ -55,7 +56,7 @@ public class UsersPostHandler implements
               resultStatus.resultMessage = "Error: Invalid key in payload.";
             }
           } catch (Exception e) {
-            resultStatus.resultMessage = "Error: Unable to parse request. Exception message: ";
+            resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
