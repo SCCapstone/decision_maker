@@ -49,27 +49,34 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2, dynamoDB);
   }
 
-  public List<String> getAllCategoryIds(String username) {
+  public List<String> getAllCategoryIds(final String username, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.getAllCategoryIds";
+    metrics.commonSetup(classMethod);
+
+    List<String> categoryIds = new ArrayList<>();
+    boolean success = false;
+
     try {
-      Item dbData = this.getItemByPrimaryKey(username);
+      final Item user = this.getItemByPrimaryKey(username);
 
-      if (dbData != null) {
-        try {
-          Map<String, Object> dbDataMap = dbData.asMap(); // specific user record as a map
-          Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+      if (user != null) {
+        Map<String, Object> userMapped = user.asMap(); // specific user record as a map
+        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(CATEGORIES);
 
-          return new ArrayList<>(categoryMap.keySet());
-        } catch (Exception e) {
-          //we probably need to log this - something couldn't be mapped it seems like
-        }
+        categoryIds = new ArrayList<>(categoryMap.keySet());
+        success = true;
       } else {
-        //bad username? - may need to log for investigation
+        lambdaLogger.log(new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(),
+            "user lookup returned null").toString());
       }
     } catch (Exception e) {
-      //definitely log this, db is probably down or disconnected
+      lambdaLogger.log(
+          new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
     }
 
-    return new ArrayList<>();
+    metrics.commonClose(success);
+    return categoryIds;
   }
 
   public List<String> getAllGroupIds(final String username, final Metrics metrics,
@@ -90,7 +97,6 @@ public class UsersManager extends DatabaseAccessManager {
         groupIds = new ArrayList<>(groupMap.keySet());
         success = true;
       } else {
-        //probably need to log this for investigation - bad username
         lambdaLogger.log(new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(),
             "user lookup returned null").toString());
       }
@@ -301,7 +307,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   private Map<String, Object> getDefaultAppSettings() {
-    Map<String, Object> retMap = new HashMap<String, Object>();
+    Map<String, Object> retMap = new HashMap<>();
     retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
     retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
     retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
