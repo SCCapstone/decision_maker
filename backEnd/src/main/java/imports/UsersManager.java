@@ -224,7 +224,7 @@ public class UsersManager extends DatabaseAccessManager {
       } catch (Exception e) {
         lambdaLogger
             .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-        resultStatus.resultMessage = "Error: Unable to parse request.";
+        resultStatus.resultMessage = "Error: Unable to parse request." + e;
       }
     } else {
       lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
