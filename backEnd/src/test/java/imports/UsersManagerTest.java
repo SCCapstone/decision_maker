@@ -14,7 +14,6 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.List;
@@ -89,14 +88,57 @@ public class UsersManagerTest {
 
   /////////////////////////////
   // getAllCategoryIds tests //
-  /////////////////////////////
-
-  ////////////////////////// region
-  // getAllGroupIds tests //
-  //////////////////////////
+  /////////////////////////////region
 
   @Test
-  public void getCategories_validInputActiveUser_successfulResult() {
+  public void getAllCategoryIds_validInputActiveUser_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORIES, ImmutableMap
+        .of("CatId1", "choices mappings", "CatId2", "choices mappings")))
+        .when(this.table).getItem(any(GetItemSpec.class));
+
+    List<String> categoryIds = this.usersManager
+        .getAllCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+
+    assertEquals(categoryIds.size(), 2);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void getAllCategoryIds_badActiveUser_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
+
+    List<String> categoryIds = this.usersManager
+        .getAllCategoryIds("BadTestUserName", this.metrics, this.lambdaLogger);
+
+    assertEquals(categoryIds.size(), 0);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void getAllCategoryIds_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    List<String> categoryIds = this.usersManager
+        .getAllCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+
+    assertEquals(categoryIds.size(), 0);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  //////////////////////////endregion
+  // getAllGroupIds tests //
+  //////////////////////////region
+
+  @Test
+  public void getAllGroupIds_validInputActiveUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(UsersManager.GROUPS, ImmutableMap
         .of("GroupId1", "GroupName1", "GroupId2", "GroupName2")))
@@ -112,7 +154,7 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void getCategories_badActiveUser_failureResult() {
+  public void getAllGroupIds_badActiveUser_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
@@ -126,7 +168,7 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void getCategories_noDbConnection_failureResult() {
+  public void getAllGroupIds_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     List<String> groupIds = this.usersManager
@@ -137,19 +179,18 @@ public class UsersManagerTest {
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
-  // endregion
 
-  //////////////////////
+  //////////////////////endregion
   // addNewUser tests //
-  //////////////////////
+  //////////////////////region
 
-  ///////////////////////////////////
+  ///////////////////////////////////endregion
   // updateUserChoiceRatings tests //
-  ///////////////////////////////////
+  ///////////////////////////////////region
 
-  /////////////////////////////////
+  /////////////////////////////////endregion
   // updateUserAppSettings tests //
-  ///////////////////////////////// region
+  /////////////////////////////////region
   @Test
   public void updateUserAppSettings_validInputDarkTheme_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -246,11 +287,10 @@ public class UsersManagerTest {
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
-  // endregion
 
-  //////////////////////////
+  //////////////////////////endregion
   // getUserRatings tests //
-  ////////////////////////// region
+  //////////////////////////region
   @Test
   public void getUserRatings_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -323,17 +363,18 @@ public class UsersManagerTest {
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false);
   }
-  //endregion
 
-  //////////////////////////////
+  //////////////////////////////endregion
   // getUserAppSettings tests //
-  //////////////////////////////
+  //////////////////////////////region
 
-  /////////////////////////////////
+  /////////////////////////////////endregion
   // getDefaultAppSettings tests //
-  /////////////////////////////////
+  /////////////////////////////////region
 
-  ////////////////////////////////
+  ////////////////////////////////endregion
   // checkAppSettingsVals tests //
-  ////////////////////////////////
+  ////////////////////////////////region
+
+  //endregion
 }
