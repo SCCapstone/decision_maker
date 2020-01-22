@@ -223,7 +223,7 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void updateUserAppSettings_wrongSettingType_failureResult() {
+  public void updateUserAppSettings_incorrectSettingType_failureResult() {
     this.badInput.put(RequestFields.ACTIVE_USER, "testId");
     this.badInput.put(UsersManager.APP_SETTINGS_DARK_THEME, "hello there");
 
@@ -234,11 +234,23 @@ public class UsersManagerTest {
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
+
+  @Test
+  public void updateUserAppSettings_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserAppSettings(this.updateUserAppSettingsGoodInputMuted, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
   // endregion
 
-  ////////////////////////// region
-  // getUserRatings tests //
   //////////////////////////
+  // getUserRatings tests //
+  ////////////////////////// region
   @Test
   public void getUserRatings_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
