@@ -31,10 +31,7 @@ class GroupsManager {
   static Future<List<Group>> getGroups({List<String> groupIds}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getGroups";
-    if (groupIds == null) {
-      jsonRequestBody["payload"]
-          .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
-    } else {
+    if (groupIds != null) {
       jsonRequestBody["payload"]
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
@@ -66,8 +63,6 @@ class GroupsManager {
   static Future<bool> deleteGroup(String groupId, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "deleteGroup";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -98,8 +93,6 @@ class GroupsManager {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "editGroup";
     jsonRequestBody["payload"] = group.asMap();
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -205,8 +198,6 @@ class GroupsManager {
         .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
     //TODO get display name globally and maybe allow for it to be editable somewhere (https://github.com/SCCapstone/decision_maker/issues/148)
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);

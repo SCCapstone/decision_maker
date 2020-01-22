@@ -62,8 +62,6 @@ class UsersManager {
       String settingToUpdate, int updateVal, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
     jsonRequestBody["payload"].putIfAbsent(settingToUpdate, () => updateVal);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -95,8 +93,6 @@ class UsersManager {
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -129,8 +125,6 @@ class UsersManager {
     jsonRequestBody["action"] = "getUserRatings";
     jsonRequestBody["payload"]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -158,8 +152,6 @@ class UsersManager {
   static Future<AppSettings> getUserAppSettings(BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserAppSettings";
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.ACTIVE_USER, () => Globals.username);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
