@@ -45,6 +45,21 @@ public class UsersManagerTest {
       RequestFields.ACTIVE_USER, "ActiveUser"
   );
 
+  private final Map<String, Object> updateUserAppSettingsGoodInputDarkTheme = ImmutableMap.of(
+      UsersManager.APP_SETTINGS_DARK_THEME, "0",
+      RequestFields.ACTIVE_USER, "ActiveUser"
+  );
+
+  private final Map<String, Object> updateUserAppSettingsGoodInputMuted = ImmutableMap.of(
+      UsersManager.APP_SETTINGS_MUTED, "0",
+      RequestFields.ACTIVE_USER, "ActiveUser"
+  );
+
+  private final Map<String, Object> updateUserAppSettingsGoodInputGroupSort = ImmutableMap.of(
+      UsersManager.APP_SETTINGS_GROUP_SORT, "0",
+      RequestFields.ACTIVE_USER, "ActiveUser"
+  );
+
   @Mock
   private Table table;
 
@@ -76,7 +91,7 @@ public class UsersManagerTest {
   // getAllCategoryIds tests //
   /////////////////////////////
 
-  //////////////////////////
+  ////////////////////////// region
   // getAllGroupIds tests //
   //////////////////////////
 
@@ -122,6 +137,7 @@ public class UsersManagerTest {
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
+  // endregion
 
   //////////////////////
   // addNewUser tests //
@@ -131,9 +147,130 @@ public class UsersManagerTest {
   // updateUserChoiceRatings tests //
   ///////////////////////////////////
 
-  /////////////////////////////////
+  ///////////////////////////////// region
   // updateUserAppSettings tests //
   /////////////////////////////////
+  @Test
+  public void updateUserAppSettings_validInputDarkTheme_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.updateUserAppSettingsGoodInputDarkTheme, this.metrics, this.lambdaLogger);
+    assertTrue(resultStatus.success);
+//    // works with input 0 for setting, now test 1
+//    this.updateUserAppSettingsGoodInputDarkTheme.put(UsersManager.APP_SETTINGS_DARK_THEME,"1");
+//    resultStatus = this.usersManager
+//        .getUserRatings(this.updateUserAppSettingsGoodInputDarkTheme, this.metrics, this.lambdaLogger);
+//    assertTrue(resultStatus.success);
+
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+
+  }
+
+  @Test
+  public void updateUserAppSettings_validInputMuted_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORIES, ImmutableMap
+        .of(this.goodCategoryId, ImmutableMap.of("Choice", "1"), "ChoiceId2", "ChoiceRating2")))
+        .when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.updateUserAppSettingsGoodInputMuted, this.metrics, this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserAppSettings_validInputGroupSort_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORIES, ImmutableMap
+        .of(this.goodCategoryId, ImmutableMap.of("Choice", "1"), "ChoiceId2", "ChoiceRating2")))
+        .when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.updateUserAppSettingsGoodInputGroupSort, this.metrics, this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserAppSettings_missingSettings_failureResult() {
+    // active user is there, but no settings are in the payload
+    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.badInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserAppSettings_badUsername_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserAppSettings_badCategoryId_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORIES, new HashMap())).when(this.table)
+        .getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserAppSettings_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserAppSettings_missingKey_failureResult() {
+    ResultStatus resultStatus = this.usersManager
+        .getUserRatings(this.badInput, metrics, lambdaLogger);
+    assertFalse(resultStatus.success);
+
+    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+    resultStatus = this.usersManager.getUserRatings(this.badInput, metrics, lambdaLogger);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+  // endregion
 
   ////////////////////////// region
   // getUserRatings tests //
