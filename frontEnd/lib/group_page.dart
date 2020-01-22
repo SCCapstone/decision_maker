@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/group_settings.dart';
+import 'package:frontEnd/groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/events_list.dart';
 
-import 'create_event.dart';
+import 'event_create.dart';
 
 class GroupPage extends StatefulWidget {
   final Map<String, Event> events;
