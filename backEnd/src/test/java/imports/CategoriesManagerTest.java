@@ -249,13 +249,14 @@ public class CategoriesManagerTest {
   public void getCategories_validInputActiveUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(ImmutableList.of("catId1", "catId2")).when(this.usersManager)
-        .getAllCategoryIds(any(String.class));
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
 
     ResultStatus resultStatus = this.categoriesManager
         .getCategories(this.getCategoriesGoodInputActiveUser, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).getAllCategoryIds(any(String.class));
+    verify(this.usersManager, times(1))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -272,7 +273,8 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     assertEquals(resultStatus.resultMessage, "[{}]");
-    verify(this.usersManager, times(0)).getAllCategoryIds(any(String.class));
+    verify(this.usersManager, times(0))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
@@ -316,10 +318,12 @@ public class CategoriesManagerTest {
 
   @Test
   public void getCategories_missingKey_failureResult() {
-    ResultStatus resultStatus = this.categoriesManager.getCategories(this.badInput, this.metrics, this.lambdaLogger);
+    ResultStatus resultStatus = this.categoriesManager
+        .getCategories(this.badInput, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
-    verify(this.usersManager, times(0)).getAllCategoryIds(any(String.class));
+    verify(this.usersManager, times(0))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
@@ -351,7 +355,8 @@ public class CategoriesManagerTest {
   @Test
   public void deleteCategory_validInputWithOutGroups_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(CategoriesManager.GROUPS, ImmutableMap.of()).withString(CategoriesManager.OWNER, "ActiveUser"))
+    doReturn(new Item().withMap(CategoriesManager.GROUPS, ImmutableMap.of())
+        .withString(CategoriesManager.OWNER, "ActiveUser"))
         .when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.deleteCategoryGoodInput);
