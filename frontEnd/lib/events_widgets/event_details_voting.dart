@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class EventDetailsVoting extends StatefulWidget {
   final String groupId;
@@ -18,16 +19,13 @@ class EventDetailsVoting extends StatefulWidget {
 }
 
 class _EventDetailsVotingState extends State<EventDetailsVoting> {
+  final PageController controller = new PageController();
   DateTime createTime;
-  DateTime pollBegin;
   DateTime pollFinished;
   DateTime proposedTime;
-  String pollBeginFormatted;
   String pollFinishedFormatted;
+  String eventStartFormatted;
   String eventCreator = "";
-  String buttonQuestion = "";
-  String buttonDenial = "";
-  String buttonConfirm = "";
 
   @override
   void initState() {
@@ -44,7 +42,10 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
 
   @override
   Widget build(BuildContext context) {
-    // check what stage the event is in to display appropriate widgets
+    List<String> exampleChoices = new List();
+    for (int i = 0; i < 5; i++) {
+      exampleChoices.add("Choice Number $i");
+    }
     getFormattedTimes();
     return Scaffold(
       appBar: new AppBar(
@@ -70,7 +71,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Date and Time",
+                        "Event Starts",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -79,7 +80,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       ),
                     ),
                     Text(
-                      Globals.formatter.format(widget.event.eventStartDateTime),
+                      eventStartFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -88,7 +89,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
-                      child: Text("Poll Time Ends",
+                      child: Text("Voting Ends",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -105,7 +106,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Chosen Category",
+                        "Category",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -119,10 +120,6 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
                                   0.7),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -152,43 +149,26 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     Container(
                       height: MediaQuery.of(context).size.height * .27,
                       width: MediaQuery.of(context).size.width * .95,
-                      child: Scrollbar(
-                        child: PageView(
-                          scrollDirection: Axis.horizontal,
-                          children: <Widget>[
-                            Container(
-                              width: MediaQuery.of(context).size.width * .90,
-                              color: Colors.red,
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width,
-                              color: Colors.blue,
-                            )
-                          ],
-                        ),
+                      child: PageView.builder(
+                        controller: controller,
+                        itemCount: exampleChoices.length,
+                        itemBuilder: (context, index) {
+                          return EventProposedChoice(
+                            groupId: widget.groupId,
+                            eventId: widget.eventId,
+                            event: widget.event,
+                            choiceName: exampleChoices[index],
+                          );
+                        },
+                        scrollDirection: Axis.horizontal,
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        IconButton(
-                          icon: Icon(Icons.thumb_down),
-                          color: Colors.red,
-                          onPressed: () {
-                            GroupsManager.optInOutOfEvent(
-                                widget.groupId, widget.eventId, false, context);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.thumb_up),
-                          color: Colors.green,
-                          onPressed: () {
-                            GroupsManager.optInOutOfEvent(
-                                widget.groupId, widget.eventId, true, context);
-                          },
-                        )
-                      ],
-                    ),
+                    SmoothPageIndicator(
+                      controller: controller,
+                      count: exampleChoices.length,
+                      effect: SlideEffect(
+                          dotColor: Colors.grey, activeDotColor: Colors.green),
+                    )
                   ],
                 ),
               ],
@@ -201,16 +181,16 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
 
   Future<Null> refreshList() async {
     await Future.delayed(
-        Duration(milliseconds: 70)); // required to remove the loading animation
+        // required to remove the loading animation
+        Duration(milliseconds: 70));
     setState(() {});
   }
 
   void getFormattedTimes() {
-    pollBegin =
-        createTime.add(new Duration(minutes: widget.event.pollDuration));
     pollFinished =
         createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    pollBeginFormatted = Globals.formatter.format(pollBegin);
     pollFinishedFormatted = Globals.formatter.format(pollFinished);
+    eventStartFormatted =
+        Globals.formatter.format(widget.event.eventStartDateTime);
   }
 }

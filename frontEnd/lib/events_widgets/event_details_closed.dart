@@ -76,7 +76,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Chosen Category",
+                        "Category",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -115,7 +115,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.5)),
+                                    0.3)),
                     ExpansionTile(
                       title: Text("Attendees (${widget.event.optedIn.length})"),
                       children: <Widget>[

@@ -20,14 +20,9 @@ class EventDetailsRsvp extends StatefulWidget {
 class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   DateTime createTime;
   DateTime pollBegin;
-  DateTime pollFinished;
   DateTime proposedTime;
   String pollBeginFormatted;
-  String pollFinishedFormatted;
   String eventCreator = "";
-  String buttonQuestion = "";
-  String buttonDenial = "";
-  String buttonConfirm = "";
 
   @override
   void initState() {
@@ -44,7 +39,6 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
 
   @override
   Widget build(BuildContext context) {
-    // check what stage the event is in to display appropriate widgets
     getFormattedTimes();
     return Scaffold(
       appBar: new AppBar(
@@ -70,7 +64,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Date and Time",
+                        "Proposed Time",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -80,25 +74,6 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                     ),
                     Text(
                       Globals.formatter.format(widget.event.eventStartDateTime),
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.7),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: Text(
-                        "Chosen Category",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
-                      ),
-                    ),
-                    Text(
-                      widget.event.categoryName,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -123,12 +98,31 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
+                      child: Text(
+                        "Category",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                DefaultTextStyle.of(context).style.fontSize *
+                                    0.8),
+                      ),
+                    ),
+                    Text(
+                      widget.event.categoryName,
+                      style: TextStyle(
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.7),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
                     ),
                     Text("Event created by: $eventCreator",
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.5)),
+                                    0.3)),
                     ExpansionTile(
                       title: Text("Attendees (${widget.event.optedIn.length})"),
                       children: <Widget>[
@@ -190,9 +184,6 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   void getFormattedTimes() {
     pollBegin =
         createTime.add(new Duration(minutes: widget.event.pollDuration));
-    pollFinished =
-        createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
     pollBeginFormatted = Globals.formatter.format(pollBegin);
-    pollFinishedFormatted = Globals.formatter.format(pollFinished);
   }
 }

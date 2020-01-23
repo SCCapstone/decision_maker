@@ -70,7 +70,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Date and Time",
+                        "Event Time",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -89,7 +89,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Chosen Category",
+                        "Category",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -128,7 +128,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
-                                    0.5)),
+                                    0.3)),
                     ExpansionTile(
                       title: Text("Attendees (${widget.event.optedIn.length})"),
                       children: <Widget>[

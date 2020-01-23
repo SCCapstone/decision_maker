@@ -35,14 +35,19 @@ class _EventCardClosedState extends State<EventCardClosed> {
         children: <Widget>[
           Text(
             widget.event.eventName,
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          Text("Chosen Choice: ${widget.event.selectedChoice}"),
+          Text("Occurred: $proposedTimeFormatted",
+              style: TextStyle(fontSize: 20)),
+          Text("Selected Choice: ${widget.event.selectedChoice}",
+              style: TextStyle(fontSize: 20)),
           Text(
             "Total attendees: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
-          Text("Occurred: $proposedTimeFormatted"),
           RaisedButton(
             child: Text("View Results"),
             color: Colors.grey,
@@ -53,7 +58,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
         ],
       ),
       decoration:
-      new BoxDecoration(border: new Border(bottom: new BorderSide())),
+          new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
   }
 }

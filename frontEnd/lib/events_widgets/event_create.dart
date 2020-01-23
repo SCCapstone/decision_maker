@@ -11,7 +11,6 @@ import 'package:frontEnd/models/event.dart';
 
 class CreateEvent extends StatefulWidget {
   @required
-
   CreateEvent({Key key}) : super(key: key);
 
   @override
@@ -65,11 +64,12 @@ class _CreateEventState extends State<CreateEvent> {
 
   @override
   void initState() {
-    categoriesInGroup =
-        CategoriesManager.getAllCategoriesFromGroup(Globals.currentGroup.groupId);
+    categoriesInGroup = CategoriesManager.getAllCategoriesFromGroup(
+        Globals.currentGroup.groupId);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
-    pollDurationController.text = Globals.currentGroup.defaultPollDuration.toString();
+    pollDurationController.text =
+        Globals.currentGroup.defaultPollDuration.toString();
     passPercentageController.text =
         Globals.currentGroup.defaultPollPassPercent.toString();
     super.initState();
@@ -109,11 +109,11 @@ class _CreateEventState extends State<CreateEvent> {
 
   bool startTimeIsInvalid(DateTime startDate, TimeOfDay startTime) {
     // Check if the start time is on the earlier in the day than the current
-    // time (in other words, same date as current day && earlier time means 
+    // time (in other words, same date as current day && earlier time means
     // the start time is invalid)
     return ((startDate.year == currentDate.year &&
-        startDate.month == currentDate.month &&
-        startDate.day == currentDate.day)) &&
+            startDate.month == currentDate.month &&
+            startDate.day == currentDate.day)) &&
         ((startTime.hour < currentTime.hour) ||
             (startTime.hour == currentTime.hour &&
                 startTime.minute < currentTime.minute));
@@ -141,7 +141,8 @@ class _CreateEventState extends State<CreateEvent> {
                     decoration:
                         InputDecoration(labelText: "Enter an event name"),
                   ),
-                  Container(height: 20), // Temporarily using Containers to space out the elements
+                  Container(height: 20),
+                  // Temporarily using Containers to space out the elements
                   Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
@@ -240,8 +241,8 @@ class _CreateEventState extends State<CreateEvent> {
     if (form.validate()) {
       form.save();
       Map<String, dynamic> eventCreator = new Map<String, dynamic>();
-      eventCreator.putIfAbsent(
-          Globals.username, () => Globals.currentGroup.members[Globals.username]);
+      eventCreator.putIfAbsent(Globals.username,
+          () => Globals.currentGroup.members[Globals.username]);
 
       Event event = new Event(
         eventName: this.eventName,
@@ -251,7 +252,8 @@ class _CreateEventState extends State<CreateEvent> {
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(
             this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-        type: 0, // all events are non-recurring for now
+        type: 0,
+        // all events are non-recurring for now
         pollDuration: int.parse(this.pollDuration),
         pollPassPercent: int.parse(this.pollPassPercent),
         eventCreator: eventCreator,

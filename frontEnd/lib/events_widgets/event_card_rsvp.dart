@@ -30,7 +30,6 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
   @override
   Widget build(BuildContext context) {
     getFormattedTimes();
-    // TODO if they click the button and it's in a different stage, just refresh
     return Container(
       height: MediaQuery.of(context).size.height * .27,
       child: Column(
@@ -38,14 +37,18 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
         children: <Widget>[
           Text(
             widget.event.eventName,
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          Text("Proposed Date: $proposedTimeFormatted",
+              style: TextStyle(fontSize: 20)),
+          Text("RSVP By: $pollBeginFormatted", style: TextStyle(fontSize: 20)),
           Text(
             "Tenative attendees: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
-          Text("Proposed Date: $proposedTimeFormatted"),
-          Text("RSVP time ends: $pollBeginFormatted"),
           RaisedButton(
             child: Text("RSVP"),
             color: Colors.lightGreenAccent,
@@ -56,7 +59,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
         ],
       ),
       decoration:
-      new BoxDecoration(border: new Border(bottom: new BorderSide())),
+          new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
   }
 

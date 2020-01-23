@@ -32,16 +32,15 @@ class CategoriesListItem extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          CreateOrEditCategory(
-                              isEdit: true, category: this.category)),
+                      builder: (context) => CreateOrEditCategory(
+                          isEdit: true, category: this.category)),
                 );
               },
             )
           ],
         ),
         decoration:
-        new BoxDecoration(border: new Border(bottom: new BorderSide())),
+            new BoxDecoration(border: new Border(bottom: new BorderSide())),
       );
     } else {
       return Container(
@@ -66,18 +65,14 @@ class CategoriesListItem extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              CreateOrEditCategory(
-                                  isEdit: true, category: this.category)),
+                          builder: (context) => CreateOrEditCategory(
+                              isEdit: true, category: this.category)),
                     ).then((_) => this.afterEditCallback());
                   },
                 ),
                 Padding(
                   padding:
-                  EdgeInsets.all(MediaQuery
-                      .of(context)
-                      .size
-                      .height * .007),
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .007),
                 ),
                 RaisedButton(
                   child: Text(
@@ -97,7 +92,7 @@ class CategoriesListItem extends StatelessWidget {
           ],
         ),
         decoration:
-        new BoxDecoration(border: new Border(bottom: new BorderSide())),
+            new BoxDecoration(border: new Border(bottom: new BorderSide())),
       );
     }
   }

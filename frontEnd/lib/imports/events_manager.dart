@@ -2,9 +2,9 @@ import 'package:frontEnd/models/event.dart';
 
 class EventsManager {
   static final String votingMode = "Voting";
-  static final String optInMode = "OptIn";
-  static final String pollFinishedMode = "Finished";
-  static final String eventClosedMode = "Closed";
+  static final String rsvpMode = "Rsvp";
+  static final String occurringMode = "Ocurring";
+  static final String closedMode = "Closed";
   static final String EVENT_ID = "EventId";
   static final String CATEGORY_ID = "CategoryId";
   static final String CATEGORY_NAME = "CategoryName";
@@ -24,16 +24,17 @@ class EventsManager {
     DateTime timeNow = DateTime.now();
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
         hours: 24)); // assumption that after 24 hours the event is done
-    String retVal = pollFinishedMode;
+    // TODO until backend handlers are complete, alter the below string to test the different stages (https://github.com/SCCapstone/decision_maker/issues/178)
+    String retVal = votingMode;
 //    if (event.tentativeAlgorithmChoices == null) {
-//      retVal = optInMode;
+//      retVal = rsvpMode;
 //    } else if (event.selectedChoice == null) {
 //      retVal = votingMode;
 //    } else if (event.selectedChoice.isNotEmpty &&
 //        timeNow.isBefore(eventClosed)) {
-//      retVal = pollFinishedMode;
+//      retVal = occurringMode;
 //    } else if (timeNow.isAfter(eventClosed)) {
-//      retVal = eventClosedMode;
+//      retVal = closedMode;
 //    }
     return retVal;
   }

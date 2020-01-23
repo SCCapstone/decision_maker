@@ -3,14 +3,14 @@ import 'package:frontEnd/events_widgets/event_details_closed.dart';
 import 'package:frontEnd/events_widgets/event_details_occurring.dart';
 import 'package:frontEnd/events_widgets/event_details_rsvp.dart';
 import 'package:frontEnd/events_widgets/event_details_voting.dart';
-import 'package:frontEnd/imports/events_manager.dart';
-import 'package:frontEnd/models/event.dart';
-import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/events_widgets/event_card_closed.dart';
 import 'package:frontEnd/events_widgets/event_card_occurring.dart';
 import 'package:frontEnd/events_widgets/event_card_rsvp.dart';
 import 'package:frontEnd/events_widgets/event_card_voting.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group.dart';
 
 class EventsList extends StatefulWidget {
   final Map<String, Event> events;
@@ -35,7 +35,7 @@ class _EventsListState extends State<EventsList> {
       for (String eventId in widget.events.keys) {
         Widget eventCard;
         String eventMode = EventsManager.getEventMode(widget.events[eventId]);
-        if (eventMode == EventsManager.optInMode) {
+        if (eventMode == EventsManager.rsvpMode) {
           eventCard = new EventCardRsvp(
               widget.group.groupId, widget.events[eventId], eventId,
               callback: (String groupId, Event event, String eventId) =>
@@ -45,12 +45,12 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId, widget.events[eventId], eventId,
               callback: (String groupId, Event event, String eventId) =>
                   selectEvent(groupId, event, eventId));
-        } else if (eventMode == EventsManager.pollFinishedMode) {
+        } else if (eventMode == EventsManager.occurringMode) {
           eventCard = new EventCardOccurring(
               widget.group.groupId, widget.events[eventId], eventId,
               callback: (String groupId, Event event, String eventId) =>
                   selectEvent(groupId, event, eventId));
-        } else if (eventMode == EventsManager.eventClosedMode) {
+        } else if (eventMode == EventsManager.closedMode) {
           eventCard = new EventCardClosed(
               widget.group.groupId, widget.events[eventId], eventId,
               callback: (String groupId, Event event, String eventId) =>
@@ -65,16 +65,16 @@ class _EventsListState extends State<EventsList> {
   void selectEvent(String groupId, Event event, String eventId) {
     String eventMode = EventsManager.getEventMode(widget.events[eventId]);
     Widget newPage;
-    if (eventMode == EventsManager.optInMode) {
+    if (eventMode == EventsManager.rsvpMode) {
       newPage = new EventDetailsRsvp(
           groupId: groupId, event: event, eventId: eventId);
     } else if (eventMode == EventsManager.votingMode) {
       newPage = new EventDetailsVoting(
           groupId: groupId, event: event, eventId: eventId);
-    } else if (eventMode == EventsManager.pollFinishedMode) {
+    } else if (eventMode == EventsManager.occurringMode) {
       newPage = new EventDetailsOccurring(
           groupId: groupId, event: event, eventId: eventId);
-    } else if (eventMode == EventsManager.eventClosedMode) {
+    } else if (eventMode == EventsManager.closedMode) {
       newPage = new EventDetailsClosed(
           groupId: groupId, event: event, eventId: eventId);
     }

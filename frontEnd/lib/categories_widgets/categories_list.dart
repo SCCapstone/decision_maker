@@ -9,7 +9,12 @@ class CategoryList extends StatefulWidget {
   final VoidCallback refreshPage;
   final VoidCallback editCategory;
 
-  CategoryList({Key key, this.categories, this.sortType, this.refreshPage, this.editCategory})
+  CategoryList(
+      {Key key,
+      this.categories,
+      this.sortType,
+      this.refreshPage,
+      this.editCategory})
       : super(key: key);
 
   @override
@@ -22,7 +27,7 @@ class _CategoryListState extends State<CategoryList> {
     if (widget.categories.length == 0) {
       return Center(
         child:
-        Text("No categories found! Click \"New Category\" to create some!"),
+            Text("No categories found! Click \"New Category\" to create some!"),
       );
     } else {
       return Scrollbar(
@@ -34,7 +39,8 @@ class _CategoryListState extends State<CategoryList> {
             if (widget.categories[index].owner.isEmpty) {
               defaultCategory = true;
             }
-            return CategoriesListItem(widget.categories[index], index, defaultCategory,
+            return CategoriesListItem(
+                widget.categories[index], index, defaultCategory,
                 onDelete: () => removeItem(index),
                 afterEditCallback: widget.refreshPage);
           },

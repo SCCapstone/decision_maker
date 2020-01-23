@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 
@@ -38,15 +37,17 @@ class _EventCardVotingState extends State<EventCardVoting> {
         children: <Widget>[
           Text(
             widget.event.eventName,
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          Text("Selected Choices (Swipe to View)"),
-          Text(
-            "Total attendees: ${widget.event.optedIn.length}",
-            style: TextStyle(fontSize: 20),
-          ),
-          Text("Proposed Date: $proposedTimeFormatted"),
-          Text("Voting time ends: $pollFinishedFormatted"),
+          Text("Event Starts: $proposedTimeFormatted",
+              style: TextStyle(fontSize: 20)),
+          Text("Voting Ends: $pollFinishedFormatted",
+              style: TextStyle(fontSize: 20)),
+          Text("Total attendees: ${widget.event.optedIn.length}",
+              style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("Vote"),
             color: Colors.lightGreenAccent,

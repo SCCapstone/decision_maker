@@ -42,8 +42,7 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   void initState() {
-    widget.addableCategories =
-        CategoriesManager.getAllCategoriesList();
+    widget.addableCategories = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 

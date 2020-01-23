@@ -28,7 +28,6 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO if they click the button and it's in a different stage, just refresh
     return Container(
       height: MediaQuery.of(context).size.height * .27,
       child: Column(
@@ -36,14 +35,16 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
         children: <Widget>[
           Text(
             widget.event.eventName,
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          Text("Chosen Choice: ${widget.event.selectedChoice}"),
-          Text(
-            "Total attendees: ${widget.event.optedIn.length}",
-            style: TextStyle(fontSize: 20),
-          ),
-          Text("Occurring: $proposedTimeFormatted"),
+          Text("Time: $proposedTimeFormatted", style: TextStyle(fontSize: 20)),
+          Text("Selected Choice: ${widget.event.selectedChoice}",
+              style: TextStyle(fontSize: 20)),
+          Text("Total attendees: ${widget.event.optedIn.length}",
+              style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("View Results"),
             color: Colors.lightGreenAccent,
