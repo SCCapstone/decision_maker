@@ -46,7 +46,8 @@ public class UsersPostHandler implements
                 resultStatus = DatabaseManagers.USERS_MANAGER
                     .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("updateUserAppSettings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER.updateUserAppSettings(payloadJsonMap);
+                resultStatus = DatabaseManagers.USERS_MANAGER
+                    .updateUserAppSettings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("getUserAppSettings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER.getUserAppSettings(payloadJsonMap);
               } else {

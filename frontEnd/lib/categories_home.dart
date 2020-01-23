@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'create_or_edit_category.dart';
+import 'categories_create_or_edit.dart';
 import 'imports/categories_manager.dart';
 import 'models/category.dart';
 import 'imports/globals.dart';

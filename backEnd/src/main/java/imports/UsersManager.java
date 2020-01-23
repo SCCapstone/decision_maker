@@ -184,17 +184,16 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserAppSettings(Map<String, Object> jsonMap) {
+  public ResultStatus updateUserAppSettings(Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
+    final String classMethod = "UsersManager.updateUserAppSettings";
+    metrics.commonSetup(classMethod);
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
-        (jsonMap.containsKey(APP_SETTINGS_MUTED)) ||
-            (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) ||
-            (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)))) {
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        String settingToChange = "";
-        ValueMap valueMap = new ValueMap();
+        String settingToChange = null;
         if (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) {
           settingToChange = APP_SETTINGS_DARK_THEME;
         } else if (jsonMap.containsKey(APP_SETTINGS_MUTED)) {
@@ -202,34 +201,44 @@ public class UsersManager extends DatabaseAccessManager {
         } else if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
           settingToChange = APP_SETTINGS_GROUP_SORT;
         } else {
-          //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Invalid values for setting or user").toString());
           resultStatus.resultMessage = "Error: Invalid values for setting or user";
-          return resultStatus;
         }
 
-        Integer settingVal = (Integer) jsonMap.get(settingToChange);
+        if (settingToChange != null) {
+          Integer settingVal = (Integer) jsonMap.get(settingToChange);
+          ValueMap valueMap = new ValueMap();
+          if (checkAppSettingsVals(settingVal)) {
+            valueMap.withInt(":value", settingVal);
 
-        if (checkAppSettingsVals(settingToChange, settingVal)) {
-          valueMap.withInt(":value", settingVal);
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+                .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
+                .withValueMap(valueMap);
 
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-              .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
-              .withValueMap(valueMap);
-
-          this.updateItem(updateItemSpec);
-          resultStatus = new ResultStatus(true, "User settings updated successfully!");
-        } else {
-          resultStatus.resultMessage = "Error: Invalid values for settings";
+            this.updateItem(updateItemSpec);
+            resultStatus = new ResultStatus(true, "User settings updated successfully!");
+          } else {
+            lambdaLogger
+                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                    "Invalid values for user setting")
+                    .toString());
+            resultStatus.resultMessage = "Error: Invalid values for settings";
+          }
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request.";
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request." + e;
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: required request keys not found";
     }
+
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -314,21 +323,10 @@ public class UsersManager extends DatabaseAccessManager {
     return retMap;
   }
 
-  private boolean checkAppSettingsVals(String setting, int settingVal) {
+  private boolean checkAppSettingsVals(int settingVal) {
     boolean retbool = false;
-
-    if (setting.equals(APP_SETTINGS_DARK_THEME)) {
-      if (settingVal == 0 || settingVal == 1) {
-        retbool = true;
-      }
-    } else if (setting.equals(APP_SETTINGS_MUTED)) {
-      if (settingVal == 0 || settingVal == 1) {
-        retbool = true;
-      }
-    } else if (setting.equals(APP_SETTINGS_GROUP_SORT)) {
-      if (settingVal == 0 || settingVal == 1) {
-        retbool = true;
-      }
+    if (settingVal == 0 || settingVal == 1) {
+      retbool = true;
     }
     return retbool;
   }
