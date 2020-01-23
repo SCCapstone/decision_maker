@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_create.dart';
+import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
-import 'package:frontEnd/widgets/groups_list.dart';
-import 'categories_home.dart';
-import 'login_page.dart';
-import 'models/group.dart';
-import 'models/app_settings.dart';
-import 'imports/globals.dart';
-import 'log_out.dart';
+import 'package:frontEnd/groups_widgets//groups_list.dart';
+import 'package:frontEnd/categories_widgets/categories_home.dart';
+import 'package:frontEnd/login_page.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/app_settings.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;

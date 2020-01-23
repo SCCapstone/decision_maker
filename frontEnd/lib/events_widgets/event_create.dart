@@ -3,11 +3,11 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 
-import 'imports/categories_manager.dart';
-import 'imports/groups_manager.dart';
-import 'imports/globals.dart';
-import 'models/category.dart';
-import 'models/event.dart';
+import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/models/event.dart';
 
 class CreateEvent extends StatefulWidget {
   @required

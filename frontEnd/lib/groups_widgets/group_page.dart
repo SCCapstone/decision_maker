@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_settings.dart';
+import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
-import 'package:frontEnd/widgets/events_list.dart';
+import 'package:frontEnd/events_widgets/events_list.dart';
 
-import 'event_create.dart';
+import 'package:frontEnd/events_widgets/event_create.dart';
 
 class GroupPage extends StatefulWidget {
   final Map<String, Event> events;
@@ -57,22 +57,17 @@ class _GroupPageState extends State<GroupPage> {
             ),
             Padding(
               padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
-            ),
-            RaisedButton(
-              child: Text(
-                "Create Event",
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 0.6),
-              ),
-              onPressed: () {
-                Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => CreateEvent()))
-                    .then((_) => GroupPage());
-              },
             )
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CreateEvent()))
+              .then((_) => GroupPage());
+        },
       ),
     );
   }

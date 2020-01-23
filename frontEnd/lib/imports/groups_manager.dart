@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_home.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';

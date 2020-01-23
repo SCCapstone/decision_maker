@@ -20,23 +20,21 @@ class EventsManager {
   static final String VOTING_NUMBERS = "VotingNumbers";
   static final String EVENT_CREATOR = "EventCreator";
 
-  static String updateEventMode(Event event) {
+  static String getEventMode(Event event) {
     DateTime timeNow = DateTime.now();
-    DateTime createTime = event.createdDateTime;
-    DateTime pollBegin =
-        createTime.add(new Duration(minutes: event.pollDuration));
-    DateTime pollFinished =
-        createTime.add(new Duration(minutes: (event.pollDuration) * 2));
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
         hours: 24)); // assumption that after 24 hours the event is done
-    if (timeNow.isBefore(pollBegin)) {
-      return optInMode;
-    } else if (timeNow.isAfter(pollBegin) && timeNow.isBefore(pollFinished)) {
-      return votingMode;
-    } else if (timeNow.isBefore(eventClosed)) {
-      return pollFinishedMode;
-    } else {
-      return eventClosedMode;
-    }
+    String retVal = pollFinishedMode;
+//    if (event.tentativeAlgorithmChoices == null) {
+//      retVal = optInMode;
+//    } else if (event.selectedChoice == null) {
+//      retVal = votingMode;
+//    } else if (event.selectedChoice.isNotEmpty &&
+//        timeNow.isBefore(eventClosed)) {
+//      retVal = pollFinishedMode;
+//    } else if (timeNow.isAfter(eventClosed)) {
+//      retVal = eventClosedMode;
+//    }
+    return retVal;
   }
 }

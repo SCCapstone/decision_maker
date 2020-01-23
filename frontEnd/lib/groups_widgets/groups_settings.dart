@@ -8,7 +8,7 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
-import 'models/category.dart';
+import 'package:frontEnd/models/category.dart';
 
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);

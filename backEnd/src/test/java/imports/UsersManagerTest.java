@@ -201,7 +201,6 @@ public class UsersManagerTest {
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
-
   }
 
   @Test
