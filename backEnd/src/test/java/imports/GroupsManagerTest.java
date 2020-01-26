@@ -30,6 +30,9 @@ public class GroupsManagerTest {
   private UsersManager usersManager;
 
   @Mock
+  private PendingEventsManager pendingEventsManager;
+
+  @Mock
   private LambdaLogger lambdaLogger;
 
   @Mock
@@ -42,6 +45,7 @@ public class GroupsManagerTest {
     DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
+    DatabaseManagers.PENDING_EVENTS_MANAGER = this.pendingEventsManager;
   }
 
   /////////////////////
