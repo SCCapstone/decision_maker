@@ -208,8 +208,8 @@ public class UsersManager extends DatabaseAccessManager {
 
         if (settingToChange != null) {
           Integer settingVal = (Integer) jsonMap.get(settingToChange);
-          ValueMap valueMap = new ValueMap().withInt(":value", settingVal);
           if (checkAppSettingsVals(settingVal)) {
+            ValueMap valueMap = new ValueMap().withInt(":value", settingVal);
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
                 .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")

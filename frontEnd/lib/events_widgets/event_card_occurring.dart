@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/events_widgets/event_details_occurring.dart';
 import 'package:frontEnd/models/event.dart';
 
 class EventCardOccurring extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
-  final Function callback;
 
-  EventCardOccurring(this.groupId, this.event, this.eventId, {this.callback});
+  EventCardOccurring(this.groupId, this.event, this.eventId);
 
   @override
   _EventCardOccurringState createState() => new _EventCardOccurringState();
 }
 
 class _EventCardOccurringState extends State<EventCardOccurring> {
-  DateTime proposedTime;
-  String pollBeginFormatted;
-  String proposedTimeFormatted;
-
-  @override
-  void initState() {
-    proposedTime = widget.event.eventStartDateTime;
-    proposedTimeFormatted = Globals.formatter.format(proposedTime);
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +29,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text("Time: $proposedTimeFormatted", style: TextStyle(fontSize: 20)),
+          Text("Time: ${widget.event.eventStartDateTimeFormatted}", style: TextStyle(fontSize: 20)),
           Text("Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20)),
           Text("Total attendees: ${widget.event.optedIn.length}",
@@ -49,8 +38,14 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
             child: Text("View Results"),
             color: Colors.lightGreenAccent,
             onPressed: () {
-              widget.callback(widget.groupId, widget.event, widget.eventId);
-            },
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EventDetailsOccurring(
+                        groupId: widget.groupId,
+                        event: widget.event,
+                        eventId: widget.eventId)),
+              );            },
           )
         ],
       ),

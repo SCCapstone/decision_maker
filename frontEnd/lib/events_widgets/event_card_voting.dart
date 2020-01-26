@@ -1,35 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/events_widgets/event_details_voting.dart';
 import 'package:frontEnd/models/event.dart';
 
 class EventCardVoting extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
-  final Function callback;
 
-  EventCardVoting(this.groupId, this.event, this.eventId, {this.callback});
+  EventCardVoting(this.groupId, this.event, this.eventId);
 
   @override
   _EventCardVotingState createState() => new _EventCardVotingState();
 }
 
 class _EventCardVotingState extends State<EventCardVoting> {
-  DateTime proposedTime;
-  String pollFinishedFormatted;
-  String proposedTimeFormatted;
-
-  @override
-  void initState() {
-    proposedTime = widget.event.eventStartDateTime;
-    proposedTimeFormatted = Globals.formatter.format(proposedTime);
-    getFormattedTimes();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    getFormattedTimes();
     return Container(
       height: MediaQuery.of(context).size.height * .27,
       child: Column(
@@ -42,9 +28,9 @@ class _EventCardVotingState extends State<EventCardVoting> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text("Event Starts: $proposedTimeFormatted",
+          Text("Event Starts: ${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20)),
-          Text("Voting Ends: $pollFinishedFormatted",
+          Text("Voting Ends: ${widget.event.pollEndFormatted}",
               style: TextStyle(fontSize: 20)),
           Text("Total attendees: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20)),
@@ -52,7 +38,14 @@ class _EventCardVotingState extends State<EventCardVoting> {
             child: Text("Vote"),
             color: Colors.lightGreenAccent,
             onPressed: () {
-              widget.callback(widget.groupId, widget.event, widget.eventId);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EventDetailsVoting(
+                        groupId: widget.groupId,
+                        event: widget.event,
+                        eventId: widget.eventId)),
+              );
             },
           )
         ],
@@ -60,11 +53,5 @@ class _EventCardVotingState extends State<EventCardVoting> {
       decoration:
           new BoxDecoration(border: new Border(bottom: new BorderSide())),
     );
-  }
-
-  void getFormattedTimes() {
-    DateTime pollFinished = widget.event.createdDateTime
-        .add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    pollFinishedFormatted = Globals.formatter.format(pollFinished);
   }
 }

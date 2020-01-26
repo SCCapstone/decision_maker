@@ -20,17 +20,10 @@ class EventDetailsVoting extends StatefulWidget {
 
 class _EventDetailsVotingState extends State<EventDetailsVoting> {
   final PageController controller = new PageController();
-  DateTime createTime;
-  DateTime pollFinished;
-  DateTime proposedTime;
-  String pollFinishedFormatted;
-  String eventStartFormatted;
   String eventCreator = "";
 
   @override
   void initState() {
-    createTime = widget.event.createdDateTime;
-    proposedTime = widget.event.eventStartDateTime;
     for (String username in widget.event.optedIn.keys) {
       widget.userRows.add(UserRow(widget.event.optedIn[username]));
     }
@@ -46,7 +39,6 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     for (int i = 0; i < 5; i++) {
       exampleChoices.add("Choice Number $i");
     }
-    getFormattedTimes();
     return Scaffold(
       appBar: new AppBar(
         centerTitle: true,
@@ -80,7 +72,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       ),
                     ),
                     Text(
-                      eventStartFormatted,
+                      widget.event.eventStartDateTimeFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -97,7 +89,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                                     0.8,
                           )),
                     ),
-                    Text(pollFinishedFormatted,
+                    Text(widget.event.pollEndFormatted,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -184,13 +176,5 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
         // required to remove the loading animation
         Duration(milliseconds: 70));
     setState(() {});
-  }
-
-  void getFormattedTimes() {
-    pollFinished =
-        createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    pollFinishedFormatted = Globals.formatter.format(pollFinished);
-    eventStartFormatted =
-        Globals.formatter.format(widget.event.eventStartDateTime);
   }
 }

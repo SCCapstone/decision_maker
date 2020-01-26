@@ -155,6 +155,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
                             child: TextFormField(
+                              maxLength: 6,
                               keyboardType: TextInputType.number,
                               validator: validPollDuration,
                               controller: pollDurationController,
@@ -171,8 +172,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                               onSaved: (String arg) {
                                 pollDuration = int.parse(arg);
                               },
-                              decoration:
-                                  InputDecoration(border: OutlineInputBorder()),
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  counterText: ""),
                             ),
                           ),
                         ],
@@ -195,6 +197,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
                             child: TextFormField(
+                              maxLength: 3,
                               controller: pollPassController,
                               keyboardType: TextInputType.number,
                               validator: validPassPercentage,
@@ -212,8 +215,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                               onSaved: (String arg) {
                                 pollPassPercent = int.parse(arg);
                               },
-                              decoration:
-                                  InputDecoration(border: OutlineInputBorder()),
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  counterText: ""),
                             ),
                           )
                         ],

@@ -18,16 +18,10 @@ class EventDetailsRsvp extends StatefulWidget {
 }
 
 class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
-  DateTime createTime;
-  DateTime pollBegin;
-  DateTime proposedTime;
-  String pollBeginFormatted;
   String eventCreator = "";
 
   @override
   void initState() {
-    createTime = widget.event.createdDateTime;
-    proposedTime = widget.event.eventStartDateTime;
     for (String username in widget.event.optedIn.keys) {
       widget.userRows.add(UserRow(widget.event.optedIn[username]));
     }
@@ -39,7 +33,6 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
 
   @override
   Widget build(BuildContext context) {
-    getFormattedTimes();
     return Scaffold(
       appBar: new AppBar(
         centerTitle: true,
@@ -90,7 +83,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                                     0.8,
                           )),
                     ),
-                    Text(pollBeginFormatted,
+                    Text(widget.event.pollBeginFormatted,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -179,11 +172,5 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
     await Future.delayed(
         Duration(milliseconds: 70)); // required to remove the loading animation
     setState(() {});
-  }
-
-  void getFormattedTimes() {
-    pollBegin =
-        createTime.add(new Duration(minutes: widget.event.pollDuration));
-    pollBeginFormatted = Globals.formatter.format(pollBegin);
   }
 }

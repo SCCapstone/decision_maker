@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
@@ -18,21 +17,10 @@ class EventDetailsOccurring extends StatefulWidget {
 }
 
 class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
-  DateTime createTime;
-  DateTime pollBegin;
-  DateTime pollFinished;
-  DateTime proposedTime;
-  String pollBeginFormatted;
-  String pollFinishedFormatted;
   String eventCreator = "";
-  String buttonQuestion = "";
-  String buttonDenial = "";
-  String buttonConfirm = "";
 
   @override
   void initState() {
-    createTime = widget.event.createdDateTime;
-    proposedTime = widget.event.eventStartDateTime;
     for (String username in widget.event.optedIn.keys) {
       widget.userRows.add(UserRow(widget.event.optedIn[username]));
     }
@@ -44,8 +32,6 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
 
   @override
   Widget build(BuildContext context) {
-    // check what stage the event is in to display appropriate widgets
-    getFormattedTimes();
     return Scaffold(
       appBar: new AppBar(
         centerTitle: true,
@@ -79,7 +65,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       ),
                     ),
                     Text(
-                      Globals.formatter.format(widget.event.eventStartDateTime),
+                    widget.event.eventStartDateTimeFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -155,14 +141,5 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     await Future.delayed(
         Duration(milliseconds: 70)); // required to remove the loading animation
     setState(() {});
-  }
-
-  void getFormattedTimes() {
-    pollBegin =
-        createTime.add(new Duration(minutes: widget.event.pollDuration));
-    pollFinished =
-        createTime.add(new Duration(minutes: (widget.event.pollDuration) * 2));
-    pollBeginFormatted = Globals.formatter.format(pollBegin);
-    pollFinishedFormatted = Globals.formatter.format(pollFinished);
   }
 }

@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/events_widgets/event_details_closed.dart';
 import 'package:frontEnd/models/event.dart';
 
 class EventCardClosed extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
-  final Function callback;
 
-  EventCardClosed(this.groupId, this.event, this.eventId, {this.callback});
+  EventCardClosed(this.groupId, this.event, this.eventId);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
 }
 
 class _EventCardClosedState extends State<EventCardClosed> {
-  DateTime proposedTime;
-  String pollBeginFormatted;
-  String proposedTimeFormatted;
-
-  @override
-  void initState() {
-    proposedTime = widget.event.eventStartDateTime;
-    proposedTimeFormatted = Globals.formatter.format(proposedTime);
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +29,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text("Occurred: $proposedTimeFormatted",
+          Text("Occurred: ${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20)),
           Text("Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20)),
@@ -52,7 +41,14 @@ class _EventCardClosedState extends State<EventCardClosed> {
             child: Text("View Results"),
             color: Colors.grey,
             onPressed: () {
-              widget.callback(widget.groupId, widget.event, widget.eventId);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EventDetailsClosed(
+                        groupId: widget.groupId,
+                        event: widget.event,
+                        eventId: widget.eventId)),
+              );
             },
           )
         ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
@@ -66,7 +65,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                       ),
                     ),
                     Text(
-                      Globals.formatter.format(widget.event.eventStartDateTime),
+                      widget.event.eventStartDateTimeFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
