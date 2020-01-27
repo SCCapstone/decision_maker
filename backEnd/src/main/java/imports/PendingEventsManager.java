@@ -246,7 +246,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private String getPartitionKey() {
+  private String getPartitionKey() throws NullPointerException, NumberFormatException {
     //this gives a 'randomized' key based on the system's clock time.
     return Long.toString(
         (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))
