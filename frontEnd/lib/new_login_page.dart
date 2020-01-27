@@ -101,11 +101,10 @@ class _SignInState extends State<SignInPage> {
                   color: Globals.secondaryColor,
                   textColor: Colors.white,
                   onPressed: () {
-                    if (mutexLock) {
+                    if (!mutexLock) {
                       // prevents user from spamming the login button if HTTP request is being processed
-                      return;
+                      validateInput();
                     }
-                    validateInput();
                   },
                   child: Text(
                     (signUp) ? "Sign Up" : "Sign In",
