@@ -135,6 +135,7 @@ class _SignInState extends State<SignInPage> {
                           passwordController.clear();
                           usernameController.clear();
                           emailController.clear();
+                          formKey.currentState.reset();
                           signUp = !signUp;
                           autoValidate = false;
                         });
