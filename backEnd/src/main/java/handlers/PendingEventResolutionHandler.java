@@ -1,6 +1,7 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.DatabaseManagers;
 import java.io.IOException;
@@ -10,12 +11,17 @@ import java.util.Map;
 import utilities.ExceptionHelper;
 import utilities.IOStreamsHelper;
 import utilities.JsonParsers;
+import utilities.Metrics;
 import utilities.ResultStatus;
 
 public class PendingEventResolutionHandler implements RequestStreamHandler {
+
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
     ResultStatus resultStatus = new ResultStatus();
+    Metrics metrics = new Metrics(context.getAwsRequestId());
+    LambdaLogger lambdaLogger = context.getLogger();
+
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
       resultStatus = DatabaseManagers.PENDING_EVENTS_MANAGER.processPendingEvent(jsonMap);
