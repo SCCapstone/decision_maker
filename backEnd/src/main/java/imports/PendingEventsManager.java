@@ -2,10 +2,12 @@ package imports;
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
@@ -16,8 +18,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
+import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
@@ -30,27 +34,49 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   private static final String STEP_FUNCTION_ARN = "arn:aws:states:us-east-2:871532548613:stateMachine:EventResolver";
 
-  private final AWSStepFunctions client = AWSStepFunctionsClientBuilder.standard()
-      .withCredentials(new EnvironmentVariableCredentialsProvider())
-      .withRegion(Regions.US_EAST_2)
-      .build();
+  private final AWSStepFunctions client;
 
   public PendingEventsManager() {
     super("pending_events", SCANNER_ID, Regions.US_EAST_2);
+    this.client = AWSStepFunctionsClientBuilder.standard()
+        .withCredentials(new EnvironmentVariableCredentialsProvider())
+        .withRegion(Regions.US_EAST_2)
+        .build();
   }
 
-  private void startStepMachineExecution(String groupId, String eventId, String scannerId) {
+  public PendingEventsManager(final DynamoDB dynamoDB, final AWSStepFunctions awsStepFunctions) {
+    super("pending_events", SCANNER_ID, Regions.US_EAST_2, dynamoDB);
+    this.client = awsStepFunctions;
+  }
+
+  private boolean startStepMachineExecution(String groupId, String eventId, String scannerId,
+      Metrics metrics, LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.startStepMachineExecution";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
     Map<String, Object> input = ImmutableMap
         .of(GroupsManager.GROUP_ID, groupId, RequestFields.EVENT_ID, eventId, SCANNER_ID,
             scannerId);
 
-    StringBuilder escapedInput = new StringBuilder(JsonEncoders.convertMapToJson(input));
-    IOStreamsHelper
-        .removeAllInstancesOf(escapedInput, '\\'); // step function doesn't like these in the input
+    try {
+      StringBuilder escapedInput = new StringBuilder(JsonEncoders.convertMapToJson(input));
+      IOStreamsHelper
+          .removeAllInstancesOf(escapedInput,
+              '\\'); // step function doesn't like these in the input
 
-    this.client.startExecution(new StartExecutionRequest()
-        .withStateMachineArn(STEP_FUNCTION_ARN)
-        .withInput(escapedInput.toString()));
+      this.client.startExecution(new StartExecutionRequest()
+          .withStateMachineArn(STEP_FUNCTION_ARN)
+          .withInput(escapedInput.toString()));
+    } catch (Exception e) {
+      success = false;
+      lambdaLogger
+          .log(new ErrorDescriptor<>(input, classMethod, metrics.getRequestId(), e).toString());
+    }
+
+    metrics.commonClose(success);
+    return success;
   }
 
   public ResultStatus processPendingEvent(final Map<String, Object> jsonMap) {
@@ -165,58 +191,62 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public void scanPendingEvents(String scannerId) {
+  public void scanPendingEvents(String scannerId, Metrics metrics, LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.scanPendingEvents";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true; // if anything fails we'll set this to false so "everything" fails -> we investigate
+
     try {
       Item pendingEvents = this.getItemByPrimaryKey(scannerId);
 
-      if (pendingEvents != null) {
-        Map<String, Object> pendingEventsData = pendingEvents.asMap();
-        LocalDateTime resolutionDate, currentDate = LocalDateTime.now(ZoneId.of("UTC"));
+      Map<String, Object> pendingEventsData = pendingEvents.asMap();
+      LocalDateTime resolutionDate, currentDate = LocalDateTime.now(ZoneId.of("UTC"));
 
-        String groupId, eventId;
-        List<String> keyPair;
-        for (String key : pendingEventsData.keySet()) {
-          if (!key.equals(this.getPartitionKey())) {
-            try {
-              resolutionDate = LocalDateTime
-                  .parse((String) pendingEventsData.get(key), this.getDateTimeFormatter());
+      String groupId, eventId;
+      List<String> keyPair;
+      for (String key : pendingEventsData.keySet()) {
+        if (!key.equals(SCANNER_ID)) {
+          try {
+            resolutionDate = LocalDateTime
+                .parse((String) pendingEventsData.get(key), this.getDateTimeFormatter());
 
-              if (currentDate.isAfter(resolutionDate)) {
-                keyPair = Arrays.asList(key.split(DELIM));
+            if (currentDate.isAfter(resolutionDate)) {
+              keyPair = Arrays.asList(key.split(DELIM));
 
-                if (keyPair.size() == 2) {
-                  groupId = keyPair.get(0);
-                  eventId = keyPair.get(1);
+              if (keyPair.size() == 2) {
+                groupId = keyPair.get(0);
+                eventId = keyPair.get(1);
 
-                  this.startStepMachineExecution(groupId, eventId, scannerId);
-                } else {
-                  //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-                  //we inserted this wrong, fix this
-                }
+                success = (success && this
+                    .startStepMachineExecution(groupId, eventId, scannerId, metrics, lambdaLogger));
+              } else {
+                lambdaLogger.log(
+                    new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key,
+                        classMethod, metrics.getRequestId(),
+                        "bad format for key in pending events table").toString());
+                success = false;
               }
-            } catch (Exception e) {
-              //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-              //probably and issue with parsing the date string
             }
+          } catch (Exception e) {
+            lambdaLogger.log(
+                new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key, classMethod,
+                    metrics.getRequestId(), e).toString());
+            success = false;
           }
         }
       }
     } catch (Exception e) {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      //probably an issue with getting the item/getting data from it
+      lambdaLogger.log(
+          new ErrorDescriptor<>("scanner id: " + scannerId, classMethod, metrics.getRequestId(), e)
+              .toString());
+      success = false;
     }
+
+    metrics.commonClose(success);
   }
 
-  //This method is purely for testing purposes -> hardcoded strings
-  public ResultStatus addPendingEvent(final Map<String, Object> jsonMap) {
-    return this.addPendingEvent(
-        (String) jsonMap.get("GroupId"),
-        (String) jsonMap.get("EventId"),
-        (Integer) jsonMap.get("Duration")
-    );
-  }
-
-  private String getPartitionKey() {
+  private String getPartitionKey() throws NullPointerException, NumberFormatException {
     //this gives a 'randomized' key based on the system's clock time.
     return Long.toString(
         (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))
