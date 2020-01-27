@@ -20,11 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import utilities.IOStreamsHelper;
-import utilities.JsonEncoders;
-import utilities.Metrics;
-import utilities.RequestFields;
-import utilities.ResultStatus;
+
+import utilities.*;
 
 public class GroupsManager extends DatabaseAccessManager {
 
@@ -582,26 +579,24 @@ public class GroupsManager extends DatabaseAccessManager {
     }
   }
 
-  public List<String> getAllCategoryIds(String groupId) {
+  public List<String> getAllCategoryIds(String groupId, Metrics metrics, LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.getAllCategoryIds";
+    metrics.commonSetup(classMethod);
+
+    ArrayList<String> categoryIds = new ArrayList<>();
+    boolean success = false;
     try {
       Item dbData = this.getItemByPrimaryKey(groupId);
-
-      if (dbData != null) {
-        try {
-          Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
-          Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
-          return new ArrayList<>(categoryMap.keySet());
-        } catch (Exception e) {
-          //we probably need to log this - something couldn't be mapped it seems like
-        }
-      } else {
-        //bad group id? - may need to log for investigation
-      }
+      Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
+      Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
+      categoryIds = new ArrayList<>(categoryMap.keySet());
+      success = true;
     } catch (Exception e) {
-      //definitely log this, db is probably down or disconnected
+      lambdaLogger.log(new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
     }
 
-    return new ArrayList<>();
+    metrics.commonClose(success);
+    return categoryIds;
   }
 
   // This function is called when a category is deleted and updates each item in the groups table

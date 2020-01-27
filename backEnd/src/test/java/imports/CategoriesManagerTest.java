@@ -272,7 +272,7 @@ public class CategoriesManagerTest {
     assertEquals(resultStatus.resultMessage, "[{}]");
     verify(this.usersManager, times(0))
         .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
-    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class));
+    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -284,13 +284,13 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(GroupsManager.GROUP_ID).when(this.groupsManager).getPrimaryKeyIndex();
     doReturn(ImmutableList.of("catId1", "catId2")).when(this.groupsManager)
-        .getAllCategoryIds(any(String.class));
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
 
     ResultStatus resultStatus = this.categoriesManager
         .getCategories(this.getCategoriesGoodInputGroupId, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.groupsManager, times(1)).getAllCategoryIds(any(String.class));
+    verify(this.groupsManager, times(1)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -321,7 +321,7 @@ public class CategoriesManagerTest {
 
     verify(this.usersManager, times(0))
         .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
-    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class));
+    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);

@@ -184,7 +184,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
     } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
       String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
-      categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId);
+      categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId, metrics, lambdaLogger);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       categoryIds = DatabaseManagers.USERS_MANAGER
