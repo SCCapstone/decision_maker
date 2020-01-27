@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'imports/globals.dart';
 import 'imports/response_item.dart';
+import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'imports/user_tokens_manager.dart';
+import 'main.dart';
 
 bool mutexLock = false;
 
@@ -155,7 +158,6 @@ class _SignInState extends State<SignInPage> {
   void validateInput() {
     final form = formKey.currentState;
     if (formKey.currentState.validate()) {
-      print("Valid");
       form.save();
       // all input is valid. Attempt sign in / sign up
       if (signUp) {
@@ -164,35 +166,64 @@ class _SignInState extends State<SignInPage> {
         attemptSignIn();
       }
     } else {
-      print("invalid");
       setState(() => autoValidate = true);
     }
   }
 
-  void attemptSignIn() {
+  void attemptSignIn() async {
     showLoadingDialog(context, "Loading..."); // show loading dialog
     mutexLock = true;
-//    ResponseItem response = await logUserIn(context, username, password);
-    Navigator.pop(context); // dismiss loading dialog
+
+    final userPool = new CognitoUserPool(
+        'us-east-2_ebbPP76nO', '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
+    final cognitoUser = new CognitoUser(this.usernameController.text, userPool);
+    final authDetails = new AuthenticationDetails(
+        username: this.usernameController.text, password: this.passwordController.text);
+    CognitoUserSession session;
+    try {
+      session = await cognitoUser.authenticateUser(authDetails);
+
+      print("hereeee");
+
+      await storeUserTokens(
+          session.getAccessToken().jwtToken,
+          session.getRefreshToken().getToken(),
+          session.getIdToken().jwtToken);
+
+      print("now here");
+
+      Navigator.pop(context); // dismiss loading dialog
+
+      Route route = MaterialPageRoute(builder: (context) => MyApp());
+      Navigator.pushReplacement(context, route);
+    } on CognitoUserNewPasswordRequiredException catch (e) {
+      // handle New Password challenge
+    } on CognitoUserMfaRequiredException catch (e) {
+      // handle SMS_MFA challenge
+    } on CognitoUserSelectMfaTypeException catch (e) {
+      // handle SELECT_MFA_TYPE challenge
+    } on CognitoUserMfaSetupException catch (e) {
+      // handle MFA_SETUP challenge
+    } on CognitoUserTotpRequiredException catch (e) {
+      // handle SOFTWARE_TOKEN_MFA challenge
+    } on CognitoUserCustomChallengeException catch (e) {
+      // handle CUSTOM_CHALLENGE challenge
+    } on CognitoUserConfirmationNecessaryException catch (e) {
+      // handle User Confirmation Necessary
+    } catch (e) {
+      // print(e);
+    }
+
+    //Navigator.pop(context); // dismiss loading dialog
+
     mutexLock = false;
-//    if (response.success) {
-//      // sign in success, go to next stage
-//    } else {
-//      // sign in was not successful, show error
-//    }
   }
 
   void attemptSignUp() {
     showLoadingDialog(context, "Loading..."); // show loading dialog
     mutexLock = true;
-//    ResponseItem response = await logUserIn(context, username, password);
     Navigator.pop(context); // dismiss loading dialog
     mutexLock = false;
-//    if (response.success) {
-//      // sign up success, go to next stage
-//    } else {
-//      // sign up was not successful, show error
-//    }
   }
 }
 

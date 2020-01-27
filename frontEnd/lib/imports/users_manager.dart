@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
+import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -25,37 +26,33 @@ class UsersManager {
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
 
-  static void insertNewUser(String username, {BuildContext context}) async {
+  static Future<User> getUserData({BuildContext context}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "newUser";
-    jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
+    jsonRequestBody["action"] = "getUserData";
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    User ret = null;
 
     if (response != "") {
-      Map<String, dynamic> body = jsonDecode(response);
       try {
+        Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
+        ret = User.fromJson(json.decode(responseItem.resultMessage));
+
         if (responseItem.success) {
-          if (context != null) {
-            showPopupMessage(responseItem.resultMessage, context);
-          }
+          showPopupMessage(responseItem.resultMessage, context);
         } else {
-          if (context != null) {
-            showPopupMessage("Error adding the new user (1).", context);
-          }
+          showPopupMessage("Error getting the user (1).", context);
         }
       } catch (e) {
-        if (context != null) {
-          showPopupMessage("Error adding the new user (2).", context);
-        }
+        showPopupMessage("Error getting the user (2).", context);
       }
     } else {
-      if (context != null) {
-        showPopupMessage("Unable to add the new user.", context);
-      }
+      showPopupMessage("Unable to get the user.", context);
     }
+
+    return ret;
   }
 
   static void updateUserAppSettings(

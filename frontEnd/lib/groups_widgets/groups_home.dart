@@ -5,11 +5,12 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
-import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/log_out.dart';
+
+import '../new_login_page.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
@@ -101,7 +102,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                 onTap: () {
                   logOutUser();
                   Navigator.of(context).pushReplacement(new MaterialPageRoute(
-                      builder: (context) => LoginScreen()));
+                      builder: (context) => SignInPage()));
                 })
           ],
         ),
