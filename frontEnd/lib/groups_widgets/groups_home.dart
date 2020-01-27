@@ -71,7 +71,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                     leading: CircleAvatar(
                       //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
                       backgroundImage:
-                          AssetImage('assets/images/placeholder.jpg'),
+                      AssetImage('assets/images/placeholder.jpg'),
                     ),
                     title: Text(
                       Globals.username,
@@ -85,14 +85,15 @@ class _GroupsHomeState extends State<GroupsHome> {
               ),
             ),
             ListTile(
-                leading: Icon(Icons.apps), // Placeholder icon
-                title: Text('Categories', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CategoriesHome()));
-                }),
+              key: new Key("blah"),
+              leading: Icon(Icons.apps), // Placeholder icon
+              title: Text('Categories', style: TextStyle(fontSize: 16)),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CategoriesHome()));
+              }),
             //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
             ListTile(
                 leading: Icon(Icons.subdirectory_arrow_left),
@@ -118,7 +119,10 @@ class _GroupsHomeState extends State<GroupsHome> {
           Visibility(
             visible: searching,
             child: Container(
-              width: MediaQuery.of(context).size.width * .70,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * .70,
               child: TextFormField(
                 controller: searchBar,
                 style: TextStyle(color: Colors.white, fontSize: 30),
@@ -143,12 +147,21 @@ class _GroupsHomeState extends State<GroupsHome> {
           children: <Widget>[
             Padding(
               padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              EdgeInsets.all(MediaQuery
+                  .of(context)
+                  .size
+                  .height * .015),
             ),
             Expanded(
               child: new Container(
-                  width: MediaQuery.of(context).size.width * .80,
-                  height: MediaQuery.of(context).size.height * .60,
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width * .80,
+                  height: MediaQuery
+                      .of(context)
+                      .size
+                      .height * .60,
                   child: FutureBuilder(
                     future: widget.groupsFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -165,7 +178,10 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .08),
+              padding: EdgeInsets.all(MediaQuery
+                  .of(context)
+                  .size
+                  .height * .08),
             ),
           ],
         ),
