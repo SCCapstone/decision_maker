@@ -7,7 +7,7 @@ import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
-import 'imports/groups_manager.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 
 class CreateGroup extends StatefulWidget {
   Future<List<Category>> addableCategories;
@@ -42,8 +42,7 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   void initState() {
-    widget.addableCategories =
-        CategoriesManager.getAllCategoriesList();
+    widget.addableCategories = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 

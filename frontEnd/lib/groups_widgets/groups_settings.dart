@@ -8,7 +8,7 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
 import 'package:frontEnd/widgets/users_dropdown.dart';
 
-import 'models/category.dart';
+import 'package:frontEnd/models/category.dart';
 
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
@@ -62,8 +62,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         Globals.currentGroup.defaultPollPassPercent.toString();
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
-    categoriesTotalFuture =
-        CategoriesManager.getAllCategoriesList();
+    categoriesTotalFuture = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 
@@ -156,6 +155,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
                             child: TextFormField(
+                              maxLength: 6,
                               keyboardType: TextInputType.number,
                               validator: validPollDuration,
                               controller: pollDurationController,
@@ -172,8 +172,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                               onSaved: (String arg) {
                                 pollDuration = int.parse(arg);
                               },
-                              decoration:
-                                  InputDecoration(border: OutlineInputBorder()),
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  counterText: ""),
                             ),
                           ),
                         ],
@@ -196,6 +197,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           Container(
                             width: MediaQuery.of(context).size.width * .25,
                             child: TextFormField(
+                              maxLength: 3,
                               controller: pollPassController,
                               keyboardType: TextInputType.number,
                               validator: validPassPercentage,
@@ -213,8 +215,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                               onSaved: (String arg) {
                                 pollPassPercent = int.parse(arg);
                               },
-                              decoration:
-                                  InputDecoration(border: OutlineInputBorder()),
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  counterText: ""),
                             ),
                           )
                         ],

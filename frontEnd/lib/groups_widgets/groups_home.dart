@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_create.dart';
+import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
-import 'package:frontEnd/widgets/groups_list.dart';
-import 'categories_home.dart';
-import 'login_page.dart';
-import 'models/group.dart';
-import 'models/app_settings.dart';
-import 'imports/globals.dart';
-import 'log_out.dart';
+import 'package:frontEnd/groups_widgets//groups_list.dart';
+import 'package:frontEnd/categories_widgets/categories_home.dart';
+import 'package:frontEnd/login_page.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/app_settings.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
@@ -53,7 +53,6 @@ class _GroupsHomeState extends State<GroupsHome> {
   Widget build(BuildContext context) {
     // to catch any changes that may have been made when editing
     widget.groupsFuture = GroupsManager.getGroups();
-    widget.settingsFuture = UsersManager.getUserAppSettings(context);
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -185,23 +184,26 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Widget buildListFuture() {
-    return FutureBuilder (
+    // TODO this entire flow needs to change. This is the cause of this issue (https://github.com/SCCapstone/decision_maker/issues/173)
+    return FutureBuilder(
         future: widget.settingsFuture,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
             userSettings = snapshot.data;
-            return buildList();
+            return buildList(userSettings.groupSort);
           } else if (snapshot.hasError) {
             return Text("Error: ${snapshot.error}");
+          } else {
+            return buildList(
+                0); // default value if the user settings for some reason doesn't have data
           }
-          return Center(child: CircularProgressIndicator());
         });
   }
 
-  Widget buildList() {
-    if (userSettings.groupSort == 0) {
+  Widget buildList(int sortVal) {
+    if (sortVal == 0) {
       displayedGroups = GroupsManager.sortByDate(displayedGroups);
-    } else if (userSettings.groupSort == 1) {
+    } else if (sortVal == 1) {
       displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
     }
     if (searchInput.isNotEmpty) {
@@ -224,7 +226,6 @@ class _GroupsHomeState extends State<GroupsHome> {
   Future<Null> refreshList() async {
     setState(() {
       widget.groupsFuture = GroupsManager.getGroups();
-      widget.settingsFuture = UsersManager.getUserAppSettings(context);
     });
   }
 

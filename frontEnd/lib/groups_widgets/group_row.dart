@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group.dart';
-import '../group_page.dart';
-import '../groups_home.dart';
+import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 
 class GroupRow extends StatelessWidget {
   final Group group;

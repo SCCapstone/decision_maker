@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_home.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 
 import 'imports/user_tokens_manager.dart';
 import 'imports/globals.dart';

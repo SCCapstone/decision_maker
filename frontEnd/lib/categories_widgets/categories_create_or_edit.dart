@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:numberpicker/numberpicker.dart';
 
-import 'imports/categories_manager.dart';
-import 'imports/globals.dart';
-import 'models/category.dart';
+import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/category.dart';
 
 class CreateOrEditCategory extends StatefulWidget {
   final bool isEdit;

@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_home.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
@@ -219,6 +219,39 @@ class GroupsManager {
       }
     } else {
       showPopupMessage("Unable to opt in/out.", context);
+    }
+  }
+
+  static void voteForChoice(String groupId, String eventId, String choiceId,
+      int voteVal, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "voteForChoice";
+    jsonRequestBody["payload"]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.CHOICE_ID, () => choiceId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
+
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error voting yes/no (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error voting yes/no (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to vote yes/no.", context);
     }
   }
 

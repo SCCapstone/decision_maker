@@ -1,4 +1,5 @@
 import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 
 class Event {
   final String categoryId;
@@ -6,6 +7,8 @@ class Event {
   final String eventName;
   final DateTime createdDateTime;
   final DateTime eventStartDateTime;
+  final DateTime pollBegin;
+  final DateTime pollEnd;
   final int type;
   final int pollDuration;
   final int pollPassPercent;
@@ -14,8 +17,9 @@ class Event {
   final Map<String, dynamic> votingNumbers;
   final Map<String, dynamic> eventCreator;
   final String selectedChoice;
-  String
-      mode; // used to determine if the event is being voted on, in opt in period, finished, or closed
+  final String eventStartDateTimeFormatted;
+  final String pollBeginFormatted;
+  final String pollEndFormatted;
 
   Event(
       {this.categoryId,
@@ -30,7 +34,12 @@ class Event {
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
       this.selectedChoice,
-      this.eventCreator});
+      this.eventCreator,
+      this.eventStartDateTimeFormatted,
+      this.pollBegin,
+      this.pollEnd,
+      this.pollBeginFormatted,
+      this.pollEndFormatted});
 
   Event.debug(
       this.categoryId,
@@ -45,9 +54,21 @@ class Event {
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
       this.selectedChoice,
-      this.eventCreator);
+      this.eventCreator,
+      this.eventStartDateTimeFormatted,
+      this.pollBegin,
+      this.pollEnd,
+      this.pollBeginFormatted,
+      this.pollEndFormatted);
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    DateTime pollBeginTemp =
+        DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).add(new Duration(
+            minutes: (int.parse(json[EventsManager.POLL_DURATION]))));
+    DateTime pollEndTemp = DateTime.parse(json[EventsManager.CREATED_DATE_TIME])
+        .add(new Duration(
+            minutes: (int.parse(json[EventsManager.POLL_DURATION])) * 2));
+
     return Event(
         categoryId: json[EventsManager.CATEGORY_ID],
         categoryName: json[EventsManager.CATEGORY_NAME],
@@ -55,6 +76,8 @@ class Event {
         createdDateTime: DateTime.parse(json[EventsManager.CREATED_DATE_TIME]),
         eventStartDateTime:
             DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
+        pollEnd: pollEndTemp,
+        pollBegin: pollBeginTemp,
         type: int.parse(json[EventsManager.TYPE]),
         pollDuration: int.parse(json[EventsManager.POLL_DURATION]),
         pollPassPercent: int.parse(json[EventsManager.POLL_PASS_PERCENT]),
@@ -63,7 +86,11 @@ class Event {
             json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
         votingNumbers: json[EventsManager.VOTING_NUMBERS],
-        eventCreator: json[EventsManager.EVENT_CREATOR]);
+        eventCreator: json[EventsManager.EVENT_CREATOR],
+        eventStartDateTimeFormatted: Globals.formatter
+            .format(DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME])),
+        pollEndFormatted: Globals.formatter.format(pollEndTemp),
+        pollBeginFormatted: Globals.formatter.format(pollBeginTemp));
   }
 
   Map asMap() {
@@ -92,7 +119,7 @@ class Event {
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
         "$createdDateTime EventStartDateTime: $eventStartDateTime Type: $type PollDuration: $pollDuration "
-        "PollPassPercent $pollPassPercent OptedIn: $optedIn Mode $mode SelectedChoice: $selectedChoice "
+        "PollPassPercent $pollPassPercent OptedIn: $optedIn SelectedChoice: $selectedChoice "
         "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
         "EventCreator: $eventCreator";
   }

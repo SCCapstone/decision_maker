@@ -208,10 +208,8 @@ public class UsersManager extends DatabaseAccessManager {
 
         if (settingToChange != null) {
           Integer settingVal = (Integer) jsonMap.get(settingToChange);
-          ValueMap valueMap = new ValueMap();
           if (checkAppSettingsVals(settingVal)) {
-            valueMap.withInt(":value", settingVal);
-
+            ValueMap valueMap = new ValueMap().withInt(":value", settingVal);
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
                 .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
@@ -222,7 +220,7 @@ public class UsersManager extends DatabaseAccessManager {
           } else {
             lambdaLogger
                 .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                    "Invalid values for user setting")
+                    "Invalid values for app setting")
                     .toString());
             resultStatus.resultMessage = "Error: Invalid values for settings";
           }
@@ -324,10 +322,6 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   private boolean checkAppSettingsVals(int settingVal) {
-    boolean retbool = false;
-    if (settingVal == 0 || settingVal == 1) {
-      retbool = true;
-    }
-    return retbool;
+    return (settingVal == 0 || settingVal == 1);
   }
 }
