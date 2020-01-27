@@ -138,6 +138,21 @@ public class GroupsManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
+  @Test
+  public void getAllCategoryIds_badGroupFormat_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
+
+    List<String> categoryIds = this.groupsManager
+        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+
+    assertEquals(categoryIds.size(), 0);
+    verify(this.dynamoDB, times(1)).getTable(
+        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   ////////////////////////////////////endregion
   // removeCategoryFromGroups tests //
   ////////////////////////////////////region
