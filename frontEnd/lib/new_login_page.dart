@@ -154,6 +154,7 @@ class _SignInState extends State<SignInPage> {
   void validateInput() {
     final form = formKey.currentState;
     if (formKey.currentState.validate()) {
+      print("Valid");
       form.save();
       // all input is valid. Attempt sign in / sign up
       if (signUp) {
@@ -162,6 +163,7 @@ class _SignInState extends State<SignInPage> {
         attemptSignIn();
       }
     } else {
+      print("invalid");
       setState(() => autoValidate = true);
     }
   }
@@ -171,6 +173,7 @@ class _SignInState extends State<SignInPage> {
     mutexLock = true;
 //    ResponseItem response = await logUserIn(context, username, password);
     Navigator.pop(context); // dismiss loading dialog
+    mutexLock = false;
 //    if (response.success) {
 //      // sign in success, go to next stage
 //    } else {
@@ -183,6 +186,7 @@ class _SignInState extends State<SignInPage> {
     mutexLock = true;
 //    ResponseItem response = await logUserIn(context, username, password);
     Navigator.pop(context); // dismiss loading dialog
+    mutexLock = false;
 //    if (response.success) {
 //      // sign up success, go to next stage
 //    } else {
