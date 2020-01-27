@@ -150,6 +150,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                             eventId: widget.eventId,
                             event: widget.event,
                             choiceName: exampleChoices[index],
+                            choiceId: index.toString(),
                           );
                         },
                         scrollDirection: Axis.horizontal,

@@ -7,9 +7,15 @@ class EventProposedChoice extends StatefulWidget {
   final Event event;
   final String eventId;
   final String choiceName;
+  final String choiceId;
 
   EventProposedChoice(
-      {Key key, this.groupId, this.event, this.eventId, this.choiceName})
+      {Key key,
+      this.groupId,
+      this.event,
+      this.eventId,
+      this.choiceName,
+      this.choiceId})
       : super(key: key);
 
   @override
@@ -50,8 +56,8 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   icon: Icon(Icons.thumb_down),
                   color: Colors.red,
                   onPressed: () {
-                    GroupsManager.optInOutOfEvent(
-                        widget.groupId, widget.eventId, false, context);
+                    GroupsManager.voteForChoice(widget.groupId, widget.eventId,
+                        widget.choiceId, 0, context);
                     setState(() {
                       vote = voteNo;
                     });
@@ -66,8 +72,8 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   icon: Icon(Icons.thumb_up),
                   color: Colors.green,
                   onPressed: () {
-                    GroupsManager.optInOutOfEvent(
-                        widget.groupId, widget.eventId, true, context);
+                    GroupsManager.voteForChoice(widget.groupId, widget.eventId,
+                        widget.choiceId, 1, context);
                     setState(() {
                       vote = voteYes;
                     });
