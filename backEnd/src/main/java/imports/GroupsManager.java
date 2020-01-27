@@ -20,8 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import utilities.*;
+import utilities.ErrorDescriptor;
+import utilities.IOStreamsHelper;
+import utilities.JsonEncoders;
+import utilities.Metrics;
+import utilities.RequestFields;
+import utilities.ResultStatus;
 
 public class GroupsManager extends DatabaseAccessManager {
 
@@ -579,7 +583,8 @@ public class GroupsManager extends DatabaseAccessManager {
     }
   }
 
-  public List<String> getAllCategoryIds(String groupId, Metrics metrics, LambdaLogger lambdaLogger) {
+  public List<String> getAllCategoryIds(String groupId, Metrics metrics,
+      LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.getAllCategoryIds";
     metrics.commonSetup(classMethod);
 
@@ -592,7 +597,8 @@ public class GroupsManager extends DatabaseAccessManager {
       categoryIds = new ArrayList<>(categoryMap.keySet());
       success = true;
     } catch (Exception e) {
-      lambdaLogger.log(new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
+      lambdaLogger
+          .log(new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
     }
 
     metrics.commonClose(success);

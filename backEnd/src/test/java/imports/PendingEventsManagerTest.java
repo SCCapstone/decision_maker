@@ -1,5 +1,12 @@
 package imports;
 
+import static imports.PendingEventsManager.SCANNER_ID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
@@ -9,6 +16,10 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.model.InvalidExecutionInputException;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,140 +29,140 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.Metrics;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-
-import static imports.PendingEventsManager.SCANNER_ID;
-import static junit.framework.TestCase.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
 public class PendingEventsManagerTest {
-    private static final Map PENDING_EVENTS_ITEM_INSTANCE = ImmutableMap.of(SCANNER_ID, "1", "gid;eid", "yyyy-mm-dd hh:mm:ss");
-    private String YESTERDAY;
-    private String TOMORROW;
 
-    private PendingEventsManager pendingEventsManager;
+  private static final Map PENDING_EVENTS_ITEM_INSTANCE = ImmutableMap
+      .of(SCANNER_ID, "1", "gid;eid", "yyyy-mm-dd hh:mm:ss");
+  private String YESTERDAY;
+  private String TOMORROW;
 
-    @Mock
-    private Table table;
+  private PendingEventsManager pendingEventsManager;
 
-    @Mock
-    private DynamoDB dynamoDB;
+  @Mock
+  private Table table;
 
-    @Mock
-    private CategoriesManager categoriesManager;
+  @Mock
+  private DynamoDB dynamoDB;
 
-    @Mock
-    private UsersManager usersManager;
+  @Mock
+  private CategoriesManager categoriesManager;
 
-    @Mock
-    private GroupsManager groupsManager;
+  @Mock
+  private UsersManager usersManager;
 
-    @Mock
-    private AWSStepFunctions awsStepFunctions;
+  @Mock
+  private GroupsManager groupsManager;
 
-    @Mock
-    private LambdaLogger lambdaLogger;
+  @Mock
+  private AWSStepFunctions awsStepFunctions;
 
-    @Mock
-    private Metrics metrics;
+  @Mock
+  private LambdaLogger lambdaLogger;
 
-    @BeforeEach
-    private void init() {
-        this.pendingEventsManager = new PendingEventsManager(this.dynamoDB, this.awsStepFunctions);
+  @Mock
+  private Metrics metrics;
 
-        DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
-        DatabaseManagers.USERS_MANAGER = this.usersManager;
-        DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
+  @BeforeEach
+  private void init() {
+    this.pendingEventsManager = new PendingEventsManager(this.dynamoDB, this.awsStepFunctions);
 
-        this.YESTERDAY = LocalDateTime.now(ZoneId.of("UTC")).minus(1, ChronoUnit.DAYS).format(this.pendingEventsManager.getDateTimeFormatter());
-        this.TOMORROW = LocalDateTime.now(ZoneId.of("UTC")).plus(1, ChronoUnit.DAYS).format(this.pendingEventsManager.getDateTimeFormatter());
-    }
+    DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
+    DatabaseManagers.USERS_MANAGER = this.usersManager;
+    DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
 
-    ///////////////////////////////
-    // processPendingEvent tests //
-    ///////////////////////////////region
+    this.YESTERDAY = LocalDateTime.now(ZoneId.of("UTC")).minus(1, ChronoUnit.DAYS)
+        .format(this.pendingEventsManager.getDateTimeFormatter());
+    this.TOMORROW = LocalDateTime.now(ZoneId.of("UTC")).plus(1, ChronoUnit.DAYS)
+        .format(this.pendingEventsManager.getDateTimeFormatter());
+  }
 
-    ///////////////////////////endregion
-    // addPendingEvent tests //
-    ///////////////////////////region
+  ///////////////////////////////
+  // processPendingEvent tests //
+  ///////////////////////////////region
 
-    ///////////////////////////////////////////////////////////endregion
-    // scanPendingEvents and startStepMachineExecution tests //
-    ///////////////////////////////////////////////////////////region
+  ///////////////////////////endregion
+  // addPendingEvent tests //
+  ///////////////////////////region
 
-    @Test
-    public void scanPendingEvents_validInput_successfulResult() {
-        doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-        doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY).withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
+  ///////////////////////////////////////////////////////////endregion
+  // scanPendingEvents and startStepMachineExecution tests //
+  ///////////////////////////////////////////////////////////region
 
-        this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+  @Test
+  public void scanPendingEvents_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY)
+        .withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
 
-        verify(this.dynamoDB, times(1)).getTable(any(String.class));
-        verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-        verify(this.metrics, times(2)).commonClose(true);
-        verify(this.awsStepFunctions, times(1)).startExecution(any(StartExecutionRequest.class));
-    }
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
 
-    @Test
-    public void scanPendingEvents_stepFunctionWontStart_failureResult() {
-        doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-        doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY).withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
-        doThrow(InvalidExecutionInputException.class).when(this.awsStepFunctions).startExecution(any(StartExecutionRequest.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+    verify(this.awsStepFunctions, times(1)).startExecution(any(StartExecutionRequest.class));
+  }
 
-        this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+  @Test
+  public void scanPendingEvents_stepFunctionWontStart_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY)
+        .withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
+    doThrow(InvalidExecutionInputException.class).when(this.awsStepFunctions)
+        .startExecution(any(StartExecutionRequest.class));
 
-        verify(this.dynamoDB, times(1)).getTable(any(String.class));
-        verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-        verify(this.metrics, times(2)).commonClose(false);
-        verify(this.awsStepFunctions, times(1)).startExecution(any(StartExecutionRequest.class));
-    }
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
 
-    @Test
-    public void scanPendingEvents_badPendingEventKey_failureResult() {
-        doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-        doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid;bad", this.YESTERDAY).withString("gid;eid2", this.YESTERDAY)).when(this.table).getItem(any(GetItemSpec.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+    verify(this.awsStepFunctions, times(1)).startExecution(any(StartExecutionRequest.class));
+  }
 
-        this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+  @Test
+  public void scanPendingEvents_badPendingEventKey_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid;bad", this.YESTERDAY)
+        .withString("gid;eid2", this.YESTERDAY)).when(this.table).getItem(any(GetItemSpec.class));
 
-        verify(this.dynamoDB, times(1)).getTable(any(String.class));
-        verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-        verify(this.metrics, times(1)).commonClose(false);
-        verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
-    }
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
 
-    @Test
-    public void scanPendingEvents_badDateFormat_failureResult() {
-        doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-        doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", "lol this isn't a date string")).when(this.table).getItem(any(GetItemSpec.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
+  }
 
-        this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+  @Test
+  public void scanPendingEvents_badDateFormat_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withString(SCANNER_ID, "1")
+        .withString("gid;eid", "lol this isn't a date string")).when(this.table)
+        .getItem(any(GetItemSpec.class));
 
-        verify(this.dynamoDB, times(1)).getTable(any(String.class));
-        verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-        verify(this.metrics, times(1)).commonClose(false);
-        verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
-    }
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
 
-    @Test
-    public void scanPendingEvents_noDbConnection_failureResult() {
-        doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
+  }
 
-        this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+  @Test
+  public void scanPendingEvents_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
-        verify(this.dynamoDB, times(1)).getTable(any(String.class));
-        verify(this.metrics, times(1)).commonClose(false);
-        verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
-    }
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
 
-    ///////////////////////////endregion
-    // getPartitionKey tests //
-    ///////////////////////////region
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.awsStepFunctions, times(0)).startExecution(any(StartExecutionRequest.class));
+  }
 
-    //endregion
+  ///////////////////////////endregion
+  // getPartitionKey tests //
+  ///////////////////////////region
+
+  //endregion
 }

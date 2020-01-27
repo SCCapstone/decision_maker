@@ -1,5 +1,13 @@
 package imports;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
@@ -10,6 +18,9 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,14 +31,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
@@ -272,7 +275,8 @@ public class CategoriesManagerTest {
     assertEquals(resultStatus.resultMessage, "[{}]");
     verify(this.usersManager, times(0))
         .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
-    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.groupsManager, times(0))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -290,7 +294,8 @@ public class CategoriesManagerTest {
         .getCategories(this.getCategoriesGoodInputGroupId, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.groupsManager, times(1)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.groupsManager, times(1))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -321,7 +326,8 @@ public class CategoriesManagerTest {
 
     verify(this.usersManager, times(0))
         .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
-    verify(this.groupsManager, times(0)).getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.groupsManager, times(0))
+        .getAllCategoryIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);

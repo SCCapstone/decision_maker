@@ -281,7 +281,8 @@ public class UsersManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.updateUserAppSettingsGoodInputMuted, this.metrics, this.lambdaLogger);
+        .updateUserAppSettings(this.updateUserAppSettingsGoodInputMuted, this.metrics,
+            this.lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));

@@ -8,10 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
-
-import utilities.*;
+import utilities.ExceptionHelper;
+import utilities.IOStreamsHelper;
+import utilities.JsonParsers;
+import utilities.Metrics;
+import utilities.ResultStatus;
 
 public class PendingEventResolutionHandler implements RequestStreamHandler {
+
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
     ResultStatus resultStatus = new ResultStatus();
