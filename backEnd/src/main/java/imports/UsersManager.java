@@ -178,7 +178,7 @@ public class UsersManager extends DatabaseAccessManager {
       } catch (Exception e) {
         resultStatus.success = false;
         lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Error when updating user choice ratings. Exception message: " + e).toString());
+            "Error: Unable to parse request. Exception message: " + e).toString());
       }
     } else {
       resultStatus.success = false;

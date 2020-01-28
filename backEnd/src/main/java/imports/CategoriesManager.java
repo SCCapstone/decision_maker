@@ -92,7 +92,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       } catch (Exception e) {
         resultStatus.success = false;
         lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            e).toString());
+            "Error: Unable to parse request. Exception message: ").toString());
       }
     } else {
       resultStatus.success = false;
@@ -172,7 +172,7 @@ public class CategoriesManager extends DatabaseAccessManager {
       } catch (Exception e) {
         resultStatus.success = false;
         lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            e).toString());
+            "Error: Unable to parse request. Exception message: ").toString());
       }
     } else {
       resultStatus.success = false;
