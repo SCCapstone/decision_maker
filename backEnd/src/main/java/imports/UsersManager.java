@@ -146,8 +146,11 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap) {
+  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
+    final String classMethod = "UsersManager.updateUserChoiceRatings";
+    metrics.commonSetup(classMethod);
 
     if (
         jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
@@ -173,14 +176,16 @@ public class UsersManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+        resultStatus.success = false;
+        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+            "Error when updating user choice ratings. Exception message: " + e).toString());
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus.resultMessage = "Error: Required request keys not found.";
+      resultStatus.success = false;
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Error: Required request keys not found.").toString());
     }
-
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

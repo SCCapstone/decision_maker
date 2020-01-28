@@ -41,7 +41,7 @@ public class UsersPostHandler implements
                 resultStatus = DatabaseManagers.USERS_MANAGER.addNewUser(payloadJsonMap);
               } else if (action.equals("updateUserChoiceRatings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER
-                    .updateUserChoiceRatings(payloadJsonMap);
+                    .updateUserChoiceRatings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("getUserRatings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER
                     .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
