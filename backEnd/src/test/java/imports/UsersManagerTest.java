@@ -45,6 +45,12 @@ public class UsersManagerTest {
       RequestFields.ACTIVE_USER, "ActiveUser"
   );
 
+  private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "validActiveUser",
+      CategoriesManager.CATEGORY_ID, "CategoryId1",
+      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")
+  );
+
   private final Map<String, Object> updateUserAppSettingsGoodInputDarkTheme = ImmutableMap.of(
       UsersManager.APP_SETTINGS_DARK_THEME, 0,
       RequestFields.ACTIVE_USER, "ActiveUser"
@@ -193,10 +199,8 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
-            CategoriesManager.CATEGORY_ID, "CategoryId1",
-            RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
-            this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, this.metrics,
+            this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
