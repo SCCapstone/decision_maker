@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/categories_widgets/categories_edit.dart';
 import 'package:frontEnd/models/category.dart';
 import 'categories_create_or_edit.dart';
 
@@ -32,8 +33,8 @@ class CategoriesListItem extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => CreateOrEditCategory(
-                          isEdit: true, category: this.category)),
+                      builder: (context) =>
+                          EditCategory(category: this.category)),
                 );
               },
             )
@@ -65,8 +66,8 @@ class CategoriesListItem extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => CreateOrEditCategory(
-                              isEdit: true, category: this.category)),
+                          builder: (context) =>
+                              EditCategory(category: this.category)),
                     ).then((_) => this.afterEditCallback());
                   },
                 ),

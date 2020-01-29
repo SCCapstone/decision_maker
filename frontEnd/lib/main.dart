@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
 
 import 'imports/user_tokens_manager.dart';
@@ -45,7 +44,7 @@ class MyApp extends StatelessWidget {
                     theme: ThemeData(
                       primarySwatch: Colors.green,
                     ),
-                    home: CreateCategory(),
+                    home: GroupsHome(),
                   );
                 }
               }

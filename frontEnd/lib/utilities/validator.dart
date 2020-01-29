@@ -67,3 +67,19 @@ String validUser(String user, Map<String, dynamic> users) {
     return null;
   }
 }
+
+String validChoice(String input) {
+  if (input.length == 0) {
+    return "Choice name cannot be empty!";
+  } else {
+    return null;
+  }
+}
+
+String validCategory(String input) {
+  if (input.length == 0) {
+    return "Category name cannot be empty!";
+  } else {
+    return null;
+  }
+}

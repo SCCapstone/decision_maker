@@ -1,8 +1,12 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
+import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
+import 'package:frontEnd/utilities/validator.dart';
 
 class EditCategory extends StatefulWidget {
   final Category category;
@@ -14,6 +18,7 @@ class EditCategory extends StatefulWidget {
 }
 
 class _EditCategoryState extends State<EditCategory> {
+  final formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
@@ -22,9 +27,13 @@ class _EditCategoryState extends State<EditCategory> {
   final Map<int, TextEditingController> ratesControllers =
       new LinkedHashMap<int, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
+  Future<Map<String, dynamic>> ratingsFromDb;
 
+  bool initialPageLoad = true;
+  bool doneLoading = false;
+  bool autoValidate = false;
   bool isCategoryOwner;
-  int nextChoiceValue;
+  int nextChoiceNum;
 
   @override
   void dispose() {
@@ -42,17 +51,26 @@ class _EditCategoryState extends State<EditCategory> {
   void initState() {
     this.isCategoryOwner = (widget.category.owner == Globals.username);
     this.categoryNameController.text = widget.category.categoryName;
-    this.nextChoiceValue = widget.category.nextChoiceNum;
+    this.nextChoiceNum = widget.category.nextChoiceNum;
+
+    this.ratingsFromDb =
+        UsersManager.getUserRatings((widget.category.categoryId), context);
 
     for (String choiceId in widget.category.choices.keys) {
-      TextEditingController t1 = new TextEditingController();
-      t1.text = widget.category.choices[choiceId];
-      this.labelControllers.putIfAbsent(int.parse(choiceId), () => t1);
+      TextEditingController labelController = new TextEditingController();
+      labelController.text = widget.category.choices[choiceId];
+      labelControllers.putIfAbsent(int.parse(choiceId), () => labelController);
 
-      TextEditingController t2 = new TextEditingController();
-      t2.text = this.defaultRate.toString();
-      this.ratesControllers.putIfAbsent(int.parse(choiceId), () => t2);
-      ChoiceRow choice = new ChoiceRow(int.parse(choiceId), t1, t2,
+      TextEditingController rateController = new TextEditingController();
+      rateController.text = this.defaultRate.toString();
+      ratesControllers.putIfAbsent(int.parse(choiceId), () => rateController);
+
+      ChoiceRow choice = new ChoiceRow(
+          int.parse(choiceId),
+          widget.category.choices[choiceId.toString()],
+          this.isCategoryOwner,
+          labelController,
+          rateController,
           deleteChoice: (choice) => deleteChoice(choice));
       this.choiceRows.add(choice);
     }
@@ -64,44 +82,149 @@ class _EditCategoryState extends State<EditCategory> {
     return Scaffold(
         appBar: AppBar(title: Text("Edit ${widget.category.categoryName}")),
         body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  maxLength: 40,
-                  controller: categoryNameController,
-                  decoration: InputDecoration(
-                      labelText: "Category Name", counterText: ""),
-                ),
-                Expanded(
-                  child: Scrollbar(
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: choiceRows.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return choiceRows[index];
-                        }),
+          child: Form(
+            key: this.formKey,
+            autovalidate: this.autoValidate,
+            child: Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              child: Column(
+                children: <Widget>[
+                  Visibility(
+                    visible: this.isCategoryOwner,
+                    child: TextFormField(
+                      maxLength: 40,
+                      controller: this.categoryNameController,
+                      validator: validCategory,
+                      decoration: InputDecoration(
+                          labelText: "Category Name", counterText: ""),
+                    ),
                   ),
-                ),
-              ],
+                  Visibility(
+                    visible: !this.isCategoryOwner,
+                    child: Text(
+                      "Category: ${widget.category.categoryName}\nBy: ${widget.category.owner}",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.5),
+                    ),
+                  ),
+                  Expanded(
+                    child: Scrollbar(
+                      child: FutureBuilder(
+                          future: this.ratingsFromDb,
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasData) {
+                              if (this.initialPageLoad) {
+                                Map<String, dynamic> userRatings =
+                                    snapshot.data;
+                                //if the mapping exists in the user's table, override the default
+                                for (int choiceId
+                                    in this.labelControllers.keys) {
+                                  if (userRatings
+                                      .containsKey(choiceId.toString())) {
+                                    this.ratesControllers[choiceId].text =
+                                        userRatings[choiceId.toString()]
+                                            .toString();
+                                  }
+                                }
+                                this.initialPageLoad = false;
+                              }
+                              this.doneLoading = true;
+                              return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: choiceRows.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return choiceRows[index];
+                                  });
+                            } else if (snapshot.hasError) {
+                              return Text("Error: ${snapshot.error}");
+                            }
+                            return Center(child: CircularProgressIndicator());
+                          }),
+                    ),
+                  ),
+                  RaisedButton.icon(
+                    icon: Icon(Icons.save),
+                    label: Text("Save"),
+                    onPressed: () {
+                      final form = this.formKey.currentState;
+                      if (this.choiceRows.length == 0) {
+                        showErrorMessage("Error!",
+                            "Must have at least one choice!", context);
+                      } else if (form.validate()) {
+                        Map<String, String> labelsToSave =
+                            new LinkedHashMap<String, String>();
+                        Map<String, String> ratesToSave =
+                            new LinkedHashMap<String, String>();
+                        for (int i in this.labelControllers.keys) {
+                          labelsToSave.putIfAbsent(i.toString(),
+                              () => this.labelControllers[i].text);
+                          ratesToSave.putIfAbsent(i.toString(),
+                              () => this.ratesControllers[i].text);
+                        }
+                        List<String> allNames = new List<String>();
+                        for (String id in labelsToSave.keys) {
+                          allNames.add(labelsToSave[id]);
+                        }
+                        List setNames = allNames.toSet().toList();
+                        if (setNames.length != allNames.length) {
+                          setState(() {
+                            showErrorMessage("Input Error!",
+                                "No duplicate choices allowed!", context);
+                            this.autoValidate = true;
+                          });
+                        } else if (this.isCategoryOwner) {
+                          print(ratesToSave);
+                          CategoriesManager.addOrEditCategory(
+                              this.categoryNameController.text,
+                              labelsToSave,
+                              ratesToSave,
+                              widget.category,
+                              context);
+                        } else {
+                          UsersManager.updateUserChoiceRatings(
+                              widget.category.categoryId, ratesToSave, context);
+                        }
+                      } else {
+                        setState(() {
+                          this.autoValidate = true;
+                        });
+                      }
+                    },
+                  )
+                ],
+              ),
             ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () {
-            setState(() {
-              TextEditingController t1 = new TextEditingController();
-              labelControllers.putIfAbsent(this.nextChoiceValue, () => t1);
-              TextEditingController t2 = new TextEditingController();
-              t2.text = "3";
-              ratesControllers.putIfAbsent(this.nextChoiceValue, () => t2);
-              ChoiceRow choice = new ChoiceRow(nextChoiceValue, t1, t2,
-                  deleteChoice: (choice) => deleteChoice(choice));
-              this.choiceRows.add(choice);
-              nextChoiceValue++;
-            });
+            if (this.doneLoading && this.isCategoryOwner) {
+              // don't let the user add new choices while data is being pulled from DB
+              setState(() {
+                TextEditingController labelController =
+                    new TextEditingController();
+                labelControllers.putIfAbsent(
+                    this.nextChoiceNum, () => labelController);
+                TextEditingController rateController =
+                    new TextEditingController();
+                rateController.text = defaultRate.toString();
+                ratesControllers.putIfAbsent(
+                    this.nextChoiceNum, () => rateController);
+
+                ChoiceRow choice = new ChoiceRow(this.nextChoiceNum, null,
+                    this.isCategoryOwner, labelController, rateController,
+                    deleteChoice: (choice) => deleteChoice(choice));
+                this.choiceRows.add(choice);
+                this.nextChoiceNum++;
+              });
+            }
           },
         ));
   }
@@ -109,6 +232,8 @@ class _EditCategoryState extends State<EditCategory> {
   void deleteChoice(ChoiceRow choiceRow) {
     setState(() {
       this.choiceRows.remove(choiceRow);
+      this.labelControllers.remove(choiceRow.choiceNumber);
+      this.ratesControllers.remove(choiceRow.choiceNumber);
     });
   }
 }
