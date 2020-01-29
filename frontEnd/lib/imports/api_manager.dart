@@ -13,8 +13,6 @@ Future<String> makeApiRequest(
     {firstAttempt: true}) async {
   SharedPreferences tokens = await Globals.getTokens();
 
-  print(requestContent);
-
   if (tokens.containsKey(idTokenKey)) {
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)

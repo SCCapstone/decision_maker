@@ -26,7 +26,6 @@ class _GroupsHomeState extends State<GroupsHome> {
   List<Group> totalGroups = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
-  bool initialLoad = true;
 
   @override
   void initState() {
@@ -44,8 +43,6 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   @override
   Widget build(BuildContext context) {
-    print("building");
-
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -201,11 +198,6 @@ class _GroupsHomeState extends State<GroupsHome> {
         }
       }
       displayedGroups = temp;
-    }
-
-    if (this.initialLoad) {
-      this.initialLoad = false;
-      return GroupsList(groups: displayedGroups, searching: searching);
     }
 
     return RefreshIndicator(
