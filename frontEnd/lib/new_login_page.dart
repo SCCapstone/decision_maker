@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
+import 'package:frontEnd/main.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'imports/globals.dart';
 import 'imports/response_item.dart';
 import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'imports/user_tokens_manager.dart';
-import 'main.dart';
 
 bool mutexLock = false;
 
@@ -68,6 +69,7 @@ class _SignInState extends State<SignInPage> {
                     decoration: InputDecoration(labelText: "Email"),
                   )),
               TextFormField(
+                key: new Key("username"),
                 maxLength: 30,
                 controller: usernameController,
                 validator: validUsername,
@@ -81,6 +83,7 @@ class _SignInState extends State<SignInPage> {
                     InputDecoration(labelText: "Username", counterText: ""),
               ),
               TextFormField(
+                key: new Key("password"),
                 obscureText: true,
                 controller: passwordController,
                 validator: (signUp) ? validNewPassword : validPassword,
@@ -99,6 +102,7 @@ class _SignInState extends State<SignInPage> {
                 padding: EdgeInsets.all(5.0),
               ),
               SizedBox(
+                key: new Key("signInOrUp"),
                 height: MediaQuery.of(context).size.width * .12,
                 child: RaisedButton(
                   color: Globals.secondaryColor,
@@ -174,6 +178,8 @@ class _SignInState extends State<SignInPage> {
     showLoadingDialog(context, "Loading..."); // show loading dialog
     mutexLock = true;
 
+    bool signedIn = false;
+
     final userPool = new CognitoUserPool(
         'us-east-2_ebbPP76nO', '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
     final cognitoUser = new CognitoUser(this.usernameController.text, userPool);
@@ -183,47 +189,65 @@ class _SignInState extends State<SignInPage> {
     try {
       session = await cognitoUser.authenticateUser(authDetails);
 
-      print("hereeee");
+      print(session.getIdToken().jwtToken);
 
-      await storeUserTokens(
+      storeUserTokens(
           session.getAccessToken().jwtToken,
           session.getRefreshToken().getToken(),
           session.getIdToken().jwtToken);
 
-      print("now here");
-
-      Navigator.pop(context); // dismiss loading dialog
-
-      Route route = MaterialPageRoute(builder: (context) => MyApp());
-      Navigator.pushReplacement(context, route);
-    } on CognitoUserNewPasswordRequiredException catch (e) {
-      // handle New Password challenge
-    } on CognitoUserMfaRequiredException catch (e) {
-      // handle SMS_MFA challenge
-    } on CognitoUserSelectMfaTypeException catch (e) {
-      // handle SELECT_MFA_TYPE challenge
-    } on CognitoUserMfaSetupException catch (e) {
-      // handle MFA_SETUP challenge
-    } on CognitoUserTotpRequiredException catch (e) {
-      // handle SOFTWARE_TOKEN_MFA challenge
-    } on CognitoUserCustomChallengeException catch (e) {
-      // handle CUSTOM_CHALLENGE challenge
-    } on CognitoUserConfirmationNecessaryException catch (e) {
-      // handle User Confirmation Necessary
+      signedIn = true;
+//    } on CognitoUserNewPasswordRequiredException catch (e) {
+//      // handle New Password challenge
+//    } on CognitoUserMfaRequiredException catch (e) {
+//      // handle SMS_MFA challenge
+//    } on CognitoUserSelectMfaTypeException catch (e) {
+//      // handle SELECT_MFA_TYPE challenge
+//    } on CognitoUserMfaSetupException catch (e) {
+//      // handle MFA_SETUP challenge
+//    } on CognitoUserTotpRequiredException catch (e) {
+//      // handle SOFTWARE_TOKEN_MFA challenge
+//    } on CognitoUserCustomChallengeException catch (e) {
+//      // handle CUSTOM_CHALLENGE challenge
+//    } on CognitoUserConfirmationNecessaryException catch (e) {
+//      // handle User Confirmation Necessary
     } catch (e) {
-      // print(e);
+      print(e);
     }
 
-    //Navigator.pop(context); // dismiss loading dialog
-
-    mutexLock = false;
-  }
-
-  void attemptSignUp() {
-    showLoadingDialog(context, "Loading..."); // show loading dialog
-    mutexLock = true;
     Navigator.pop(context); // dismiss loading dialog
     mutexLock = false;
+
+    if (signedIn) {
+      Navigator.pushReplacement(context, new MaterialPageRoute(
+          builder: (context) => MyApp()));
+    }
+  }
+
+  void attemptSignUp() async {
+    showLoadingDialog(context, "Loading..."); // show loading dialog
+    mutexLock = true;
+
+    final userPool = new CognitoUserPool(
+        'us-east-2_ebbPP76nO', '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
+    final userAttributes = [
+      new AttributeArg(name: 'email', value: this.emailController.text),
+    ];
+
+    var data;
+    try {
+      data = await userPool.signUp(this.usernameController.text, this.passwordController.text,
+          userAttributes: userAttributes);
+    } catch (e) {
+      print(e);
+    }
+
+    Navigator.pop(context); // dismiss loading dialog
+    mutexLock = false;
+
+    if (data != null) {
+      attemptSignIn();
+    }
   }
 }
 

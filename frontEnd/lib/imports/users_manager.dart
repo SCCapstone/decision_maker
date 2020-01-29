@@ -36,6 +36,7 @@ class UsersManager {
     if (response != "") {
       try {
         Map<String, dynamic> body = jsonDecode(response);
+
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         ret = User.fromJson(json.decode(responseItem.resultMessage));
@@ -141,35 +142,6 @@ class UsersManager {
       }
     } else {
       showPopupMessage("Unable to get user ratings.", context);
-    }
-
-    return null;
-  }
-
-  static Future<AppSettings> getUserAppSettings(BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "getUserAppSettings";
-
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
-
-    if (response != "") {
-      Map<String, dynamic> body = jsonDecode(response);
-
-      try {
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          Map<String, dynamic> responseJson =
-              json.decode(responseItem.resultMessage);
-          return new AppSettings.fromJson(responseJson);
-        } else {
-          showPopupMessage("Error getting user app settings (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error getting user app settings (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to get user app settings.", context);
     }
 
     return null;

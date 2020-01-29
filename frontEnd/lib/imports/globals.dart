@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
   static Color secondaryColor = Color(0xff106126);
@@ -10,9 +11,18 @@ class Globals {
   static bool android;
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
   static Group currentGroup;
+  static SharedPreferences tokens;
 
   static void clearGlobals() {
     username = null;
     android = null;
+  }
+
+  static Future<SharedPreferences> getTokens() async {
+    if (tokens == null) {
+      tokens = await SharedPreferences.getInstance();
+    }
+
+    return tokens;
   }
 }

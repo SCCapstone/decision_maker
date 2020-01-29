@@ -22,7 +22,7 @@ final String logoutEndpoint = "/logout?";
 //One option to consider for the future is making one SharedPreferences variable
 //as a global variable and just use it for all local storage, but for now I'll keep
 //the scope within the context of tokens.
-SharedPreferences _tokens;
+
 final String accessTokenKey = "access"; //_tokens is like a Map, so we declare
 final String refreshTokenKey = "refresh"; //the keys for the tokens here.
 final String idTokenKey = "id";
@@ -44,7 +44,7 @@ Future<bool> hasValidTokensSet() async {
 Future<void> refreshUserTokens() async {
   //Use the stored refresh token to get new tokens and then call storeUserTokens to store the new tokens
   //hint, don't overwrite the refresh token, that one token can be used many times and you only get it once
-  String refreshToken = _tokens.getString(refreshTokenKey);
+  String refreshToken = Globals.tokens.getString(refreshTokenKey);
 
   Map<String, String> headers = {
     "Content-Type": "application/x-www-form-urlencoded"
@@ -71,12 +71,12 @@ Future<void> refreshUserTokens() async {
   }
 }
 
-void storeUserTokens(String accessToken, String refreshToken, String idToken) {
-  _tokens.setString(accessTokenKey, accessToken);
-  _tokens.setString(idTokenKey, idToken);
-  _tokens.setString(refreshTokenKey, refreshToken);
+void storeUserTokens(String accessToken, String refreshToken, String idToken) async {
+  (await Globals.getTokens()).setString(accessTokenKey, accessToken);
+  (await Globals.getTokens()).setString(idTokenKey, idToken);
+  (await Globals.getTokens()).setString(refreshTokenKey, refreshToken);
 }
 
-void clearTokens() {
-  _tokens.clear();
+void clearTokens() async {
+  (await Globals.getTokens()).clear();
 }

@@ -1,21 +1,22 @@
 import 'dart:convert';
 
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-SharedPreferences tokens;
 final String idTokenKey = "id";
 
 Future<String> makeApiRequest(
     String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
-  if (tokens == null) {
-    tokens = await SharedPreferences.getInstance();
-  }
+  SharedPreferences tokens = await Globals.getTokens();
+
+  print(requestContent);
 
   if (tokens.containsKey(idTokenKey)) {
+
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
@@ -24,6 +25,8 @@ Future<String> makeApiRequest(
         Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
         headers: headers,
         body: json.encode(requestContent));
+
+    print(response.body);
 
     if (response.statusCode == 200) {
       return response.body;
