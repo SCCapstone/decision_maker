@@ -1,10 +1,10 @@
+import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/main.dart';
 import 'package:frontEnd/utilities/validator.dart';
+
 import 'imports/globals.dart';
 import 'imports/response_item.dart';
-import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'imports/user_tokens_manager.dart';
 
 bool mutexLock = false;
@@ -180,21 +180,20 @@ class _SignInState extends State<SignInPage> {
 
     bool signedIn = false;
 
-    final userPool = new CognitoUserPool(
-        'us-east-2_ebbPP76nO', '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
+    final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
+        '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
     final cognitoUser = new CognitoUser(this.usernameController.text, userPool);
     final authDetails = new AuthenticationDetails(
-        username: this.usernameController.text, password: this.passwordController.text);
+        username: this.usernameController.text,
+        password: this.passwordController.text);
     CognitoUserSession session;
     try {
       session = await cognitoUser.authenticateUser(authDetails);
 
       print(session.getIdToken().jwtToken);
 
-      storeUserTokens(
-          session.getAccessToken().jwtToken,
-          session.getRefreshToken().getToken(),
-          session.getIdToken().jwtToken);
+      storeUserTokens(session.getAccessToken().jwtToken,
+          session.getRefreshToken().getToken(), session.getIdToken().jwtToken);
 
       signedIn = true;
 //    } on CognitoUserNewPasswordRequiredException catch (e) {
@@ -219,8 +218,8 @@ class _SignInState extends State<SignInPage> {
     mutexLock = false;
 
     if (signedIn) {
-      Navigator.pushReplacement(context, new MaterialPageRoute(
-          builder: (context) => MyApp()));
+      Navigator.pushReplacement(
+          context, new MaterialPageRoute(builder: (context) => MyApp()));
     }
   }
 
@@ -228,15 +227,16 @@ class _SignInState extends State<SignInPage> {
     showLoadingDialog(context, "Loading..."); // show loading dialog
     mutexLock = true;
 
-    final userPool = new CognitoUserPool(
-        'us-east-2_ebbPP76nO', '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
+    final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
+        '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
     final userAttributes = [
       new AttributeArg(name: 'email', value: this.emailController.text),
     ];
 
     var data;
     try {
-      data = await userPool.signUp(this.usernameController.text, this.passwordController.text,
+      data = await userPool.signUp(
+          this.usernameController.text, this.passwordController.text,
           userAttributes: userAttributes);
     } catch (e) {
       print(e);

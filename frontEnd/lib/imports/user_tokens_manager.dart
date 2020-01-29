@@ -1,11 +1,12 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/user.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart';
-import 'dart:convert';
+
 import 'globals.dart';
-import 'dart:async';
-import 'package:flutter/material.dart';
 
 final String userPoolUrl =
     "https://pocket-poll.auth.us-east-2.amazoncognito.com";
@@ -44,7 +45,7 @@ Future<bool> hasValidTokensSet() async {
 Future<void> refreshUserTokens() async {
   //Use the stored refresh token to get new tokens and then call storeUserTokens to store the new tokens
   //hint, don't overwrite the refresh token, that one token can be used many times and you only get it once
-  String refreshToken = Globals.tokens.getString(refreshTokenKey);
+  String refreshToken = (await Globals.getTokens()).getString(refreshTokenKey);
 
   Map<String, String> headers = {
     "Content-Type": "application/x-www-form-urlencoded"
@@ -56,7 +57,7 @@ Future<void> refreshUserTokens() async {
       refreshToken;
 
   Response response =
-  await post(userPoolUrl + tokenEndpoint, headers: headers, body: data);
+      await post(userPoolUrl + tokenEndpoint, headers: headers, body: data);
 
   if (response.statusCode == 200) {
     Map<String, dynamic> body = json.decode(response.body);
@@ -71,7 +72,8 @@ Future<void> refreshUserTokens() async {
   }
 }
 
-void storeUserTokens(String accessToken, String refreshToken, String idToken) async {
+void storeUserTokens(
+    String accessToken, String refreshToken, String idToken) async {
   (await Globals.getTokens()).setString(accessTokenKey, accessToken);
   (await Globals.getTokens()).setString(idTokenKey, idToken);
   (await Globals.getTokens()).setString(refreshTokenKey, refreshToken);

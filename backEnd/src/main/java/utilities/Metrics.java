@@ -29,8 +29,12 @@ public class Metrics {
     this.timeMetrics = new HashMap<>();
   }
 
-  public void setFunctionName(String functionName) {
+  public void setFunctionName(final String functionName) {
     this.functionNames.push(functionName);
+  }
+
+  public void removeFunctionName() {
+    this.functionNames.pop();
   }
 
   public String getRequestId() {
@@ -46,7 +50,7 @@ public class Metrics {
   public void commonClose(boolean success) {
     this.addBooleanMetric(success);
     this.finalizeTimeMetric(Metrics.TIME);
-    this.functionNames.pop();
+    this.removeFunctionName();
   }
 
   private void ensureFunctionKeyExists(Map input) {

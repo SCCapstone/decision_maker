@@ -16,7 +16,6 @@ Future<String> makeApiRequest(
   print(requestContent);
 
   if (tokens.containsKey(idTokenKey)) {
-
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
@@ -25,8 +24,6 @@ Future<String> makeApiRequest(
         Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
         headers: headers,
         body: json.encode(requestContent));
-
-    print(response.body);
 
     if (response.statusCode == 200) {
       return response.body;

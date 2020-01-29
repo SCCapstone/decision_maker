@@ -37,7 +37,7 @@ void main() {
 
       var signInOrUpButton = find.byValueKey("signInOrUp");
       await driver.tap(signInOrUpButton);
-      
+
       await driver.waitFor(find.text("Pocket Poll"));
     });
   });

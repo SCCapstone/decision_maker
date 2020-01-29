@@ -1,10 +1,11 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
-import 'package:frontEnd/new_login_page.dart';
+import 'package:frontEnd/login_page.dart';
 
-import 'imports/user_tokens_manager.dart';
 import 'imports/globals.dart';
-import 'dart:io' show Platform;
+import 'imports/user_tokens_manager.dart';
 
 void main() => runApp(MyApp());
 
