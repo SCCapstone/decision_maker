@@ -176,14 +176,14 @@ public class UsersManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
-        resultStatus.success = false;
-        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Error: Unable to parse request. Exception message: " + e).toString());
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      resultStatus.success = false;
       lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
           "Error: Required request keys not found.").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;

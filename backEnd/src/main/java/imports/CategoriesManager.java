@@ -90,14 +90,14 @@ public class CategoriesManager extends DatabaseAccessManager {
               + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        resultStatus.success = false;
-        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Error: Unable to parse request. Exception message: ").toString());
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      resultStatus.success = false;
       lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
           "Error: Required request keys not found.").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
@@ -170,14 +170,14 @@ public class CategoriesManager extends DatabaseAccessManager {
                   + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        resultStatus.success = false;
-        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Error: Unable to parse request. Exception message: ").toString());
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      resultStatus.success = false;
       lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
           "Error: Required request keys not found.").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);
