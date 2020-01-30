@@ -1,10 +1,11 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
+import 'package:frontEnd/login_page.dart';
 
-import 'imports/user_tokens_manager.dart';
 import 'imports/globals.dart';
-import 'login_page.dart';
-import 'dart:io' show Platform;
+import 'imports/user_tokens_manager.dart';
 
 void main() => runApp(MyApp());
 
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
     } else {
       Globals.android = false;
     }
+
     return new Container(
       //We use a FutureBuilder here since the display of the widget depends on
       //the asynchronous function hasValidTokensSet being able to fully execute
@@ -36,7 +38,7 @@ class MyApp extends StatelessWidget {
                     theme: ThemeData(
                       primarySwatch: Colors.green,
                     ),
-                    home: LoginScreen(),
+                    home: SignInPage(),
                   );
                 } else {
                   return MaterialApp(

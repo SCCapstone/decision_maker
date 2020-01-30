@@ -3,6 +3,10 @@ import 'validator.dart';
 
 void showPopupMessage(String message, BuildContext context,
     {Function callback}) {
+  if (context == null) {
+    return;
+  }
+
   if (callback == null) {
     callback = (_) => {};
   }

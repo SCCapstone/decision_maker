@@ -1,19 +1,17 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_widgets/groups_create.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/imports/users_manager.dart';
-import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
+import 'package:frontEnd/groups_widgets//groups_list.dart';
+import 'package:frontEnd/groups_widgets/groups_create.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/models/app_settings.dart';
-import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/log_out.dart';
 
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
-  Future<AppSettings> settingsFuture;
 
   GroupsHome({Key key, this.groupsFuture}) : super(key: key);
 
@@ -26,14 +24,12 @@ class _GroupsHomeState extends State<GroupsHome> {
   String searchInput = "";
   List<Group> displayedGroups = new List<Group>();
   List<Group> totalGroups = new List<Group>();
-  AppSettings userSettings = new AppSettings();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
 
   @override
   void initState() {
     widget.groupsFuture = GroupsManager.getGroups();
-    widget.settingsFuture = UsersManager.getUserAppSettings(context);
     searchBar.addListener(() {
       if (searchBar.text.isEmpty) {
         setState(() {
@@ -51,8 +47,6 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   @override
   Widget build(BuildContext context) {
-    // to catch any changes that may have been made when editing
-    widget.groupsFuture = GroupsManager.getGroups();
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -99,8 +93,12 @@ class _GroupsHomeState extends State<GroupsHome> {
                 title: Text('Log out', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   logOutUser();
-                  Navigator.of(context).pushReplacement(new MaterialPageRoute(
-                      builder: (context) => LoginScreen()));
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) => SignInPage(),
+                      ),
+                      ModalRoute.withName('/'));
                 })
           ],
         ),
@@ -155,7 +153,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                       if (snapshot.hasData) {
                         totalGroups = snapshot.data;
                         displayedGroups = snapshot.data;
-                        return buildListFuture();
+                        return buildList(Globals.user.appSettings.groupSort);
                       } else if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       }
@@ -183,23 +181,6 @@ class _GroupsHomeState extends State<GroupsHome> {
     );
   }
 
-  Widget buildListFuture() {
-    // TODO this entire flow needs to change. This is the cause of this issue (https://github.com/SCCapstone/decision_maker/issues/173)
-    return FutureBuilder(
-        future: widget.settingsFuture,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasData) {
-            userSettings = snapshot.data;
-            return buildList(userSettings.groupSort);
-          } else if (snapshot.hasError) {
-            return Text("Error: ${snapshot.error}");
-          } else {
-            return buildList(
-                0); // default value if the user settings for some reason doesn't have data
-          }
-        });
-  }
-
   Widget buildList(int sortVal) {
     if (sortVal == 0) {
       displayedGroups = GroupsManager.sortByDate(displayedGroups);
@@ -218,6 +199,7 @@ class _GroupsHomeState extends State<GroupsHome> {
       }
       displayedGroups = temp;
     }
+
     return RefreshIndicator(
         onRefresh: refreshList,
         child: GroupsList(groups: displayedGroups, searching: searching));

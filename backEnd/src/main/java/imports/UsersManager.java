@@ -8,18 +8,16 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 public class UsersManager extends DatabaseAccessManager {
 
@@ -110,39 +108,45 @@ public class UsersManager extends DatabaseAccessManager {
     return groupIds;
   }
 
-  public ResultStatus addNewUser(Map<String, Object> jsonMap) {
-    ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(USERNAME)) {
-      try {
-        String username = (String) jsonMap.get(USERNAME);
+  public ResultStatus getUserData(final Map<String, Object> jsonMap, Metrics metrics,
+      LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.getUserData";
+    metrics.commonSetup(classMethod);
 
-        Item user = this.getItemByPrimaryKey(username);
+    ResultStatus resultStatus = new ResultStatus();
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        Item user = this.getItemByPrimaryKey(activeUser);
+
         if (user == null) {
-          Item newUser = new Item()
-              .withString(USERNAME, username)
+          user = new Item()
+              .withString(USERNAME, activeUser)
               .withString(FIRST_NAME, DEFAULT_FIRSTNAME)
               .withString(LAST_NAME, DEFAULT_LASTNAME)
-              .withMap(APP_SETTINGS, getDefaultAppSettings())
+              .withMap(APP_SETTINGS, this.getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP);
 
           PutItemSpec putItemSpec = new PutItemSpec()
-              .withItem(newUser);
+              .withItem(user);
 
           this.putItem(putItemSpec);
-
-          resultStatus = new ResultStatus(true, "User added successfully!");
-        } else {
-          resultStatus.resultMessage = "Error: Username already exists in database";
         }
+
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: ";
       }
     } else {
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
