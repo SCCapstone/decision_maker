@@ -83,3 +83,42 @@ String validCategory(String input) {
     return null;
   }
 }
+
+String validEmail(String input) {
+  /*
+    Validates an email with a given inputField object. Cannot have an empty email or one without a @ symbol
+   */
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Email cannot be empty!";
+  } else if (!input.contains("@")) {
+    retVal = "Enter a valid email address!";
+  }
+  return retVal;
+}
+
+String validNewPassword(String input) {
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Password cannot be empty!";
+  } else if (input.length < 8) {
+    retVal = "Password must be greater than 8 characters!";
+  }
+  return retVal;
+}
+
+String validPassword(String input) {
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Password cannot be empty!";
+  }
+  return retVal;
+}
+
+String validUsername(String input) {
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Username cannot be empty!";
+  }
+  return retVal;
+}

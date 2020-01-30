@@ -37,11 +37,9 @@ public class UsersPostHandler implements
 
               String action = (String) jsonMap.get("action");
 
-              if (action.equals("newUser")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER.addNewUser(payloadJsonMap);
-              } else if (action.equals("updateUserChoiceRatings")) {
+              if (action.equals("updateUserChoiceRatings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER
-                    .updateUserChoiceRatings(payloadJsonMap);
+                    .updateUserChoiceRatings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("getUserRatings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER
                     .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
@@ -50,6 +48,9 @@ public class UsersPostHandler implements
                     .updateUserAppSettings(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("getUserAppSettings")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER.getUserAppSettings(payloadJsonMap);
+              } else if (action.equals("getUserData")) {
+                resultStatus = DatabaseManagers.USERS_MANAGER
+                    .getUserData(payloadJsonMap, metrics, lambdaLogger);
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }

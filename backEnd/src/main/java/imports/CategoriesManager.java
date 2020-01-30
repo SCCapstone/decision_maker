@@ -36,7 +36,11 @@ public class CategoriesManager extends DatabaseAccessManager {
     super("categories", "CategoryId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus addNewCategory(Map<String, Object> jsonMap) {
+  public ResultStatus addNewCategory(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "CategoriesManager.addNewCategory";
+    metrics.commonSetup(classMethod);
+
     //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
     if (
@@ -76,7 +80,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
         ResultStatus updatedUsersTableResult =
-            DatabaseManagers.USERS_MANAGER.updateUserChoiceRatings(insertNewCatForOwner);
+            DatabaseManagers.USERS_MANAGER.updateUserChoiceRatings(insertNewCatForOwner, metrics,
+                lambdaLogger);
 
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category created successfully!");
@@ -85,19 +90,25 @@ public class CategoriesManager extends DatabaseAccessManager {
               + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request";
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Error: Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus editCategory(Map<String, Object> jsonMap) {
+  public ResultStatus editCategory(Map<String, Object> jsonMap, Metrics metrics,
+      LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
+    String classMethod = "CategoriesManager.editCategory";
+    metrics.commonSetup(classMethod);
+
     //validate data, log results as there should be some validation already on the front end
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
@@ -149,7 +160,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
         ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(insertNewCatForOwner);
+            .updateUserChoiceRatings(insertNewCatForOwner, metrics, lambdaLogger);
 
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category saved successfully!");
@@ -159,14 +170,17 @@ public class CategoriesManager extends DatabaseAccessManager {
                   + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Error: Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

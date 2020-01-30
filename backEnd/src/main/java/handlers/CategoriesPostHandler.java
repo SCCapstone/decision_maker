@@ -38,9 +38,11 @@ public class CategoriesPostHandler implements
               String action = (String) jsonMap.get("action");
 
               if (action.equals("newCategory")) {
-                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap);
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap,
+                    metrics, lambdaLogger);
               } else if (action.equals("editCategory")) {
-                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap);
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap,
+                    metrics, lambdaLogger);
               } else if (action.equals("getCategories")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER
                     .getCategories(payloadJsonMap, metrics, lambdaLogger);
