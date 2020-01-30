@@ -7,7 +7,7 @@ import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/log_out.dart';
-import 'package:frontEnd/main.dart';
+import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 
 class GroupsHome extends StatefulWidget {
@@ -32,10 +32,14 @@ class _GroupsHomeState extends State<GroupsHome> {
     widget.groupsFuture = GroupsManager.getGroups();
     searchBar.addListener(() {
       if (searchBar.text.isEmpty) {
-        searchInput = "";
-        displayedGroups = totalGroups;
+        setState(() {
+          searchInput = "";
+          displayedGroups = totalGroups;
+        });
       } else {
-        searchInput = searchBar.text;
+        setState(() {
+          searchInput = searchBar.text;
+        });
       }
     });
     super.initState();
@@ -89,16 +93,12 @@ class _GroupsHomeState extends State<GroupsHome> {
                 title: Text('Log out', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   logOutUser();
-                  Navigator.pop(context); // should close side bar
-                  Navigator.pop(context); // should go back to main
-                  Navigator.push(
+                  Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              MyApp())); // restart the app I think
-
-//                  Navigator.of(context).pushReplacement(new MaterialPageRoute(
-//                      builder: (context) => SignInPage()));
+                        builder: (BuildContext context) => SignInPage(),
+                      ),
+                      ModalRoute.withName('/'));
                 })
           ],
         ),

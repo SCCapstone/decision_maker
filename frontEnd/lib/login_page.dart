@@ -190,8 +190,6 @@ class _SignInState extends State<SignInPage> {
     try {
       session = await cognitoUser.authenticateUser(authDetails);
 
-      print(session.getIdToken().jwtToken);
-
       storeUserTokens(session.getAccessToken().jwtToken,
           session.getRefreshToken().getToken(), session.getIdToken().jwtToken);
 
@@ -214,7 +212,7 @@ class _SignInState extends State<SignInPage> {
       print(e);
     }
 
-    Navigator.pop(context); // dismiss loading dialog
+    Navigator.of(context, rootNavigator: true).pop('dialog'); // dismiss loading dialog
     mutexLock = false;
 
     if (signedIn) {
@@ -242,7 +240,7 @@ class _SignInState extends State<SignInPage> {
       print(e);
     }
 
-    Navigator.pop(context); // dismiss loading dialog
+    Navigator.of(context, rootNavigator: true).pop('dialog'); // dismiss loading dialog
     mutexLock = false;
 
     if (data != null) {
