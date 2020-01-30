@@ -2,6 +2,7 @@ package utilities;
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class Metrics {
@@ -14,21 +15,26 @@ public class Metrics {
 
   private static final String METRIC_MARKER = "METRIC";
 
-  private String functionName;
+  private final LinkedList<String> functionNames;
 
   private final String requestId;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
 
   public Metrics(String requestId) {
+    this.functionNames = new LinkedList<>();
+
     this.requestId = requestId;
-    this.functionName = "";
     this.countMetrics = new HashMap<>();
     this.timeMetrics = new HashMap<>();
   }
 
-  public void setFunctionName(String functionName) {
-    this.functionName = functionName;
+  public void setFunctionName(final String functionName) {
+    this.functionNames.push(functionName);
+  }
+
+  public void removeFunctionName() {
+    this.functionNames.pop();
   }
 
   public String getRequestId() {
@@ -44,11 +50,12 @@ public class Metrics {
   public void commonClose(boolean success) {
     this.addBooleanMetric(success);
     this.finalizeTimeMetric(Metrics.TIME);
+    this.removeFunctionName();
   }
 
   private void ensureFunctionKeyExists(Map input) {
-    if (!input.containsKey(this.functionName)) {
-      input.put(this.functionName, new HashMap<>());
+    if (!input.containsKey(this.functionNames.peek())) {
+      input.put(this.functionNames.peek(), new HashMap<>());
     }
   }
 
@@ -64,27 +71,27 @@ public class Metrics {
   public void addIntegerMetric(String metricName, Integer value) {
     this.ensureFunctionKeyExists(this.countMetrics);
 
-    if (this.countMetrics.get(this.functionName).containsKey(metricName)) {
-      this.countMetrics.get(this.functionName).replace(metricName, value);
+    if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.countMetrics.get(this.functionNames.peek()).replace(metricName, value);
     } else {
-      this.countMetrics.get(this.functionName).put(metricName, value);
+      this.countMetrics.get(this.functionNames.peek()).put(metricName, value);
     }
   }
 
   public void addIntegerMetric(String metricName) {
     this.ensureFunctionKeyExists(this.countMetrics);
 
-    if (!this.countMetrics.get(this.functionName).containsKey(metricName)) {
-      this.countMetrics.get(this.functionName).put(metricName, 0);
+    if (!this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.countMetrics.get(this.functionNames.peek()).put(metricName, 0);
     }
   }
 
   public void incrementMetric(String metricName) {
     this.ensureFunctionKeyExists(this.countMetrics);
 
-    if (this.countMetrics.get(this.functionName).containsKey(metricName)) {
-      this.countMetrics.get(this.functionName)
-          .replace(metricName, this.countMetrics.get(this.functionName).get(metricName) + 1);
+    if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.countMetrics.get(this.functionNames.peek())
+          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) + 1);
     } else {
       this.addIntegerMetric(metricName, 1); // it's not there -> implies it was 0
     }
@@ -93,26 +100,26 @@ public class Metrics {
   public void decrementMetric(String metricName) {
     this.ensureFunctionKeyExists(this.countMetrics);
 
-    if (this.countMetrics.get(this.functionName).containsKey(metricName)) {
-      this.countMetrics.get(this.functionName)
-          .replace(metricName, this.countMetrics.get(this.functionName).get(metricName) - 1);
+    if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.countMetrics.get(this.functionNames.peek())
+          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) - 1);
     }
   }
 
   public void initTimeMetric(String metricName) {
     this.ensureFunctionKeyExists(this.timeMetrics);
 
-    if (!this.timeMetrics.get(this.functionName).containsKey(metricName)) {
-      this.timeMetrics.get(this.functionName).put(metricName, System.currentTimeMillis());
+    if (!this.timeMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.timeMetrics.get(this.functionNames.peek()).put(metricName, System.currentTimeMillis());
     }
   }
 
   public void finalizeTimeMetric(String metricName) {
     this.ensureFunctionKeyExists(this.timeMetrics);
 
-    if (this.timeMetrics.get(this.functionName).containsKey(metricName)) {
-      this.timeMetrics.get(this.functionName)
-          .replace(metricName, System.currentTimeMillis() - this.timeMetrics.get(this.functionName).get(metricName));
+    if (this.timeMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
+      this.timeMetrics.get(this.functionNames.peek())
+          .replace(metricName, System.currentTimeMillis() - this.timeMetrics.get(this.functionNames.peek()).get(metricName));
     }
   }
 

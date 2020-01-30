@@ -1,10 +1,12 @@
 import 'package:frontEnd/imports/users_manager.dart';
 
+import 'app_settings.dart';
+
 class User {
   final String username;
   final String firstName;
   final String lastName;
-  final Map<String, dynamic> appSettings;
+  final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> categories;
 
@@ -23,7 +25,7 @@ class User {
         username: json[UsersManager.USERNAME],
         firstName: json[UsersManager.FIRST_NAME],
         lastName: json[UsersManager.LAST_NAME],
-        appSettings: json[UsersManager.APP_SETTINGS],
+        appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
         categories: json[UsersManager.CATEGORIES]);
   }
