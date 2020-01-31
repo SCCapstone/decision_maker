@@ -73,7 +73,7 @@ The backend of our application running in the AWS cloud requires deployment.
 
 ##### 5.2.2 Running the Tests
 1. cd into the frontEnd directory.
-2. to run the tests: from the frontEnd directory run this command 'flutter drive --target=test_driver/app.dart'
+2. To run the tests: from the frontEnd directory run this command 'flutter drive --target=test_driver/app.dart'
 
 ##### 5.1.3 Location of These Tests
 * Our front end behavioral tests are located at frontEnd/test_driver/app_test.dart
