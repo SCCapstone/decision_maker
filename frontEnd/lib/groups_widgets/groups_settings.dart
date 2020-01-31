@@ -57,11 +57,13 @@ class _GroupSettingsState extends State<GroupSettings> {
     users = Globals.currentGroup.members;
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
+    pollDuration = Globals.currentGroup.defaultPollDuration;
+    pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
+
     groupNameController.text = Globals.currentGroup.groupName;
-    pollPassController.text =
-        Globals.currentGroup.defaultPollPassPercent.toString();
-    pollDurationController.text =
-        Globals.currentGroup.defaultPollDuration.toString();
+    pollPassController.text = pollPassPercent.toString();
+    pollDurationController.text = pollDuration.toString();
+
     categoriesTotalFuture = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
@@ -205,7 +207,6 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 } catch (e) {
                                   autoValidate = true;
                                 }
-                                // the moment the user starts making changes, display the save button
                               },
                               onSaved: (String arg) {
                                 pollPassPercent = int.parse(arg);
@@ -277,6 +278,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName) {
       setState(() {
+        print(Globals.currentGroup.groupName);
         editing = true;
       });
     } else {
