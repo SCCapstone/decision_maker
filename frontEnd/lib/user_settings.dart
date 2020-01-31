@@ -253,27 +253,12 @@ class _UserSettingsState extends State<UserSettings> {
     if (form.validate()) {
       form.save();
       setState(() {
-        if (Globals.user.appSettings.groupSort != _groupSort) {
-          Globals.user.appSettings.groupSort = _groupSort;
-          UsersManager.updateUserAppSettings(
-              UsersManager.APP_SETTINGS_GROUP_SORT, _groupSort, context);
-        }
-        if (Globals.user.appSettings.muted != _muted) {
-          Globals.user.appSettings.muted = _muted;
-          UsersManager.updateUserAppSettings(UsersManager.APP_SETTINGS_MUTED,
-              Globals.boolToInt(_muted), context);
-        }
-        if (Globals.user.appSettings.darkTheme != _darkTheme) {
-          Globals.user.appSettings.darkTheme = _darkTheme;
-          UsersManager.updateUserAppSettings(
-              UsersManager.APP_SETTINGS_DARK_THEME,
-              Globals.boolToInt(_darkTheme),
-              context);
-        }
-        if (Globals.user.firstName != name) {
-          // TODO change the users name properly (https://github.com/SCCapstone/decision_maker/issues/232)
-          Globals.user.firstName = name;
-        }
+        Globals.user.appSettings.groupSort = _groupSort;
+        Globals.user.appSettings.muted = _muted;
+        Globals.user.appSettings.darkTheme = _darkTheme;
+        Globals.user.firstName = name;
+        UsersManager.updateUserAppSettings(name, Globals.boolToInt(_darkTheme),
+            Globals.boolToInt(_muted), _groupSort, context);
         // reset everything and reflect changes made
         editing = false;
         autoValidate = false;
