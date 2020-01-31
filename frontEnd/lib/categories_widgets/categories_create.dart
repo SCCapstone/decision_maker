@@ -20,10 +20,10 @@ class _CreateCategoryState extends State<CreateCategory> {
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
-  final Map<int, TextEditingController> labelControllers =
-      new LinkedHashMap<int, TextEditingController>();
-  final Map<int, TextEditingController> ratesControllers =
-      new LinkedHashMap<int, TextEditingController>();
+  final Map<String, TextEditingController> labelControllers =
+      new LinkedHashMap<String, TextEditingController>();
+  final Map<String, TextEditingController> ratesControllers =
+      new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
 
   int nextChoiceValue;
@@ -46,14 +46,14 @@ class _CreateCategoryState extends State<CreateCategory> {
     this.nextChoiceValue = 2;
 
     TextEditingController initLabelController = new TextEditingController();
-    this.labelControllers.putIfAbsent(1, () => initLabelController);
+    this.labelControllers.putIfAbsent("1", () => initLabelController);
 
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = this.defaultRate.toString();
-    this.ratesControllers.putIfAbsent(1, () => initRatingController);
+    this.ratesControllers.putIfAbsent("1", () => initRatingController);
 
     ChoiceRow choice = new ChoiceRow(
-        1, null, true, initLabelController, initRatingController,
+        "1", null, true, initLabelController, initRatingController,
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -104,11 +104,11 @@ class _CreateCategoryState extends State<CreateCategory> {
                             new LinkedHashMap<String, String>();
                         bool duplicates = false;
                         Set names = new Set();
-                        for (int i in this.labelControllers.keys) {
-                          labelsToSave.putIfAbsent(i.toString(),
-                              () => this.labelControllers[i].text);
-                          ratesToSave.putIfAbsent(i.toString(),
-                              () => this.ratesControllers[i].text);
+                        for (String i in this.labelControllers.keys) {
+                          labelsToSave.putIfAbsent(
+                              i, () => this.labelControllers[i].text);
+                          ratesToSave.putIfAbsent(
+                              i, () => this.ratesControllers[i].text);
                           if (!names.add(this.labelControllers[i].text)) {
                             duplicates = true;
                           }
@@ -147,15 +147,15 @@ class _CreateCategoryState extends State<CreateCategory> {
               TextEditingController labelController =
                   new TextEditingController();
               labelControllers.putIfAbsent(
-                  this.nextChoiceValue, () => labelController);
+                  this.nextChoiceValue.toString(), () => labelController);
               TextEditingController rateController =
                   new TextEditingController();
               rateController.text = defaultRate.toString();
               ratesControllers.putIfAbsent(
-                  this.nextChoiceValue, () => rateController);
+                  this.nextChoiceValue.toString(), () => rateController);
 
-              ChoiceRow choice = new ChoiceRow(this.nextChoiceValue, null, true,
-                  labelController, rateController,
+              ChoiceRow choice = new ChoiceRow(this.nextChoiceValue.toString(),
+                  null, true, labelController, rateController,
                   deleteChoice: (choice) => deleteChoice(choice));
               this.choiceRows.add(choice);
               this.nextChoiceValue++;

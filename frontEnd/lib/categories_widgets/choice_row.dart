@@ -3,15 +3,15 @@ import 'package:frontEnd/utilities/validator.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
-  final int choiceNumber;
+  final String choiceNumber;
   final String choiceName;
   final bool isOwner;
   final TextEditingController labelController;
   final TextEditingController rateController;
   final Function deleteChoice;
 
-  ChoiceRow(this.choiceNumber, this.choiceName, this.isOwner, this.labelController,
-      this.rateController,
+  ChoiceRow(this.choiceNumber, this.choiceName, this.isOwner,
+      this.labelController, this.rateController,
       {this.deleteChoice});
 
   @override

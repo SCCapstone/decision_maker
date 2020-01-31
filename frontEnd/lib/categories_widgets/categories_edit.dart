@@ -66,8 +66,8 @@ class _EditCategoryState extends State<EditCategory> {
       ratesControllers.putIfAbsent(choiceId, () => rateController);
 
       ChoiceRow choice = new ChoiceRow(
-          int.parse(choiceId),
-          widget.category.choices[choiceId.toString()],
+          choiceId,
+          widget.category.choices[choiceId],
           this.isCategoryOwner,
           labelController,
           rateController,
@@ -164,10 +164,10 @@ class _EditCategoryState extends State<EditCategory> {
                         bool duplicates = false;
                         Set names = new Set();
                         for (String i in this.labelControllers.keys) {
-                          labelsToSave.putIfAbsent(i.toString(),
-                              () => this.labelControllers[i].text);
-                          ratesToSave.putIfAbsent(i.toString(),
-                              () => this.ratesControllers[i].text);
+                          labelsToSave.putIfAbsent(
+                              i, () => this.labelControllers[i].text);
+                          ratesToSave.putIfAbsent(
+                              i, () => this.ratesControllers[i].text);
                           if (!names.add(this.labelControllers[i].text)) {
                             duplicates = true;
                           }
@@ -217,8 +217,8 @@ class _EditCategoryState extends State<EditCategory> {
                 ratesControllers.putIfAbsent(
                     this.nextChoiceNum.toString(), () => rateController);
 
-                ChoiceRow choice = new ChoiceRow(this.nextChoiceNum, null,
-                    this.isCategoryOwner, labelController, rateController,
+                ChoiceRow choice = new ChoiceRow(this.nextChoiceNum.toString(),
+                    null, this.isCategoryOwner, labelController, rateController,
                     deleteChoice: (choice) => deleteChoice(choice));
                 this.choiceRows.add(choice);
                 this.nextChoiceNum++;
