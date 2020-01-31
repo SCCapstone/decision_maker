@@ -15,8 +15,10 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableMap;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.Metrics;
+import utilities.RequestFields;
 import utilities.ResultStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +39,62 @@ public class GroupsManagerTest {
   private final String goodCategoryId = "CategoryId1";
 
   private final ArrayList<String> goodGroupIds = new ArrayList<>();
+
+  private final ImmutableMap<String, Object> validNewEventGoodInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "ActiveUser")
+      .put(GroupsManager.EVENT_NAME, "EventName")
+      .put(GroupsManager.CATEGORY_ID, "CategoryId")
+      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
+      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
+      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+      .put(GroupsManager.TYPE, 1)
+      .put(GroupsManager.POLL_DURATION, 50)
+      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
+      .put(GroupsManager.POLL_PASS_PERCENT, 50)
+      .put(GroupsManager.GROUP_ID, "GroupId")
+      .build();
+
+  private final ImmutableMap<String, Object> validNewEventEmptyString = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "")
+      .put(GroupsManager.EVENT_NAME, "EventName")
+      .put(GroupsManager.CATEGORY_ID, "")
+      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
+      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
+      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+      .put(GroupsManager.TYPE, 1)
+      .put(GroupsManager.POLL_DURATION, 50)
+      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
+      .put(GroupsManager.POLL_PASS_PERCENT, 50)
+      .put(GroupsManager.GROUP_ID, "")
+      .build();
+
+  private final ImmutableMap<String, Object> validNewEventInvalidDuration = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "ActiveUser")
+      .put(GroupsManager.EVENT_NAME, "EventName")
+      .put(GroupsManager.CATEGORY_ID, "CategoryId")
+      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
+      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
+      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+      .put(GroupsManager.TYPE, 1)
+      .put(GroupsManager.POLL_DURATION, -1)
+      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
+      .put(GroupsManager.POLL_PASS_PERCENT, 50)
+      .put(GroupsManager.GROUP_ID, "GroupId")
+      .build();
+
+  private final ImmutableMap<String, Object> validNewEventInvalidPercentage = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "ActiveUser")
+      .put(GroupsManager.EVENT_NAME, "EventName")
+      .put(GroupsManager.CATEGORY_ID, "CategoryId")
+      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
+      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
+      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+      .put(GroupsManager.TYPE, 1)
+      .put(GroupsManager.POLL_DURATION, 1)
+      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
+      .put(GroupsManager.POLL_PASS_PERCENT, 500)
+      .put(GroupsManager.GROUP_ID, "GroupId")
+      .build();
 
   @Mock
   private Table table;
@@ -98,37 +157,70 @@ public class GroupsManagerTest {
   ////////////////////////////region
 
   /////////////////////////////////endregion
-  // makeEventInputIsValid tests //
+  // validEventInput tests //
   /////////////////////////////////region
   @Test
-  public void makeEventInputIsValid_validInput_successfulResult() {
+  public void validEventInput_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
-        .when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+        .getItem(any(GetItemSpec.class));
 
-    List<String> categoryIds = this.groupsManager
-        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+    ResultStatus result = this.groupsManager
+        .newEvent(this.validNewEventGoodInput);
 
-    assertEquals(categoryIds.size(), 2);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    assertTrue(result.success);
+    verify(this.dynamoDB, times(2)).getTable(
+        any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
   }
 
-  public void makeEventInputIsValid_emptyInput_failureResult() {
+  @Test
+  public void validEventInput_emptyString_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
-        .when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+        .getItem(any(GetItemSpec.class));
 
-    List<String> categoryIds = this.groupsManager
-        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+    ResultStatus result = this.groupsManager
+        .newEvent(this.validNewEventEmptyString);
 
-    assertEquals(categoryIds.size(), 2);
+    assertFalse(result.success);
     verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+        any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void validEventInput_invalidPollDuration_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+        .getItem(any(GetItemSpec.class));
+
+    ResultStatus result = this.groupsManager
+        .newEvent(this.validNewEventInvalidDuration);
+
+    assertFalse(result.success);
+    verify(this.dynamoDB, times(1)).getTable(
+        any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+  }
+
+  @Test
+  public void validEventInput_invalidPercentage_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+        .getItem(any(GetItemSpec.class));
+
+    ResultStatus result = this.groupsManager
+        .newEvent(this.validNewEventInvalidPercentage);
+
+    assertFalse(result.success);
+    verify(this.dynamoDB, times(1)).getTable(
+        any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
   }
 
   ///////////////////////////////////endregion

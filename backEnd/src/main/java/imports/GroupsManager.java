@@ -249,7 +249,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
         final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
-
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
 
@@ -270,7 +269,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.makeEventInputIsValid(eventId, "Not empty", groupId, categoryId, pollDuration,
+        if (this.validEventInput(eventId, "Not empty", groupId, categoryId, pollDuration,
             pollPassPercent)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
@@ -440,11 +439,10 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
-  private boolean makeEventInputIsValid(final String eventId, final String activeUser,
+  private boolean validEventInput(final String eventId, final String activeUser,
       final String groupId, final String categoryId, final Integer pollDuration,
       final Integer pollPassPercent) {
     boolean isValid = true;
-
     if (StringUtils.isNullOrEmpty(eventId) || StringUtils.isNullOrEmpty(activeUser) ||
         StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
