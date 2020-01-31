@@ -57,8 +57,9 @@ public class CategoriesManager extends DatabaseAccessManager {
         Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
         Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
         Map<String, Object> groups = new HashMap<>();
-        int nextChoiceNo = choices.size();
         String owner = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        int nextChoiceNo = this.getNextChoiceNumber(choices);
 
         Item newCategory = new Item()
             .withPrimaryKey(CATEGORY_ID, nextCategoryIndex)
@@ -126,17 +127,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //TODO check to see if the choices match what are there and if not, user needs to be owner (https://github.com/SCCapstone/decision_maker/issues/107)
 
-        int nextChoiceNo = -1;
-
-        //get the max current choiceNo
-        for (String choiceNo : choices.keySet()) {
-          if (Integer.parseInt(choiceNo) > nextChoiceNo) {
-            nextChoiceNo = Integer.parseInt(choiceNo);
-          }
-        }
-
-        //move the next choice to be the next value up from the max
-        nextChoiceNo++;
+        int nextChoiceNo = this.getNextChoiceNumber(choices);
 
         String updateExpression =
             "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
@@ -182,6 +173,20 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private int getNextChoiceNumber(final Map<String, Object> choices) {
+    int nextChoiceNo = -1;
+
+    //get the max current choiceNo
+    for (String choiceNo : choices.keySet()) {
+      if (Integer.parseInt(choiceNo) > nextChoiceNo) {
+        nextChoiceNo = Integer.parseInt(choiceNo);
+      }
+    }
+
+    //move the next choice to be the next value up from the max
+    return nextChoiceNo + 1;
   }
 
   public ResultStatus getCategories(final Map<String, Object> jsonMap, final Metrics metrics,
