@@ -15,6 +15,7 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,47 +55,20 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
-  private final ImmutableMap<String, Object> validNewEventEmptyString = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "")
-      .put(GroupsManager.EVENT_NAME, "EventName")
-      .put(GroupsManager.CATEGORY_ID, "")
-      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
-      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
-      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-      .put(GroupsManager.TYPE, 1)
-      .put(GroupsManager.POLL_DURATION, 50)
-      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
-      .put(GroupsManager.POLL_PASS_PERCENT, 50)
-      .put(GroupsManager.GROUP_ID, "")
-      .build();
-
-  private final ImmutableMap<String, Object> validNewEventInvalidDuration = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "ActiveUser")
-      .put(GroupsManager.EVENT_NAME, "EventName")
-      .put(GroupsManager.CATEGORY_ID, "CategoryId")
-      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
-      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
-      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-      .put(GroupsManager.TYPE, 1)
-      .put(GroupsManager.POLL_DURATION, -1)
-      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
-      .put(GroupsManager.POLL_PASS_PERCENT, 50)
-      .put(GroupsManager.GROUP_ID, "GroupId")
-      .build();
-
-  private final ImmutableMap<String, Object> validNewEventInvalidPercentage = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "ActiveUser")
-      .put(GroupsManager.EVENT_NAME, "EventName")
-      .put(GroupsManager.CATEGORY_ID, "CategoryId")
-      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
-      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
-      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-      .put(GroupsManager.TYPE, 1)
-      .put(GroupsManager.POLL_DURATION, 1)
-      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
-      .put(GroupsManager.POLL_PASS_PERCENT, 500)
-      .put(GroupsManager.GROUP_ID, "GroupId")
-      .build();
+  private final Map<String, Object> validNewEventBadInput = Maps
+      .newHashMap(ImmutableMap.<String, Object>builder()
+          .put(RequestFields.ACTIVE_USER, "ActiveUser")
+          .put(GroupsManager.EVENT_NAME, "EventName")
+          .put(GroupsManager.CATEGORY_ID, "CategoryId")
+          .put(GroupsManager.CATEGORY_NAME, "CategoryName")
+          .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
+          .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+          .put(GroupsManager.TYPE, 1)
+          .put(GroupsManager.POLL_DURATION, 50)
+          .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
+          .put(GroupsManager.POLL_PASS_PERCENT, 50)
+          .put(GroupsManager.GROUP_ID, "GroupId")
+          .build());
 
   @Mock
   private Table table;
@@ -168,11 +142,7 @@ public class GroupsManagerTest {
 
     ResultStatus result = this.groupsManager
         .newEvent(this.validNewEventGoodInput);
-
     assertTrue(result.success);
-    verify(this.dynamoDB, times(2)).getTable(
-        any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
   }
 
   @Test
@@ -182,13 +152,17 @@ public class GroupsManagerTest {
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
+    this.validNewEventBadInput.put(GroupsManager.GROUP_ID, "");
+    this.validNewEventBadInput.put(GroupsManager.CATEGORY_ID, "");
     ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventEmptyString);
-
+        .newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+
+    this.validNewEventBadInput.put(GroupsManager.GROUP_ID, "GroupId");
+    this.validNewEventBadInput.put(GroupsManager.CATEGORY_ID, "");
+    result = this.groupsManager
+        .newEvent(this.validNewEventBadInput);
+    assertFalse(result.success);
   }
 
   @Test
@@ -198,13 +172,15 @@ public class GroupsManagerTest {
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
+    this.validNewEventBadInput.put(GroupsManager.POLL_DURATION, -1);
     ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventInvalidDuration);
-
+        .newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+
+    this.validNewEventBadInput.put(GroupsManager.POLL_DURATION, 1000000);
+    result = this.groupsManager
+        .newEvent(this.validNewEventBadInput);
+    assertFalse(result.success);
   }
 
   @Test
@@ -214,13 +190,15 @@ public class GroupsManagerTest {
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
+    this.validNewEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, -1);
     ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventInvalidPercentage);
-
+        .newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+
+    this.validNewEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, 1000000);
+    result = this.groupsManager
+        .newEvent(this.validNewEventBadInput);
+    assertFalse(result.success);
   }
 
   ///////////////////////////////////endregion
@@ -287,7 +265,6 @@ public class GroupsManagerTest {
   ////////////////////////////////////endregion
   // removeCategoryFromGroups tests //
   ////////////////////////////////////region
-
   @Test
   public void removeCategoryFromGroups_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -304,7 +281,7 @@ public class GroupsManagerTest {
   public void removeCategoryFromGroups_emptyGroupList_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(new ArrayList<String>(), this.goodCategoryId, this.metrics,
+        .removeCategoryFromGroups(new ArrayList<>(), this.goodCategoryId, this.metrics,
             this.lambdaLogger);
 
     assertTrue(result.success);
@@ -335,6 +312,5 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
-
   //endregion
 }

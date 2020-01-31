@@ -269,7 +269,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.validEventInput(eventId, "Not empty", groupId, categoryId, pollDuration,
+        if (this.validEventInput(groupId, categoryId, pollDuration,
             pollPassPercent)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
@@ -439,12 +439,11 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
-  private boolean validEventInput(final String eventId, final String activeUser,
+  private boolean validEventInput(
       final String groupId, final String categoryId, final Integer pollDuration,
       final Integer pollPassPercent) {
     boolean isValid = true;
-    if (StringUtils.isNullOrEmpty(eventId) || StringUtils.isNullOrEmpty(activeUser) ||
-        StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
+    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
     }
 
