@@ -31,7 +31,7 @@ class UsersManager {
     jsonRequestBody["action"] = "getUserData";
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
-    User ret = null;
+    User ret;
 
     if (response != "") {
       try {
@@ -70,9 +70,7 @@ class UsersManager {
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success) {
           showPopupMessage("Error updating user settings (1).", context);
         }
       } catch (e) {

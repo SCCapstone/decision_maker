@@ -4,8 +4,8 @@ import 'app_settings.dart';
 
 class User {
   final String username;
-  final String firstName;
-  final String lastName;
+  String firstName;
+  String lastName;
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> categories;

@@ -72,7 +72,6 @@ class _GroupsHomeState extends State<GroupsHome> {
                                 builder: (context) => UserSettings()));
                       },
                       child: CircleAvatar(
-                        //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
                         backgroundImage:
                             AssetImage('assets/images/placeholder.jpg'),
                       ),
@@ -82,7 +81,10 @@ class _GroupsHomeState extends State<GroupsHome> {
                       style: TextStyle(fontSize: 24, color: Colors.white),
                     ),
                     onTap: () {
-                      //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => UserSettings()));
                     },
                   ),
                 ),
@@ -192,9 +194,9 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Widget buildList(int sortVal) {
-    if (sortVal == 0) {
+    if (sortVal == Globals.dateSort) {
       displayedGroups = GroupsManager.sortByDate(displayedGroups);
-    } else if (sortVal == 1) {
+    } else if (sortVal == Globals.alphabeticalSort) {
       displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
     }
     if (searchInput.isNotEmpty) {

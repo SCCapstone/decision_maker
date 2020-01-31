@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/utilities/utilities.dart';
-import 'package:frontEnd/widgets/category_dropdown.dart';
-import 'package:frontEnd/widgets/users_dropdown.dart';
-
-import 'package:frontEnd/models/category.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -18,17 +11,17 @@ class UserSettings extends StatefulWidget {
 }
 
 class _UserSettingsState extends State<UserSettings> {
-  bool autoValidate = false;
-  bool validGroupIcon = true;
-  bool editing = false;
-  bool darkModeEnabled = false;
-  bool muted = false;
-  String userIcon;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final TextEditingController nickNameController = TextEditingController();
+  final TextEditingController userIconController = TextEditingController();
 
-  final List<Category> categoriesSelected = new List<Category>();
-  final formKey = GlobalKey<FormState>();
-  final nickNameController = TextEditingController();
-  final userIconController = TextEditingController();
+  bool autoValidate = false;
+  bool editing = false;
+  bool _darkTheme = false;
+  bool _muted = false;
+  String userIcon;
+  String name;
+  int _groupSort = 0;
 
   @override
   void dispose() {
@@ -38,7 +31,11 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void initState() {
-    nickNameController.text = Globals.username;
+    name = Globals.user.firstName + " " + Globals.user.lastName;
+    _darkTheme = Globals.user.appSettings.darkTheme;
+    _groupSort = Globals.user.appSettings.groupSort;
+    _muted = Globals.user.appSettings.muted;
+    nickNameController.text = name;
     super.initState();
   }
 
@@ -47,7 +44,7 @@ class _UserSettingsState extends State<UserSettings> {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text("User Settings"),
+          title: Text("My Settings"),
           actions: <Widget>[
             Visibility(
               visible: editing,
@@ -70,34 +67,38 @@ class _UserSettingsState extends State<UserSettings> {
                 children: <Widget>[
                   Column(
                     children: [
-                      TextFormField(
-                        controller: nickNameController,
-                        validator: validGroupName,
-                        onChanged: (String arg) {
-                          // the moment the user starts making changes, display the save button
-                          enableAutoValidation(
-                              !(arg == Globals.username));
-                        },
-                        onSaved: (String arg) {
-                        },
-                        style: TextStyle(
-                            fontSize:
-                            DefaultTextStyle.of(context).style.fontSize *
-                                0.8),
-                        decoration: InputDecoration(labelText: "Name"),
-                      ),
+                      Container(
+                          width: MediaQuery.of(context).size.width * .6,
+                          child: TextFormField(
+                            maxLength: 50,
+                            controller: nickNameController,
+                            validator: validName,
+                            onChanged: (String arg) {
+                              name = arg;
+                              enableAutoValidation();
+                            },
+                            onSaved: (String arg) {},
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.6),
+                            decoration: InputDecoration(
+                                labelText: "Name", counterText: ""),
+                          )),
                       Padding(
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .01),
                       ),
                       Container(
-                        width: MediaQuery.of(context).size.width * .5,
+                        width: MediaQuery.of(context).size.width * .6,
                         height: MediaQuery.of(context).size.height * .3,
                         alignment: Alignment.topRight,
                         decoration: BoxDecoration(
                             image: DecorationImage(
                                 fit: BoxFit.fitHeight,
-                                image: AssetImage('assets/images/placeholder.jpg'))),
+                                image: AssetImage(
+                                    'assets/images/placeholder.jpg'))),
                         child: Container(
                           decoration: BoxDecoration(
                               color: Colors.grey.withOpacity(0.7),
@@ -106,8 +107,7 @@ class _UserSettingsState extends State<UserSettings> {
                             icon: Icon(Icons.edit),
                             color: Colors.blueAccent,
                             onPressed: () {
-                              groupIconPopup(context, autoValidate,
-                                  userIconController, updateIcon);
+                              userIconPopup();
                             },
                           ),
                         ),
@@ -116,63 +116,106 @@ class _UserSettingsState extends State<UserSettings> {
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .004),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Text(
-                            "Sort",
+                      Container(
+                        width: MediaQuery.of(context).size.width * .7,
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Mute Notifcations",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Switch(
+                                  value: _muted,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      _muted = value;
+                                      enableAutoValidation();
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Dark Theme",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Switch(
+                                  value: _darkTheme,
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      _darkTheme = value;
+                                      enableAutoValidation();
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        // have to do this hack because the expansiontile title wouldn't line up
+                        width: MediaQuery.of(context).size.width * .78,
+                        child: ExpansionTile(
+                          title: Text(
+                            "Group Sort Method",
                             style: TextStyle(
                                 fontSize: DefaultTextStyle.of(context)
-                                    .style
-                                    .fontSize *
+                                        .style
+                                        .fontSize *
                                     0.4),
+                            textAlign: TextAlign.left,
                           ),
-                          Switch(
-                            value: true,
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Text(
-                            "Mute Notifcations",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                    .style
-                                    .fontSize *
-                                    0.4),
-                          ),
-                          Switch(
-                            value: true,
-                          )
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Text(
-                            "Dark Theme",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                    .style
-                                    .fontSize *
-                                    0.4),
-                          ),
-                          Switch(
-                            value: darkModeEnabled,
-                            onChanged: (bool value){
-                              setState(() {
-                                darkModeEnabled = value;
-                              });
-                            },
-                          )
-                        ],
-                      ),
+                          children: <Widget>[
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * .12,
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Radio(
+                                        value: Globals.alphabeticalSort,
+                                        groupValue: _groupSort,
+                                        onChanged: selectGroupSort,
+                                      ),
+                                      Text("Alphabetical")
+                                    ],
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Radio(
+                                        value: Globals.dateSort,
+                                        groupValue: _groupSort,
+                                        onChanged: selectGroupSort,
+                                      ),
+                                      Text("Date")
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ],
@@ -182,35 +225,55 @@ class _UserSettingsState extends State<UserSettings> {
         ]));
   }
 
-  void enableAutoValidation(bool val) {
+  void selectGroupSort(int val) {
     setState(() {
-      editing = val;
+      _groupSort = val;
+      enableAutoValidation();
     });
   }
 
-
-  void updateIcon(String iconUrl) {
-    setState(() {
-      userIcon = iconUrl;
-      userIconController.clear();
-      editing = true;
-      validGroupIcon = true;
-      autoValidate = true;
-      Navigator.of(context).pop();
-    });
+  void enableAutoValidation() {
+    // the moment the user makes changes to their previously saved settings, display the save button
+    if (Globals.user.appSettings.darkTheme != _darkTheme ||
+        Globals.user.appSettings.muted != _muted ||
+        Globals.user.firstName + " " + Globals.user.lastName != name ||
+        Globals.user.appSettings.groupSort != _groupSort) {
+      setState(() {
+        editing = true;
+      });
+    } else {
+      setState(() {
+        editing = false;
+      });
+    }
   }
 
   void validateInput() {
     final form = formKey.currentState;
-    if (form.validate() && validGroupIcon) {
-      // b/c url is entered in a popup dialog, can't share the same form so must use another flag
+    if (form.validate()) {
       form.save();
-      Map<String, String> categoriesMap = new Map<String, String>();
-      for (int i = 0; i < categoriesSelected.length; i++) {
-        categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
-                () => categoriesSelected[i].categoryName);
-      }
       setState(() {
+        if (Globals.user.appSettings.groupSort != _groupSort) {
+          Globals.user.appSettings.groupSort = _groupSort;
+          UsersManager.updateUserAppSettings(
+              UsersManager.APP_SETTINGS_GROUP_SORT, _groupSort, context);
+        }
+        if (Globals.user.appSettings.muted != _muted) {
+          Globals.user.appSettings.muted = _muted;
+          UsersManager.updateUserAppSettings(UsersManager.APP_SETTINGS_MUTED,
+              Globals.boolToInt(_muted), context);
+        }
+        if (Globals.user.appSettings.darkTheme != _darkTheme) {
+          Globals.user.appSettings.darkTheme = _darkTheme;
+          UsersManager.updateUserAppSettings(
+              UsersManager.APP_SETTINGS_DARK_THEME,
+              Globals.boolToInt(_darkTheme),
+              context);
+        }
+        if (Globals.user.firstName != name) {
+          // TODO change the users name properly (https://github.com/SCCapstone/decision_maker/issues/232)
+          Globals.user.firstName = name;
+        }
         // reset everything and reflect changes made
         editing = false;
         autoValidate = false;
@@ -218,5 +281,44 @@ class _UserSettingsState extends State<UserSettings> {
     } else {
       setState(() => autoValidate = true);
     }
+  }
+
+  void userIconPopup() {
+    // displays a popup for editing the user's icon's
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Edit User Icon url"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  userIconController.clear();
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("Submit"),
+                onPressed: () {
+                  userIcon = userIconController.text;
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                    controller: userIconController,
+                    validator: validGroupIcon,
+                    keyboardType: TextInputType.url,
+                    decoration: InputDecoration(
+                      labelText: "Enter a icon link",
+                    )),
+              ],
+            ),
+          );
+        });
   }
 }

@@ -71,7 +71,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text("$groupName Settings"),
+          title: Text("${Globals.currentGroup.groupName} Settings"),
           actions: <Widget>[
             Visibility(
               visible: editing,
@@ -98,9 +98,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                         controller: groupNameController,
                         validator: validGroupName,
                         onChanged: (String arg) {
-                          // the moment the user starts making changes, display the save button
-                          enableAutoValidation(
-                              !(arg == Globals.currentGroup.groupName));
+                          groupName = arg;
+                          enableAutoValidation();
                         },
                         onSaved: (String arg) {
                           groupName = arg;
@@ -161,12 +160,10 @@ class _GroupSettingsState extends State<GroupSettings> {
                               controller: pollDurationController,
                               onChanged: (String arg) {
                                 try {
-                                  int num = int.parse(arg);
-                                  // the moment the user starts making changes, display the save button
-                                  enableAutoValidation(num !=
-                                      Globals.currentGroup.defaultPollDuration);
+                                  pollDuration = int.parse(arg);
+                                  enableAutoValidation();
                                 } catch (e) {
-                                  enableAutoValidation(true);
+                                  autoValidate = true;
                                 }
                               },
                               onSaved: (String arg) {
@@ -203,12 +200,10 @@ class _GroupSettingsState extends State<GroupSettings> {
                               validator: validPassPercentage,
                               onChanged: (String arg) {
                                 try {
-                                  int num = int.parse(arg);
-                                  enableAutoValidation(num !=
-                                      Globals
-                                          .currentGroup.defaultPollPassPercent);
+                                  pollPassPercent = int.parse(arg);
+                                  enableAutoValidation();
                                 } catch (e) {
-                                  enableAutoValidation(true);
+                                  autoValidate = true;
                                 }
                                 // the moment the user starts making changes, display the save button
                               },
@@ -276,10 +271,19 @@ class _GroupSettingsState extends State<GroupSettings> {
         await GroupsManager.deleteGroup(Globals.currentGroup.groupId, context);
   }
 
-  void enableAutoValidation(bool val) {
-    setState(() {
-      editing = val;
-    });
+  void enableAutoValidation() {
+    // the moment the user makes changes to their previously saved settings, display the save button
+    if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
+        pollDuration != Globals.currentGroup.defaultPollDuration ||
+        groupName != Globals.currentGroup.groupName) {
+      setState(() {
+        editing = true;
+      });
+    } else {
+      setState(() {
+        editing = false;
+      });
+    }
   }
 
   void addUser(String username) {
