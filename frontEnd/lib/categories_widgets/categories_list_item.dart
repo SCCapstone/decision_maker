@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_edit.dart';
 import 'package:frontEnd/models/category.dart';
-import 'categories_create_or_edit.dart';
 
 class CategoriesListItem extends StatelessWidget {
   final Category category;
