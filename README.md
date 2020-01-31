@@ -69,13 +69,14 @@ The backend of our application running in the AWS cloud requires deployment.
 ### 5.2 Behavioral Testing on the Front End
 
 ##### 5.2.1 Dependencies
-* 
+* These tests should be run using flutter version v1.9.1+hotfix.5
 
 ##### 5.2.2 Running the Tests
 1. cd into the frontEnd directory.
+2. to run the tests: from the frontEnd directory run this command 'flutter drive --target=test_driver/app.dart'
 
 ##### 5.1.3 Location of These Tests
-* 
+* Our front end behavioral tests are located at frontEnd/test_driver/app_test.dart
 
 ## 6 Authors
 * John Andrews - jha2@email.sc.edu
