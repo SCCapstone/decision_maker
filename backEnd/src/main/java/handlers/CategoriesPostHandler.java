@@ -49,6 +49,8 @@ public class CategoriesPostHandler implements
               } else if (action.equals("deleteCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER
                     .deleteCategory(payloadJsonMap, metrics, lambdaLogger);
+              } else if (action.equals("warmingEndpoint")) {
+                resultStatus = new ResultStatus(true, "Warming categories endpoint.");
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }

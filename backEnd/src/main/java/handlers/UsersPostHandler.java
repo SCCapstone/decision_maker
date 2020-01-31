@@ -51,6 +51,8 @@ public class UsersPostHandler implements
               } else if (action.equals("getUserData")) {
                 resultStatus = DatabaseManagers.USERS_MANAGER
                     .getUserData(payloadJsonMap, metrics, lambdaLogger);
+              } else if (action.equals("warmingEndpoint")) {
+                resultStatus = new ResultStatus(true, "Warming users endpoint.");
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }

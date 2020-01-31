@@ -48,6 +48,8 @@ public class GroupsPostHandler implements
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
+              } else if (action.equals("warmingEndpoint")) {
+                resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }
