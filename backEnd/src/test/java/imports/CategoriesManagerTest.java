@@ -376,11 +376,13 @@ public class CategoriesManagerTest {
         .withString(CategoriesManager.OWNER, "ActiveUser")).when(this.table)
         .getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.deleteCategoryGoodInput);
+    ResultStatus resultStatus = this.categoriesManager
+        .deleteCategory(this.deleteCategoryGoodInput, metrics, lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(1))
-        .removeCategoryFromGroups(any(List.class), any(String.class));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class),
+            any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
@@ -394,11 +396,13 @@ public class CategoriesManagerTest {
         .withString(CategoriesManager.OWNER, "ActiveUser"))
         .when(this.table).getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.deleteCategoryGoodInput);
+    ResultStatus resultStatus = this.categoriesManager
+        .deleteCategory(this.deleteCategoryGoodInput, metrics, lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class),
+            any(LambdaLogger.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
@@ -411,11 +415,13 @@ public class CategoriesManagerTest {
     doReturn(new Item().withString(CategoriesManager.OWNER, "BadUser"))
         .when(this.table).getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.editCategoryGoodInput);
+    ResultStatus resultStatus = this.categoriesManager
+        .deleteCategory(this.editCategoryGoodInput, metrics, lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class),
+            any(LambdaLogger.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -425,22 +431,25 @@ public class CategoriesManagerTest {
   public void deleteCategory_activeUserIsNotOwner_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
-    ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.editCategoryGoodInput);
+    ResultStatus resultStatus = this.categoriesManager
+        .deleteCategory(this.editCategoryGoodInput, metrics, lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class),
+            any(LambdaLogger.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
   }
 
   @Test
   public void deleteCategory_missingKey_failureResult() {
-    ResultStatus resultStatus = this.categoriesManager.deleteCategory(this.badInput);
+    ResultStatus resultStatus = this.categoriesManager
+        .deleteCategory(this.badInput, metrics, lambdaLogger);
     assertFalse(resultStatus.success);
 
     this.badInput.put(CategoriesManager.CATEGORY_ID, "testId");
-    resultStatus = this.categoriesManager.deleteCategory(this.badInput);
+    resultStatus = this.categoriesManager.deleteCategory(this.badInput, metrics, lambdaLogger);
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0))

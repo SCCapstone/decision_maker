@@ -47,7 +47,8 @@ public class CategoriesPostHandler implements
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER
                     .getCategories(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("deleteCategory")) {
-                resultStatus = DatabaseManagers.CATEGORIES_MANAGER.deleteCategory(payloadJsonMap);
+                resultStatus = DatabaseManagers.CATEGORIES_MANAGER
+                    .deleteCategory(payloadJsonMap, metrics, lambdaLogger);
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }

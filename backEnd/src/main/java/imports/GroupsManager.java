@@ -607,7 +607,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
+  public ResultStatus removeCategoryFromGroups(List<String> groupIds, String categoryId,
+      Metrics metrics,
+      LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.removeCategoryFromGroups";
+    ResultStatus resultStatus = new ResultStatus();
     try {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
@@ -620,8 +624,14 @@ public class GroupsManager extends DatabaseAccessManager {
             .withUpdateExpression(updateExpression);
         this.updateItem(updateItemSpec);
       }
+      resultStatus.success = true;
     } catch (Exception e) {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(
+          new ErrorDescriptor<>(categoryId, classMethod, metrics.getRequestId(), e).toString());
+      resultStatus.resultMessage = "Error: Unable to parse request.";
     }
+    metrics.commonClose(resultStatus.success);
+
+    return resultStatus;
   }
 }
