@@ -22,10 +22,10 @@ class _EditCategoryState extends State<EditCategory> {
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
-  final Map<int, TextEditingController> labelControllers =
-      new LinkedHashMap<int, TextEditingController>();
-  final Map<int, TextEditingController> ratesControllers =
-      new LinkedHashMap<int, TextEditingController>();
+  final Map<String, TextEditingController> labelControllers =
+      new LinkedHashMap<String, TextEditingController>();
+  final Map<String, TextEditingController> ratesControllers =
+      new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   Future<Map<String, dynamic>> ratingsFromDb;
 
@@ -54,16 +54,16 @@ class _EditCategoryState extends State<EditCategory> {
     this.nextChoiceNum = widget.category.nextChoiceNum;
 
     this.ratingsFromDb =
-        UsersManager.getUserRatings((widget.category.categoryId), context);
+        UsersManager.getUserRatings(widget.category.categoryId, context);
 
     for (String choiceId in widget.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = widget.category.choices[choiceId];
-      labelControllers.putIfAbsent(int.parse(choiceId), () => labelController);
+      labelControllers.putIfAbsent(choiceId, () => labelController);
 
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
-      ratesControllers.putIfAbsent(int.parse(choiceId), () => rateController);
+      ratesControllers.putIfAbsent(choiceId, () => rateController);
 
       ChoiceRow choice = new ChoiceRow(
           int.parse(choiceId),
@@ -122,7 +122,7 @@ class _EditCategoryState extends State<EditCategory> {
                                 Map<String, dynamic> userRatings =
                                     snapshot.data;
                                 //if the mapping exists in the user's table, override the default
-                                for (int choiceId
+                                for (String choiceId
                                     in this.labelControllers.keys) {
                                   if (userRatings
                                       .containsKey(choiceId.toString())) {
@@ -161,25 +161,24 @@ class _EditCategoryState extends State<EditCategory> {
                             new LinkedHashMap<String, String>();
                         Map<String, String> ratesToSave =
                             new LinkedHashMap<String, String>();
-                        for (int i in this.labelControllers.keys) {
+                        bool duplicates = false;
+                        Set names = new Set();
+                        for (String i in this.labelControllers.keys) {
                           labelsToSave.putIfAbsent(i.toString(),
                               () => this.labelControllers[i].text);
                           ratesToSave.putIfAbsent(i.toString(),
                               () => this.ratesControllers[i].text);
+                          if (!names.add(this.labelControllers[i].text)) {
+                            duplicates = true;
+                          }
                         }
-                        List<String> allNames = new List<String>();
-                        for (String id in labelsToSave.keys) {
-                          allNames.add(labelsToSave[id]);
-                        }
-                        List setNames = allNames.toSet().toList();
-                        if (setNames.length != allNames.length) {
+                        if (duplicates) {
                           setState(() {
                             showErrorMessage("Input Error!",
                                 "No duplicate choices allowed!", context);
                             this.autoValidate = true;
                           });
                         } else if (this.isCategoryOwner) {
-                          print(ratesToSave);
                           CategoriesManager.addOrEditCategory(
                               this.categoryNameController.text,
                               labelsToSave,
@@ -211,12 +210,12 @@ class _EditCategoryState extends State<EditCategory> {
                 TextEditingController labelController =
                     new TextEditingController();
                 labelControllers.putIfAbsent(
-                    this.nextChoiceNum, () => labelController);
+                    this.nextChoiceNum.toString(), () => labelController);
                 TextEditingController rateController =
                     new TextEditingController();
                 rateController.text = defaultRate.toString();
                 ratesControllers.putIfAbsent(
-                    this.nextChoiceNum, () => rateController);
+                    this.nextChoiceNum.toString(), () => rateController);
 
                 ChoiceRow choice = new ChoiceRow(this.nextChoiceNum, null,
                     this.isCategoryOwner, labelController, rateController,

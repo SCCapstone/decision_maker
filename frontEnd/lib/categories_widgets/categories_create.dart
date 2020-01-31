@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
@@ -27,7 +26,6 @@ class _CreateCategoryState extends State<CreateCategory> {
       new LinkedHashMap<int, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
 
-  bool isCategoryOwner;
   int nextChoiceValue;
   bool autoValidate = false;
 
@@ -45,8 +43,6 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   void initState() {
-    this.isCategoryOwner =
-        true; // you're creating the category so you are granted the rank of master
     this.nextChoiceValue = 2;
 
     TextEditingController initLabelController = new TextEditingController();
@@ -56,8 +52,8 @@ class _CreateCategoryState extends State<CreateCategory> {
     initRatingController.text = this.defaultRate.toString();
     this.ratesControllers.putIfAbsent(1, () => initRatingController);
 
-    ChoiceRow choice = new ChoiceRow(1, null, this.isCategoryOwner,
-        initLabelController, initRatingController,
+    ChoiceRow choice = new ChoiceRow(
+        1, null, true, initLabelController, initRatingController,
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -106,33 +102,30 @@ class _CreateCategoryState extends State<CreateCategory> {
                             new LinkedHashMap<String, String>();
                         Map<String, String> ratesToSave =
                             new LinkedHashMap<String, String>();
+                        bool duplicates = false;
+                        Set names = new Set();
                         for (int i in this.labelControllers.keys) {
                           labelsToSave.putIfAbsent(i.toString(),
                               () => this.labelControllers[i].text);
                           ratesToSave.putIfAbsent(i.toString(),
                               () => this.ratesControllers[i].text);
+                          if (!names.add(this.labelControllers[i].text)) {
+                            duplicates = true;
+                          }
                         }
-                        List<String> allNames = new List<String>();
-                        for (String id in labelsToSave.keys) {
-                          allNames.add(labelsToSave[id]);
-                        }
-                        List setNames = allNames.toSet().toList();
-                        if (setNames.length != allNames.length) {
+                        if (duplicates) {
                           setState(() {
                             showErrorMessage("Input Error!",
                                 "No duplicate choices allowed!", context);
                             this.autoValidate = true;
                           });
-                        } else if (this.isCategoryOwner) {
+                        } else {
                           CategoriesManager.addOrEditCategory(
                               this.categoryNameController.text,
                               labelsToSave,
                               ratesToSave,
                               null,
                               context);
-                        } else {
-                          UsersManager.updateUserChoiceRatings(
-                              widget.category.categoryId, ratesToSave, context);
                         }
                       } else {
                         // error, don't allow user to save with empty choices/category name
@@ -161,8 +154,8 @@ class _CreateCategoryState extends State<CreateCategory> {
               ratesControllers.putIfAbsent(
                   this.nextChoiceValue, () => rateController);
 
-              ChoiceRow choice = new ChoiceRow(this.nextChoiceValue, null,
-                  this.isCategoryOwner, labelController, rateController,
+              ChoiceRow choice = new ChoiceRow(this.nextChoiceValue, null, true,
+                  labelController, rateController,
                   deleteChoice: (choice) => deleteChoice(choice));
               this.choiceRows.add(choice);
               this.nextChoiceValue++;
