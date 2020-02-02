@@ -231,12 +231,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus newEvent(final Map<String, Object> jsonMap) {
+  public ResultStatus newEvent(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.newEvent";
+    metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
+
     final List<String> requiredKeys = Arrays
         .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
             TYPE, POLL_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
-
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String eventName = (String) jsonMap.get(EVENT_NAME);
@@ -259,11 +262,19 @@ public class GroupsManager extends DatabaseAccessManager {
             optedIn = (Map<String, Object>) groupDataMapped.get(MEMBERS);
             nextEventId = (BigDecimal) groupDataMapped.get(NEXT_EVENT_ID);
           } else {
+            lambdaLogger
+                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                    "Groups has no members field").toString());
             resultStatus.resultMessage = "Error: group has no members field";
+            metrics.commonClose(resultStatus.success);
             return resultStatus;
           }
         } else {
+          lambdaLogger
+              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "Group not found").toString());
           resultStatus.resultMessage = "Error: group not found";
+          metrics.commonClose(resultStatus.success);
           return resultStatus;
         }
 
@@ -309,16 +320,23 @@ public class GroupsManager extends DatabaseAccessManager {
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
+          lambdaLogger
+              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "Invalid request, bad input").toString());
           resultStatus.resultMessage = "Invalid request, bad input.";
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

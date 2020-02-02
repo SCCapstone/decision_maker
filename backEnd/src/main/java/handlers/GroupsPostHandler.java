@@ -45,7 +45,8 @@ public class GroupsPostHandler implements
               } else if (action.equals("editGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap);
               } else if (action.equals("newEvent")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap);
+                resultStatus = DatabaseManagers.GROUPS_MANAGER
+                    .newEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
               } else if (action.equals("warmingEndpoint")) {
