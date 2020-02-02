@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/user.dart';
@@ -10,7 +9,6 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
-import 'globals.dart';
 
 class UsersManager {
   static final String apiEndpoint = "usersendpoint";
@@ -60,11 +58,11 @@ class UsersManager {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     Map<String, dynamic> settings = new Map<String, dynamic>();
     jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"].putIfAbsent("DisplayName", () => displayName);
+    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
-    jsonRequestBody["payload"].putIfAbsent("AppSettings", () => settings);
+    jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
