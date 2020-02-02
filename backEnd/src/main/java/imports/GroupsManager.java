@@ -383,10 +383,9 @@ public class GroupsManager extends DatabaseAccessManager {
           try {
             //get user's actual name
             Map<String, Object> userData = user.asMap();
-            String firstName = (String) userData.get(UsersManager.FIRST_NAME);
-            String lastName = (String) userData.get(UsersManager.LAST_NAME);
+            String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
 
-            members.replace(username, firstName + " " + lastName);
+            members.replace(username, displayName);
           } catch (Exception e) {
             //couldn't get the user's data, don't add to the group rn
             //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
