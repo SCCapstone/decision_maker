@@ -1,21 +1,22 @@
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class AppSettings {
-  final int muted;
-  final int darkTheme;
-  final int groupSort;
+  bool muted;
+  bool darkTheme;
+  int groupSort;
 
-  AppSettings(
-      {this.muted,
-       this.darkTheme,
-       this.groupSort});
+  AppSettings({this.muted, this.darkTheme, this.groupSort});
 
   AppSettings.debug(this.muted, this.darkTheme, this.groupSort);
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
+    bool darkVal =
+        intToBool(int.parse(json[UsersManager.APP_SETTINGS_DARK_THEME]));
+    bool mute = intToBool(int.parse(json[UsersManager.APP_SETTINGS_MUTED]));
     return AppSettings(
-        muted: int.parse(json[UsersManager.APP_SETTINGS_MUTED]),
-        darkTheme: int.parse(json[UsersManager.APP_SETTINGS_DARK_THEME]),
+        muted: mute,
+        darkTheme: darkVal,
         groupSort: int.parse(json[UsersManager.APP_SETTINGS_GROUP_SORT]));
   }
 

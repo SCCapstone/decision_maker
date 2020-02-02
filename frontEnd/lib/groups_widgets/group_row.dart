@@ -13,46 +13,60 @@ class GroupRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .14,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          IconButton(
-              iconSize: MediaQuery.of(context).size.width * .20,
-              icon: Image(
-                image: NetworkImage(group.icon),
-              ),
-              onPressed: () {
-                Globals.currentGroup = group;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => GroupPage(
-                            events: GroupsManager.getGroupEvents(group),
-                          )),
-                ).then((_) => GroupsHome());
-              }),
-          Expanded(
-            child: RaisedButton(
-              child: Text(
-                group.groupName,
-                style: TextStyle(fontSize: 25),
-              ),
-              onPressed: () {
-                Globals.currentGroup = group;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => GroupPage(
-                            events: GroupsManager.getGroupEvents(group),
-                          )),
-                ).then((_) => GroupsHome());
-              },
-            ),
-          )
-        ],
-      ),
+    return Column(
+      children: <Widget>[
+        Container(
+          height: MediaQuery.of(context).size.height * .14,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                  iconSize: MediaQuery.of(context).size.width * .20,
+                  icon: Image(
+                    image: NetworkImage(group.icon),
+                  ),
+                  onPressed: () {
+                    Globals.currentGroup = group;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => GroupPage(
+                                events: GroupsManager.getGroupEvents(group),
+                              )),
+                    ).then((_) => GroupsHome());
+                  }),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Globals.currentGroup = group;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => GroupPage(
+                                events: GroupsManager.getGroupEvents(group),
+                              )),
+                    ).then((_) => GroupsHome());
+                  },
+                  child: Container(
+                    color: Colors.blueGrey.withOpacity(0.25),
+                    height: MediaQuery.of(context).size.width * .20,
+                    child: Center(
+                      child: Text(
+                        group.groupName,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(MediaQuery.of(context).size.height * .004),
+        ),
+      ],
     );
   }
 }

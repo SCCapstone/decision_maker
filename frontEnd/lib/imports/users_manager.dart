@@ -2,7 +2,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/models/user.dart';
@@ -10,15 +9,13 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
-import 'globals.dart';
 
 class UsersManager {
   static final String apiEndpoint = "usersendpoint";
 
   //breaking style guide for consistency with backend vars
   static final String USERNAME = "Username";
-  static final String FIRST_NAME = "FirstName";
-  static final String LAST_NAME = "LastName";
+  static final String DISPLAY_NAME = "DisplayName";
   static final String APP_SETTINGS = "AppSettings";
   static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   static final String APP_SETTINGS_MUTED = "Muted";
@@ -31,7 +28,7 @@ class UsersManager {
     jsonRequestBody["action"] = "getUserData";
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
-    User ret = null;
+    User ret;
 
     if (response != "") {
       try {
@@ -56,11 +53,16 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserAppSettings(
-      String settingToUpdate, int updateVal, BuildContext context) async {
+  static void updateUserAppSettings(String displayName, int darkTheme,
+      int muted, int groupSort, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    Map<String, dynamic> settings = new Map<String, dynamic>();
     jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"].putIfAbsent(settingToUpdate, () => updateVal);
+    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
+    settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
+    settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
+    settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
+    jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -70,9 +72,7 @@ class UsersManager {
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success) {
           showPopupMessage("Error updating user settings (1).", context);
         }
       } catch (e) {
