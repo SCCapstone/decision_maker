@@ -246,6 +246,7 @@ public class CategoriesManager extends DatabaseAccessManager {
   public ResultStatus deleteCategory(Map<String, Object> jsonMap, Metrics metrics,
       LambdaLogger lambdaLogger) {
     final String classMethod = "CategoriesManager.deleteCategory";
+    metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_ID) &&

@@ -285,8 +285,7 @@ public class GroupsManagerTest {
             this.lambdaLogger);
 
     assertTrue(result.success);
-    verify(this.dynamoDB, times(0)).getTable(
-        any(String.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -298,7 +297,7 @@ public class GroupsManagerTest {
     assertFalse(result.success);
     verify(this.dynamoDB, times(0)).getTable(
         any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   @Test

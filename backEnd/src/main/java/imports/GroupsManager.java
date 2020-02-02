@@ -608,6 +608,7 @@ public class GroupsManager extends DatabaseAccessManager {
       Metrics metrics,
       LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
+    metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
     try {
       final String updateExpression = "remove Categories.#categoryId";
