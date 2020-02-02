@@ -140,8 +140,7 @@ public class GroupsManagerTest {
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
-    ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventGoodInput);
+    ResultStatus result = this.groupsManager.newEvent(this.validNewEventGoodInput);
     assertTrue(result.success);
   }
 
@@ -154,14 +153,12 @@ public class GroupsManagerTest {
 
     this.validNewEventBadInput.put(GroupsManager.GROUP_ID, "");
     this.validNewEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    ResultStatus result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
 
     this.validNewEventBadInput.put(GroupsManager.GROUP_ID, "GroupId");
     this.validNewEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
   }
 
@@ -173,13 +170,11 @@ public class GroupsManagerTest {
         .getItem(any(GetItemSpec.class));
 
     this.validNewEventBadInput.put(GroupsManager.POLL_DURATION, -1);
-    ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    ResultStatus result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
 
     this.validNewEventBadInput.put(GroupsManager.POLL_DURATION, 1000000);
-    result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
   }
 
@@ -191,13 +186,11 @@ public class GroupsManagerTest {
         .getItem(any(GetItemSpec.class));
 
     this.validNewEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, -1);
-    ResultStatus result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    ResultStatus result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
 
     this.validNewEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, 1000000);
-    result = this.groupsManager
-        .newEvent(this.validNewEventBadInput);
+    result = this.groupsManager.newEvent(this.validNewEventBadInput);
     assertFalse(result.success);
   }
 
@@ -227,8 +220,7 @@ public class GroupsManagerTest {
         .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 2);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
@@ -241,8 +233,7 @@ public class GroupsManagerTest {
         .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 0);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
@@ -272,8 +263,7 @@ public class GroupsManagerTest {
             this.lambdaLogger);
 
     assertTrue(result.success);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -294,8 +284,7 @@ public class GroupsManagerTest {
         .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics, this.lambdaLogger);
 
     assertFalse(result.success);
-    verify(this.dynamoDB, times(0)).getTable(
-        any(String.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
 
