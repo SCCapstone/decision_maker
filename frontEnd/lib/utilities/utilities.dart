@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'validator.dart';
 
+int boolToInt(bool val) {
+  if (val) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+bool intToBool(int val) {
+  return val == 1;
+}
+
 void showPopupMessage(String message, BuildContext context,
     {Function callback}) {
   if (context == null) {

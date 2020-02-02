@@ -17,8 +17,7 @@ class UsersManager {
 
   //breaking style guide for consistency with backend vars
   static final String USERNAME = "Username";
-  static final String FIRST_NAME = "FirstName";
-  static final String LAST_NAME = "LastName";
+  static final String DISPLAY_NAME = "DisplayName";
   static final String APP_SETTINGS = "AppSettings";
   static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   static final String APP_SETTINGS_MUTED = "Muted";
@@ -62,9 +61,9 @@ class UsersManager {
     Map<String, dynamic> settings = new Map<String, dynamic>();
     jsonRequestBody["action"] = "updateUserAppSettings";
     jsonRequestBody["payload"].putIfAbsent("DisplayName", () => displayName);
-    settings.putIfAbsent("DarkTheme", () => darkTheme);
-    settings.putIfAbsent("Muted", () => muted);
-    settings.putIfAbsent("GroupSort", () => groupSort);
+    settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
+    settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
+    settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
     jsonRequestBody["payload"].putIfAbsent("AppSettings", () => settings);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);

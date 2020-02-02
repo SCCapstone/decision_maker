@@ -27,16 +27,4 @@ class Globals {
 
     return tokens;
   }
-
-  static int boolToInt(bool val) {
-    if (val) {
-      return 1;
-    } else {
-      return 0;
-    }
-  }
-
-  static bool intToBool(int val) {
-    return val == 1;
-  }
 }

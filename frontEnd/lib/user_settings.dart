@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
 class UserSettings extends StatefulWidget {
@@ -31,7 +32,7 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void initState() {
-    name = Globals.user.firstName + " " + Globals.user.lastName;
+    name = Globals.user.displayName;
     _darkTheme = Globals.user.appSettings.darkTheme;
     _groupSort = Globals.user.appSettings.groupSort;
     _muted = Globals.user.appSettings.muted;
@@ -236,7 +237,7 @@ class _UserSettingsState extends State<UserSettings> {
     // the moment the user makes changes to their previously saved settings, display the save button
     if (Globals.user.appSettings.darkTheme != _darkTheme ||
         Globals.user.appSettings.muted != _muted ||
-        Globals.user.firstName + " " + Globals.user.lastName != name ||
+        Globals.user.displayName != name ||
         Globals.user.appSettings.groupSort != _groupSort) {
       setState(() {
         editing = true;
@@ -256,9 +257,9 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.groupSort = _groupSort;
         Globals.user.appSettings.muted = _muted;
         Globals.user.appSettings.darkTheme = _darkTheme;
-        Globals.user.firstName = name;
-        UsersManager.updateUserAppSettings(name, Globals.boolToInt(_darkTheme),
-            Globals.boolToInt(_muted), _groupSort, context);
+        Globals.user.displayName = name;
+        UsersManager.updateUserAppSettings(name, boolToInt(_darkTheme),
+            boolToInt(_muted), _groupSort, context);
         // reset everything and reflect changes made
         editing = false;
         autoValidate = false;

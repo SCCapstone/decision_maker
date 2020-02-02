@@ -1,5 +1,5 @@
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class AppSettings {
   bool muted;
@@ -11,10 +11,9 @@ class AppSettings {
   AppSettings.debug(this.muted, this.darkTheme, this.groupSort);
 
   factory AppSettings.fromJson(Map<String, dynamic> json) {
-    bool darkVal = Globals.intToBool(
-        int.parse(json[UsersManager.APP_SETTINGS_DARK_THEME]));
-    bool mute =
-        Globals.intToBool(int.parse(json[UsersManager.APP_SETTINGS_MUTED]));
+    bool darkVal =
+        intToBool(int.parse(json[UsersManager.APP_SETTINGS_DARK_THEME]));
+    bool mute = intToBool(int.parse(json[UsersManager.APP_SETTINGS_MUTED]));
     return AppSettings(
         muted: mute,
         darkTheme: darkVal,

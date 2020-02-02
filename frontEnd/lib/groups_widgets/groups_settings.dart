@@ -60,9 +60,9 @@ class _GroupSettingsState extends State<GroupSettings> {
     pollDuration = Globals.currentGroup.defaultPollDuration;
     pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
 
-    groupNameController.text = Globals.currentGroup.groupName;
-    pollPassController.text = pollPassPercent.toString();
+    groupNameController.text = groupName;
     pollDurationController.text = pollDuration.toString();
+    pollPassController.text = pollPassPercent.toString();
 
     categoriesTotalFuture = CategoriesManager.getAllCategoriesList();
     super.initState();
