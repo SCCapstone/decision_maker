@@ -243,7 +243,10 @@ public class CategoriesManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus deleteCategory(Map<String, Object> jsonMap) {
+  public ResultStatus deleteCategory(Map<String, Object> jsonMap, Metrics metrics,
+      LambdaLogger lambdaLogger) {
+    final String classMethod = "CategoriesManager.deleteCategory";
+    metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
@@ -263,21 +266,30 @@ public class CategoriesManager extends DatabaseAccessManager {
           this.deleteItem(deleteItemSpec);
 
           if (!groupIds.isEmpty()) {
-            DatabaseManagers.GROUPS_MANAGER.removeCategoryFromGroups(groupIds, categoryId);
+            DatabaseManagers.GROUPS_MANAGER
+                .removeCategoryFromGroups(groupIds, categoryId, metrics, lambdaLogger);
           }
 
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
         } else {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "User is not the owner of the category").toString());
           resultStatus.resultMessage = "Error: User is not the owner of the category.";
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
+    metrics.commonClose(resultStatus.success);
+
     return resultStatus;
   }
 }

@@ -249,7 +249,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
         final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
-
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
 
@@ -270,7 +269,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.makeEventInputIsValid(eventId, "Not empty", groupId, categoryId, pollDuration,
+        if (this.validEventInput(groupId, categoryId, pollDuration,
             pollPassPercent)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
@@ -440,13 +439,11 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
-  private boolean makeEventInputIsValid(final String eventId, final String activeUser,
+  private boolean validEventInput(
       final String groupId, final String categoryId, final Integer pollDuration,
       final Integer pollPassPercent) {
     boolean isValid = true;
-
-    if (StringUtils.isNullOrEmpty(eventId) || StringUtils.isNullOrEmpty(activeUser) ||
-        StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
+    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
     }
 
@@ -607,7 +604,12 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public void removeCategoryFromGroups(List<String> groupIds, String categoryId) {
+  public ResultStatus removeCategoryFromGroups(List<String> groupIds, String categoryId,
+      Metrics metrics,
+      LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.removeCategoryFromGroups";
+    metrics.commonSetup(classMethod);
+    ResultStatus resultStatus = new ResultStatus();
     try {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
@@ -620,8 +622,14 @@ public class GroupsManager extends DatabaseAccessManager {
             .withUpdateExpression(updateExpression);
         this.updateItem(updateItemSpec);
       }
+      resultStatus.success = true;
     } catch (Exception e) {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(
+          new ErrorDescriptor<>(categoryId, classMethod, metrics.getRequestId(), e).toString());
+      resultStatus.resultMessage = "Error: Unable to parse request.";
     }
+    metrics.commonClose(resultStatus.success);
+
+    return resultStatus;
   }
 }
