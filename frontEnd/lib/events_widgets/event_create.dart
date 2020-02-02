@@ -68,6 +68,9 @@ class _CreateEventState extends State<CreateEvent> {
         Globals.currentGroup.groupId);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
+    if ((currentTime.hour + 1) < 10) {
+      eventStartTime = "0" + eventStartTime;
+    }
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
     passPercentageController.text =
