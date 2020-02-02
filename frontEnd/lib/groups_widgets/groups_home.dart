@@ -10,6 +10,8 @@ import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 
+import '../user_settings.dart';
+
 class GroupsHome extends StatefulWidget {
   Future<List<Group>> groupsFuture;
 
@@ -62,17 +64,27 @@ class _GroupsHomeState extends State<GroupsHome> {
                   margin: EdgeInsets.zero,
                   child: ListTile(
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-                    leading: CircleAvatar(
-                      //TODO let the user set their own avatar (https://github.com/SCCapstone/decision_maker/issues/139)
-                      backgroundImage:
-                          AssetImage('assets/images/placeholder.jpg'),
+                    leading: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UserSettings()));
+                      },
+                      child: CircleAvatar(
+                        backgroundImage:
+                            AssetImage('assets/images/placeholder.jpg'),
+                      ),
                     ),
                     title: Text(
                       Globals.username,
                       style: TextStyle(fontSize: 24, color: Colors.white),
                     ),
                     onTap: () {
-                      //TODO direct the user to something like a profile settings page (https://github.com/SCCapstone/decision_maker/issues/140)
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => UserSettings()));
                     },
                   ),
                 ),
@@ -182,9 +194,9 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Widget buildList(int sortVal) {
-    if (sortVal == 0) {
+    if (sortVal == Globals.dateSort) {
       displayedGroups = GroupsManager.sortByDate(displayedGroups);
-    } else if (sortVal == 1) {
+    } else if (sortVal == Globals.alphabeticalSort) {
       displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
     }
     if (searchInput.isNotEmpty) {

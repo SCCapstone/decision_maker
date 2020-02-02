@@ -12,6 +12,8 @@ class Globals {
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
   static Group currentGroup;
   static SharedPreferences tokens;
+  static int dateSort = 0;
+  static int alphabeticalSort = 1;
 
   static void clearGlobals() {
     username = null;

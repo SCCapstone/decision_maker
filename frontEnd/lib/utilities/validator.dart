@@ -122,3 +122,11 @@ String validUsername(String input) {
   }
   return retVal;
 }
+
+String validName(String input) {
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Name cannot be empty!";
+  }
+  return retVal;
+}
