@@ -22,8 +22,7 @@ import utilities.ResultStatus;
 public class UsersManager extends DatabaseAccessManager {
 
   public static final String USERNAME = "Username";
-  public static final String FIRST_NAME = "FirstName";
-  public static final String LAST_NAME = "LastName";
+  public static final String DISPLAY_NAME = "DisplayName";
   public static final String APP_SETTINGS = "AppSettings";
   public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   public static final String APP_SETTINGS_MUTED = "Muted";
@@ -31,8 +30,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String GROUPS = "Groups";
   public static final String CATEGORIES = "Categories";
 
-  public static final String DEFAULT_FIRSTNAME = "DefFirstName";
-  public static final String DEFAULT_LASTNAME = "DefLastName";
+  public static final String DEFAULT_DISPLAY_NAME = "New User";
   public static final int DEFAULT_DARK_THEME = 0;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
@@ -122,8 +120,7 @@ public class UsersManager extends DatabaseAccessManager {
         if (user == null) {
           user = new Item()
               .withString(USERNAME, activeUser)
-              .withString(FIRST_NAME, DEFAULT_FIRSTNAME)
-              .withString(LAST_NAME, DEFAULT_LASTNAME)
+              .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP);
