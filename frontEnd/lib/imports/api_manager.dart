@@ -14,6 +14,7 @@ Future<String> makeApiRequest(
   SharedPreferences tokens = await Globals.getTokens();
 
   if (tokens.containsKey(idTokenKey)) {
+
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
@@ -27,8 +28,9 @@ Future<String> makeApiRequest(
       return response.body;
     } else if (firstAttempt) {
       // in case the id_token has expired
-      refreshUserTokens();
-      return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
+      if (await refreshUserTokens()) {
+        return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
+      }
     }
   } else {
     //clear navigation stack and head to the login page?
