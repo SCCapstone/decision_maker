@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/group.dart';
 import 'validator.dart';
+
+Group findCurrentGroup(String groupId) {
+  Group retVal;
+  for (Group group in Globals.groups) {
+    if (group.groupId == groupId) {
+      retVal = group;
+    }
+  }
+  return retVal;
+}
 
 int boolToInt(bool val) {
   if (val) {

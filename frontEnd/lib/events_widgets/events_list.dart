@@ -21,9 +21,12 @@ class _EventsListState extends State<EventsList> {
   @override
   Widget build(BuildContext context) {
     if (widget.events.length == 0) {
-      return Center(
-        child: Text("No events found! Click the button below to create one!",
-            style: TextStyle(fontSize: 30)),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Text("No events found! Click the button below to create one!",
+              style: TextStyle(fontSize: 30)),
+        ),
       );
     } else {
       List<Widget> eventCards = new List<Widget>();

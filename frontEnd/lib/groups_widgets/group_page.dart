@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
@@ -7,7 +9,7 @@ import 'package:frontEnd/events_widgets/events_list.dart';
 import 'package:frontEnd/events_widgets/event_create.dart';
 
 class GroupPage extends StatefulWidget {
-  final Map<String, Event> events;
+  Map<String, Event> events;
 
   GroupPage({Key key, this.events}) : super(key: key);
 
@@ -18,8 +20,8 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
+    return Scaffold(
+      appBar: AppBar(
         centerTitle: true,
         title: Text(
           Globals.currentGroup.groupName,
@@ -73,8 +75,10 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   Future<Null> refreshList() async {
-    await Future.delayed(
-        Duration(milliseconds: 70)); // required to remove the loading animation
+    Globals.groups = await GroupsManager.getGroups();
+    Globals.currentGroup = findCurrentGroup(
+        Globals.currentGroup.groupId); // in case the current group was updated
+    widget.events = GroupsManager.getGroupEvents(Globals.currentGroup);
     setState(() {});
   }
 }

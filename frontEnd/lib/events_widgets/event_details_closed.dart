@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsClosed extends StatefulWidget {
@@ -138,8 +141,9 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   }
 
   Future<Null> refreshList() async {
-    await Future.delayed(
-        Duration(milliseconds: 70)); // required to remove the loading animation
+    Globals.groups = await GroupsManager.getGroups();
+    Globals.currentGroup = findCurrentGroup(
+        Globals.currentGroup.groupId); // in case the current group was updated
     setState(() {});
   }
 }

@@ -278,7 +278,6 @@ class _GroupSettingsState extends State<GroupSettings> {
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName) {
       setState(() {
-        print(Globals.currentGroup.groupName);
         editing = true;
       });
     } else {
@@ -320,7 +319,7 @@ class _GroupSettingsState extends State<GroupSettings> {
       editing = true;
       validGroupIcon = true;
       autoValidate = true;
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop('dialog'); // dismiss popup
     });
   }
 
@@ -334,11 +333,11 @@ class _GroupSettingsState extends State<GroupSettings> {
         categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
             () => categoriesSelected[i].categoryName);
       }
-
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: groupName,
           groupCreator: Globals.currentGroup.groupCreator,
+          lastActivity: Globals.currentGroup.lastActivity,
           icon: groupIcon,
           categories: categoriesMap,
           members: users,
@@ -347,7 +346,9 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultPollPassPercent: pollPassPercent,
           nextEventId: Globals.currentGroup.nextEventId);
 
+      Globals.groups.remove(Globals.currentGroup);
       Globals.currentGroup = group;
+      Globals.groups.add(Globals.currentGroup);
       GroupsManager.editGroup(group, context);
 
       setState(() {

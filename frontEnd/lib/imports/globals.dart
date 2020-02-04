@@ -14,6 +14,7 @@ class Globals {
   static SharedPreferences tokens;
   static int dateSort = 0;
   static int alphabeticalSort = 1;
+  static List<Group> groups;
 
   static void clearGlobals() {
     username = null;

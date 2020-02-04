@@ -25,7 +25,6 @@ class _GroupsHomeState extends State<GroupsHome> {
   final TextEditingController searchBar = new TextEditingController();
   String searchInput = "";
   List<Group> displayedGroups = new List<Group>();
-  List<Group> totalGroups = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
 
@@ -36,7 +35,7 @@ class _GroupsHomeState extends State<GroupsHome> {
       if (searchBar.text.isEmpty) {
         setState(() {
           searchInput = "";
-          displayedGroups = totalGroups;
+          displayedGroups = Globals.groups;
         });
       } else {
         setState(() {
@@ -155,23 +154,33 @@ class _GroupsHomeState extends State<GroupsHome> {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
-            Expanded(
-              child: new Container(
-                  width: MediaQuery.of(context).size.width * .80,
-                  height: MediaQuery.of(context).size.height * .60,
-                  child: FutureBuilder(
-                    future: widget.groupsFuture,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        totalGroups = snapshot.data;
-                        displayedGroups = snapshot.data;
-                        return buildList(Globals.user.appSettings.groupSort);
-                      } else if (snapshot.hasError) {
-                        return Text("Error: ${snapshot.error}");
-                      }
-                      return Center(child: CircularProgressIndicator());
-                    },
-                  )),
+            Visibility(
+              visible: Globals.groups == null,
+              child: Expanded(
+                child: Container(
+                    width: MediaQuery.of(context).size.width * .80,
+                    height: MediaQuery.of(context).size.height * .60,
+                    child: FutureBuilder(
+                      future: widget.groupsFuture,
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasData) {
+                          Globals.groups = snapshot.data;
+                          return buildList(Globals.user.appSettings.groupSort);
+                        } else if (snapshot.hasError) {
+                          return Text("Error: ${snapshot.error}");
+                        }
+                        return Center(child: CircularProgressIndicator());
+                      },
+                    )),
+              ),
+            ),
+            Visibility(
+              visible: Globals.groups != null,
+              child: Expanded(
+                  child: Container(
+                      width: MediaQuery.of(context).size.width * .80,
+                      height: MediaQuery.of(context).size.height * .60,
+                      child: buildList(Globals.user.appSettings.groupSort))),
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
@@ -194,10 +203,10 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Widget buildList(int sortVal) {
-    if (sortVal == Globals.dateSort) {
-      displayedGroups = GroupsManager.sortByDate(displayedGroups);
-    } else if (sortVal == Globals.alphabeticalSort) {
-      displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
+    if (Globals.groups == null) {
+      // this is a little hacky, but otherwise the visibility widget will call this and get a
+      // null pointer exception the first time the app is loaded. This text should never be seen
+      return Text("Error loading groups.");
     }
     if (searchInput.isNotEmpty) {
       List<Group> temp = new List<Group>();
@@ -210,17 +219,22 @@ class _GroupsHomeState extends State<GroupsHome> {
         }
       }
       displayedGroups = temp;
+    } else {
+      displayedGroups = Globals.groups;
     }
-
+    if (sortVal == Globals.dateSort) {
+      displayedGroups = GroupsManager.sortByDate(displayedGroups);
+    } else if (sortVal == Globals.alphabeticalSort) {
+      displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
+    }
     return RefreshIndicator(
         onRefresh: refreshList,
         child: GroupsList(groups: displayedGroups, searching: searching));
   }
 
   Future<Null> refreshList() async {
-    setState(() {
-      widget.groupsFuture = GroupsManager.getGroups();
-    });
+    Globals.groups = await GroupsManager.getGroups();
+    setState(() {});
   }
 
   void searchGroup() {
@@ -229,7 +243,7 @@ class _GroupsHomeState extends State<GroupsHome> {
       // already searching, so user has clicked the stop button
       setState(() {
         searchBar.clear();
-        displayedGroups = totalGroups;
+        displayedGroups = Globals.groups;
         searchIcon = new Icon(Icons.search);
       });
     } else {
