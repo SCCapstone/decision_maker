@@ -190,7 +190,7 @@ class _SignInState extends State<SignInPage> {
     try {
       session = await cognitoUser.authenticateUser(authDetails);
 
-      storeUserTokens(session.getAccessToken().jwtToken,
+      await storeUserTokens(session.getAccessToken().jwtToken,
           session.getRefreshToken().getToken(), session.getIdToken().jwtToken);
 
       signedIn = true;
