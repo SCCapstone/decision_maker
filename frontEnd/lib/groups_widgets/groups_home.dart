@@ -98,7 +98,6 @@ class _GroupsHomeState extends State<GroupsHome> {
                       MaterialPageRoute(
                           builder: (context) => CategoriesHome()));
                 }),
-            //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
             ListTile(
                 leading: Icon(Icons.subdirectory_arrow_left),
                 title: Text('Log out', style: TextStyle(fontSize: 16)),
