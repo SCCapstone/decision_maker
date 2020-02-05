@@ -42,7 +42,9 @@ Future<bool> hasValidTokensSet() async {
   return true;
 }
 
-Future<void> refreshUserTokens() async {
+Future<bool> refreshUserTokens() async {
+  bool success = false;
+
   //Use the stored refresh token to get new tokens and then call storeUserTokens to store the new tokens
   //hint, don't overwrite the refresh token, that one token can be used many times and you only get it once
   String refreshToken = (await Globals.getTokens()).getString(refreshTokenKey);
@@ -61,8 +63,9 @@ Future<void> refreshUserTokens() async {
 
   if (response.statusCode == 200) {
     Map<String, dynamic> body = json.decode(response.body);
-    storeUserTokens(body['access_token'], refreshToken, body['id_token']);
+    await storeUserTokens(body['access_token'], refreshToken, body['id_token']);
     debugPrint("THE REFRESH OCCURED WITH STATUS CODE 200");
+    success = true;
   } else {
     debugPrint(
         "FAILED REFRESH RESPONSE WITH CODE: " + response.statusCode.toString());
@@ -70,9 +73,11 @@ Future<void> refreshUserTokens() async {
     debugPrint(response.body);
     clearTokens(); // if there was anything there, it is junk so clear it
   }
+
+  return success;
 }
 
-void storeUserTokens(
+Future<void> storeUserTokens(
     String accessToken, String refreshToken, String idToken) async {
   (await Globals.getTokens()).setString(accessTokenKey, accessToken);
   (await Globals.getTokens()).setString(idTokenKey, idToken);

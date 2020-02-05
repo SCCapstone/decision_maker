@@ -244,8 +244,7 @@ public class GroupsManagerTest {
 
     this.newEventBadInput.put(GroupsManager.GROUP_ID, "GroupId");
     this.newEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
   }
 
@@ -262,8 +261,7 @@ public class GroupsManagerTest {
     assertFalse(result.success);
 
     this.newEventBadInput.put(GroupsManager.POLL_DURATION, 1000000);
-    result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
   }
 
@@ -280,8 +278,7 @@ public class GroupsManagerTest {
     assertFalse(result.success);
 
     this.newEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, 1000000);
-    result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
   }
 
@@ -311,8 +308,7 @@ public class GroupsManagerTest {
         .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 2);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
@@ -325,8 +321,7 @@ public class GroupsManagerTest {
         .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 0);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
@@ -340,8 +335,7 @@ public class GroupsManagerTest {
         .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 0);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
@@ -357,8 +351,7 @@ public class GroupsManagerTest {
             this.lambdaLogger);
 
     assertTrue(result.success);
-    verify(this.dynamoDB, times(1)).getTable(
-        any(String.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -379,8 +372,7 @@ public class GroupsManagerTest {
         .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics, this.lambdaLogger);
 
     assertFalse(result.success);
-    verify(this.dynamoDB, times(0)).getTable(
-        any(String.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
 

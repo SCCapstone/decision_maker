@@ -27,8 +27,9 @@ Future<String> makeApiRequest(
       return response.body;
     } else if (firstAttempt) {
       // in case the id_token has expired
-      refreshUserTokens();
-      return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
+      if (await refreshUserTokens()) {
+        return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
+      }
     }
   } else {
     //clear navigation stack and head to the login page?
