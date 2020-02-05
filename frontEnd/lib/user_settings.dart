@@ -3,6 +3,7 @@ import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
+import 'package:frontEnd/widgets/user_row.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -15,6 +16,7 @@ class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController nickNameController = TextEditingController();
   final TextEditingController userIconController = TextEditingController();
+  final TextEditingController contactsController = TextEditingController();
 
   bool autoValidate = false;
   bool editing = false;
@@ -22,6 +24,8 @@ class _UserSettingsState extends State<UserSettings> {
   bool _muted = false;
   String userIcon;
   String name;
+  List<String> newContacts = new List<String>();
+  List<String> originalContacts = new List<String>();
   int _groupSort = 0;
 
   @override
@@ -117,6 +121,13 @@ class _UserSettingsState extends State<UserSettings> {
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .004),
                       ),
+                      RaisedButton.icon(
+                          color: Colors.greenAccent,
+                          onPressed: () {
+                            contactsPopup();
+                          },
+                          icon: Icon(Icons.contacts),
+                          label: Text("My Contacts")),
                       Container(
                         width: MediaQuery.of(context).size.width * .7,
                         child: Column(
@@ -227,18 +238,20 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   void selectGroupSort(int val) {
-    setState(() {
-      _groupSort = val;
-      enableAutoValidation();
-    });
+    _groupSort = val;
+    enableAutoValidation();
   }
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
+    Set newContactsSet = newContacts.toSet();
+    Set oldContactsSet = originalContacts.toSet();
+    bool newUsers = !(oldContactsSet.containsAll(newContactsSet));
     if (Globals.user.appSettings.darkTheme != _darkTheme ||
         Globals.user.appSettings.muted != _muted ||
         Globals.user.displayName != name ||
-        Globals.user.appSettings.groupSort != _groupSort) {
+        Globals.user.appSettings.groupSort != _groupSort ||
+        newUsers) {
       setState(() {
         editing = true;
       });
@@ -288,7 +301,7 @@ class _UserSettingsState extends State<UserSettings> {
                 child: Text("Submit"),
                 onPressed: () {
                   userIcon = userIconController.text;
-                  Navigator.of(context).pop();
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
               ),
             ],
@@ -306,5 +319,82 @@ class _UserSettingsState extends State<UserSettings> {
             ),
           );
         });
+  }
+
+  void contactsPopup() {
+    // displays a popup for editing the user's contacts
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Form(
+                key: formKey,
+                child: AlertDialog(
+                  title: Text("My Contacts"),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text("Return"),
+                      onPressed: () {
+                        contactsController.clear();
+                        Navigator.of(context, rootNavigator: true)
+                            .pop('dialog');
+                        enableAutoValidation();
+                      },
+                    ),
+                    FlatButton(
+                      child: Text("Add User"),
+                      onPressed: () {
+                        if (formKey.currentState.validate()) {
+                          newContacts.add(contactsController.text.trim());
+                          contactsController.clear();
+                          setState(() {
+                            editing = true;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                  content: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Container(
+                      width: double.maxFinite,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          TextFormField(
+                              controller: contactsController,
+                              validator: (value) {
+                                return validNewContact(
+                                    value.trim(), newContacts);
+                              },
+                              decoration: InputDecoration(
+                                labelText: "Enter a username to add",
+                              )),
+                          Container(
+                            height: MediaQuery.of(context).size.height * .25,
+                            child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: newContacts.length,
+                                itemBuilder: (context, index) {
+                                  return UserRow(newContacts[index],
+                                      newContacts[index], true, deleteUser: () {
+                                    newContacts.remove(newContacts[index]);
+                                    setState(() {});
+                                  });
+                                }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        }).then((val) {
+      enableAutoValidation();
+    });
   }
 }

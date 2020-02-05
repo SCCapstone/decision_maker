@@ -130,3 +130,15 @@ String validName(String input) {
   }
   return retVal;
 }
+
+String validNewContact(String input, List<String> contacts) {
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Username cannot be empty!";
+  } else if (contacts.contains(input)) {
+    retVal = "You already have this username saved!";
+  } else if (input == Globals.username) {
+    retVal = "Cannot add yourself!";
+  }
+  return retVal;
+}
