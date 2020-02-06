@@ -58,7 +58,7 @@ public class GroupsPostHandler implements
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }
           } catch (Exception e) {
-            resultStatus.resultMessage = "Error: Unable to parse request in handler. Exception: "+e;
+            resultStatus.resultMessage = "Error: Unable to parse request in handler.";
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
