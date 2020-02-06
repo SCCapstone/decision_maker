@@ -70,7 +70,6 @@ class UsersManager {
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
     settings.putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
-    print(jsonRequestBody);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
