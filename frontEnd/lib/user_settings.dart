@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
@@ -22,11 +23,11 @@ class _UserSettingsState extends State<UserSettings> {
   bool editing = false;
   bool _darkTheme = false;
   bool _muted = false;
-  String userIcon;
-  String name;
-  List<String> newContacts = new List<String>();
-  List<String> originalContacts = new List<String>();
+  String _icon;
+  String _displayName;
   int _groupSort = 0;
+  List<Favorite> displayedFavorites = new List<Favorite>();
+  List<Favorite> originalFavorites = new List<Favorite>();
 
   @override
   void dispose() {
@@ -36,11 +37,13 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void initState() {
-    name = Globals.user.displayName;
+    _displayName = Globals.user.displayName;
     _darkTheme = Globals.user.appSettings.darkTheme;
     _groupSort = Globals.user.appSettings.groupSort;
     _muted = Globals.user.appSettings.muted;
-    nickNameController.text = name;
+    originalFavorites = Globals.user.favorites;
+    displayedFavorites.addAll(originalFavorites);
+    nickNameController.text = _displayName;
     super.initState();
   }
 
@@ -79,7 +82,7 @@ class _UserSettingsState extends State<UserSettings> {
                             controller: nickNameController,
                             validator: validName,
                             onChanged: (String arg) {
-                              name = arg;
+                              _displayName = arg.trim();
                               enableAutoValidation();
                             },
                             onSaved: (String arg) {},
@@ -243,12 +246,14 @@ class _UserSettingsState extends State<UserSettings> {
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    Set newContactsSet = newContacts.toSet();
-    Set oldContactsSet = originalContacts.toSet();
-    bool newUsers = !(oldContactsSet.containsAll(newContactsSet));
+    Set newContactsSet = displayedFavorites.toSet();
+    Set oldContactsSet = originalFavorites.toSet();
+    // check if the user added or removed any users from their favorites list
+    bool newUsers = !(oldContactsSet.containsAll(newContactsSet) &&
+        oldContactsSet.length == newContactsSet.length);
     if (Globals.user.appSettings.darkTheme != _darkTheme ||
         Globals.user.appSettings.muted != _muted ||
-        Globals.user.displayName != name ||
+        Globals.user.displayName != _displayName ||
         Globals.user.appSettings.groupSort != _groupSort ||
         newUsers) {
       setState(() {
@@ -269,9 +274,20 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.groupSort = _groupSort;
         Globals.user.appSettings.muted = _muted;
         Globals.user.appSettings.darkTheme = _darkTheme;
-        Globals.user.displayName = name;
-        UsersManager.updateUserAppSettings(name, boolToInt(_darkTheme),
-            boolToInt(_muted), _groupSort, context);
+        Globals.user.displayName = _displayName;
+        Globals.user.favorites = displayedFavorites;
+        List<String> userNames = new List<String>();
+        for (Favorite favorite in displayedFavorites) {
+          userNames.add(favorite.username);
+        }
+        UsersManager.updateUserAppSettings(
+            _displayName,
+            boolToInt(_darkTheme),
+            boolToInt(_muted),
+            _groupSort,
+            userNames,
+            context); // blind send for now?
+
         // reset everything and reflect changes made
         editing = false;
         autoValidate = false;
@@ -299,7 +315,7 @@ class _UserSettingsState extends State<UserSettings> {
               FlatButton(
                 child: Text("Submit"),
                 onPressed: () {
-                  userIcon = userIconController.text;
+                  _icon = userIconController.text;
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
               ),
@@ -331,7 +347,7 @@ class _UserSettingsState extends State<UserSettings> {
               return Form(
                 key: formKey,
                 child: AlertDialog(
-                  title: Text("My Contacts"),
+                  title: Text("My Favorites"),
                   actions: <Widget>[
                     FlatButton(
                       child: Text("Back"),
@@ -346,11 +362,13 @@ class _UserSettingsState extends State<UserSettings> {
                       child: Text("Add User"),
                       onPressed: () {
                         if (formKey.currentState.validate()) {
-                          newContacts.add(contactsController.text.trim());
+                          // TODO launch api request to add user. Then parse info and create appropriate Favorite model
+                          displayedFavorites.add(new Favorite(
+                              username: contactsController.text.trim(),
+                              displayName: contactsController.text.trim(),
+                              icon: null));
                           contactsController.clear();
-                          setState(() {
-                            editing = true;
-                          });
+                          setState(() {});
                         }
                       },
                     ),
@@ -365,8 +383,8 @@ class _UserSettingsState extends State<UserSettings> {
                           TextFormField(
                               controller: contactsController,
                               validator: (value) {
-                                return validNewContact(
-                                    value.trim(), newContacts);
+                                return validNewFavorite(
+                                    value.trim(), displayedFavorites);
                               },
                               decoration: InputDecoration(
                                 labelText: "Enter a username to add",
@@ -375,11 +393,14 @@ class _UserSettingsState extends State<UserSettings> {
                             height: MediaQuery.of(context).size.height * .25,
                             child: ListView.builder(
                                 shrinkWrap: true,
-                                itemCount: newContacts.length,
+                                itemCount: displayedFavorites.length,
                                 itemBuilder: (context, index) {
-                                  return UserRow(newContacts[index],
-                                      newContacts[index], true, deleteUser: () {
-                                    newContacts.remove(newContacts[index]);
+                                  return UserRow(
+                                      displayedFavorites[index].displayName,
+                                      displayedFavorites[index].username,
+                                      true, deleteUser: () {
+                                    displayedFavorites
+                                        .remove(displayedFavorites[index]);
                                     setState(() {});
                                   });
                                 }),
@@ -393,7 +414,7 @@ class _UserSettingsState extends State<UserSettings> {
             },
           );
         }).then((val) {
-          // this is called whenever the user clicks outside the alert dialog or hits the back button
+      // this is called whenever the user clicks outside the alert dialog or hits the back button
       contactsController.clear();
       enableAutoValidation();
     });

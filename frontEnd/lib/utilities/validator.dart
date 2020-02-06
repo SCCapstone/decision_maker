@@ -1,4 +1,5 @@
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/favorite.dart';
 
 String validGroupIcon(String input) {
   if (!input.contains("http")) {
@@ -131,11 +132,17 @@ String validName(String input) {
   return retVal;
 }
 
-String validNewContact(String input, List<String> contacts) {
+String validNewFavorite(String input, List<Favorite> favorites) {
   String retVal;
+  bool duplicates = false;
+  for (Favorite favorite in favorites) {
+    if (favorite.username == input) {
+      duplicates = true;
+    }
+  }
   if (input.isEmpty) {
     retVal = "Username cannot be empty!";
-  } else if (contacts.contains(input)) {
+  } else if (duplicates) {
     retVal = "You already have this username saved!";
   } else if (input == Globals.username) {
     retVal = "Cannot add yourself!";
