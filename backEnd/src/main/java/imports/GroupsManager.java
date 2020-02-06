@@ -50,6 +50,8 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String POLL_DURATION = "PollDuration";
   public static final String POLL_PASS_PERCENT = "PollPassPercent";
   public static final String OPTED_IN = "OptedIn";
+  public static final String TENTATIVE_ALGORITHM_CHOICES = "TentativeAlgorithmChoices";
+  public static final String VOTING_NUMBERS = "VotingNumbers";
   public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
@@ -386,6 +388,76 @@ public class GroupsManager extends DatabaseAccessManager {
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    return resultStatus;
+  }
+  
+  public ResultStatus voteOnOption(final Map<String, Object> jsonMap) {
+    
+    ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
+            RequestFields.ACTIVE_USER);
+    
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
+        final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
+        final int voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        
+        final Item group = this.getItemByPrimaryKey(groupId);
+        
+        String currVoteValueStr;
+        String updatedValue;
+        int currVoteValue;
+        if (group != null) {
+          Map<String, Object> groupMapped = group.asMap();
+          Map<String, Object> eventsMapped = (Map<String, Object>) groupMapped.get(EVENTS);
+          Map<String, Object> eventIdMap = (Map<String, Object>) eventsMapped.get(eventId);
+          Map<String, Object> votingNumbersMap = (Map<String, Object>) eventIdMap.get(VOTING_NUMBERS);
+          
+          currVoteValueStr = (String) votingNumbersMap.get(choiceId);
+          if (currVoteValueStr == null) {
+            currVoteValue = 0;
+          }
+          else {
+            currVoteValue = Integer.parseInt(currVoteValueStr);
+          }
+ 
+          ValueMap valueMap = null;
+        
+          if (voteValue == 1) {
+            currVoteValue++;
+            updatedValue = Integer.toString(currVoteValue);
+          } else {
+            updatedValue = Integer.toString(currVoteValue);
+          }
+          String updateExpression = 
+              "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId = :updatedValue"; 
+          valueMap = new ValueMap().withString(":updatedValue", updatedValue);
+          
+          final NameMap  nameMap = new NameMap()
+            .with("#eventId", eventId)
+            .with("#choiceId", choiceId);
+          
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
+          
+          this.updateItem(updateItemSpec);
+          resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: unable to locate group by groupId";
+        }
+      } catch(Exception e) {
+        resultStatus.resultMessage = "Error: unable to parse request in manager";
+      }
+    } else {
+      resultStatus.resultMessage = "Error: required request keys not found.";
+    }
     return resultStatus;
   }
 

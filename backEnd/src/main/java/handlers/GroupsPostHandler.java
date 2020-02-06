@@ -34,6 +34,7 @@ public class GroupsPostHandler implements
               payloadJsonMap
                   .put(RequestFields.ACTIVE_USER,
                       GetActiveUser.getActiveUserFromRequest(request, context));
+            }
 
               String action = (String) jsonMap.get("action");
 
@@ -49,16 +50,15 @@ public class GroupsPostHandler implements
                     .newEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
+              } else if (action.equals("voteOnOption")) {
+                resultStatus = DatabaseManagers.GROUPS_MANAGER.voteOnOption(payloadJsonMap);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }
-            } else {
-              resultStatus.resultMessage = "Error: Invalid key in payload.";
-            }
           } catch (Exception e) {
-            resultStatus.resultMessage = "Error: Unable to parse request in handler.";
+            resultStatus.resultMessage = "Error: Unable to parse request in handler. Exception: "+e;
           }
         } else {
           //probably want to log this somewhere as front end validation shouldn't have let this through
