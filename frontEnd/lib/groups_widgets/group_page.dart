@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -10,14 +11,26 @@ import 'package:frontEnd/events_widgets/event_create.dart';
 
 class GroupPage extends StatefulWidget {
   Map<String, Event> events;
+  final String groupId;
 
-  GroupPage({Key key, this.events}) : super(key: key);
+  GroupPage({Key key, this.events, this.groupId}) : super(key: key);
 
   @override
   _GroupPageState createState() => new _GroupPageState();
 }
 
 class _GroupPageState extends State<GroupPage> {
+  Future<List<Group>> groupFuture;
+  Map<String, Event> events;
+
+  @override
+  void initState() {
+    List<String> ids = new List<String>();
+    ids.add(widget.groupId);
+    groupFuture = GroupsManager.getGroups(groupIds: ids);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +88,7 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   Future<Null> refreshList() async {
-    Globals.groups = await GroupsManager.getGroups();
+//    Globals.groups = await GroupsManager.getGroups();
     Globals.currentGroup = findCurrentGroup(
         Globals.currentGroup.groupId); // in case the current group was updated
     widget.events = GroupsManager.getGroupEvents(Globals.currentGroup);

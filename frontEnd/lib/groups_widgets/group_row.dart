@@ -32,6 +32,7 @@ class GroupRow extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (context) => GroupPage(
                                 events: GroupsManager.getGroupEvents(group),
+                                groupId: group.groupId,
                               )),
                     ).then((_) => GroupsHome());
                   }),
@@ -44,6 +45,7 @@ class GroupRow extends StatelessWidget {
                       MaterialPageRoute(
                           builder: (context) => GroupPage(
                                 events: GroupsManager.getGroupEvents(group),
+                                groupId: group.groupId,
                               )),
                     ).then((_) => GroupsHome());
                   },
