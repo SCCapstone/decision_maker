@@ -187,7 +187,40 @@ class GroupsManager {
       showPopupMessage("Unable to create group.", context);
     }
   }
+  static void voteOnOption(String activeUser, String groupId, String eventId,
+      String choiceId, int vote, BuildContext context) {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest;
+    jsonRequestBody["action"] = "voteOnOption";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.ACTIVE_USER () => activeUser);
+    jsonRequestBody["payload"]
+        .putIfAbsent(GroupsManager.GROUP_ID () => groupId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.CHOICE_ID, () => choiceId);
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.VOTE_VALUE, () => vote);
 
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          showPopupMessage(responseItem.resultMessage, context);
+        } else {
+          showPopupMessage("Error voting on option (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error voting on option (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to vote on option.", context);
+    }
+  }
   static void optInOutOfEvent(String groupId, String eventId,
       bool participating, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
