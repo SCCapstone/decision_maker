@@ -122,7 +122,6 @@ class _UserSettingsState extends State<UserSettings> {
                             MediaQuery.of(context).size.height * .004),
                       ),
                       RaisedButton.icon(
-                          color: Colors.greenAccent,
                           onPressed: () {
                             contactsPopup();
                           },
@@ -335,7 +334,7 @@ class _UserSettingsState extends State<UserSettings> {
                   title: Text("My Contacts"),
                   actions: <Widget>[
                     FlatButton(
-                      child: Text("Return"),
+                      child: Text("Back"),
                       onPressed: () {
                         contactsController.clear();
                         Navigator.of(context, rootNavigator: true)
@@ -394,6 +393,8 @@ class _UserSettingsState extends State<UserSettings> {
             },
           );
         }).then((val) {
+          // this is called whenever the user clicks outside the alert dialog or hits the back button
+      contactsController.clear();
       enableAutoValidation();
     });
   }
