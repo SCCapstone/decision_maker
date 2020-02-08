@@ -50,8 +50,8 @@ public class GroupsPostHandler implements
                     .newEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
-              } else if (action.equals("voteOnOption")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.voteOnOption(payloadJsonMap);
+              } else if (action.equals("voteForChoice")) {
+                resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {

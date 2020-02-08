@@ -391,7 +391,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
   
-  public ResultStatus voteOnOption(final Map<String, Object> jsonMap) {
+  public ResultStatus voteForChoice(final Map<String, Object> jsonMap) {
     
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
