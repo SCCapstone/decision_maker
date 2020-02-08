@@ -2,6 +2,7 @@ import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/main.dart';
 import 'package:frontEnd/utilities/validator.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'imports/globals.dart';
 import 'imports/response_item.dart';
@@ -122,7 +123,32 @@ class _SignInState extends State<SignInPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(25.0),
+                padding: EdgeInsets.all(10.0),
+              ),
+              Visibility(
+                visible: !signUp,
+                child: InkWell(
+                  child: Center(
+                    child: Text(
+                      "Forgot Password? Click here to reset.",
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize * 0.4,
+                          decoration: TextDecoration.underline),
+                    ),
+                  ),
+                  onTap: () async {
+                    if (await canLaunch(Globals.resetUrl)) {
+                      await launch(Globals.resetUrl);
+                    } else {
+                      throw 'Could not launch ${Globals.resetUrl}';
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(10.0),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -212,7 +238,8 @@ class _SignInState extends State<SignInPage> {
       print(e);
     }
 
-    Navigator.of(context, rootNavigator: true).pop('dialog'); // dismiss loading dialog
+    Navigator.of(context, rootNavigator: true)
+        .pop('dialog'); // dismiss loading dialog
     mutexLock = false;
 
     if (signedIn) {
@@ -240,7 +267,8 @@ class _SignInState extends State<SignInPage> {
       print(e);
     }
 
-    Navigator.of(context, rootNavigator: true).pop('dialog'); // dismiss loading dialog
+    Navigator.of(context, rootNavigator: true)
+        .pop('dialog'); // dismiss loading dialog
     mutexLock = false;
 
     if (data != null) {
