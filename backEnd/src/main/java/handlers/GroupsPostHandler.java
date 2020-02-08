@@ -34,7 +34,7 @@ public class GroupsPostHandler implements
               payloadJsonMap
                   .put(RequestFields.ACTIVE_USER,
                       GetActiveUser.getActiveUserFromRequest(request, context));
-            }
+            
 
               String action = (String) jsonMap.get("action");
 
@@ -57,6 +57,9 @@ public class GroupsPostHandler implements
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }
+            } else {
+              resultStatus.resultMessage = "Error: Invalid key in payload."; 
+            }
           } catch (Exception e) {
             resultStatus.resultMessage = "Error: Unable to parse request in handler.";
           }
