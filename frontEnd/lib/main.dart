@@ -30,25 +30,23 @@ class MyApp extends StatelessWidget {
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-          //We use a FutureBuilder here since the display of the widget depends on
-          //the asynchronous function hasValidTokensSet being able to fully execute
-          //and return a Future<bool>.
-          child: FutureBuilder<bool>(
-              future: hasValidTokensSet(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: new CircularProgressIndicator());
+    return Container(
+        //We use a FutureBuilder here since the display of the widget depends on
+        //the asynchronous function hasValidTokensSet being able to fully execute
+        //and return a Future<bool>.
+        child: FutureBuilder<bool>(
+            future: hasValidTokensSet(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (!snapshot.hasData) {
+                return Center(child: new CircularProgressIndicator());
+              } else {
+                //If and only if the tokens are not valid or don't exist, open the login page.
+                if (!snapshot.data) {
+                  return SignInPage();
                 } else {
-                  //If and only if the tokens are not valid or don't exist, open the login page.
-                  if (!snapshot.data) {
-                    return SignInPage();
-                  } else {
-                    return GroupsHome();
-                  }
+                  return GroupsHome();
                 }
-              })),
-    );
+              }
+            }));
   }
 }
