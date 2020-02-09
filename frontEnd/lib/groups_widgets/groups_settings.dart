@@ -278,7 +278,6 @@ class _GroupSettingsState extends State<GroupSettings> {
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName) {
       setState(() {
-        print(Globals.currentGroup.groupName);
         editing = true;
       });
     } else {
