@@ -34,6 +34,7 @@ class HomePage extends StatelessWidget {
         //We use a FutureBuilder here since the display of the widget depends on
         //the asynchronous function hasValidTokensSet being able to fully execute
         //and return a Future<bool>.
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: FutureBuilder<bool>(
             future: hasValidTokensSet(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
