@@ -15,7 +15,9 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.model.Get;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
@@ -107,6 +109,45 @@ public class GroupsManagerTest {
   /////////////////////
   // getGroups tests //
   /////////////////////region
+  @Test
+  public void getGroups_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item(), new Item(), new Item(), null).when(this.table)
+        .getItem(any(GetItemSpec.class));
+    doReturn(ImmutableList.of("id", "id2")).when(this.usersManager)
+        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+
+    ResultStatus result = this.groupsManager
+        .getGroups(ImmutableMap.of(RequestFields.GROUP_IDS, ImmutableList.of("id", "id2")),
+            this.metrics, this.lambdaLogger);
+    assertTrue(result.success);
+
+    result = this.groupsManager
+        .getGroups(ImmutableMap.of(RequestFields.ACTIVE_USER, "username"), this.metrics,
+            this.lambdaLogger);
+    assertTrue(result.success);
+
+    verify(this.usersManager, times(1))
+        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.dynamoDB, times(4)).getTable(any(String.class));
+    verify(this.table, times(4)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+    verify(this.lambdaLogger, times(1)).log(any(String.class)); // null db item
+  }
+
+  @Test
+  public void getGroups_missingRequestKey_failureResult() {
+    ResultStatus result = this.groupsManager
+        .getGroups(ImmutableMap.of("badKey", "blah"), this.metrics, this.lambdaLogger);
+    assertFalse(result.success);
+
+    verify(this.usersManager, times(0))
+        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.lambdaLogger, times(1)).log(any(String.class)); // missing key
+  }
 
   //////////////////////////endregion
   // createNewGroup tests //
