@@ -167,10 +167,10 @@ class _SignInState extends State<SignInPage> {
                       onPressed: () {
                         setState(() {
                           // reload widget and switch to either sign up or sign in
+                          formKey.currentState.reset();
                           passwordController.clear();
                           usernameController.clear();
                           emailController.clear();
-                          formKey.currentState.reset();
                           signUp = !signUp;
                           autoValidate = false;
                         });
