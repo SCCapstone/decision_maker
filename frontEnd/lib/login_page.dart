@@ -1,6 +1,7 @@
 import 'package:amazon_cognito_identity_dart/cognito.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/main.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -59,6 +60,7 @@ class _SignInState extends State<SignInPage> {
               Visibility(
                   visible: signUp,
                   child: TextFormField(
+                    keyboardType: TextInputType.emailAddress,
                     controller: emailController,
                     validator: validEmail,
                     onSaved: (String arg) {
@@ -220,27 +222,15 @@ class _SignInState extends State<SignInPage> {
           session.getRefreshToken().getToken(), session.getIdToken().jwtToken);
 
       signedIn = true;
-//    } on CognitoUserNewPasswordRequiredException catch (e) {
-//      // handle New Password challenge
-//    } on CognitoUserMfaRequiredException catch (e) {
-//      // handle SMS_MFA challenge
-//    } on CognitoUserSelectMfaTypeException catch (e) {
-//      // handle SELECT_MFA_TYPE challenge
-//    } on CognitoUserMfaSetupException catch (e) {
-//      // handle MFA_SETUP challenge
-//    } on CognitoUserTotpRequiredException catch (e) {
-//      // handle SOFTWARE_TOKEN_MFA challenge
-//    } on CognitoUserCustomChallengeException catch (e) {
-//      // handle CUSTOM_CHALLENGE challenge
-//    } on CognitoUserConfirmationNecessaryException catch (e) {
-//      // handle User Confirmation Necessary
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss loading dialog
+      mutexLock = false;
     } catch (e) {
-      print(e);
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss loading dialog
+      mutexLock = false;
+      showErrorMessage("Sign In Error", e.message, context);
     }
-
-    Navigator.of(context, rootNavigator: true)
-        .pop('dialog'); // dismiss loading dialog
-    mutexLock = false;
 
     if (signedIn) {
       Navigator.pushReplacement(
@@ -263,13 +253,15 @@ class _SignInState extends State<SignInPage> {
       data = await userPool.signUp(
           this.usernameController.text, this.passwordController.text,
           userAttributes: userAttributes);
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss loading dialog
+      mutexLock = false;
     } catch (e) {
-      print(e);
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss loading dialog
+      mutexLock = false;
+      showErrorMessage("Sign Up Error", e.message, context);
     }
-
-    Navigator.of(context, rootNavigator: true)
-        .pop('dialog'); // dismiss loading dialog
-    mutexLock = false;
 
     if (data != null) {
       attemptSignIn();
