@@ -25,18 +25,9 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
-    try {
-      // TODO remove this once the backend adds this field to the object
-      Map<String, dynamic> favoritesRaw = json[UsersManager.FAVORITES];
-      for (String username in favoritesRaw.keys) {
-        String icon = favoritesRaw[GroupsManager.ICON];
-        String displayName = favoritesRaw[UsersManager.DISPLAY_NAME];
-        Favorite favorite = new Favorite(
-            username: username, icon: icon, displayName: displayName);
-        favoriteList.add(favorite);
-      }
-    } catch (e) {
-      print(e);
+    Map<String, dynamic> favoritesRaw = json[UsersManager.FAVORITES];
+    for (String username in favoritesRaw.keys) {
+      favoriteList.add(Favorite.fromJson(favoritesRaw[username], username));
     }
 
     return User(
