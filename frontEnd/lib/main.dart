@@ -17,37 +17,35 @@ class MyApp extends StatelessWidget {
     } else {
       Globals.android = false;
     }
+    return MaterialApp(
+      title: "Pocket Poll",
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: HomePage(),
+    );
+  }
+}
 
-    return new Container(
-      //We use a FutureBuilder here since the display of the widget depends on
-      //the asynchronous function hasValidTokensSet being able to fully execute
-      //and return a Future<bool>.
-        child: new FutureBuilder<bool>(
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        //We use a FutureBuilder here since the display of the widget depends on
+        //the asynchronous function hasValidTokensSet being able to fully execute
+        //and return a Future<bool>.
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: FutureBuilder<bool>(
             future: hasValidTokensSet(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
-              //If the function to set the hasValidTokens boolean hasn't finished
-              //yet, then display a circular progress indicator.
               if (!snapshot.hasData) {
                 return Center(child: new CircularProgressIndicator());
               } else {
-                //If the tokens are not valid or don't exist, open the login page.
-                //Otherwise, skip the login page.
+                //If and only if the tokens are not valid or don't exist, open the login page.
                 if (!snapshot.data) {
-                  return MaterialApp(
-                    title: 'Flutter Demo',
-                    theme: ThemeData(
-                      primarySwatch: Colors.green,
-                    ),
-                    home: SignInPage(),
-                  );
+                  return SignInPage();
                 } else {
-                  return MaterialApp(
-                    title: 'Flutter Demo',
-                    theme: ThemeData(
-                      primarySwatch: Colors.green,
-                    ),
-                    home: GroupsHome(),
-                  );
+                  return GroupsHome();
                 }
               }
             }));

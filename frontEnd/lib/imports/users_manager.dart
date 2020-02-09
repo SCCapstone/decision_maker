@@ -22,6 +22,7 @@ class UsersManager {
   static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
+  static final String FAVORITES = "Favorites";
 
   static Future<User> getUserData({BuildContext context}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -53,8 +54,13 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserAppSettings(String displayName, int darkTheme,
-      int muted, int groupSort, BuildContext context) async {
+  static void updateUserAppSettings(
+      String displayName,
+      int darkTheme,
+      int muted,
+      int groupSort,
+      List<String> favorites,
+      BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     Map<String, dynamic> settings = new Map<String, dynamic>();
     jsonRequestBody["action"] = "updateUserAppSettings";
@@ -62,6 +68,7 @@ class UsersManager {
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
+    settings.putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);

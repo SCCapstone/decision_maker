@@ -125,17 +125,20 @@ class _GroupsHomeState extends State<GroupsHome> {
           ),
         ),
         actions: <Widget>[
-          Visibility(
-            visible: searching,
-            child: Container(
-              width: MediaQuery.of(context).size.width * .70,
-              child: TextFormField(
-                controller: searchBar,
-                style: TextStyle(color: Colors.white, fontSize: 30),
-                decoration: InputDecoration(
-                    hintText: "Search Group",
-                    hintStyle: TextStyle(
-                        color: Colors.white, fontStyle: FontStyle.italic)),
+          WillPopScope(
+            onWillPop: handleBackPress,
+            child: Visibility(
+              visible: searching,
+              child: Container(
+                width: MediaQuery.of(context).size.width * .70,
+                child: TextFormField(
+                  controller: searchBar,
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                  decoration: InputDecoration(
+                      hintText: "Search Group",
+                      hintStyle: TextStyle(
+                          color: Colors.white, fontStyle: FontStyle.italic)),
+                ),
               ),
             ),
           ),
@@ -237,6 +240,16 @@ class _GroupsHomeState extends State<GroupsHome> {
       setState(() {
         searchIcon = new Icon(Icons.close);
       });
+    }
+  }
+
+  Future<bool> handleBackPress() async {
+    // this allows for android users to press the back button when done searching and it will remove the search bar
+    if (searching) {
+      searchGroup();
+      return false;
+    } else {
+      return true;
     }
   }
 }
