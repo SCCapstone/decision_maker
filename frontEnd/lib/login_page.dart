@@ -88,8 +88,7 @@ class _SignInState extends State<SignInPage> {
               TextFormField(
                 key: new Key("password"),
                 obscureText: true,
-                autocorrect: false,
-                // don't allow user's passwords to be saved in their keyboard
+                autocorrect: false, // don't allow user's passwords to be saved in their keyboard
                 controller: passwordController,
                 validator: (signUp) ? validNewPassword : validPassword,
                 onSaved: (String arg) {
