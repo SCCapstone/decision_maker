@@ -129,7 +129,7 @@ class _UserSettingsState extends State<UserSettings> {
                             contactsPopup();
                           },
                           icon: Icon(Icons.contacts),
-                          label: Text("My Contacts")),
+                          label: Text("My Favorites")),
                       Container(
                         width: MediaQuery.of(context).size.width * .7,
                         child: Column(
