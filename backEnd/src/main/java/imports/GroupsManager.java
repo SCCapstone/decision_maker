@@ -427,7 +427,7 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch(Exception e) {
-        resultStatus.resultMessage = "Error: unable to parse request in manager";
+        resultStatus.resultMessage = "Error: unable to parse request in manager.";
       }
     } else {
       resultStatus.resultMessage = "Error: required request keys not found.";
