@@ -396,62 +396,36 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
-            RequestFields.ACTIVE_USER);
+            RequestFields.ACTIVE_USER, RequestFields.DISPLAY_NAME);
     
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
-        final int voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
+        final String voteValue = (String) jsonMap.get(RequestFields.VOTE_VALUE);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        
-        final Item group = this.getItemByPrimaryKey(groupId);
-        
-        String currVoteValueStr;
-        String updatedValue;
-        int currVoteValue;
-        if (group != null) {
-          Map<String, Object> groupMapped = group.asMap();
-          Map<String, Object> eventsMapped = (Map<String, Object>) groupMapped.get(EVENTS);
-          Map<String, Object> eventIdMap = (Map<String, Object>) eventsMapped.get(eventId);
-          Map<String, Object> votingNumbersMap = (Map<String, Object>) eventIdMap.get(VOTING_NUMBERS);
-          
-          currVoteValueStr = (String) votingNumbersMap.get(choiceId);
-          if (currVoteValueStr == null) {
-            currVoteValue = 0;
-          }
-          else {
-            currVoteValue = Integer.parseInt(currVoteValueStr);
-          }
+        final String displayName = (String) jsonMap.get(RequestFields.DISPLAY_NAME);
  
-          ValueMap valueMap = null;
-        
-          if (voteValue == 1) {
-            currVoteValue++;
-            updatedValue = Integer.toString(currVoteValue);
-          } else {
-            updatedValue = Integer.toString(currVoteValue);
-          }
-          String updateExpression = 
-              "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId = :updatedValue"; 
-          valueMap = new ValueMap().withString(":updatedValue", updatedValue);
+              
+        String updateExpression = 
+            "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." + 
+            "#displayName = :voteValue"; 
+        ValueMap valueMap = new ValueMap().withString(":voteValue", voteValue);
           
-          final NameMap  nameMap = new NameMap()
-            .with("#eventId", eventId)
-            .with("#choiceId", choiceId);
+        final NameMap  nameMap = new NameMap()
+          .with("#eventId", eventId)
+          .with("#choiceId", choiceId)
+          .with("#displayName", displayName);
           
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
-            .withUpdateExpression(updateExpression)
-            .withNameMap(nameMap)
-            .withValueMap(valueMap);
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
           
-          this.updateItem(updateItemSpec);
-          resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
-        } else {
-          resultStatus.resultMessage = "Error: unable to locate group by groupId";
-        }
+        this.updateItem(updateItemSpec);
+        resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch(Exception e) {
         resultStatus.resultMessage = "Error: unable to parse request in manager";
       }

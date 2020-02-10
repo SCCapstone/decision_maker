@@ -11,4 +11,5 @@ public class RequestFields {
   public static final String DISPLAY_NAME = "DisplayName";
   public static final String CHOICE_ID = "ChoiceId";
   public static final String VOTE_VALUE = "VoteValue";
+  public static final String TESTER_ADMIN = "TesterAdmin";
 }
