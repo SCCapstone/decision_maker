@@ -57,7 +57,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   color: Colors.red,
                   onPressed: () {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
-                        widget.choiceId, 0, context);
+                        widget.choiceId, voteNo, context);
                     setState(() {
                       vote = voteNo;
                     });
@@ -73,7 +73,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   color: Colors.green,
                   onPressed: () {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
-                        widget.choiceId, 1, context);
+                        widget.choiceId, voteYes, context);
                     setState(() {
                       vote = voteYes;
                     });
