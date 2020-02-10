@@ -24,7 +24,7 @@ class CategoriesListItem extends StatelessWidget {
               style: TextStyle(fontSize: 20),
             ),
             RaisedButton(
-              color: Colors.blueAccent,
+              color: Colors.lightBlue,
               child: Text(
                 "Edit",
                 style: TextStyle(),
@@ -59,7 +59,7 @@ class CategoriesListItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 RaisedButton(
-                  color: Colors.blueAccent,
+                  color: Colors.lightBlue,
                   child: Text(
                     "Edit",
                     style: TextStyle(),
@@ -78,7 +78,7 @@ class CategoriesListItem extends StatelessWidget {
                       EdgeInsets.all(MediaQuery.of(context).size.height * .007),
                 ),
                 RaisedButton(
-                  color: Colors.redAccent,
+                  color: Colors.red,
                   child: Text(
                     "Delete",
                     style: TextStyle(),
