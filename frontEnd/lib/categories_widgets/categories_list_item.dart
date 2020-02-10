@@ -84,8 +84,7 @@ class CategoriesListItem extends StatelessWidget {
                     style: TextStyle(),
                   ),
                   onPressed: () {
-                    confirmDelete(
-                        context); // this deletes it from the local list
+                    confirmDelete(context);
                   },
                 ),
               ],
