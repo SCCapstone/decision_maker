@@ -121,7 +121,8 @@ class _GroupsHomeState extends State<GroupsHome> {
           visible: !(searching),
           child: Text(
             "Pocket Poll",
-            style: TextStyle(fontSize: 35),
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
           ),
         ),
         actions: <Widget>[

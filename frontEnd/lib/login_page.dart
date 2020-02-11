@@ -47,7 +47,12 @@ class _SignInState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(title: Text((signUp) ? "Sign Up" : "Sign In")),
+      appBar: AppBar(
+          centerTitle: true,
+          title: Text("Pocket Poll",
+              style: TextStyle(
+                  fontSize:
+                      DefaultTextStyle.of(context).style.fontSize * 0.8))),
       body: Form(
         key: formKey,
         autovalidate: autoValidate,
@@ -88,7 +93,8 @@ class _SignInState extends State<SignInPage> {
               TextFormField(
                 key: new Key("password"),
                 obscureText: true,
-                autocorrect: false, // don't allow user's passwords to be saved in their keyboard
+                autocorrect: false,
+                // don't allow user's passwords to be saved in their keyboard
                 controller: passwordController,
                 validator: (signUp) ? validNewPassword : validPassword,
                 onSaved: (String arg) {
