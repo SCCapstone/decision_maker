@@ -112,8 +112,7 @@ public class GroupsManagerTest {
   @Test
   public void getGroups_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item(), new Item(), new Item(), null).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
     doReturn(ImmutableList.of("id", "id2")).when(this.usersManager)
         .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
 
@@ -132,7 +131,28 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.table, times(4)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(2)).commonClose(true);
-    verify(this.lambdaLogger, times(1)).log(any(String.class)); // null db item
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+  }
+
+  @Test
+  public void getGroups_noDbConnectionOrNullGroup_successfulResult() {
+    doReturn(null, this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item(), null).when(this.table).getItem(any(GetItemSpec.class));
+
+    //when getting the first id, the db doesn't connect
+    //getting second id is successful
+    //getting third id returns null from db
+    ResultStatus result = this.groupsManager
+        .getGroups(ImmutableMap.of(RequestFields.GROUP_IDS, ImmutableList.of("id", "id2", "id3")),
+            this.metrics, this.lambdaLogger);
+    assertTrue(result.success);
+
+    verify(this.usersManager, times(0))
+        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+    verify(this.dynamoDB, times(3)).getTable(any(String.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.lambdaLogger, times(2)).log(any(String.class));
   }
 
   @Test
