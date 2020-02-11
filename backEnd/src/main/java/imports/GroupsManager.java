@@ -65,6 +65,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.getGroups";
+    metrics.commonSetup(classMethod);
+
     boolean success = true;
     String resultMessage = "";
     List<String> groupIds = new ArrayList<>();
@@ -77,27 +80,28 @@ public class GroupsManager extends DatabaseAccessManager {
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
     }
 
     // this will be a json string representing an array of objects
-    List<Map> groups = new ArrayList<Map>();
-    for (String id : groupIds) {
-      try {
-        Item dbData = this.getItemByPrimaryKey(id);
-        if (dbData != null) {
-          groups.add(dbData.asMap());
-        } else {
-          //maybe log this idk, we probably shouldn't have ids that don't point to groups in the db?
-        }
-      } catch (Exception e) {
-        //definitely needs to be logged, probably a db con issue
-      }
-    }
-
     if (success) {
+      List<Map> groups = new ArrayList<>();
+      for (String groupId : groupIds) {
+        System.out.println(groupId);
+        try {
+          Item groupData = this.getItemByPrimaryKey(groupId);
+          groups.add(groupData.asMap());
+        } catch (Exception e) {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+
       resultMessage = JsonEncoders.convertListToJson(groups);
     }
 
+    metrics.commonClose(success);
     return new ResultStatus(success, resultMessage);
   }
 
