@@ -9,10 +9,13 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
@@ -23,19 +26,22 @@ public class UsersManager extends DatabaseAccessManager {
 
   public static final String USERNAME = "Username";
   public static final String DISPLAY_NAME = "DisplayName";
+  public static final String ICON = "Icon";
   public static final String APP_SETTINGS = "AppSettings";
   public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   public static final String APP_SETTINGS_MUTED = "Muted";
   public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   public static final String GROUPS = "Groups";
   public static final String CATEGORIES = "Categories";
+  public static final String FAVORITES = "Favorites";
+  public static final String FAVORITES_OF = "FavoritesOf";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
   public static final int DEFAULT_DARK_THEME = 0;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
 
-  public static final Map EMPTY_MAP = new HashMap();
+  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -123,7 +129,8 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
-              .withMap(GROUPS, EMPTY_MAP);
+              .withMap(GROUPS, EMPTY_MAP)
+              .withMap(FAVORITES, EMPTY_MAP);
 
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(user);
@@ -149,10 +156,10 @@ public class UsersManager extends DatabaseAccessManager {
 
   public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
-    ResultStatus resultStatus = new ResultStatus();
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
+    ResultStatus resultStatus = new ResultStatus();
     if (
         jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
             jsonMap.containsKey(CategoriesManager.CATEGORY_ID) &&
@@ -186,64 +193,185 @@ public class UsersManager extends DatabaseAccessManager {
           "Error: Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
+
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus updateUserAppSettings(Map<String, Object> jsonMap, final Metrics metrics,
+  public ResultStatus updateUserSettings(Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
-    ResultStatus resultStatus = new ResultStatus();
     final String classMethod = "UsersManager.updateUserAppSettings";
     metrics.commonSetup(classMethod);
 
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      try {
-        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        String settingToChange = null;
-        if (jsonMap.containsKey(APP_SETTINGS_DARK_THEME)) {
-          settingToChange = APP_SETTINGS_DARK_THEME;
-        } else if (jsonMap.containsKey(APP_SETTINGS_MUTED)) {
-          settingToChange = APP_SETTINGS_MUTED;
-        } else if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
-          settingToChange = APP_SETTINGS_GROUP_SORT;
-        } else {
-          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Invalid values for setting or user").toString());
-          resultStatus.resultMessage = "Error: Invalid values for setting or user";
-        }
+    ResultStatus resultStatus = new ResultStatus();
 
-        if (settingToChange != null) {
-          Integer settingVal = (Integer) jsonMap.get(settingToChange);
-          if (checkAppSettingsVals(settingVal)) {
-            ValueMap valueMap = new ValueMap().withInt(":value", settingVal);
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-                .withUpdateExpression("set " + APP_SETTINGS + "." + settingToChange + " = :value")
-                .withValueMap(valueMap);
+    /*
+     If the user's display name or the icon changes:
+       loop through a user's groups and favorites of and update accordingly
+     If a user's Favorites change
+       need to reach out and pull new favorites data in
+       need to go out and delete favorites of map from removed favorites
+     Maybe just blind update the app settings -> the code will definitely be simpler
+     */
 
-            this.updateItem(updateItemSpec);
-            resultStatus = new ResultStatus(true, "User settings updated successfully!");
-          } else {
-            lambdaLogger
-                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                    "Invalid values for app setting")
-                    .toString());
-            resultStatus.resultMessage = "Error: Invalid values for settings";
+    try {
+      String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+      String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
+      String newIcon = (String) jsonMap.get(ICON);
+      Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
+      Set<String> newFavorites = new HashSet<>((List<String>) jsonMap.get(FAVORITES));
+
+      Item userDataRaw = this.getItemByPrimaryKey(activeUser);
+      Map<String, Object> user = userDataRaw.asMap();
+
+      String oldDisplayName = (String) user.get(DISPLAY_NAME);
+      String oldIcon = (String) user.get(ICON);
+      Set<String> oldFavorites = new HashSet<>((List<String>) user.get(FAVORITES));
+
+      //as long as this remains a small group of settings, I think it's okay to always overwrite
+      //this does imply that the entire appSettings array is sent from the front end though
+      String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
+      ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings);
+
+      String updateGroupsExpression = null;
+      ValueMap groupsValueMap = new ValueMap();
+      NameMap groupsNameMap = new NameMap();
+
+      //determine if the display name/icon have changed (rn it's just display name)
+      if (!oldDisplayName.equals(newDisplayName)) {
+        updateUserExpression += ", " + DISPLAY_NAME + " = :name";
+        userValueMap.withString(":name", newDisplayName);
+
+        updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+            GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
+        groupsValueMap.withString(":displayName", newDisplayName);
+        groupsNameMap.with("#username", activeUser);
+      }
+
+      if (!oldIcon.equals(newIcon)) {
+        updateUserExpression += ", " + ICON + " = :icon";
+        userValueMap.withString(":icon", newIcon);
+
+        updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+            GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
+        groupsValueMap.withString(":icon", newIcon);
+        groupsNameMap.with("#username2", activeUser);
+      }
+
+
+
+      UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+          .withUpdateExpression(updateUserExpression)
+          .withValueMap(userValueMap);
+
+      this.updateItem(updateUserItemSpec);
+
+      if (updateGroupsExpression != null) {
+        UpdateItemSpec updateGroupItemSpec;
+
+        List<String> groupIds = this.getAllGroupIds(activeUser, metrics, lambdaLogger);
+        for (String groupId : groupIds) {
+          try {
+            updateGroupItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
+                .withUpdateExpression(updateGroupsExpression)
+                .withValueMap(groupsValueMap)
+                .withNameMap(groupsNameMap);
+
+            DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
+          } catch (Exception e) {
+            lambdaLogger.log(
+                new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
           }
         }
-      } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-        resultStatus.resultMessage = "Error: Unable to parse request." + e;
       }
-    } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
-      resultStatus.resultMessage = "Error: required request keys not found";
+    } catch (Exception e) {
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+      resultStatus.resultMessage = "Error: Unable to parse request.";
     }
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private boolean updateActiveUsersFavorites() {
+    if (!newFavorites.containsAll(oldFavorites)) {
+      final Set<String> removedUsernames = new HashSet<>(oldFavorites);
+      removedUsernames.removeAll(newFavorites);
+
+      UpdateItemSpec updateDeletedFavoritesItemSpec;
+      final String deleteFavoriteOfExpression = "remove " + FAVORITES_OF + ".#activeUser";
+      final NameMap deleteFavoriteOfNameMap = new NameMap().with("#activeUser", activeUser);
+
+      for (String username : removedUsernames) {
+        try {
+          updateDeletedFavoritesItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+              .withUpdateExpression(deleteFavoriteOfExpression)
+              .withNameMap(deleteFavoriteOfNameMap);
+
+          this.updateItem(updateDeletedFavoritesItemSpec);
+        } catch (Exception e) {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+    }
+
+    if (!oldFavorites.containsAll(newFavorites)) {
+      final Set<String> addedUsernames = new HashSet<>(newFavorites);
+      addedUsernames.removeAll(oldFavorites);
+
+      //first we add all of the favorites of mapping to the new user items
+      UpdateItemSpec updateFavoritesOfItemSpec;
+      final String updateFavoriteOfExpression = "set " + FAVORITES_OF + ".#activeUser = true";
+      final NameMap updateFavoriteOfNameMap = new NameMap().with("#activeUser", activeUser);
+
+      UpdateItemSpec updateFavoritesItemSpec;
+      final String updateFavoriteExpression = "set " + FAVORITES + ".#newFavoriteUser = :newFavorite";
+
+      for (String username : addedUsernames) {
+        try {
+          //TODO put these two updates into a executeWriteTransaction statement
+
+          //add the 'favorites of' mapping to the other user's item
+          updateFavoritesOfItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+              .withUpdateExpression(updateFavoriteOfExpression)
+              .withNameMap(updateFavoriteOfNameMap);
+
+          this.updateItem(updateFavoritesOfItemSpec);
+
+          //add the other user's data to the active user's 'favorites' map
+          Item newFavoriteUser = this.getItemByPrimaryKey(username);
+          Map<String, Object> newFavoriteUserMapped = newFavoriteUser.asMap();
+
+          updateFavoritesItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression(updateFavoriteExpression)
+              .withNameMap(new NameMap().with("#newFavoriteUser", username))
+              .withValueMap(new ValueMap().withMap(":newFavorite", ImmutableMap.of(
+                  DISPLAY_NAME, (String) newFavoriteUserMapped.get(DISPLAY_NAME),
+                  ICON, (String) newFavoriteUserMapped.get(ICON)
+              )));
+
+          this.updateItem(updateFavoritesItemSpec);
+        } catch (Exception e) {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+    }
+  }
+
+  private String getUpdateString(String current, String key, String valueName) {
+    if (current != null) {
+      return current + ", " + key + " = " + valueName;
+    } else {
+      return "set " + key + " = " + valueName;
+    }
   }
 
   public ResultStatus getUserRatings(Map<String, Object> jsonMap, final Metrics metrics,
@@ -289,33 +417,6 @@ public class UsersManager extends DatabaseAccessManager {
     }
 
     metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  public ResultStatus getUserAppSettings(Map<String, Object> jsonMap) {
-    ResultStatus resultStatus = new ResultStatus();
-
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      try {
-        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-
-        GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser);
-        Item userDataRaw = this.getItem(getItemSpec);
-
-        Map<String, Object> userSettings = (Map<String, Object>) userDataRaw.asMap()
-            .get(UsersManager.APP_SETTINGS);
-
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(userSettings));
-      } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
-      }
-    } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
     return resultStatus;
   }
 

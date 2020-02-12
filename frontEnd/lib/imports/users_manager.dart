@@ -54,21 +54,22 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserAppSettings(
+  static void updateUserSettings(
       String displayName,
       int darkTheme,
       int muted,
       int groupSort,
       List<String> favorites,
       BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     Map<String, dynamic> settings = new Map<String, dynamic>();
-    jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
-    settings.putIfAbsent(FAVORITES, () => favorites);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "updateUserSettings";
+    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
+    jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
