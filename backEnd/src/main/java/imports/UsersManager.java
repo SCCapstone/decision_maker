@@ -237,6 +237,10 @@ public class UsersManager extends DatabaseAccessManager {
       ValueMap groupsValueMap = new ValueMap();
       NameMap groupsNameMap = new NameMap();
 
+      String updateFavoritesOfExpression = null;
+      ValueMap favoritesOfValueMap = new ValueMap();
+      NameMap favoritesOfNameMap = new NameMap();
+
       //determine if the display name/icon have changed (rn it's just display name)
       if (!oldDisplayName.equals(newDisplayName)) {
         updateUserExpression += ", " + DISPLAY_NAME + " = :name";
@@ -246,6 +250,12 @@ public class UsersManager extends DatabaseAccessManager {
             GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
         groupsValueMap.withString(":displayName", newDisplayName);
         groupsNameMap.with("#username", activeUser);
+
+        updateFavoritesOfExpression = this
+            .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username." + DISPLAY_NAME,
+                ":displayName");
+        favoritesOfValueMap.withString(":displayName", newDisplayName);
+        favoritesOfNameMap.with("#username", activeUser);
       }
 
       if (!oldIcon.equals(newIcon)) {
@@ -256,9 +266,13 @@ public class UsersManager extends DatabaseAccessManager {
             GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
         groupsValueMap.withString(":icon", newIcon);
         groupsNameMap.with("#username2", activeUser);
+
+        updateFavoritesOfExpression = this
+            .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
+                ":icon");
+        favoritesOfValueMap.withString(":icon", newIcon);
+        favoritesOfNameMap.with("#username2", activeUser);
       }
-
-
 
       UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
           .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
@@ -270,7 +284,7 @@ public class UsersManager extends DatabaseAccessManager {
       if (updateGroupsExpression != null) {
         UpdateItemSpec updateGroupItemSpec;
 
-        List<String> groupIds = this.getAllGroupIds(activeUser, metrics, lambdaLogger);
+        List<String> groupIds = new ArrayList<>(((Map) user.get(GROUPS)).keySet());
         for (String groupId : groupIds) {
           try {
             updateGroupItemSpec = new UpdateItemSpec()
@@ -286,6 +300,31 @@ public class UsersManager extends DatabaseAccessManager {
           }
         }
       }
+
+      if (updateFavoritesOfExpression != null) {
+        UpdateItemSpec updateFavoritesOfItemSpec;
+
+        List<String> usernamesToUpdate = new ArrayList<>(((Map) user.get(FAVORITES)).keySet());
+        for (String username : usernamesToUpdate) {
+          try {
+            updateFavoritesOfItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+                .withUpdateExpression(updateFavoritesOfExpression)
+                .withValueMap(favoritesOfValueMap)
+                .withNameMap(favoritesOfNameMap);
+
+            this.updateItem(updateFavoritesOfItemSpec);
+          } catch (Exception e) {
+            lambdaLogger.log(
+                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+          }
+        }
+      }
+
+      this.updateActiveUsersFavorites(newFavorites, oldFavorites, activeUser, metrics,
+          lambdaLogger);
+
+      resultStatus = new ResultStatus(true, "User updated successfully.");
     } catch (Exception e) {
       lambdaLogger
           .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
@@ -296,7 +335,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private boolean updateActiveUsersFavorites() {
+  private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
+      final Set<String> oldFavorites, final String activeUser, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.updateActiveUsersFavorites";
+    metrics.commonSetup(classMethod);
+
+    boolean hadError = false;
+
     if (!newFavorites.containsAll(oldFavorites)) {
       final Set<String> removedUsernames = new HashSet<>(oldFavorites);
       removedUsernames.removeAll(newFavorites);
@@ -314,6 +360,7 @@ public class UsersManager extends DatabaseAccessManager {
 
           this.updateItem(updateDeletedFavoritesItemSpec);
         } catch (Exception e) {
+          hadError = true;
           lambdaLogger.log(
               new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
         }
@@ -330,7 +377,8 @@ public class UsersManager extends DatabaseAccessManager {
       final NameMap updateFavoriteOfNameMap = new NameMap().with("#activeUser", activeUser);
 
       UpdateItemSpec updateFavoritesItemSpec;
-      final String updateFavoriteExpression = "set " + FAVORITES + ".#newFavoriteUser = :newFavorite";
+      final String updateFavoriteExpression =
+          "set " + FAVORITES + ".#newFavoriteUser = :newFavorite";
 
       for (String username : addedUsernames) {
         try {
@@ -359,11 +407,15 @@ public class UsersManager extends DatabaseAccessManager {
 
           this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {
+          hadError = true;
           lambdaLogger.log(
               new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
         }
       }
     }
+
+    metrics.commonClose(!hadError);
+    return (!hadError);
   }
 
   private String getUpdateString(String current, String key, String valueName) {
