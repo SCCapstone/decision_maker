@@ -366,6 +366,53 @@ public class UsersManagerTest {
     verify(this.metrics, times(2)).commonClose(true);
   }
 
+  @Test
+  public void updateUserSettings_validInputNewFavorite_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of(
+        "fav1", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        ),
+        "fav2", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        )
+    ));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(4)).getTable(any(String.class));
+    verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserSettings_validInputRemoveFavorite_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of());
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(4)).getTable(any(String.class));
+    verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
   //////////////////////////endregion
   // getUserRatings tests //
   //////////////////////////region
