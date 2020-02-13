@@ -79,7 +79,11 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return success;
   }
 
-  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap) {
+  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.processPendingEvent";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
@@ -156,7 +160,20 @@ public class PendingEventsManager extends DatabaseAccessManager {
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  public Map<String, Object> getTentativeAlgorithmChoices(final Map<String, Object> eventDataMapped,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+
+    return null;
+  }
+
+  public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    
+    return null;
   }
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
