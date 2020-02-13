@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -367,9 +368,8 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void updateUserSettings_validInputNewFavorite_successfulResult() {
+  public void updateUserSettings_validInputRemoveFavorite_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
     userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of(
         "fav1", ImmutableMap.of(
             UsersManager.DISPLAY_NAME, "favDisplayName",
@@ -387,17 +387,16 @@ public class UsersManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.lambdaLogger, times(0)).log(any(String.class));
-    verify(this.dynamoDB, times(4)).getTable(any(String.class));
-    verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.dynamoDB, times(5)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
-    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(3)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void updateUserSettings_validInputRemoveFavorite_successfulResult() {
+  public void updateUserSettings_validInputAddFavorite_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
     userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of());
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
@@ -406,11 +405,60 @@ public class UsersManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(6)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(3)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(3)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserSettings_validInputDbDiesDuringDisplayNameIconUpdate_failureResult() {
+    doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
+    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+
+    userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
+    userItem.withString(UsersManager.ICON, "new icon");
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    doThrow(NullPointerException.class).when(this.groupsManager)
+        .updateItem(any(UpdateItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(3)).log(any(String.class));
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
-    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
-    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(2)).commonClose(true);
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true); // favorites still works here
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserSettings_validInputDbDiesDuringFavoritesUpdate_failureResult() {
+    doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
+    //adding fav2 and removing fav1
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of(
+        "fav2", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        )
+    ));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(3)).log(any(String.class));
+    verify(this.dynamoDB, times(5)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
   }
 
   //////////////////////////endregion

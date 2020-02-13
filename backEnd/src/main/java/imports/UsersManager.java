@@ -332,7 +332,6 @@ public class UsersManager extends DatabaseAccessManager {
     } catch (Exception e) {
       lambdaLogger
           .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-      e.printStackTrace();
       resultStatus.resultMessage = "Error: Unable to parse request.";
     }
 
@@ -496,9 +495,5 @@ public class UsersManager extends DatabaseAccessManager {
     retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
     retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
     return retMap;
-  }
-
-  private boolean checkAppSettingsVals(int settingVal) {
-    return (settingVal == 0 || settingVal == 1);
   }
 }
