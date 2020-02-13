@@ -34,7 +34,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String GROUPS = "Groups";
   public static final String CATEGORIES = "Categories";
   public static final String FAVORITES = "Favorites";
-  public static final String FAVORITES_OF = "FavoritesOf";
+  public static final String FAVORITE_OF = "FavoriteOf";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
   public static final int DEFAULT_DARK_THEME = 0;
@@ -219,14 +219,14 @@ public class UsersManager extends DatabaseAccessManager {
       String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
       String newIcon = (String) jsonMap.get(ICON);
       Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
-      Set<String> newFavorites = new HashSet<>((List<String>) jsonMap.get(FAVORITES));
+      Set<String> newFavorites = new HashSet<>((List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
       Item userDataRaw = this.getItemByPrimaryKey(activeUser);
       Map<String, Object> user = userDataRaw.asMap();
 
       String oldDisplayName = (String) user.get(DISPLAY_NAME);
       String oldIcon = (String) user.get(ICON);
-      Set<String> oldFavorites = new HashSet<>((List<String>) user.get(FAVORITES));
+      Set<String> oldFavorites = new HashSet<>(((Map) user.get(FAVORITES)).keySet());
 
       //as long as this remains a small group of settings, I think it's okay to always overwrite
       //this does imply that the entire appSettings array is sent from the front end though
@@ -304,7 +304,7 @@ public class UsersManager extends DatabaseAccessManager {
       if (updateFavoritesOfExpression != null) {
         UpdateItemSpec updateFavoritesOfItemSpec;
 
-        List<String> usernamesToUpdate = new ArrayList<>(((Map) user.get(FAVORITES)).keySet());
+        List<String> usernamesToUpdate = new ArrayList<>(((Map) user.get(FAVORITE_OF)).keySet());
         for (String username : usernamesToUpdate) {
           try {
             updateFavoritesOfItemSpec = new UpdateItemSpec()
@@ -348,8 +348,12 @@ public class UsersManager extends DatabaseAccessManager {
       removedUsernames.removeAll(newFavorites);
 
       UpdateItemSpec updateDeletedFavoritesItemSpec;
-      final String deleteFavoriteOfExpression = "remove " + FAVORITES_OF + ".#activeUser";
+      final String deleteFavoriteOfExpression = "remove " + FAVORITE_OF + ".#activeUser";
       final NameMap deleteFavoriteOfNameMap = new NameMap().with("#activeUser", activeUser);
+
+      UpdateItemSpec updateFavoritesItemSpec;
+      final String updateFavoriteExpression =
+          "remove " + FAVORITES + ".#oldFavoriteUser";
 
       for (String username : removedUsernames) {
         try {
@@ -359,6 +363,13 @@ public class UsersManager extends DatabaseAccessManager {
               .withNameMap(deleteFavoriteOfNameMap);
 
           this.updateItem(updateDeletedFavoritesItemSpec);
+
+          updateFavoritesItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression(updateFavoriteExpression)
+              .withNameMap(new NameMap().with("#oldFavoriteUser", username));
+
+          this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {
           hadError = true;
           lambdaLogger.log(
@@ -373,8 +384,9 @@ public class UsersManager extends DatabaseAccessManager {
 
       //first we add all of the favorites of mapping to the new user items
       UpdateItemSpec updateFavoritesOfItemSpec;
-      final String updateFavoriteOfExpression = "set " + FAVORITES_OF + ".#activeUser = true";
+      final String updateFavoriteOfExpression = "set " + FAVORITE_OF + ".#activeUser = :true";
       final NameMap updateFavoriteOfNameMap = new NameMap().with("#activeUser", activeUser);
+      final ValueMap updateFavoriteOfValueMap = new ValueMap().with(":true", true);
 
       UpdateItemSpec updateFavoritesItemSpec;
       final String updateFavoriteExpression =
@@ -388,7 +400,8 @@ public class UsersManager extends DatabaseAccessManager {
           updateFavoritesOfItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), username)
               .withUpdateExpression(updateFavoriteOfExpression)
-              .withNameMap(updateFavoriteOfNameMap);
+              .withNameMap(updateFavoriteOfNameMap)
+              .withValueMap(updateFavoriteOfValueMap);
 
           this.updateItem(updateFavoritesOfItemSpec);
 
