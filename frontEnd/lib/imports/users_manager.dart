@@ -23,6 +23,7 @@ class UsersManager {
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
   static final String FAVORITES = "Favorites";
+  static final String ICON = "Icon";
 
   static Future<User> getUserData({BuildContext context}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -71,6 +72,7 @@ class UsersManager {
     jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
     jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
+    jsonRequestBody["payload"].putIfAbsent(ICON, () => "asdf");
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
