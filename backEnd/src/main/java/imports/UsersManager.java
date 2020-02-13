@@ -130,7 +130,8 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP)
-              .withMap(FAVORITES, EMPTY_MAP);
+              .withMap(FAVORITES, EMPTY_MAP)
+              .withMap(FAVORITE_OF, EMPTY_MAP);
 
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(user);
@@ -219,7 +220,8 @@ public class UsersManager extends DatabaseAccessManager {
       String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
       String newIcon = (String) jsonMap.get(ICON);
       Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
-      Set<String> newFavorites = new HashSet<>((List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
+      Set<String> newFavorites = new HashSet<>(
+          (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
       Item userDataRaw = this.getItemByPrimaryKey(activeUser);
       Map<String, Object> user = userDataRaw.asMap();
@@ -324,7 +326,9 @@ public class UsersManager extends DatabaseAccessManager {
       this.updateActiveUsersFavorites(newFavorites, oldFavorites, activeUser, metrics,
           lambdaLogger);
 
-      resultStatus = new ResultStatus(true, "User updated successfully.");
+      Item updatedUser = this.getItemByPrimaryKey(activeUser);
+
+      resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(updatedUser.asMap()));
     } catch (Exception e) {
       lambdaLogger
           .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
