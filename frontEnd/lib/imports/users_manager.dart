@@ -9,6 +9,7 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
+import 'globals.dart';
 
 class UsersManager {
   static final String apiEndpoint = "usersendpoint";
@@ -82,7 +83,9 @@ class UsersManager {
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (!responseItem.success) {
+        if (responseItem.success) {
+          Globals.user = User.fromJson(json.decode(responseItem.resultMessage));
+        } else {
           showPopupMessage("Error updating user settings (1).", context);
         }
       } catch (e) {
