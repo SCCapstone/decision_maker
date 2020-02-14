@@ -28,6 +28,14 @@ class Category {
   }
 
   @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is Category && this.categoryId == other.categoryId;
+  }
+
+  @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName Choices: "
         "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner";

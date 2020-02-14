@@ -13,6 +13,22 @@ bool intToBool(int val) {
   return val == 1;
 }
 
+String convertDateToString(DateTime date) {
+  return date.toString().substring(0, 10);
+}
+
+String convertTimeToString(TimeOfDay time) {
+  return time.toString().substring(10, 15);
+}
+
+int getHour(String time) {
+  return int.parse(time.substring(0, 2));
+}
+
+int getMinute(String time) {
+  return int.parse(time.substring(3, 5));
+}
+
 void showPopupMessage(String message, BuildContext context,
     {Function callback}) {
   if (context == null) {

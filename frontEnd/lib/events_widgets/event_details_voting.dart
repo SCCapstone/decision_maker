@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -25,10 +26,12 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   @override
   void initState() {
     for (String username in widget.event.optedIn.keys) {
-      widget.userRows.add(UserRow(widget.event.optedIn[username]));
+      widget.userRows.add(
+          UserRow(widget.event.optedIn[username][UsersManager.DISPLAY_NAME]));
     }
     for (String username in widget.event.eventCreator.keys) {
-      eventCreator = widget.event.eventCreator[username];
+      eventCreator =
+          widget.event.eventCreator[username][UsersManager.DISPLAY_NAME];
     }
     super.initState();
   }
