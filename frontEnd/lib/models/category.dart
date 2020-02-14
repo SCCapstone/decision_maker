@@ -36,6 +36,11 @@ class Category {
   }
 
   @override
+  int get hashCode {
+    return categoryId.hashCode;
+  }
+
+  @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName Choices: "
         "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner";
