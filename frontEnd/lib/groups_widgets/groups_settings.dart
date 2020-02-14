@@ -26,7 +26,6 @@ class _GroupSettingsState extends State<GroupSettings> {
   String groupIcon;
   int pollPassPercent;
   int pollDuration;
-  Map<String, dynamic> users;
   Future<List<Category>> categoriesTotalFuture;
   bool owner;
   List<Favorite> originalUsers = new List<Favorite>();
@@ -65,8 +64,6 @@ class _GroupSettingsState extends State<GroupSettings> {
       originalUsers.add(user);
       displayUsers.add(user);
     }
-    users = new Map<String, dynamic>();
-    users.addAll(Globals.currentGroup.members);
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
     pollDuration = Globals.currentGroup.defaultPollDuration;
@@ -291,13 +288,17 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void showMembersPopup() {
     showDialog(
-            context: context,
-            child: AddUserPopup(displayUsers, originalUsers,
-                handlePopupClosed: memberPopupClosed))
+        context: context,
+        child: AddUserPopup(displayUsers, originalUsers,
+            handlePopupClosed: memberPopupClosed))
         .then((val) {
       // this is called whenever the user clicks outside the alert dialog or hits the back button
       memberPopupClosed();
     });
+  }
+
+  void showCategoriesPopup(){
+
   }
 
   void memberPopupClosed() {
@@ -362,13 +363,18 @@ class _GroupSettingsState extends State<GroupSettings> {
             () => categoriesSelected[i].categoryName);
       }
 
+      Map<String, String> membersMap = new Map<String, String>();
+      for (Favorite user in displayUsers) {
+        membersMap.putIfAbsent(user.username, () => user.displayName);
+      }
+
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: groupName,
           groupCreator: Globals.currentGroup.groupCreator,
           icon: groupIcon,
           categories: categoriesMap,
-          members: users,
+          members: membersMap,
           events: Globals.currentGroup.events,
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent,
@@ -379,6 +385,8 @@ class _GroupSettingsState extends State<GroupSettings> {
 
       setState(() {
         // reset everything and reflect changes made
+        originalUsers.clear();
+        originalUsers.addAll(displayUsers);
         groupNameController.text = groupName;
         groupIconController.clear();
         pollDurationController.text = pollDuration.toString();
