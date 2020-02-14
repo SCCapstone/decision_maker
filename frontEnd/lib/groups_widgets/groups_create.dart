@@ -5,7 +5,6 @@ import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
-import 'package:frontEnd/widgets/users_dropdown.dart';
 
 import 'package:frontEnd/imports/groups_manager.dart';
 
@@ -118,9 +117,6 @@ class _CreateGroupState extends State<CreateGroup> {
                         return Center(child: CircularProgressIndicator());
                       }
                     }),
-                UsersDropdown("Users", users, true,
-                    deleteCallback: (user) => removeUser(user),
-                    addCallback: (user) => addUser(user)),
                 RaisedButton.icon(
                     onPressed: validateInput,
                     icon: Icon(Icons.add),

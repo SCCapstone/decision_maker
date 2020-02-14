@@ -398,7 +398,9 @@ class _UserSettingsState extends State<UserSettings> {
                                   return UserRow(
                                       displayedFavorites[index].displayName,
                                       displayedFavorites[index].username,
-                                      true, deleteUser: () {
+                                      displayedFavorites[index].icon,
+                                      true,
+                                      false, deleteUser: () {
                                     displayedFavorites
                                         .remove(displayedFavorites[index]);
                                     setState(() {});

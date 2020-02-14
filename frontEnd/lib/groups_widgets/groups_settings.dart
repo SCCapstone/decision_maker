@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_dropdown.dart';
-import 'package:frontEnd/widgets/users_dropdown.dart';
+import 'package:frontEnd/widgets/user_popup.dart';
 
 import 'package:frontEnd/models/category.dart';
 
@@ -28,13 +29,16 @@ class _GroupSettingsState extends State<GroupSettings> {
   Map<String, dynamic> users;
   Future<List<Category>> categoriesTotalFuture;
   bool owner;
+  List<Favorite> originalUsers = new List<Favorite>();
+  List<Favorite> displayUsers = new List<Favorite>();
 
   final List<Category> categoriesSelected = new List<Category>();
-  final formKey = GlobalKey<FormState>();
-  final groupNameController = TextEditingController();
-  final groupIconController = TextEditingController();
-  final pollPassController = TextEditingController();
-  final pollDurationController = TextEditingController();
+  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
+  final TextEditingController groupNameController = new TextEditingController();
+  final TextEditingController groupIconController = new TextEditingController();
+  final TextEditingController pollPassController = new TextEditingController();
+  final TextEditingController pollDurationController =
+      new TextEditingController();
 
   @override
   void dispose() {
@@ -53,8 +57,16 @@ class _GroupSettingsState extends State<GroupSettings> {
     } else {
       owner = false;
     }
-
-    users = Globals.currentGroup.members;
+    for (String username in Globals.currentGroup.members.keys) {
+      Favorite user = new Favorite(
+          username: username,
+          displayName: Globals.currentGroup.members[username],
+          icon: username);
+      originalUsers.add(user);
+      displayUsers.add(user);
+    }
+    users = new Map<String, dynamic>();
+    users.addAll(Globals.currentGroup.members);
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
     pollDuration = Globals.currentGroup.defaultPollDuration;
@@ -218,6 +230,21 @@ class _GroupSettingsState extends State<GroupSettings> {
                           )
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          RaisedButton(
+                            child: Text("Members"),
+                            onPressed: () {
+                              showMembersPopup();
+                            },
+                          ),
+                          RaisedButton(
+                            child: Text("Categories"),
+                            onPressed: () {},
+                          )
+                        ],
+                      ),
                       FutureBuilder(
                           future: categoriesTotalFuture,
                           builder:
@@ -243,10 +270,6 @@ class _GroupSettingsState extends State<GroupSettings> {
                               return Center(child: CircularProgressIndicator());
                             }
                           }),
-                      UsersDropdown("Users", users,
-                          Globals.currentGroup.groupCreator == Globals.username,
-                          deleteCallback: (user) => removeUser(user),
-                          addCallback: (user) => addUser(user)),
                       Visibility(
                         visible: owner,
                         child: RaisedButton(
@@ -266,6 +289,21 @@ class _GroupSettingsState extends State<GroupSettings> {
         ]));
   }
 
+  void showMembersPopup() {
+    showDialog(
+            context: context,
+            child: AddUserPopup(displayUsers, originalUsers,
+                handlePopupClosed: memberPopupClosed))
+        .then((val) {
+      // this is called whenever the user clicks outside the alert dialog or hits the back button
+      memberPopupClosed();
+    });
+  }
+
+  void memberPopupClosed() {
+    enableAutoValidation();
+  }
+
   void tryDelete(BuildContext context) async {
     // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
     bool success =
@@ -274,11 +312,14 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
+    Set oldUsers = originalUsers.toSet();
+    Set newUsers = displayUsers.toSet();
+    bool newUsersAdded = !oldUsers.containsAll(newUsers);
     if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
         pollDuration != Globals.currentGroup.defaultPollDuration ||
-        groupName != Globals.currentGroup.groupName) {
+        groupName != Globals.currentGroup.groupName ||
+        newUsersAdded) {
       setState(() {
-        print(Globals.currentGroup.groupName);
         editing = true;
       });
     } else {
@@ -286,20 +327,6 @@ class _GroupSettingsState extends State<GroupSettings> {
         editing = false;
       });
     }
-  }
-
-  void addUser(String username) {
-    setState(() {
-      editing = true;
-      users.putIfAbsent(username, () => username);
-    });
-  }
-
-  void removeUser(String user) {
-    setState(() {
-      editing = true;
-      users.remove(user);
-    });
   }
 
   void selectCategory(Category category) {

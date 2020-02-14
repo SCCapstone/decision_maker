@@ -57,13 +57,13 @@ String validPollDuration(String input) {
   return retVal;
 }
 
-String validUser(String user, Map<String, dynamic> users) {
+String validUser(String user, List<String> users) {
   if (user.isEmpty) {
     return "Username cannot be empty!";
-  } else if (users.keys.contains(user)) {
-    return "Username already added!";
   } else if (user == Globals.username) {
     return "Can't add yourself!";
+  } else if (users.contains(user)) {
+    return "Username already added!";
   } else {
     return null;
   }
