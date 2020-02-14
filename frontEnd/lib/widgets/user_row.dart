@@ -29,7 +29,7 @@ class UserRow extends StatelessWidget {
           Expanded(
             child: Text(
               "${this.displayName} (@${this.username})",
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 18),
             ),
           ),
           Visibility(

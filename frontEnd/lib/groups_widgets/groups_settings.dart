@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/models/favorite.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-import 'package:frontEnd/widgets/category_dropdown.dart';
+import 'package:frontEnd/widgets/category_popup.dart';
 import 'package:frontEnd/widgets/user_popup.dart';
-
-import 'package:frontEnd/models/category.dart';
 
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
@@ -26,12 +24,14 @@ class _GroupSettingsState extends State<GroupSettings> {
   String groupIcon;
   int pollPassPercent;
   int pollDuration;
-  Future<List<Category>> categoriesTotalFuture;
   bool owner;
-  List<Favorite> originalUsers = new List<Favorite>();
-  List<Favorite> displayedUsers = new List<Favorite>();
+  List<Member> originalMembers = new List<Member>();
+  List<Member> displayedMembers = new List<Member>();
+  Map<String, String> selectedCategories =
+      new Map<String, String>(); // map of categoryIds -> categoryName
+  Map<String, String> originalCategories =
+      new Map<String, String>(); // map of categoryIds -> categoryName
 
-  final List<Category> categoriesSelected = new List<Category>();
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
   final TextEditingController groupIconController = new TextEditingController();
@@ -57,12 +57,13 @@ class _GroupSettingsState extends State<GroupSettings> {
       owner = false;
     }
     for (String username in Globals.currentGroup.members.keys) {
-      Favorite user = new Favorite(
+      Member member = new Member(
           username: username,
-          displayName: Globals.currentGroup.members[username],
-          icon: username);
-      originalUsers.add(user);
-      displayedUsers.add(user);
+          displayName: Globals.currentGroup.members[username]
+              [UsersManager.DISPLAY_NAME],
+          icon: Globals.currentGroup.members[username][GroupsManager.ICON]);
+      originalMembers.add(member); // preserve original members
+      displayedMembers.add(member); // used to show group members in the popup
     }
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
@@ -72,8 +73,13 @@ class _GroupSettingsState extends State<GroupSettings> {
     groupNameController.text = groupName;
     pollDurationController.text = pollDuration.toString();
     pollPassController.text = pollPassPercent.toString();
-
-    categoriesTotalFuture = CategoriesManager.getAllCategoriesList();
+    for (String catId in Globals.currentGroup.categories.keys) {
+      // preserve original categories selected
+      originalCategories.putIfAbsent(
+          catId, () => Globals.currentGroup.categories[catId]);
+      selectedCategories.putIfAbsent(
+          catId, () => Globals.currentGroup.categories[catId]);
+    }
     super.initState();
   }
 
@@ -231,42 +237,25 @@ class _GroupSettingsState extends State<GroupSettings> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           RaisedButton(
+                            color: Colors.greenAccent,
                             child: Text("Members"),
                             onPressed: () {
                               showMembersPopup();
                             },
                           ),
                           RaisedButton(
+                            color: Colors.greenAccent,
                             child: Text("Categories"),
-                            onPressed: () {},
+                            onPressed: () {
+                              showCategoriesPopup();
+                            },
                           )
                         ],
                       ),
-                      FutureBuilder(
-                          future: categoriesTotalFuture,
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.hasData) {
-                              List<Category> categories = snapshot.data;
-                              categories = snapshot.data;
-                              if (!editing) {
-                                for (Category category in categories) {
-                                  if (Globals.currentGroup.categories.keys
-                                      .contains(category.categoryId)) {
-                                    categoriesSelected.add(category);
-                                  }
-                                }
-                              }
-                              return CategoryDropdown("Add categories",
-                                  categories, categoriesSelected,
-                                  callback: (category) =>
-                                      selectCategory(category));
-                            } else if (snapshot.hasError) {
-                              return Text("Error: ${snapshot.error}");
-                            } else {
-                              return Center(child: CircularProgressIndicator());
-                            }
-                          }),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .004),
+                      ),
                       Visibility(
                         visible: owner,
                         child: RaisedButton(
@@ -274,6 +263,16 @@ class _GroupSettingsState extends State<GroupSettings> {
                           color: Colors.red,
                           onPressed: () {
                             tryDelete(context);
+                          },
+                        ),
+                      ),
+                      Visibility(
+                        visible: !owner,
+                        child: RaisedButton(
+                          child: Text("Leave Group"),
+                          color: Colors.red,
+                          onPressed: () {
+                            // TODO leave group
                           },
                         ),
                       )
@@ -289,17 +288,26 @@ class _GroupSettingsState extends State<GroupSettings> {
   void showMembersPopup() {
     showDialog(
             context: context,
-            child: AddUserPopup(displayedUsers, originalUsers,
-                handlePopupClosed: memberPopupClosed))
+            child: AddUserPopup(displayedMembers, originalMembers,
+                handlePopupClosed: popupClosed))
         .then((val) {
       // this is called whenever the user clicks outside the alert dialog or hits the back button
-      memberPopupClosed();
+      popupClosed();
     });
   }
 
-  void showCategoriesPopup() {}
+  void showCategoriesPopup() {
+    showDialog(
+            context: context,
+            child: CategoryPopup(selectedCategories,
+                handlePopupClosed: popupClosed))
+        .then((val) {
+      // this is called whenever the user clicks outside the alert dialog or hits the back button
+      popupClosed();
+    });
+  }
 
-  void memberPopupClosed() {
+  void popupClosed() {
     enableAutoValidation();
   }
 
@@ -311,14 +319,21 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    Set oldUsers = originalUsers.toSet();
-    Set newUsers = displayedUsers.toSet();
+    Set oldUsers = originalMembers.toSet();
+    Set newUsers = displayedMembers.toSet();
     bool newUsersAdded =
         !(oldUsers.containsAll(newUsers) && oldUsers.length == newUsers.length);
+
+    Set oldCategories = originalCategories.keys.toSet();
+    Set newCategories = selectedCategories.keys.toSet();
+    bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
+        oldCategories.length == newCategories.length);
+
     if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName ||
-        newUsersAdded) {
+        newUsersAdded ||
+        newCategoriesAdded) {
       setState(() {
         editing = true;
       });
@@ -327,17 +342,6 @@ class _GroupSettingsState extends State<GroupSettings> {
         editing = false;
       });
     }
-  }
-
-  void selectCategory(Category category) {
-    setState(() {
-      editing = true;
-      if (categoriesSelected.contains(category)) {
-        categoriesSelected.remove(category);
-      } else {
-        categoriesSelected.add(category);
-      }
-    });
   }
 
   void updateIcon(String iconUrl) {
@@ -356,23 +360,21 @@ class _GroupSettingsState extends State<GroupSettings> {
     if (form.validate() && validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
       form.save();
-      Map<String, String> categoriesMap = new Map<String, String>();
-      for (int i = 0; i < categoriesSelected.length; i++) {
-        categoriesMap.putIfAbsent(categoriesSelected[i].categoryId,
-            () => categoriesSelected[i].categoryName);
+      Map<String, Map<String, String>> membersMap =
+          new Map<String, Map<String, String>>();
+      for (Member member in displayedMembers) {
+        Map<String, String> memberInfo = new Map<String, String>();
+        memberInfo.putIfAbsent(
+            UsersManager.DISPLAY_NAME, () => member.displayName);
+        memberInfo.putIfAbsent(GroupsManager.ICON, () => member.icon);
+        membersMap.putIfAbsent(member.username, () => memberInfo);
       }
-
-      Map<String, String> membersMap = new Map<String, String>();
-      for (Favorite user in displayedUsers) {
-        membersMap.putIfAbsent(user.username, () => user.displayName);
-      }
-
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: groupName,
           groupCreator: Globals.currentGroup.groupCreator,
           icon: groupIcon,
-          categories: categoriesMap,
+          categories: selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultPollDuration: pollDuration,
@@ -384,8 +386,10 @@ class _GroupSettingsState extends State<GroupSettings> {
 
       setState(() {
         // reset everything and reflect changes made
-        originalUsers.clear();
-        originalUsers.addAll(displayedUsers);
+        originalMembers.clear();
+        originalMembers.addAll(displayedMembers);
+        originalCategories.clear();
+        originalCategories.addAll(selectedCategories);
         groupNameController.text = groupName;
         groupIconController.clear();
         pollDurationController.text = pollDuration.toString();

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/favorite.dart';
+import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
 
 class AddUserPopup extends StatefulWidget {
-  final List<Favorite> displayedUsers;
-  final List<Favorite> originalUsers;
+  final List<Member> displayedMembers;
+  final List<Member> originalMembers;
   final Function handlePopupClosed;
 
-  AddUserPopup(this.displayedUsers, this.originalUsers,
+  AddUserPopup(this.displayedMembers, this.originalMembers,
       {this.handlePopupClosed});
 
   @override
@@ -19,24 +20,24 @@ class AddUserPopup extends StatefulWidget {
 class _AddUserPopupState extends State<AddUserPopup> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
-  List<UserRow> displayedUsers = new List<UserRow>();
+  List<UserRow> displayedUserRows = new List<UserRow>();
   List<UserRow> searchResults = new List<UserRow>();
   bool searching = false;
 
   @override
   void initState() {
-    for (Favorite user in widget.displayedUsers) {
+    for (Member user in widget.displayedMembers) {
+      // can't delete yourself or the group creator
       bool displayDelete = user.username != Globals.currentGroup.groupCreator &&
           user.username != Globals.username;
-      displayedUsers.add(new UserRow(
+      displayedUserRows.add(new UserRow(
           user.displayName,
           user.username,
           user.icon,
           displayDelete,
           false,
           (user.username == Globals.currentGroup.groupCreator), deleteUser: () {
-        removeUser(user.username, displayedUsers);
-        setState(() {});
+        removeMember(user.username, displayedUserRows);
       }));
     }
     super.initState();
@@ -64,10 +65,10 @@ class _AddUserPopupState extends State<AddUserPopup> {
               if (formKey.currentState.validate()) {
                 // TODO launch api request to add user. Then parse info and create appropriate Favorite model
                 String username = userController.text.trim();
-                widget.displayedUsers.add(new Favorite(
+                widget.displayedMembers.add(new Member(
                     username: username, displayName: username, icon: username));
                 setState(() {
-                  displayedUsers.add(new UserRow(
+                  displayedUserRows.add(new UserRow(
                       username,
                       username,
                       username,
@@ -75,8 +76,7 @@ class _AddUserPopupState extends State<AddUserPopup> {
                       false,
                       username == Globals.currentGroup.groupCreator,
                       deleteUser: () {
-                    removeUser(username, displayedUsers);
-                    setState(() {});
+                    removeMember(username, displayedUserRows);
                   }));
                   userController.clear();
                   searching = false;
@@ -96,30 +96,35 @@ class _AddUserPopupState extends State<AddUserPopup> {
                     controller: userController,
                     validator: (value) {
                       List<String> allUsers = new List<String>();
-                      for (Favorite user in widget.displayedUsers) {
+                      for (Member user in widget.displayedMembers) {
                         allUsers.add(user.username);
                       }
-                      for (Favorite user in widget.originalUsers) {
-                        allUsers.add(user.username);
+                      for (Member user in widget.originalMembers) {
+                        if (!allUsers.contains(user.username)) {
+                          allUsers.add(user.username);
+                        }
                       }
                       return validUser(value.trim(), allUsers);
                     },
                     onChanged: (value) {
+                      // anytime the user is searching, immediately display results
                       if (value.isNotEmpty) {
                         searching = true;
-                        List<UserRow> temp = new List<UserRow>();
+                        List<UserRow> currentSearch = new List<UserRow>();
                         for (Favorite favorite in Globals.user.favorites) {
-                          // show suggestion if match to username or displayname
+                          // show suggestion if match to username or displayname of a favorite
                           if ((favorite.username
                                       .toLowerCase()
                                       .contains(value.toLowerCase()) &&
-                                  !widget.displayedUsers.contains(favorite)) ||
+                                  !widget.displayedMembers.contains(
+                                      new Member.fromFavorite(favorite))) ||
                               (favorite.displayName
                                       .toLowerCase()
                                       .contains(value.toLowerCase()) &&
-                                  !widget.displayedUsers.contains(favorite))) {
+                                  !widget.displayedMembers.contains(
+                                      new Member.fromFavorite(favorite)))) {
                             // when searching, only show suggestions if the user hasn't already added the user to the group
-                            temp.add(new UserRow(
+                            currentSearch.add(new UserRow(
                                 favorite.displayName,
                                 favorite.username,
                                 favorite.icon,
@@ -127,11 +132,12 @@ class _AddUserPopupState extends State<AddUserPopup> {
                                 true,
                                 (favorite.username ==
                                     Globals.currentGroup.groupCreator),
-                                addUser: () => addUser(favorite)));
+                                addUser: () =>
+                                    addMemberFromFavorites(favorite)));
                           }
                         }
                         setState(() {
-                          searchResults = temp;
+                          searchResults = currentSearch;
                         });
                       } else {
                         setState(() {
@@ -149,19 +155,19 @@ class _AddUserPopupState extends State<AddUserPopup> {
                         shrinkWrap: true,
                         itemCount: (searching)
                             ? searchResults.length
-                            : displayedUsers.length,
+                            : displayedUserRows.length,
                         itemBuilder: (context, index) {
                           // sorting by alphabetical by displayname for now
                           searchResults.sort((a, b) => b.displayName
                               .toLowerCase()
                               .compareTo(a.displayName.toLowerCase()));
-                          displayedUsers.sort((a, b) => a.displayName
+                          displayedUserRows.sort((a, b) => a.displayName
                               .toLowerCase()
                               .compareTo(b.displayName.toLowerCase()));
                           if (searching) {
                             return searchResults[index];
                           } else {
-                            return displayedUsers[index];
+                            return displayedUserRows[index];
                           }
                         }),
                   ),
@@ -174,24 +180,19 @@ class _AddUserPopupState extends State<AddUserPopup> {
     );
   }
 
-  void addUser(Favorite userToAdd) {
+  void addMemberFromFavorites(Favorite memberToAdd) {
     // add the new user to the list and then display it in the scroll view
-    widget.displayedUsers.add(userToAdd);
-    for (Favorite user in Globals.user.favorites) {
-      if (userToAdd.username == user.username) {
-        displayedUsers.add(new UserRow(
-            user.displayName,
-            user.username,
-            user.icon,
-            true,
-            false,
-            (user.username == Globals.currentGroup.groupCreator),
-            deleteUser: () {
-          removeUser(user.username, displayedUsers);
-          setState(() {});
-        }));
-      }
-    }
+    widget.displayedMembers.add(new Member.fromFavorite(memberToAdd));
+    displayedUserRows.add(new UserRow(
+        memberToAdd.displayName,
+        memberToAdd.username,
+        memberToAdd.icon,
+        true,
+        false,
+        (memberToAdd.username == Globals.currentGroup.groupCreator),
+        deleteUser: () {
+      removeMember(memberToAdd.username, displayedUserRows);
+    }));
     // update the alertdialog to show the new user added
     setState(() {
       searching = false;
@@ -200,14 +201,14 @@ class _AddUserPopupState extends State<AddUserPopup> {
     });
   }
 
-  void removeUser(String username, List<UserRow> displayedUserRows) {
-    Favorite userToRemove;
-    for (Favorite user in widget.displayedUsers) {
+  void removeMember(String username, List<UserRow> displayedUserRows) {
+    Member userToRemove;
+    for (Member user in widget.displayedMembers) {
       if (user.username == username) {
         userToRemove = user;
       }
     }
-    widget.displayedUsers.remove(userToRemove);
+    widget.displayedMembers.remove(userToRemove);
 
     UserRow rowToRemove;
     for (UserRow row in displayedUserRows) {
@@ -216,5 +217,6 @@ class _AddUserPopupState extends State<AddUserPopup> {
       }
     }
     displayedUserRows.remove(rowToRemove);
+    setState(() {});
   }
 }
