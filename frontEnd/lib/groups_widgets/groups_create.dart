@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/widgets/category_dropdown.dart';
 
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/widgets/category_popup.dart';
+import 'package:frontEnd/widgets/user_popup.dart';
 
 class CreateGroup extends StatefulWidget {
-  Future<List<Category>> addableCategories;
-
   @override
   _CreateGroupState createState() => _CreateGroupState();
 }
@@ -22,8 +21,12 @@ class _CreateGroupState extends State<CreateGroup> {
   int pollPassPercent;
   int pollDuration;
 
-  final List<Category> categoriesToAdd = new List<Category>();
-  final Map<String, dynamic> users = new Map<String, dynamic>();
+  List<Member> displayedMembers = new List<Member>();
+  Map<String, String> selectedCategories =
+      new Map<String, String>(); // map of categoryIds -> categoryName
+  Map<String, String> originalCategories =
+      new Map<String, String>(); // map of categoryIds -> categoryName
+
   final formKey = GlobalKey<FormState>();
   final groupNameController = TextEditingController();
   final groupIconController = TextEditingController();
@@ -41,7 +44,6 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   void initState() {
-    widget.addableCategories = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 
@@ -103,20 +105,25 @@ class _CreateGroupState extends State<CreateGroup> {
                     labelText: "Enter a default poll pass percentage (0-100)",
                   ),
                 ),
-                FutureBuilder(
-                    future: widget.addableCategories,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        List<Category> categories = snapshot.data;
-                        return CategoryDropdown(
-                            "Add categories", categories, categoriesToAdd,
-                            callback: (category) => selectCategory(category));
-                      } else if (snapshot.hasError) {
-                        return Text("Error: ${snapshot.error}");
-                      } else {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                    }),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    RaisedButton(
+                      color: Colors.greenAccent,
+                      child: Text("Members"),
+                      onPressed: () {
+                        showMembersPopup();
+                      },
+                    ),
+                    RaisedButton(
+                      color: Colors.greenAccent,
+                      child: Text("Categories"),
+                      onPressed: () {
+                        showCategoriesPopup();
+                      },
+                    )
+                  ],
+                ),
                 RaisedButton.icon(
                     onPressed: validateInput,
                     icon: Icon(Icons.add),
@@ -129,47 +136,45 @@ class _CreateGroupState extends State<CreateGroup> {
     );
   }
 
-  void selectCategory(Category category) {
-    setState(() {
-      if (categoriesToAdd.contains(category)) {
-        categoriesToAdd.remove(category);
-      } else {
-        categoriesToAdd.add(category);
-      }
-    });
+  void showMembersPopup() {
+    showDialog(
+        context: context,
+        child: AddUserPopup(displayedMembers, displayedMembers,
+            handlePopupClosed: () {}));
   }
 
-  void addUser(String user) {
-    setState(() {
-      users.putIfAbsent(user, () => "new user");
-    });
-  }
-
-  void removeUser(String user) {
-    setState(() {
-      users.remove(user);
-    });
+  void showCategoriesPopup() {
+    showDialog(
+        context: context,
+        child: CategoryPopup(selectedCategories, handlePopupClosed: () {}));
   }
 
   void validateInput() {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      users.putIfAbsent(Globals.username,
-          () => "John Doe"); // creator is obviously always in the group
-      // convert the lists to maps for the json object that is sent to db
-      Map<String, String> categoriesMap = new Map<String, String>();
-      for (int i = 0; i < categoriesToAdd.length; i++) {
-        categoriesMap.putIfAbsent(categoriesToAdd[i].categoryId,
-            () => categoriesToAdd[i].categoryName);
+      Map<String, Map<String, String>> membersMap =
+          new Map<String, Map<String, String>>();
+      for (Member member in displayedMembers) {
+        Map<String, String> memberInfo = new Map<String, String>();
+        memberInfo.putIfAbsent(
+            UsersManager.DISPLAY_NAME, () => member.displayName);
+        memberInfo.putIfAbsent(GroupsManager.ICON, () => member.icon);
+        membersMap.putIfAbsent(member.username, () => memberInfo);
       }
+      // creator is always in the group of course
+      Map<String, String> memberInfo = new Map<String, String>();
+      memberInfo.putIfAbsent(
+          UsersManager.DISPLAY_NAME, () => Globals.user.displayName);
+      memberInfo.putIfAbsent(GroupsManager.ICON, () => Globals.user.icon);
+      membersMap.putIfAbsent(Globals.username, () => memberInfo);
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: groupName,
           groupCreator: Globals.username,
           icon: groupIcon,
-          categories: categoriesMap,
-          members: users,
+          categories: selectedCategories,
+          members: membersMap,
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 
@@ -179,8 +184,8 @@ class _CreateGroupState extends State<CreateGroup> {
         // reset everything
         groupNameController.clear();
         groupIconController.clear();
-        categoriesToAdd.clear();
-        users.clear();
+        selectedCategories.clear();
+        displayedMembers.clear();
         pollDurationController.clear();
         pollPassController.clear();
         autoValidate = false;

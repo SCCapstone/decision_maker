@@ -7,6 +7,7 @@ import 'app_settings.dart';
 class User {
   final String username;
   String displayName;
+  String icon;
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> categories;
@@ -42,6 +43,6 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "Categories: $categories Favorites: $favorites";
+        "Categories: $categories Favorites: $favorites Icon: $icon";
   }
 }

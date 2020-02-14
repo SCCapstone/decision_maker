@@ -276,6 +276,7 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.darkTheme = _darkTheme;
         Globals.user.displayName = _displayName;
         Globals.user.favorites = displayedFavorites;
+        Globals.user.icon = _icon;
         List<String> userNames = new List<String>();
         for (Favorite favorite in displayedFavorites) {
           userNames.add(favorite.username);
