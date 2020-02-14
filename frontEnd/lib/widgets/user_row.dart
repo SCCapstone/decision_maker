@@ -6,19 +6,16 @@ class UserRow extends StatelessWidget {
   final String icon;
   final bool showDelete;
   final bool adding;
+  final bool isGroupOwner;
   final VoidCallback deleteUser;
   final VoidCallback addUser;
 
-  UserRow(this.displayName, this.username, this.icon,
-      this.showDelete, this.adding,
+  UserRow(this.displayName, this.username, this.icon, this.showDelete,
+      this.adding, this.isGroupOwner,
       {this.deleteUser, this.addUser});
 
   @override
   Widget build(BuildContext context) {
-//    bool showDelete = ((this.activeUserIsGroupOwner &&
-//            this.username != Globals.username) ||
-//        (!this.activeUserIsGroupOwner && this.username == Globals.username));
-
     return Container(
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
@@ -31,7 +28,7 @@ class UserRow extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              this.displayName,
+              "${this.displayName} (@${this.username})",
               style: TextStyle(fontSize: 20),
             ),
           ),
@@ -42,6 +39,11 @@ class UserRow extends StatelessWidget {
               color: Colors.red,
               onPressed: this.deleteUser,
             ),
+          ),
+          Visibility(
+            visible: isGroupOwner,
+            // show a special icon if user is the owner of the group. Use a button to make it centered
+            child: IconButton(icon: Icon(Icons.star, color: Colors.yellow)),
           ),
           Visibility(
             visible: adding,

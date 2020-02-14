@@ -29,7 +29,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   Future<List<Category>> categoriesTotalFuture;
   bool owner;
   List<Favorite> originalUsers = new List<Favorite>();
-  List<Favorite> displayUsers = new List<Favorite>();
+  List<Favorite> displayedUsers = new List<Favorite>();
 
   final List<Category> categoriesSelected = new List<Category>();
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
@@ -62,7 +62,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           displayName: Globals.currentGroup.members[username],
           icon: username);
       originalUsers.add(user);
-      displayUsers.add(user);
+      displayedUsers.add(user);
     }
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
@@ -288,18 +288,16 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void showMembersPopup() {
     showDialog(
-        context: context,
-        child: AddUserPopup(displayUsers, originalUsers,
-            handlePopupClosed: memberPopupClosed))
+            context: context,
+            child: AddUserPopup(displayedUsers, originalUsers,
+                handlePopupClosed: memberPopupClosed))
         .then((val) {
       // this is called whenever the user clicks outside the alert dialog or hits the back button
       memberPopupClosed();
     });
   }
 
-  void showCategoriesPopup(){
-
-  }
+  void showCategoriesPopup() {}
 
   void memberPopupClosed() {
     enableAutoValidation();
@@ -314,8 +312,9 @@ class _GroupSettingsState extends State<GroupSettings> {
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
     Set oldUsers = originalUsers.toSet();
-    Set newUsers = displayUsers.toSet();
-    bool newUsersAdded = !oldUsers.containsAll(newUsers);
+    Set newUsers = displayedUsers.toSet();
+    bool newUsersAdded =
+        !(oldUsers.containsAll(newUsers) && oldUsers.length == newUsers.length);
     if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName ||
@@ -364,7 +363,7 @@ class _GroupSettingsState extends State<GroupSettings> {
       }
 
       Map<String, String> membersMap = new Map<String, String>();
-      for (Favorite user in displayUsers) {
+      for (Favorite user in displayedUsers) {
         membersMap.putIfAbsent(user.username, () => user.displayName);
       }
 
@@ -386,7 +385,7 @@ class _GroupSettingsState extends State<GroupSettings> {
       setState(() {
         // reset everything and reflect changes made
         originalUsers.clear();
-        originalUsers.addAll(displayUsers);
+        originalUsers.addAll(displayedUsers);
         groupNameController.text = groupName;
         groupIconController.clear();
         pollDurationController.text = pollDuration.toString();

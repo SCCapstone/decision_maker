@@ -400,6 +400,7 @@ class _UserSettingsState extends State<UserSettings> {
                                       displayedFavorites[index].username,
                                       displayedFavorites[index].icon,
                                       true,
+                                      false,
                                       false, deleteUser: () {
                                     displayedFavorites
                                         .remove(displayedFavorites[index]);
