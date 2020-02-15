@@ -4,7 +4,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/widgets/user_row.dart';
+import 'package:frontEnd/widgets/favorites_popup.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -17,7 +17,6 @@ class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController nickNameController = TextEditingController();
   final TextEditingController userIconController = TextEditingController();
-  final TextEditingController contactsController = TextEditingController();
 
   bool autoValidate = false;
   bool editing = false;
@@ -32,6 +31,7 @@ class _UserSettingsState extends State<UserSettings> {
   @override
   void dispose() {
     nickNameController.dispose();
+    userIconController.dispose();
     super.dispose();
   }
 
@@ -41,6 +41,7 @@ class _UserSettingsState extends State<UserSettings> {
     _darkTheme = Globals.user.appSettings.darkTheme;
     _groupSort = Globals.user.appSettings.groupSort;
     _muted = Globals.user.appSettings.muted;
+    print(Globals.user.favorites);
     originalFavorites = Globals.user.favorites;
     displayedFavorites.addAll(originalFavorites);
     nickNameController.text = _displayName;
@@ -126,7 +127,7 @@ class _UserSettingsState extends State<UserSettings> {
                       ),
                       RaisedButton.icon(
                           onPressed: () {
-                            contactsPopup();
+                          showFavoritesPopup();
                           },
                           icon: Icon(Icons.contacts),
                           label: Text("My Contacts")),
@@ -239,6 +240,19 @@ class _UserSettingsState extends State<UserSettings> {
         ]));
   }
 
+  void showFavoritesPopup() {
+    showDialog(
+        context: context,
+        child: FavoritesPopup(displayedFavorites, originalFavorites,
+            handlePopupClosed: () => popupClosed())).then((val) {
+      popupClosed();
+    });
+  }
+
+  void popupClosed() {
+    enableAutoValidation();
+  }
+
   void selectGroupSort(int val) {
     _groupSort = val;
     enableAutoValidation();
@@ -276,6 +290,7 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.darkTheme = _darkTheme;
         Globals.user.displayName = _displayName;
         Globals.user.favorites = displayedFavorites;
+        print("After##### ${Globals.user.favorites}");
         Globals.user.icon = _icon;
         List<String> userNames = new List<String>();
         for (Favorite favorite in displayedFavorites) {
@@ -290,6 +305,8 @@ class _UserSettingsState extends State<UserSettings> {
             context); // blind send for now?
 
         // reset everything and reflect changes made
+        originalFavorites.clear();
+        originalFavorites.addAll(displayedFavorites);
         editing = false;
         autoValidate = false;
       });
@@ -335,92 +352,5 @@ class _UserSettingsState extends State<UserSettings> {
             ),
           );
         });
-  }
-
-  void contactsPopup() {
-    // displays a popup for editing the user's contacts
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return Form(
-                key: formKey,
-                child: AlertDialog(
-                  title: Text("My Favorites"),
-                  actions: <Widget>[
-                    FlatButton(
-                      child: Text("Back"),
-                      onPressed: () {
-                        contactsController.clear();
-                        Navigator.of(context, rootNavigator: true)
-                            .pop('dialog');
-                        enableAutoValidation();
-                      },
-                    ),
-                    FlatButton(
-                      child: Text("Add User"),
-                      onPressed: () {
-                        if (formKey.currentState.validate()) {
-                          // TODO launch api request to add user. Then parse info and create appropriate Favorite model
-                          displayedFavorites.add(new Favorite(
-                              username: contactsController.text.trim(),
-                              displayName: contactsController.text.trim(),
-                              icon: contactsController.text.trim()));
-                          contactsController.clear();
-                          setState(() {});
-                        }
-                      },
-                    ),
-                  ],
-                  content: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Container(
-                      width: double.maxFinite,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          TextFormField(
-                              controller: contactsController,
-                              validator: (value) {
-                                return validNewFavorite(
-                                    value.trim(), displayedFavorites);
-                              },
-                              decoration: InputDecoration(
-                                labelText: "Enter a username to add",
-                              )),
-                          Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: displayedFavorites.length,
-                                itemBuilder: (context, index) {
-                                  return UserRow(
-                                      displayedFavorites[index].displayName,
-                                      displayedFavorites[index].username,
-                                      displayedFavorites[index].icon,
-                                      true,
-                                      false,
-                                      false, deleteUser: () {
-                                    displayedFavorites
-                                        .remove(displayedFavorites[index]);
-                                    setState(() {});
-                                  });
-                                }),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }).then((val) {
-      // this is called whenever the user clicks outside the alert dialog or hits the back button
-      contactsController.clear();
-      enableAutoValidation();
-    });
   }
 }

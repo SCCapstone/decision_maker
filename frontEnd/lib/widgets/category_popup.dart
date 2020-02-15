@@ -7,7 +7,6 @@ import 'category_row.dart';
 class CategoryPopup extends StatefulWidget {
   final Map<String, String>
       selectedCategories; // map of categoryIds -> categoryName
-
   final Function handlePopupClosed;
 
   CategoryPopup(this.selectedCategories, {this.handlePopupClosed});
