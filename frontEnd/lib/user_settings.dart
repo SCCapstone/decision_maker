@@ -15,7 +15,7 @@ class UserSettings extends StatefulWidget {
 
 class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController nickNameController = TextEditingController();
+  final TextEditingController displayNameController = TextEditingController();
   final TextEditingController userIconController = TextEditingController();
 
   bool autoValidate = false;
@@ -30,7 +30,7 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void dispose() {
-    nickNameController.dispose();
+    displayNameController.dispose();
     userIconController.dispose();
     super.dispose();
   }
@@ -43,7 +43,7 @@ class _UserSettingsState extends State<UserSettings> {
     _muted = Globals.user.appSettings.muted;
     originalFavorites = Globals.user.favorites;
     displayedFavorites.addAll(originalFavorites);
-    nickNameController.text = _displayName;
+    displayNameController.text = _displayName;
     super.initState();
   }
 
@@ -79,7 +79,7 @@ class _UserSettingsState extends State<UserSettings> {
                           width: MediaQuery.of(context).size.width * .6,
                           child: TextFormField(
                             maxLength: 50,
-                            controller: nickNameController,
+                            controller: displayNameController,
                             validator: validName,
                             onChanged: (String arg) {
                               _displayName = arg.trim();

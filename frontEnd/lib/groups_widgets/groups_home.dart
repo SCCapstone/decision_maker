@@ -246,7 +246,6 @@ class _GroupsHomeState extends State<GroupsHome> {
         searchIcon = new Icon(Icons.search);
       });
     } else {
-      // when the user starts searching, automatically select the text field
       setState(() {
         searching = true;
         searchIcon = new Icon(Icons.close);
