@@ -46,7 +46,7 @@ class _GroupPageState extends State<GroupPage> {
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
             Container(
-              height: MediaQuery.of(context).size.height * .70,
+              height: MediaQuery.of(context).size.height * .80,
               child: RefreshIndicator(
                 child: EventsList(
                   group: Globals.currentGroup,

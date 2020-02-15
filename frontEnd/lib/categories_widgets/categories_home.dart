@@ -53,7 +53,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
               ),
               Container(
                 width: MediaQuery.of(context).size.width * .80,
-                height: MediaQuery.of(context).size.height * .60,
+                height: MediaQuery.of(context).size.height * .75,
                 child: Container(
                   child: FutureBuilder(
                     future: widget.categories,

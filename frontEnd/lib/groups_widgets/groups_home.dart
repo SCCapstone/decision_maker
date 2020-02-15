@@ -97,7 +97,7 @@ class _GroupsHomeState extends State<GroupsHome> {
               ),
             ),
             ListTile(
-                leading: Icon(Icons.format_list_bulleted), // Placeholder icon
+                leading: Icon(Icons.format_list_bulleted),
                 title: Text('Categories', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   Navigator.push(
@@ -167,7 +167,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Expanded(
               child: new Container(
-                  width: MediaQuery.of(context).size.width * .80,
+                  width: MediaQuery.of(context).size.width * .90,
                   height: MediaQuery.of(context).size.height * .60,
                   child: FutureBuilder(
                     future: widget.groupsFuture,
@@ -185,7 +185,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .06),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
           ],
         ),
