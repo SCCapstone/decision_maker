@@ -7,14 +7,14 @@ class CategoriesListItem extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback afterEditCallback;
   final int index;
-  final bool defaultCategory;
+  final bool isOwner;
 
-  CategoriesListItem(this.category, this.index, this.defaultCategory,
+  CategoriesListItem(this.category, this.index, this.isOwner,
       {this.onDelete, this.afterEditCallback});
 
   @override
   Widget build(BuildContext context) {
-    if (defaultCategory) {
+    if (!isOwner) {
       return Container(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -24,6 +24,7 @@ class CategoriesListItem extends StatelessWidget {
               style: TextStyle(fontSize: 20),
             ),
             RaisedButton(
+              color: Colors.lightBlue,
               child: Text(
                 "Edit",
                 style: TextStyle(),
@@ -39,8 +40,7 @@ class CategoriesListItem extends StatelessWidget {
             )
           ],
         ),
-        decoration:
-            new BoxDecoration(border: new Border(bottom: new BorderSide())),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide())),
       );
     } else {
       return Container(
@@ -50,13 +50,16 @@ class CategoriesListItem extends StatelessWidget {
             Flexible(
               child: Text(
                 category.categoryName,
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(
+                    fontSize:
+                        DefaultTextStyle.of(context).style.fontSize * 1.5),
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 RaisedButton(
+                  color: Colors.lightBlue,
                   child: Text(
                     "Edit",
                     style: TextStyle(),
@@ -75,25 +78,48 @@ class CategoriesListItem extends StatelessWidget {
                       EdgeInsets.all(MediaQuery.of(context).size.height * .007),
                 ),
                 RaisedButton(
+                  color: Colors.red,
                   child: Text(
                     "Delete",
                     style: TextStyle(),
                   ),
-                  /*
-                    TODO delete the category from DB and if success,
-                     then remove from local list (https://github.com/SCCapstone/decision_maker/issues/97)
-                  */
                   onPressed: () {
-                    this.onDelete(); // this deletes it from the local list
+                    confirmDelete(context);
                   },
                 ),
               ],
             ),
           ],
         ),
-        decoration:
-            new BoxDecoration(border: new Border(bottom: new BorderSide())),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide())),
       );
     }
+  }
+
+  void confirmDelete(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Delete"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  this.onDelete();
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text("Are you sure you wish to delete the category "
+                "\"${category.categoryName}\"?"),
+          );
+        });
   }
 }
