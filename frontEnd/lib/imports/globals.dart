@@ -14,6 +14,8 @@ class Globals {
   static SharedPreferences tokens;
   static int dateSort = 0;
   static int alphabeticalSort = 1;
+  static String resetUrl =
+      "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://www.shiftadmin.com";
 
   static void clearGlobals() {
     username = null;
