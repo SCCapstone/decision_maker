@@ -114,8 +114,9 @@ class GroupsManager {
     }
   }
 
-  static void addEvent(
+  static Future<bool> addEvent(
       String groupId, Event event, BuildContext context) async {
+    bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "newEvent";
     jsonRequestBody["payload"] = event.asMap();
@@ -127,14 +128,8 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context,
-              callback: (_) => Navigator.pushAndRemoveUntil(
-                  context,
-                  new MaterialPageRoute(
-                      builder: (BuildContext context) => GroupsHome()),
-                  (Route<dynamic> route) => false));
+          retVal = true;
         } else {
           showPopupMessage("Error creating event (1).", context);
         }
@@ -144,6 +139,7 @@ class GroupsManager {
     } else {
       showPopupMessage("Unable to create event.", context);
     }
+    return retVal;
   }
 
   static Map<String, Event> getGroupEvents(Group group) {
@@ -163,7 +159,8 @@ class GroupsManager {
     return sortedMap.cast();
   }
 
-  static void createNewGroup(Group group, BuildContext context) async {
+  static Future<bool> createNewGroup(Group group, BuildContext context) async {
+    bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "createNewGroup";
     jsonRequestBody["payload"] = group.asMap();
@@ -176,7 +173,7 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
+          retVal = true;
         } else {
           showPopupMessage("Error creating group (1).", context);
         }
@@ -186,6 +183,7 @@ class GroupsManager {
     } else {
       showPopupMessage("Unable to create group.", context);
     }
+    return retVal;
   }
 
   static void optInOutOfEvent(String groupId, String eventId,

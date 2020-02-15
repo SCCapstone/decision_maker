@@ -5,20 +5,20 @@ import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
 
-class AddUserPopup extends StatefulWidget {
+class MembersPopup extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<Member> originalMembers;
   final Function handlePopupClosed;
 
-  AddUserPopup(this.displayedMembers, this.originalMembers,
+  MembersPopup(this.displayedMembers, this.originalMembers,
       {this.handlePopupClosed});
 
   @override
-  _AddUserPopupState createState() => _AddUserPopupState();
+  _MembersPopupState createState() => _MembersPopupState();
 }
 
-class _AddUserPopupState extends State<AddUserPopup> {
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+class _MembersPopupState extends State<MembersPopup> {
+  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
   List<UserRow> displayedUserRows = new List<UserRow>();
   List<UserRow> searchResults = new List<UserRow>();

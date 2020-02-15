@@ -1,4 +1,3 @@
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 
 class Favorite {
@@ -14,7 +13,7 @@ class Favorite {
     return Favorite(
         username: username,
         displayName: json[UsersManager.DISPLAY_NAME],
-        icon: json[GroupsManager.ICON]);
+        icon: json[UsersManager.ICON]);
   }
 
   @override

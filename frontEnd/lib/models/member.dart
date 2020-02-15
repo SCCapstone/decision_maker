@@ -1,4 +1,3 @@
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 
@@ -15,7 +14,7 @@ class Member {
     return Member(
         username: username,
         displayName: json[UsersManager.DISPLAY_NAME],
-        icon: json[GroupsManager.ICON]);
+        icon: json[UsersManager.ICON]);
   }
 
   factory Member.fromFavorite(Favorite favorite) {

@@ -48,6 +48,12 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   @override
+  void dispose() {
+    searchBar.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
@@ -131,7 +137,8 @@ class _GroupsHomeState extends State<GroupsHome> {
               visible: searching,
               child: Container(
                 width: MediaQuery.of(context).size.width * .70,
-                child: TextFormField(
+                child: TextField(
+                  autofocus: true,
                   controller: searchBar,
                   style: TextStyle(color: Colors.white, fontSize: 30),
                   decoration: InputDecoration(
@@ -178,20 +185,23 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .08),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .06),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          // Navigate to second route when tapped.
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateGroup()),
-          ).then((_) => GroupsHome());
-        },
+      floatingActionButton: Visibility(
+        visible: !searching,
+        child: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            // Navigate to second route when tapped.
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateGroup()),
+            ).then((_) => GroupsHome());
+          },
+        ),
       ),
     );
   }
@@ -228,16 +238,17 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   void searchGroup() {
     if (searching) {
-      searching = false;
       // already searching, so user has clicked the stop button
       setState(() {
+        searching = false;
         searchBar.clear();
         displayedGroups = totalGroups;
         searchIcon = new Icon(Icons.search);
       });
     } else {
-      searching = true;
+      // when the user starts searching, automatically select the text field
       setState(() {
+        searching = true;
         searchIcon = new Icon(Icons.close);
       });
     }

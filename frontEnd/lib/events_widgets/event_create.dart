@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
@@ -222,7 +223,7 @@ class _CreateEventState extends State<CreateEvent> {
                 startTime.minute < currentTime.minute));
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -245,10 +246,19 @@ class _CreateEventState extends State<CreateEvent> {
         eventCreator: eventCreator,
       );
 
-      GroupsManager.addEvent(Globals.currentGroup.groupId, event, context);
-      setState(() {
-        autoValidate = false;
-      });
+      showLoadingDialog(context, "Creating event..."); // show loading dialog
+      bool success = await GroupsManager.addEvent(
+          Globals.currentGroup.groupId, event, context);
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      if (success) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            new MaterialPageRoute(
+                builder: (BuildContext context) => GroupsHome()),
+            (Route<dynamic> route) => false);
+      }
     } else {
       setState(() => autoValidate = true);
     }

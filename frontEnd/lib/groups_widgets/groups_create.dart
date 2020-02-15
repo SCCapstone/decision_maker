@@ -3,11 +3,14 @@ import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/widgets/category_popup.dart';
-import 'package:frontEnd/widgets/user_popup.dart';
+import 'package:frontEnd/widgets/members_popup.dart';
+
+import 'groups_home.dart';
 
 class CreateGroup extends StatefulWidget {
   @override
@@ -27,11 +30,12 @@ class _CreateGroupState extends State<CreateGroup> {
   Map<String, String> originalCategories =
       new Map<String, String>(); // map of categoryIds -> categoryName
 
-  final formKey = GlobalKey<FormState>();
-  final groupNameController = TextEditingController();
-  final groupIconController = TextEditingController();
-  final pollPassController = TextEditingController();
-  final pollDurationController = TextEditingController();
+  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
+  final TextEditingController groupNameController = new TextEditingController();
+  final TextEditingController groupIconController = new TextEditingController();
+  final TextEditingController pollPassController = new TextEditingController();
+  final TextEditingController pollDurationController =
+      new TextEditingController();
 
   @override
   void dispose() {
@@ -66,7 +70,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   controller: groupNameController,
                   validator: validGroupName,
                   onSaved: (String arg) {
-                    groupName = arg;
+                    groupName = arg.trim();
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a group name",
@@ -77,7 +81,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   keyboardType: TextInputType.url,
                   validator: validGroupIcon,
                   onSaved: (String arg) {
-                    groupIcon = arg;
+                    groupIcon = arg.trim();
                   },
                   decoration: InputDecoration(
                     labelText: "Enter an icon link",
@@ -88,7 +92,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   keyboardType: TextInputType.number,
                   validator: validPollDuration,
                   onSaved: (String arg) {
-                    pollDuration = int.parse(arg);
+                    pollDuration = int.parse(arg.trim());
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a default poll duration (in minutes)",
@@ -99,7 +103,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   keyboardType: TextInputType.number,
                   validator: validPassPercentage,
                   onSaved: (String arg) {
-                    pollPassPercent = int.parse(arg);
+                    pollPassPercent = int.parse(arg.trim());
                   },
                   decoration: InputDecoration(
                     labelText: "Enter a default poll pass percentage (0-100)",
@@ -109,14 +113,12 @@ class _CreateGroupState extends State<CreateGroup> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     RaisedButton(
-                      color: Colors.greenAccent,
                       child: Text("Members"),
                       onPressed: () {
                         showMembersPopup();
                       },
                     ),
                     RaisedButton(
-                      color: Colors.greenAccent,
                       child: Text("Categories"),
                       onPressed: () {
                         showCategoriesPopup();
@@ -139,7 +141,7 @@ class _CreateGroupState extends State<CreateGroup> {
   void showMembersPopup() {
     showDialog(
         context: context,
-        child: AddUserPopup(displayedMembers, displayedMembers,
+        child: MembersPopup(displayedMembers, displayedMembers,
             handlePopupClosed: () {}));
   }
 
@@ -149,7 +151,7 @@ class _CreateGroupState extends State<CreateGroup> {
         child: CategoryPopup(selectedCategories, handlePopupClosed: () {}));
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -159,14 +161,14 @@ class _CreateGroupState extends State<CreateGroup> {
         Map<String, String> memberInfo = new Map<String, String>();
         memberInfo.putIfAbsent(
             UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(GroupsManager.ICON, () => member.icon);
+        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
         membersMap.putIfAbsent(member.username, () => memberInfo);
       }
       // creator is always in the group of course
       Map<String, String> memberInfo = new Map<String, String>();
       memberInfo.putIfAbsent(
           UsersManager.DISPLAY_NAME, () => Globals.user.displayName);
-      memberInfo.putIfAbsent(GroupsManager.ICON, () => Globals.user.icon);
+      memberInfo.putIfAbsent(UsersManager.ICON, () => Globals.user.icon);
       membersMap.putIfAbsent(Globals.username, () => memberInfo);
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
@@ -178,18 +180,19 @@ class _CreateGroupState extends State<CreateGroup> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 
-      GroupsManager.createNewGroup(group, context);
+      showLoadingDialog(context, "Creating group..."); // show loading dialog
+      bool success = await GroupsManager.createNewGroup(group, context);
 
-      setState(() {
-        // reset everything
-        groupNameController.clear();
-        groupIconController.clear();
-        selectedCategories.clear();
-        displayedMembers.clear();
-        pollDurationController.clear();
-        pollPassController.clear();
-        autoValidate = false;
-      });
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      if (success) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            new MaterialPageRoute(
+                builder: (BuildContext context) => GroupsHome()),
+            (Route<dynamic> route) => false);
+      }
     } else {
       setState(() => autoValidate = true);
     }

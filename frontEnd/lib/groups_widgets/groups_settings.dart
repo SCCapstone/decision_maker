@@ -7,7 +7,7 @@ import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_popup.dart';
-import 'package:frontEnd/widgets/user_popup.dart';
+import 'package:frontEnd/widgets/members_popup.dart';
 
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
@@ -61,9 +61,16 @@ class _GroupSettingsState extends State<GroupSettings> {
           username: username,
           displayName: Globals.currentGroup.members[username]
               [UsersManager.DISPLAY_NAME],
-          icon: Globals.currentGroup.members[username][GroupsManager.ICON]);
+          icon: Globals.currentGroup.members[username][UsersManager.ICON]);
       originalMembers.add(member); // preserve original members
       displayedMembers.add(member); // used to show group members in the popup
+    }
+    for (String catId in Globals.currentGroup.categories.keys) {
+      // preserve original categories selected
+      originalCategories.putIfAbsent(
+          catId, () => Globals.currentGroup.categories[catId]);
+      selectedCategories.putIfAbsent(
+          catId, () => Globals.currentGroup.categories[catId]);
     }
     groupName = Globals.currentGroup.groupName;
     groupIcon = Globals.currentGroup.icon; // icon only changes via popup
@@ -73,13 +80,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     groupNameController.text = groupName;
     pollDurationController.text = pollDuration.toString();
     pollPassController.text = pollPassPercent.toString();
-    for (String catId in Globals.currentGroup.categories.keys) {
-      // preserve original categories selected
-      originalCategories.putIfAbsent(
-          catId, () => Globals.currentGroup.categories[catId]);
-      selectedCategories.putIfAbsent(
-          catId, () => Globals.currentGroup.categories[catId]);
-    }
+
     super.initState();
   }
 
@@ -115,11 +116,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                         controller: groupNameController,
                         validator: validGroupName,
                         onChanged: (String arg) {
-                          groupName = arg;
+                          groupName = arg.trim();
                           enableAutoValidation();
                         },
                         onSaved: (String arg) {
-                          groupName = arg;
+                          groupName = arg.trim();
                         },
                         style: TextStyle(
                             fontSize:
@@ -217,14 +218,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                               validator: validPassPercentage,
                               onChanged: (String arg) {
                                 try {
-                                  pollPassPercent = int.parse(arg);
+                                  pollPassPercent = int.parse(arg.trim());
                                   enableAutoValidation();
                                 } catch (e) {
                                   autoValidate = true;
                                 }
                               },
                               onSaved: (String arg) {
-                                pollPassPercent = int.parse(arg);
+                                pollPassPercent = int.parse(arg.trim());
                               },
                               decoration: InputDecoration(
                                   border: OutlineInputBorder(),
@@ -233,18 +234,20 @@ class _GroupSettingsState extends State<GroupSettings> {
                           )
                         ],
                       ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .004),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: <Widget>[
                           RaisedButton(
-                            color: Colors.greenAccent,
                             child: Text("Members"),
                             onPressed: () {
                               showMembersPopup();
                             },
                           ),
                           RaisedButton(
-                            color: Colors.greenAccent,
                             child: Text("Categories"),
                             onPressed: () {
                               showCategoriesPopup();
@@ -262,7 +265,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           child: Text("Delete Group"),
                           color: Colors.red,
                           onPressed: () {
-                            tryDelete(context);
+                            confirmDeleteGroup(context);
                           },
                         ),
                       ),
@@ -288,7 +291,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void showMembersPopup() {
     showDialog(
             context: context,
-            child: AddUserPopup(displayedMembers, originalMembers,
+            child: MembersPopup(displayedMembers, originalMembers,
                 handlePopupClosed: popupClosed))
         .then((val) {
       // this is called whenever the user clicks outside the alert dialog or hits the back button
@@ -310,6 +313,33 @@ class _GroupSettingsState extends State<GroupSettings> {
   void popupClosed() {
     enableAutoValidation();
   }
+
+  void confirmDeleteGroup(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Delete"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  tryDelete(context);
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text("Are you sure you wish to delete this group?"),
+          );
+        });
+  }
+
 
   void tryDelete(BuildContext context) async {
     // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
@@ -366,7 +396,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         Map<String, String> memberInfo = new Map<String, String>();
         memberInfo.putIfAbsent(
             UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(GroupsManager.ICON, () => member.icon);
+        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
         membersMap.putIfAbsent(member.username, () => memberInfo);
       }
       Group group = new Group(
