@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
 import java.util.Map;
+import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonParsers;
 import utilities.Metrics;
@@ -53,19 +54,27 @@ public class UsersPostHandler implements
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new ResultStatus(true, "Warming users endpoint.");
           } else {
-            resultStatus.resultMessage = "Error: Invalid action entered";
+            resultStatus.resultMessage = "Error: Invalid action entered.";
+            lambdaLogger.log(
+                new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                    "Invalid action entered.").toString());
           }
         } else {
           resultStatus.resultMessage = "Error: Invalid key in payload.";
+          lambdaLogger.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "Invalid key in payload.").toString());
         }
       } else {
-        //probably want to log this somewhere as front end validation shouldn't have let this through
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: No action/payload entered.";
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                "No action/payload entered.").toString());
       }
     } catch (Exception e) {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Unable to handle request.";
+      lambdaLogger.log(
+          new ErrorDescriptor<>(request.getBody(), classMethod, metrics.getRequestId(), e).toString());
     }
 
     metrics.commonClose(resultStatus.success);

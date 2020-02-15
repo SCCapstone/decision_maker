@@ -461,6 +461,20 @@ public class UsersManagerTest {
     verify(this.metrics, times(2)).commonClose(false);
   }
 
+  @Test
+  public void updateUserSettings_invalidInputMissingKeys_failureResult() {
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.badInput, this.metrics, this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(1)).log(any(String.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   //////////////////////////endregion
   // getUserRatings tests //
   //////////////////////////region

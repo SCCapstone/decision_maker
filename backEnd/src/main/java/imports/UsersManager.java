@@ -249,7 +249,7 @@ public class UsersManager extends DatabaseAccessManager {
         ValueMap favoritesOfValueMap = new ValueMap();
         NameMap favoritesOfNameMap = new NameMap();
 
-        //determine if the display name/icon have changed (rn it's just display name)
+        //determine if the display name/icon have changed
         if (!oldDisplayName.equals(newDisplayName)) {
           updateUserExpression += ", " + DISPLAY_NAME + " = :name";
           userValueMap.withString(":name", newDisplayName);
@@ -342,10 +342,12 @@ public class UsersManager extends DatabaseAccessManager {
       } catch (Exception e) {
         lambdaLogger
             .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-        e.printStackTrace();
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -361,6 +363,7 @@ public class UsersManager extends DatabaseAccessManager {
 
     boolean hadError = false;
 
+    //If there are missing favorites, go through and remove the favoritesOf for each of these users
     if (!newFavorites.containsAll(oldFavorites)) {
       final Set<String> removedUsernames = new HashSet<>(oldFavorites);
       removedUsernames.removeAll(newFavorites);
@@ -396,6 +399,7 @@ public class UsersManager extends DatabaseAccessManager {
       }
     }
 
+    //If there are new favorites, go through and update the favoritesOf for each of these users
     if (!oldFavorites.containsAll(newFavorites)) {
       final Set<String> addedUsernames = new HashSet<>(newFavorites);
       addedUsernames.removeAll(oldFavorites);
