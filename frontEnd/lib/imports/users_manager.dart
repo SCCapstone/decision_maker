@@ -9,6 +9,7 @@ import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
+import 'globals.dart';
 
 class UsersManager {
   static final String apiEndpoint = "usersendpoint";
@@ -23,6 +24,7 @@ class UsersManager {
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
   static final String FAVORITES = "Favorites";
+  static final String ICON = "Icon";
 
   static Future<User> getUserData({BuildContext context}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -54,22 +56,24 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserAppSettings(
+  static void updateUserSettings(
       String displayName,
       int darkTheme,
       int muted,
       int groupSort,
       List<String> favorites,
       BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     Map<String, dynamic> settings = new Map<String, dynamic>();
-    jsonRequestBody["action"] = "updateUserAppSettings";
-    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
-    settings.putIfAbsent(FAVORITES, () => favorites);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "updateUserSettings";
+    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
+    jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
+    jsonRequestBody["payload"].putIfAbsent(ICON, () => "asdf");
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -79,7 +83,9 @@ class UsersManager {
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (!responseItem.success) {
+        if (responseItem.success) {
+          Globals.user = User.fromJson(json.decode(responseItem.resultMessage));
+        } else {
           showPopupMessage("Error updating user settings (1).", context);
         }
       } catch (e) {
