@@ -216,25 +216,18 @@ public class CategoriesManager extends DatabaseAccessManager {
           "lookup key not in request payload/active user not set").toString());
     }
 
-    List<Map> categories = new ArrayList<>();
-    for (String id : categoryIds) {
-      try {
-        Item dbData = this.getItemByPrimaryKey(id);
-        if (dbData != null) {
-          categories.add(dbData.asMap());
-        } else {
-          //maybe log this idk, we probably shouldn't have ids that don't point to cats in the db?
-          lambdaLogger.log(new ErrorDescriptor<>(id, classMethod, metrics.getRequestId(),
-              "CategoryId lookup returned null").toString());
-        }
-      } catch (Exception e) {
-        //definitely need to log this, most likely a db down error
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-      }
-    }
-
     if (success) {
+      List<Map> categories = new ArrayList<>();
+      for (String id : categoryIds) {
+        try {
+          Item dbData = this.getItemByPrimaryKey(id);
+          categories.add(dbData.asMap());
+        } catch (Exception e) {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+
       resultMessage = JsonEncoders.convertListToJson(categories);
     }
 
@@ -248,6 +241,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     final String classMethod = "CategoriesManager.deleteCategory";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
+
     if (
         jsonMap.containsKey(CATEGORY_ID) &&
             jsonMap.containsKey(RequestFields.ACTIVE_USER)
@@ -288,6 +282,7 @@ public class CategoriesManager extends DatabaseAccessManager {
               "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
+
     metrics.commonClose(resultStatus.success);
 
     return resultStatus;

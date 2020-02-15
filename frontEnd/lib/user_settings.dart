@@ -280,7 +280,7 @@ class _UserSettingsState extends State<UserSettings> {
         for (Favorite favorite in displayedFavorites) {
           userNames.add(favorite.username);
         }
-        UsersManager.updateUserAppSettings(
+        UsersManager.updateUserSettings(
             _displayName,
             boolToInt(_darkTheme),
             boolToInt(_muted),
