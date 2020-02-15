@@ -41,7 +41,6 @@ class _UserSettingsState extends State<UserSettings> {
     _darkTheme = Globals.user.appSettings.darkTheme;
     _groupSort = Globals.user.appSettings.groupSort;
     _muted = Globals.user.appSettings.muted;
-    print(Globals.user.favorites);
     originalFavorites = Globals.user.favorites;
     displayedFavorites.addAll(originalFavorites);
     nickNameController.text = _displayName;
@@ -290,13 +289,12 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.darkTheme = _darkTheme;
         Globals.user.displayName = _displayName;
         Globals.user.favorites = displayedFavorites;
-        print("After##### ${Globals.user.favorites}");
         Globals.user.icon = _icon;
         List<String> userNames = new List<String>();
         for (Favorite favorite in displayedFavorites) {
           userNames.add(favorite.username);
         }
-        UsersManager.updateUserAppSettings(
+        UsersManager.updateUserSettings(
             _displayName,
             boolToInt(_darkTheme),
             boolToInt(_muted),

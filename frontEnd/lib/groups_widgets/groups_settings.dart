@@ -351,7 +351,7 @@ class _GroupSettingsState extends State<GroupSettings> {
       editing = true;
       validGroupIcon = true;
       autoValidate = true;
-      Navigator.of(context).pop();
+      Navigator.of(context, rootNavigator: true).pop('dialog');
     });
   }
 
