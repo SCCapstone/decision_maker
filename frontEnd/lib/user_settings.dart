@@ -367,7 +367,7 @@ class _UserSettingsState extends State<UserSettings> {
                           displayedFavorites.add(new Favorite(
                               username: contactsController.text.trim(),
                               displayName: contactsController.text.trim(),
-                              icon: null));
+                              icon: contactsController.text.trim()));
                           contactsController.clear();
                           setState(() {});
                         }
