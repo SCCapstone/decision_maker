@@ -86,206 +86,212 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          title: Text("${Globals.currentGroup.groupName} Settings"),
-          actions: <Widget>[
-            Visibility(
-              visible: editing,
-              child: RaisedButton.icon(
-                  color: Colors.blue,
-                  onPressed: validateInput,
-                  icon: Icon(Icons.save),
-                  label: Text("Save")),
-            )
-          ],
-        ),
-        body: Column(children: <Widget>[
-          Form(
-            key: formKey,
-            autovalidate: autoValidate,
-            child: Expanded(
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.all(10.0),
-                children: <Widget>[
-                  Column(
-                    children: [
-                      TextFormField(
-                        controller: groupNameController,
-                        validator: validGroupName,
-                        onChanged: (String arg) {
-                          groupName = arg.trim();
-                          enableAutoValidation();
-                        },
-                        onSaved: (String arg) {
-                          groupName = arg.trim();
-                        },
-                        style: TextStyle(
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
-                        decoration: InputDecoration(labelText: "Group Name"),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .01),
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * .5,
-                        height: MediaQuery.of(context).size.height * .3,
-                        alignment: Alignment.topRight,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                fit: BoxFit.fitHeight,
-                                image: NetworkImage(groupIcon))),
-                        child: Container(
+    return GestureDetector(
+      onTap: () {
+        // allows for anywhere on the screen to be clicked to lose focus of a textfield
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            title: Text("${Globals.currentGroup.groupName} Settings"),
+            actions: <Widget>[
+              Visibility(
+                visible: editing,
+                child: RaisedButton.icon(
+                    color: Colors.blue,
+                    onPressed: validateInput,
+                    icon: Icon(Icons.save),
+                    label: Text("Save")),
+              )
+            ],
+          ),
+          body: Column(children: <Widget>[
+            Form(
+              key: formKey,
+              autovalidate: autoValidate,
+              child: Expanded(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.all(10.0),
+                  children: <Widget>[
+                    Column(
+                      children: [
+                        TextFormField(
+                          controller: groupNameController,
+                          validator: validGroupName,
+                          onChanged: (String arg) {
+                            groupName = arg.trim();
+                            enableAutoValidation();
+                          },
+                          onSaved: (String arg) {
+                            groupName = arg.trim();
+                          },
+                          style: TextStyle(
+                              fontSize:
+                                  DefaultTextStyle.of(context).style.fontSize *
+                                      0.8),
+                          decoration: InputDecoration(labelText: "Group Name"),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .01),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .5,
+                          height: MediaQuery.of(context).size.height * .3,
+                          alignment: Alignment.topRight,
                           decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.7),
-                              shape: BoxShape.circle),
-                          child: IconButton(
-                            icon: Icon(Icons.edit),
-                            color: Colors.blueAccent,
-                            onPressed: () {
-                              groupIconPopup(context, autoValidate,
-                                  groupIconController, updateIcon);
-                            },
+                              image: DecorationImage(
+                                  fit: BoxFit.fitHeight,
+                                  image: NetworkImage(groupIcon))),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.7),
+                                shape: BoxShape.circle),
+                            child: IconButton(
+                              icon: Icon(Icons.edit),
+                              color: Colors.blueAccent,
+                              onPressed: () {
+                                groupIconPopup(context, autoValidate,
+                                    groupIconController, updateIcon);
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Text(
-                            "Default poll duration (mins)",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.4),
-                          ),
-                          Container(
-                            width: MediaQuery.of(context).size.width * .25,
-                            child: TextFormField(
-                              maxLength: 6,
-                              keyboardType: TextInputType.number,
-                              validator: validPollDuration,
-                              controller: pollDurationController,
-                              onChanged: (String arg) {
-                                try {
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .004),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            Text(
+                              "Default poll duration (mins)",
+                              style: TextStyle(
+                                  fontSize: DefaultTextStyle.of(context)
+                                          .style
+                                          .fontSize *
+                                      0.4),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width * .25,
+                              child: TextFormField(
+                                maxLength: 6,
+                                keyboardType: TextInputType.number,
+                                validator: validPollDuration,
+                                controller: pollDurationController,
+                                onChanged: (String arg) {
+                                  try {
+                                    pollDuration = int.parse(arg);
+                                    enableAutoValidation();
+                                  } catch (e) {
+                                    autoValidate = true;
+                                  }
+                                },
+                                onSaved: (String arg) {
                                   pollDuration = int.parse(arg);
-                                  enableAutoValidation();
-                                } catch (e) {
-                                  autoValidate = true;
-                                }
-                              },
-                              onSaved: (String arg) {
-                                pollDuration = int.parse(arg);
-                              },
-                              decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  counterText: ""),
+                                },
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    counterText: ""),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Text(
-                            "Default pass percentage     ",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.4),
-                          ),
-                          Container(
-                            width: MediaQuery.of(context).size.width * .25,
-                            child: TextFormField(
-                              maxLength: 3,
-                              controller: pollPassController,
-                              keyboardType: TextInputType.number,
-                              validator: validPassPercentage,
-                              onChanged: (String arg) {
-                                try {
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .004),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: <Widget>[
+                            Text(
+                              "Default pass percentage     ",
+                              style: TextStyle(
+                                  fontSize: DefaultTextStyle.of(context)
+                                          .style
+                                          .fontSize *
+                                      0.4),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width * .25,
+                              child: TextFormField(
+                                maxLength: 3,
+                                controller: pollPassController,
+                                keyboardType: TextInputType.number,
+                                validator: validPassPercentage,
+                                onChanged: (String arg) {
+                                  try {
+                                    pollPassPercent = int.parse(arg.trim());
+                                    enableAutoValidation();
+                                  } catch (e) {
+                                    autoValidate = true;
+                                  }
+                                },
+                                onSaved: (String arg) {
                                   pollPassPercent = int.parse(arg.trim());
-                                  enableAutoValidation();
-                                } catch (e) {
-                                  autoValidate = true;
-                                }
+                                },
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    counterText: ""),
+                              ),
+                            )
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .004),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            RaisedButton(
+                              child: Text("Members"),
+                              onPressed: () {
+                                showMembersPopup();
                               },
-                              onSaved: (String arg) {
-                                pollPassPercent = int.parse(arg.trim());
-                              },
-                              decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  counterText: ""),
                             ),
-                          )
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          RaisedButton(
-                            child: Text("Members"),
+                            RaisedButton(
+                              child: Text("Categories"),
+                              onPressed: () {
+                                showCategoriesPopup();
+                              },
+                            )
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .004),
+                        ),
+                        Visibility(
+                          visible: owner,
+                          child: RaisedButton(
+                            child: Text("Delete Group"),
+                            color: Colors.red,
                             onPressed: () {
-                              showMembersPopup();
+                              confirmDeleteGroup(context);
                             },
                           ),
-                          RaisedButton(
-                            child: Text("Categories"),
+                        ),
+                        Visibility(
+                          visible: !owner,
+                          child: RaisedButton(
+                            child: Text("Leave Group"),
+                            color: Colors.red,
                             onPressed: () {
-                              showCategoriesPopup();
+                              // TODO leave group
                             },
-                          )
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      Visibility(
-                        visible: owner,
-                        child: RaisedButton(
-                          child: Text("Delete Group"),
-                          color: Colors.red,
-                          onPressed: () {
-                            confirmDeleteGroup(context);
-                          },
-                        ),
-                      ),
-                      Visibility(
-                        visible: !owner,
-                        child: RaisedButton(
-                          child: Text("Leave Group"),
-                          color: Colors.red,
-                          onPressed: () {
-                            // TODO leave group
-                          },
-                        ),
-                      )
-                    ],
-                  ),
-                ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ]));
+          ])),
+    );
   }
 
   void showMembersPopup() {
@@ -312,6 +318,7 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void popupClosed() {
     enableAutoValidation();
+    hideKeyboard(context);
   }
 
   void confirmDeleteGroup(BuildContext context) {
@@ -339,7 +346,6 @@ class _GroupSettingsState extends State<GroupSettings> {
           );
         });
   }
-
 
   void tryDelete(BuildContext context) async {
     // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)

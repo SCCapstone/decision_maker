@@ -69,114 +69,123 @@ class _CreateEventState extends State<CreateEvent> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Create Event")),
-      body: Form(
-          key: formKey,
-          autovalidate: autoValidate,
-          child: ListView(
-            shrinkWrap: true,
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  TextFormField(
-                    controller: eventNameController,
-                    validator: validEventName,
-                    onSaved: (String arg) {
-                      eventName = arg;
-                    },
-                    decoration:
-                        InputDecoration(labelText: "Enter an event name"),
-                  ),
-                  Container(height: 20),
-                  // Temporarily using Containers to space out the elements
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text("Start date and time for the event",
-                            style: TextStyle(fontSize: 16)),
-                      ]),
-                  Container(height: 10),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        ButtonTheme(
-                            minWidth: 110,
-                            height: 40,
-                            buttonColor: Colors.white60,
-                            child: RaisedButton(
-                                onPressed: () {
-                                  selectStartDate(context);
-                                },
-                                child: Text(eventStartDate))),
-                        ButtonTheme(
-                            minWidth: 110,
-                            height: 40,
-                            buttonColor: Colors.white60,
-                            child: RaisedButton(
-                                onPressed: () {
-                                  selectStartTime(context);
-                                },
-                                child: Text(eventStartTime))),
-                      ]),
-                  Container(height: 20),
-                  RaisedButton(
-                    child: Text("Select Category"),
-                    onPressed: () {
-                      showCategoriesPopup();
-                    },
-                  ),
-                  Container(height: 10),
-                  TextFormField(
-                    controller: pollDurationController,
-                    keyboardType: TextInputType.number,
-                    validator: validPollDuration,
-                    onSaved: (String arg) {
-                      pollDuration = arg;
-                    },
-                    decoration: InputDecoration(
-                        labelText: "Poll duration (in minutes)"),
-                  ),
-                  TextFormField(
-                    controller: passPercentageController,
-                    keyboardType: TextInputType.number,
-                    validator: validPassPercentage,
-                    onSaved: (String arg) {
-                      pollPassPercent = arg;
-                    },
-                    decoration:
-                        InputDecoration(labelText: "Poll pass percentage"),
-                  ),
-                ],
-              )
-            ],
-          )),
-      bottomNavigationBar: BottomAppBar(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return GestureDetector(
+      // allows for anywhere on the screen to be clicked to lose focus of a textfield
+      onTap: () {
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text("Create Event")),
+        body: Form(
+            key: formKey,
+            autovalidate: autoValidate,
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
               children: <Widget>[
-            RaisedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("Cancel")),
-            RaisedButton.icon(
-                onPressed: () {
-                  if (categorySelected.isEmpty) {
-                    showPopupMessage("Select a category.", context);
-                  } else {
-                    validateInput();
-                  }
-                },
-                icon: Icon(Icons.add),
-                label: Text("Create"))
-          ])),
+                Column(
+                  children: <Widget>[
+                    TextFormField(
+                      controller: eventNameController,
+                      validator: validEventName,
+                      onSaved: (String arg) {
+                        eventName = arg;
+                      },
+                      decoration:
+                          InputDecoration(labelText: "Enter an event name"),
+                    ),
+                    Container(height: 20),
+                    // Temporarily using Containers to space out the elements
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Text("Start date and time for the event",
+                              style: TextStyle(fontSize: 16)),
+                        ]),
+                    Container(height: 10),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          ButtonTheme(
+                              minWidth: 110,
+                              height: 40,
+                              buttonColor: Colors.white60,
+                              child: RaisedButton(
+                                  onPressed: () {
+                                    selectStartDate(context);
+                                  },
+                                  child: Text(eventStartDate))),
+                          ButtonTheme(
+                              minWidth: 110,
+                              height: 40,
+                              buttonColor: Colors.white60,
+                              child: RaisedButton(
+                                  onPressed: () {
+                                    selectStartTime(context);
+                                  },
+                                  child: Text(eventStartTime))),
+                        ]),
+                    Container(height: 20),
+                    RaisedButton(
+                      child: Text("Select Category"),
+                      onPressed: () {
+                        showCategoriesPopup();
+                      },
+                    ),
+                    Container(height: 10),
+                    TextFormField(
+                      controller: pollDurationController,
+                      keyboardType: TextInputType.number,
+                      validator: validPollDuration,
+                      onSaved: (String arg) {
+                        pollDuration = arg;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "Poll duration (in minutes)"),
+                    ),
+                    TextFormField(
+                      controller: passPercentageController,
+                      keyboardType: TextInputType.number,
+                      validator: validPassPercentage,
+                      onSaved: (String arg) {
+                        pollPassPercent = arg;
+                      },
+                      decoration:
+                          InputDecoration(labelText: "Poll pass percentage"),
+                    ),
+                  ],
+                )
+              ],
+            )),
+        bottomNavigationBar: BottomAppBar(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+              RaisedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel")),
+              RaisedButton.icon(
+                  onPressed: () {
+                    if (categorySelected.isEmpty) {
+                      showPopupMessage("Select a category.", context);
+                    } else {
+                      validateInput();
+                    }
+                  },
+                  icon: Icon(Icons.add),
+                  label: Text("Create"))
+            ])),
+      ),
     );
   }
 
   void showCategoriesPopup() {
-    showDialog(context: context, child: CategoryPopupSingle(categorySelected));
+    showDialog(context: context, child: CategoryPopupSingle(categorySelected))
+        .then((value) {
+      hideKeyboard(context);
+    });
   }
 
   Future selectStartDate(BuildContext context) async {

@@ -143,3 +143,6 @@ void showLoadingDialog(BuildContext context, String msg) {
       });
 }
 
+void hideKeyboard(BuildContext context) {
+  FocusScope.of(context).requestFocus(new FocusNode());
+}

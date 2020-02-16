@@ -53,86 +53,92 @@ class _CreateGroupState extends State<CreateGroup> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Add New Group"),
-      ),
-      body: Form(
-        key: formKey,
-        autovalidate: autoValidate,
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.all(20),
-          children: <Widget>[
-            Column(
-              children: [
-                TextFormField(
-                  controller: groupNameController,
-                  validator: validGroupName,
-                  onSaved: (String arg) {
-                    groupName = arg.trim();
-                  },
-                  decoration: InputDecoration(
-                    labelText: "Enter a group name",
-                  ),
-                ),
-                TextFormField(
-                  controller: groupIconController,
-                  keyboardType: TextInputType.url,
-                  validator: validGroupIcon,
-                  onSaved: (String arg) {
-                    groupIcon = arg.trim();
-                  },
-                  decoration: InputDecoration(
-                    labelText: "Enter an icon link",
-                  ),
-                ),
-                TextFormField(
-                  controller: pollDurationController,
-                  keyboardType: TextInputType.number,
-                  validator: validPollDuration,
-                  onSaved: (String arg) {
-                    pollDuration = int.parse(arg.trim());
-                  },
-                  decoration: InputDecoration(
-                    labelText: "Enter a default poll duration (in minutes)",
-                  ),
-                ),
-                TextFormField(
-                  controller: pollPassController,
-                  keyboardType: TextInputType.number,
-                  validator: validPassPercentage,
-                  onSaved: (String arg) {
-                    pollPassPercent = int.parse(arg.trim());
-                  },
-                  decoration: InputDecoration(
-                    labelText: "Enter a default poll pass percentage (0-100)",
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    RaisedButton(
-                      child: Text("Members"),
-                      onPressed: () {
-                        showMembersPopup();
-                      },
+    return GestureDetector(
+      // allows for anywhere on the screen to be clicked to lose focus of a textfield
+      onTap: () {
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Add New Group"),
+        ),
+        body: Form(
+          key: formKey,
+          autovalidate: autoValidate,
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.all(20),
+            children: <Widget>[
+              Column(
+                children: [
+                  TextFormField(
+                    controller: groupNameController,
+                    validator: validGroupName,
+                    onSaved: (String arg) {
+                      groupName = arg.trim();
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Enter a group name",
                     ),
-                    RaisedButton(
-                      child: Text("Categories"),
-                      onPressed: () {
-                        showCategoriesPopup();
-                      },
-                    )
-                  ],
-                ),
-                RaisedButton.icon(
-                    onPressed: validateInput,
-                    icon: Icon(Icons.add),
-                    label: Text("Create Group"))
-              ],
-            ),
-          ],
+                  ),
+                  TextFormField(
+                    controller: groupIconController,
+                    keyboardType: TextInputType.url,
+                    validator: validGroupIcon,
+                    onSaved: (String arg) {
+                      groupIcon = arg.trim();
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Enter an icon link",
+                    ),
+                  ),
+                  TextFormField(
+                    controller: pollDurationController,
+                    keyboardType: TextInputType.number,
+                    validator: validPollDuration,
+                    onSaved: (String arg) {
+                      pollDuration = int.parse(arg.trim());
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Enter a default poll duration (in minutes)",
+                    ),
+                  ),
+                  TextFormField(
+                    controller: pollPassController,
+                    keyboardType: TextInputType.number,
+                    validator: validPassPercentage,
+                    onSaved: (String arg) {
+                      pollPassPercent = int.parse(arg.trim());
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Enter a default poll pass percentage (0-100)",
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      RaisedButton(
+                        child: Text("Members"),
+                        onPressed: () {
+                          showMembersPopup();
+                        },
+                      ),
+                      RaisedButton(
+                        child: Text("Categories"),
+                        onPressed: () {
+                          showCategoriesPopup();
+                        },
+                      )
+                    ],
+                  ),
+                  RaisedButton.icon(
+                      onPressed: validateInput,
+                      icon: Icon(Icons.add),
+                      label: Text("Create Group"))
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -140,15 +146,21 @@ class _CreateGroupState extends State<CreateGroup> {
 
   void showMembersPopup() {
     showDialog(
-        context: context,
-        child: MembersPopup(displayedMembers, displayedMembers,
-            handlePopupClosed: () {}));
+            context: context,
+            child: MembersPopup(displayedMembers, displayedMembers,
+                handlePopupClosed: () {}))
+        .then((value) {
+      hideKeyboard(context);
+    });
   }
 
   void showCategoriesPopup() {
     showDialog(
-        context: context,
-        child: CategoryPopup(selectedCategories, handlePopupClosed: () {}));
+            context: context,
+            child: CategoryPopup(selectedCategories, handlePopupClosed: () {}))
+        .then((value) {
+      hideKeyboard(context);
+    });
   }
 
   void validateInput() async {
