@@ -147,7 +147,7 @@ class _CreateGroupState extends State<CreateGroup> {
   void showMembersPopup() {
     showDialog(
             context: context,
-            child: MembersPopup(displayedMembers, displayedMembers,
+            child: MembersPopup(displayedMembers, displayedMembers, true,
                 handlePopupClosed: () {}))
         .then((value) {
       hideKeyboard(context);

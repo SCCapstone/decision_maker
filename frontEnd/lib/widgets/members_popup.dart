@@ -9,8 +9,10 @@ class MembersPopup extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<Member> originalMembers;
   final Function handlePopupClosed;
+  final bool
+      isCreating; // if creating you don't have to worry about group creator
 
-  MembersPopup(this.displayedMembers, this.originalMembers,
+  MembersPopup(this.displayedMembers, this.originalMembers, this.isCreating,
       {this.handlePopupClosed});
 
   @override
@@ -27,16 +29,17 @@ class _MembersPopupState extends State<MembersPopup> {
   @override
   void initState() {
     for (Member user in widget.displayedMembers) {
-      // can't delete yourself or the group creator
-      bool displayDelete = user.username != Globals.currentGroup.groupCreator &&
-          user.username != Globals.username;
-      displayedUserRows.add(new UserRow(
-          user.displayName,
-          user.username,
-          user.icon,
-          displayDelete,
-          false,
-          (user.username == Globals.currentGroup.groupCreator), deleteUser: () {
+      // if you're creating a group, you can always remove members from the group
+      bool displayDelete = true;
+      bool displayOwner = false;
+      if (!widget.isCreating) {
+        // can't delete yourself or the group creator
+        displayDelete = user.username != Globals.currentGroup.groupCreator &&
+            user.username != Globals.username;
+        displayOwner = user.username == Globals.currentGroup.groupCreator;
+      }
+      displayedUserRows.add(new UserRow(user.displayName, user.username,
+          user.icon, displayDelete, false, displayOwner, deleteUser: () {
         removeMember(user.username, displayedUserRows);
       }));
     }
@@ -69,12 +72,7 @@ class _MembersPopupState extends State<MembersPopup> {
                     username: username, displayName: username, icon: username));
                 setState(() {
                   displayedUserRows.add(new UserRow(
-                      username,
-                      username,
-                      username,
-                      true,
-                      false,
-                      username == Globals.currentGroup.groupCreator,
+                      username, username, username, true, false, false,
                       deleteUser: () {
                     removeMember(username, displayedUserRows);
                   }));
@@ -130,8 +128,7 @@ class _MembersPopupState extends State<MembersPopup> {
                                 favorite.icon,
                                 false,
                                 true,
-                                (favorite.username ==
-                                    Globals.currentGroup.groupCreator),
+                                false,
                                 addUser: () =>
                                     addMemberFromFavorites(favorite)));
                           }
@@ -189,8 +186,7 @@ class _MembersPopupState extends State<MembersPopup> {
         memberToAdd.icon,
         true,
         false,
-        (memberToAdd.username == Globals.currentGroup.groupCreator),
-        deleteUser: () {
+        false, deleteUser: () {
       removeMember(memberToAdd.username, displayedUserRows);
     }));
     // update the alertdialog to show the new user added
