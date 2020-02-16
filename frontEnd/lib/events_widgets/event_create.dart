@@ -127,7 +127,7 @@ class _CreateEventState extends State<CreateEvent> {
                         ]),
                     Container(height: 20),
                     RaisedButton(
-                      child: Text("Select Category"),
+                      child: Text(getCategoryButtonMessage()),
                       onPressed: () {
                         showCategoriesPopup();
                       },
@@ -182,10 +182,27 @@ class _CreateEventState extends State<CreateEvent> {
   }
 
   void showCategoriesPopup() {
-    showDialog(context: context, child: CategoryPopupSingle(categorySelected))
-        .then((value) {
-      hideKeyboard(context);
+    showDialog(
+        context: context,
+        child: CategoryPopupSingle(
+          categorySelected,
+          handlePopupClosed: categoryPopupClosed,
+        )).then((value) {
+      categoryPopupClosed();
     });
+  }
+
+  void categoryPopupClosed() {
+    hideKeyboard(context);
+    setState(() {});
+  }
+
+  String getCategoryButtonMessage() {
+    if (categorySelected.isEmpty) {
+      return "Select Category";
+    } else {
+      return categorySelected.first.categoryName;
+    }
   }
 
   Future selectStartDate(BuildContext context) async {

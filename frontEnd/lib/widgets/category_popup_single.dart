@@ -7,8 +7,10 @@ import 'category_row.dart';
 
 class CategoryPopupSingle extends StatefulWidget {
   final List<Category> selectedCategory; // max of one element in this list
+  final Function handlePopupClosed;
 
-  CategoryPopupSingle(this.selectedCategory);
+
+  CategoryPopupSingle(this.selectedCategory, {this.handlePopupClosed});
 
   @override
   _CategoryPopupSingleState createState() => _CategoryPopupSingleState();
@@ -34,6 +36,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
         FlatButton(
           child: Text("Done"),
           onPressed: () {
+            widget.handlePopupClosed();
             Navigator.of(context, rootNavigator: true).pop('dialog');
           },
         ),
