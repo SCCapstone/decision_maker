@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
@@ -24,6 +28,7 @@ class _UserSettingsState extends State<UserSettings> {
   bool _darkTheme = false;
   bool _muted = false;
   String _icon;
+  File _image;
   String _displayName;
   int _groupSort = 0;
   List<Favorite> displayedFavorites = new List<Favorite>();
@@ -47,196 +52,217 @@ class _UserSettingsState extends State<UserSettings> {
     super.initState();
   }
 
+  Future getImage() async {
+    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    String newImage = "[";
+    print(image.path);
+    //print(await image.readAsBytes());
+    Uint8List imageData = image.readAsBytesSync();
+    for (int v in imageData) {
+      newImage += v.toString() + ",";
+    }
+
+    newImage = newImage.substring(0, newImage.length - 1) + "]";
+    print(newImage);
+
+    setState(() {
+      _image = image;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          title: Text("My Settings"),
-          actions: <Widget>[
-            Visibility(
-              visible: editing,
-              child: RaisedButton.icon(
-                  color: Colors.blue,
-                  onPressed: validateInput,
-                  icon: Icon(Icons.save),
-                  label: Text("Save")),
-            )
-          ],
-        ),
-        body: Column(children: <Widget>[
-          Form(
-            key: formKey,
-            autovalidate: autoValidate,
-            child: Expanded(
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.all(10.0),
-                children: <Widget>[
-                  Column(
-                    children: [
-                      Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          child: TextFormField(
-                            maxLength: 50,
-                            controller: nickNameController,
-                            validator: validName,
-                            onChanged: (String arg) {
-                              _displayName = arg.trim();
-                              enableAutoValidation();
-                            },
-                            onSaved: (String arg) {},
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.6),
-                            decoration: InputDecoration(
-                                labelText: "Name", counterText: ""),
-                          )),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .01),
-                      ),
-                      Container(
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        title: Text("My Settings"),
+        actions: <Widget>[
+          Visibility(
+            visible: editing,
+            child: RaisedButton.icon(
+                color: Colors.blue,
+                onPressed: validateInput,
+                icon: Icon(Icons.save),
+                label: Text("Save")),
+          )
+        ],
+      ),
+      body: Column(children: <Widget>[
+        Form(
+          key: formKey,
+          autovalidate: autoValidate,
+          child: Expanded(
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.all(10.0),
+              children: <Widget>[
+                Column(
+                  children: [
+                    Container(
                         width: MediaQuery.of(context).size.width * .6,
-                        height: MediaQuery.of(context).size.height * .3,
-                        alignment: Alignment.topRight,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                fit: BoxFit.fitHeight,
-                                image: AssetImage(
-                                    'assets/images/placeholder.jpg'))),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.7),
-                              shape: BoxShape.circle),
-                          child: IconButton(
-                            icon: Icon(Icons.edit),
-                            color: Colors.blueAccent,
-                            onPressed: () {
-                              userIconPopup();
-                            },
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .004),
-                      ),
-                      RaisedButton.icon(
-                          onPressed: () {
-                            contactsPopup();
+                        child: TextFormField(
+                          maxLength: 50,
+                          controller: nickNameController,
+                          validator: validName,
+                          onChanged: (String arg) {
+                            _displayName = arg.trim();
+                            enableAutoValidation();
                           },
-                          icon: Icon(Icons.contacts),
-                          label: Text("My Favorites")),
-                      Container(
-                        width: MediaQuery.of(context).size.width * .7,
-                        child: Column(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Mute Notifcations",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Switch(
-                                  value: _muted,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _muted = value;
-                                      enableAutoValidation();
-                                    });
-                                  },
-                                )
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Dark Theme",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Switch(
-                                  value: _darkTheme,
-                                  onChanged: (bool value) {
-                                    setState(() {
-                                      _darkTheme = value;
-                                      enableAutoValidation();
-                                    });
-                                  },
-                                )
-                              ],
-                            ),
-                          ],
+                          onSaved: (String arg) {},
+                          style: TextStyle(
+                              fontSize:
+                                  DefaultTextStyle.of(context).style.fontSize *
+                                      0.6),
+                          decoration: InputDecoration(
+                              labelText: "Name", counterText: ""),
+                        )),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                    ),
+                    Container(
+                      width: MediaQuery.of(context).size.width * .6,
+                      height: MediaQuery.of(context).size.height * .3,
+                      alignment: Alignment.topRight,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.fitHeight,
+                              image: _image == null
+                                  ? AssetImage('assets/images/placeholder.jpg')
+                                  : FileImage(_image)
+                              )),
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.7),
+                            shape: BoxShape.circle),
+                        child: IconButton(
+                          icon: Icon(Icons.edit),
+                          color: Colors.blueAccent,
+                          onPressed: () {
+                            //userIconPopup();
+                            getImage();
+                          },
                         ),
                       ),
-                      Container(
-                        // have to do this hack because the expansiontile title wouldn't line up
-                        width: MediaQuery.of(context).size.width * .78,
-                        child: ExpansionTile(
-                          title: Text(
-                            "Group Sort Method",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.4),
-                            textAlign: TextAlign.left,
-                          ),
-                          children: <Widget>[
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * .12,
-                              child: ListView(
-                                shrinkWrap: true,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Radio(
-                                        value: Globals.alphabeticalSort,
-                                        groupValue: _groupSort,
-                                        onChanged: selectGroupSort,
-                                      ),
-                                      Text("Alphabetical")
-                                    ],
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Radio(
-                                        value: Globals.dateSort,
-                                        groupValue: _groupSort,
-                                        onChanged: selectGroupSort,
-                                      ),
-                                      Text("Date")
-                                    ],
-                                  ),
-                                ],
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .004),
+                    ),
+                    RaisedButton.icon(
+                        onPressed: () {
+                          contactsPopup();
+                        },
+                        icon: Icon(Icons.contacts),
+                        label: Text("My Favorites")),
+                    Container(
+                      width: MediaQuery.of(context).size.width * .7,
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  "Mute Notifcations",
+                                  style: TextStyle(
+                                      fontSize: DefaultTextStyle.of(context)
+                                              .style
+                                              .fontSize *
+                                          0.4),
+                                ),
                               ),
-                            ),
-                          ],
+                              Switch(
+                                value: _muted,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _muted = value;
+                                    enableAutoValidation();
+                                  });
+                                },
+                              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  "Dark Theme",
+                                  style: TextStyle(
+                                      fontSize: DefaultTextStyle.of(context)
+                                              .style
+                                              .fontSize *
+                                          0.4),
+                                ),
+                              ),
+                              Switch(
+                                value: _darkTheme,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    _darkTheme = value;
+                                    enableAutoValidation();
+                                  });
+                                },
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      // have to do this hack because the expansiontile title wouldn't line up
+                      width: MediaQuery.of(context).size.width * .78,
+                      child: ExpansionTile(
+                        title: Text(
+                          "Group Sort Method",
+                          style: TextStyle(
+                              fontSize:
+                                  DefaultTextStyle.of(context).style.fontSize *
+                                      0.4),
+                          textAlign: TextAlign.left,
                         ),
-                      )
-                    ],
-                  ),
-                ],
-              ),
+                        children: <Widget>[
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .12,
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Radio(
+                                      value: Globals.alphabeticalSort,
+                                      groupValue: _groupSort,
+                                      onChanged: selectGroupSort,
+                                    ),
+                                    Text("Alphabetical")
+                                  ],
+                                ),
+                                Row(
+                                  children: <Widget>[
+                                    Radio(
+                                      value: Globals.dateSort,
+                                      groupValue: _groupSort,
+                                      onChanged: selectGroupSort,
+                                    ),
+                                    Text("Date")
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ],
             ),
           ),
-        ]));
+        ),
+      ]),
+    );
   }
 
   void selectGroupSort(int val) {
