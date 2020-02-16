@@ -297,7 +297,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void showMembersPopup() {
     showDialog(
             context: context,
-            child: MembersPopup(displayedMembers, originalMembers, true,
+            child: MembersPopup(displayedMembers, originalMembers, false,
                 handlePopupClosed: popupClosed))
         .then((val) {
       // this is called whenever the user clicks outside the alert dialog or hits the back button
