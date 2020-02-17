@@ -1,6 +1,6 @@
 package imports;
 
-import com.amazonaws.AmazonServiceException;
+import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -10,12 +10,13 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.collect.ImmutableMap;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.imageio.ImageIO;
+import java.util.UUID;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -281,24 +282,24 @@ public class UsersManager extends DatabaseAccessManager {
         }
 
         if (jsonMap.containsKey(ICON)) {
-          String newIcon = (String) jsonMap.get(ICON);
+          List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
 
           //todo create method that generates s3 file with newIcon data and returns the file name
           String newIconFileName = uploadIconAndReturnFileName(newIcon, metrics, lambdaLogger);
 
           if (!oldIcon.equals(newIconFileName)) {
             updateUserExpression += ", " + ICON + " = :icon";
-            userValueMap.withString(":icon", newIcon);
+            userValueMap.withString(":icon", newIconFileName);
 
             updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
                 GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
-            groupsValueMap.withString(":icon", newIcon);
+            groupsValueMap.withString(":icon", newIconFileName);
             groupsNameMap.with("#username2", activeUser);
 
             updateFavoritesOfExpression = this
                 .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
                     ":icon");
-            favoritesOfValueMap.withString(":icon", newIcon);
+            favoritesOfValueMap.withString(":icon", newIconFileName);
             favoritesOfNameMap.with("#username2", activeUser);
           }
         }
@@ -375,12 +376,35 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private String uploadIconAndReturnFileName(final String fileData, final Metrics metrics,
+  private String uploadIconAndReturnFileName(final List<Integer> fileData, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "UsersManager.";
 
+    final UUID uuid = UUID.randomUUID();
+    String fileName = uuid.toString() + ".jpg";
+
     try {
-      lambdaLogger.log(fileData);
+      int fileLength = fileData.size();
+      byte[] rawData = new byte[fileLength];
+
+      for (int i = 0; i < fileLength; i++) {
+        rawData[i] = fileData.get(i).byteValue();
+      }
+
+      InputStream is = new ByteArrayInputStream(rawData);
+      ObjectMetadata objectMetadata = new ObjectMetadata();
+      objectMetadata.setContentLength(fileLength);
+      objectMetadata.setContentType(JPG_MIME);
+
+      AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(
+          String.valueOf(Region.getRegion(Regions.US_EAST_2))).build();
+
+      PutObjectRequest putObjectRequest = new PutObjectRequest("pocketpoll-images", fileName, is,
+          objectMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
+
+      s3Client.putObject(putObjectRequest);
+
+      is.close();
 //      String imageType = JPG_TYPE;
 //
 //      ArrayList<Byte> imageDataRaw =
@@ -413,10 +437,11 @@ public class UsersManager extends DatabaseAccessManager {
 //          + srcKey + " and uploaded to " + dstBucket + "/" + dstKey);
 //      return "Ok";
     } catch (Exception e) {
-      //
+      lambdaLogger
+          .log(new ErrorDescriptor<>(fileData, classMethod, metrics.getRequestId(), e).toString());
     }
 
-    return "asdf";
+    return fileName;
   }
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
