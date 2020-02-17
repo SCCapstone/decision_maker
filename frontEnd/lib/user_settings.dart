@@ -110,11 +110,7 @@ class _UserSettingsState extends State<UserSettings> {
                           image: DecorationImage(
                               fit: BoxFit.fitHeight,
                               image: _icon == null
-                                  ? Globals.user.icon == null
-                                      ? AssetImage(
-                                          'assets/images/placeholder.jpg')
-                                      : NetworkImage(
-                                          Globals.imageUrl + Globals.user.icon)
+                                  ? getUserIconUrl(Globals.user)
                                   : FileImage(_icon))),
                       child: Container(
                         decoration: BoxDecoration(
@@ -249,7 +245,7 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
     _icon = image;
     enableAutoValidation();

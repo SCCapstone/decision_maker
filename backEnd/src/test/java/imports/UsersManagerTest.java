@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +63,18 @@ public class UsersManagerTest {
           UsersManager.APP_SETTINGS_MUTED, 0
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
-      UsersManager.ICON, "Icon",
+      UsersManager.FAVORITES, ImmutableList.of("fav1")
+  );
+
+  private final Map<String, Object> updateUserSettingsGoodInputWithIcon = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "ActiveUser",
+      UsersManager.APP_SETTINGS, ImmutableMap.of(
+          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_GROUP_SORT, 0,
+          UsersManager.APP_SETTINGS_MUTED, 0
+      ),
+      UsersManager.DISPLAY_NAME, "DisplayName",
+      UsersManager.ICON, ImmutableList.of(1, 2, 3),
       UsersManager.FAVORITES, ImmutableList.of("fav1")
   );
 
@@ -104,6 +116,9 @@ public class UsersManagerTest {
   private GroupsManager groupsManager;
 
   @Mock
+  private S3AccessManager s3AccessManager;
+
+  @Mock
   private LambdaLogger lambdaLogger;
 
   @Mock
@@ -116,6 +131,7 @@ public class UsersManagerTest {
     DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
+    DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
   }
 
   /////////////////////////////
@@ -331,7 +347,6 @@ public class UsersManagerTest {
 
   /////////////////////////////////endregion
   // updateUserSettings tests //
-  /*
   /////////////////////////////////region
   @Test
   public void updateUserSettings_validInputNoChanges_successfulResult() {
@@ -349,15 +364,16 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void updateUserSettings_validInputDisplayNameAndIconChange_successfulResult() {
+  public void updateUserSettings_validInputDisplayNameChangeNewIcon_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+    doReturn(Optional.of("newIconFileName")).when(this.s3AccessManager)
+        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
     userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
-    userItem.withString(UsersManager.ICON, "new icon");
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.lambdaLogger, times(0)).log(any(String.class));
@@ -366,6 +382,26 @@ public class UsersManagerTest {
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
     verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserSettings_validInputS3UploadFails_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(Optional.empty()).when(this.s3AccessManager)
+        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
+            this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(1)).log(any(String.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   @Test
@@ -414,12 +450,11 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void updateUserSettings_validInputDbDiesDuringDisplayNameIconUpdate_failureResult() {
+  public void updateUserSettings_validInputDbDiesDuringDisplayNameUpdate_failureResult() {
     doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
     doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
 
     userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
-    userItem.withString(UsersManager.ICON, "new icon");
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     doThrow(NullPointerException.class).when(this.groupsManager)
@@ -477,7 +512,6 @@ public class UsersManagerTest {
   }
 
   //////////////////////////endregion
-  */
   // getUserRatings tests //
   //////////////////////////region
   @Test

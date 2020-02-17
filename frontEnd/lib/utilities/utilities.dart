@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/user.dart';
 import 'validator.dart';
+
+ImageProvider getUserIconUrl(User user) {
+  return user.icon == null
+      ? AssetImage('assets/images/placeholder.jpg')
+      : NetworkImage(Globals.imageUrl + user.icon);
+}
 
 int boolToInt(bool val) {
   if (val) {
@@ -80,8 +88,8 @@ void groupIconPopup(BuildContext context, bool validate,
       });
 }
 
-void addUserPopup(
-    BuildContext context, Map<String, dynamic> users, Function function) {
+void addUserPopup(BuildContext context, Map<String, dynamic> users,
+    Function function) {
   // displays a popup for adding a new user to a group
   TextEditingController controller = new TextEditingController();
   final formKey = GlobalKey<FormState>();
@@ -128,8 +136,8 @@ void addUserPopup(
       });
 }
 
-void showErrorMessage(
-    String errorTitle, String errorMsg, BuildContext context) {
+void showErrorMessage(String errorTitle, String errorMsg,
+    BuildContext context) {
   showDialog(
       context: context,
       builder: (context) {
