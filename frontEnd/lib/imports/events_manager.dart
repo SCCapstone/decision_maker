@@ -13,6 +13,7 @@ class EventsManager {
   static final String EVENT_START_DATE_TIME = "EventStartDateTime";
   static final String TYPE = "Type";
   static final String POLL_DURATION = "PollDuration";
+  static final String RSVP_DURATION = "RsvpDuration";
   static final String POLL_PASS_PERCENT = "PollPassPercent";
   static final String OPTED_IN = "OptedIn";
   static final String TENTATIVE_ALGORITHM_CHOICES = "TentativeAlgorithmChoices";
