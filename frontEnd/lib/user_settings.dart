@@ -55,21 +55,26 @@ class _UserSettingsState extends State<UserSettings> {
   Future getImage() async {
     File image = await ImagePicker.pickImage(source: ImageSource.camera);
 
-    String newImage = "[";
-    print(image.path);
-    //print(await image.readAsBytes());
-    Uint8List imageData = image.readAsBytesSync();
-    for (int v in imageData) {
-      newImage += v.toString() + ",";
-    }
-
-    newImage = newImage.substring(0, newImage.length - 1) + "]";
-    print(newImage);
+//    String newImage = "[";
+//    print(image.path);
+//    //print(await image.readAsBytes());
+//    Uint8List imageData = image.readAsBytesSync();
+//    for (int data in imageData) {
+//      newImage += data.toString() + ",";
+//    }
+//
+//    newImage = newImage.substring(0, newImage.length - 1) + "]";
+//    printWrapped("newImage is: " + newImage + ".");
 
     setState(() {
       _image = image;
     });
   }
+
+//  void printWrapped(String text) {
+//    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
+//    pattern.allMatches(text).forEach((match) => print(match.group(0)));
+//  }
 
   @override
   Widget build(BuildContext context) {
@@ -312,6 +317,7 @@ class _UserSettingsState extends State<UserSettings> {
             boolToInt(_muted),
             _groupSort,
             userNames,
+            _image,
             context); // blind send for now?
 
         // reset everything and reflect changes made

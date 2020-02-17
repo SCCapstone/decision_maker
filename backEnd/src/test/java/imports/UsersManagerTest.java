@@ -331,6 +331,7 @@ public class UsersManagerTest {
 
   /////////////////////////////////endregion
   // updateUserSettings tests //
+  /*
   /////////////////////////////////region
   @Test
   public void updateUserSettings_validInputNoChanges_successfulResult() {
@@ -476,6 +477,7 @@ public class UsersManagerTest {
   }
 
   //////////////////////////endregion
+  */
   // getUserRatings tests //
   //////////////////////////region
   @Test

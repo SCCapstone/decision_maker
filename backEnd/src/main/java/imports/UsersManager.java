@@ -1,5 +1,6 @@
 package imports;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -9,7 +10,13 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.common.collect.ImmutableMap;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -42,6 +50,12 @@ public class UsersManager extends DatabaseAccessManager {
   public static final int DEFAULT_DARK_THEME = 0;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
+
+  private final String JPG_TYPE = "jpg";
+  private final String JPG_MIME = "image/jpeg";
+  private final String PNG_TYPE = "png";
+  private final String PNG_MIME = "image/png";
+
 
   public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
@@ -218,13 +232,12 @@ public class UsersManager extends DatabaseAccessManager {
      */
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, ICON, DISPLAY_NAME, APP_SETTINGS, FAVORITES);
+        .asList(RequestFields.ACTIVE_USER, DISPLAY_NAME, APP_SETTINGS, FAVORITES);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
-        String newIcon = (String) jsonMap.get(ICON);
         Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
@@ -267,20 +280,27 @@ public class UsersManager extends DatabaseAccessManager {
           favoritesOfNameMap.with("#username", activeUser);
         }
 
-        if (!oldIcon.equals(newIcon)) {
-          updateUserExpression += ", " + ICON + " = :icon";
-          userValueMap.withString(":icon", newIcon);
+        if (jsonMap.containsKey(ICON)) {
+          String newIcon = (String) jsonMap.get(ICON);
 
-          updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
-          groupsValueMap.withString(":icon", newIcon);
-          groupsNameMap.with("#username2", activeUser);
+          //todo create method that generates s3 file with newIcon data and returns the file name
+          String newIconFileName = uploadIconAndReturnFileName(newIcon, metrics, lambdaLogger);
 
-          updateFavoritesOfExpression = this
-              .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
-                  ":icon");
-          favoritesOfValueMap.withString(":icon", newIcon);
-          favoritesOfNameMap.with("#username2", activeUser);
+          if (!oldIcon.equals(newIconFileName)) {
+            updateUserExpression += ", " + ICON + " = :icon";
+            userValueMap.withString(":icon", newIcon);
+
+            updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+                GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
+            groupsValueMap.withString(":icon", newIcon);
+            groupsNameMap.with("#username2", activeUser);
+
+            updateFavoritesOfExpression = this
+                .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
+                    ":icon");
+            favoritesOfValueMap.withString(":icon", newIcon);
+            favoritesOfNameMap.with("#username2", activeUser);
+          }
         }
 
         UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
@@ -353,6 +373,50 @@ public class UsersManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private String uploadIconAndReturnFileName(final String fileData, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.";
+
+    try {
+      lambdaLogger.log(fileData);
+//      String imageType = JPG_TYPE;
+//
+//      ArrayList<Byte> imageDataRaw =
+//      InputStream imageInput = new ByteArrayInputStream();
+//      BufferedImage newImage = ImageIO.read(new FileInputStream(fileData));
+//
+//      // Re-encode image to target format
+//      ByteArrayOutputStream os = new ByteArrayOutputStream();
+//      ImageIO.write(resizedImage, imageType, os);
+//      InputStream is = new ByteArrayInputStream(os.toByteArray());
+//      // Set Content-Length and Content-Type
+//      ObjectMetadata meta = new ObjectMetadata();
+//      meta.setContentLength(os.size());
+//      if (JPG_TYPE.equals(imageType)) {
+//        meta.setContentType(JPG_MIME);
+//      }
+//      if (PNG_TYPE.equals(imageType)) {
+//        meta.setContentType(PNG_MIME);
+//      }
+//
+//      // Uploading to S3 destination bucket
+//      System.out.println("Writing to: " + dstBucket + "/" + dstKey);
+//      try {
+//        s3Client.putObject(dstBucket, dstKey, is, meta);
+//      } catch (AmazonServiceException e) {
+//        System.err.println(e.getErrorMessage());
+//        System.exit(1);
+//      }
+//      System.out.println("Successfully resized " + srcBucket + "/"
+//          + srcKey + " and uploaded to " + dstBucket + "/" + dstKey);
+//      return "Ok";
+    } catch (Exception e) {
+      //
+    }
+
+    return "asdf";
   }
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
