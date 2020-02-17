@@ -1,9 +1,7 @@
 //TODO add unit testing https://github.com/SCCapstone/decision_maker/issues/80
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
@@ -78,21 +76,12 @@ class UsersManager {
     jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
     if (image != null) {
-//      String newImage = "[";
-//
-//      Uint8List imageData = image.readAsBytesSync();
-//      for (int data in imageData) {
-//        newImage += data.toString() + ",";
-//      }
-//
-//      newImage = newImage.substring(0, newImage.length - 1) + "]";
-
       jsonRequestBody["payload"]
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, isDioRequest: false);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);

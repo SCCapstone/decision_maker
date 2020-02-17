@@ -27,8 +27,8 @@ class _UserSettingsState extends State<UserSettings> {
   bool editing = false;
   bool _darkTheme = false;
   bool _muted = false;
-  String _icon;
-  File _image;
+
+  File _icon;
   String _displayName;
   int _groupSort = 0;
   List<Favorite> displayedFavorites = new List<Favorite>();
@@ -51,30 +51,6 @@ class _UserSettingsState extends State<UserSettings> {
     nickNameController.text = _displayName;
     super.initState();
   }
-
-  Future getImage() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.camera);
-
-//    String newImage = "[";
-//    print(image.path);
-//    //print(await image.readAsBytes());
-//    Uint8List imageData = image.readAsBytesSync();
-//    for (int data in imageData) {
-//      newImage += data.toString() + ",";
-//    }
-//
-//    newImage = newImage.substring(0, newImage.length - 1) + "]";
-//    printWrapped("newImage is: " + newImage + ".");
-
-    setState(() {
-      _image = image;
-    });
-  }
-
-//  void printWrapped(String text) {
-//    final pattern = new RegExp('.{1,800}'); // 800 is the size of each chunk
-//    pattern.allMatches(text).forEach((match) => print(match.group(0)));
-//  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +109,13 @@ class _UserSettingsState extends State<UserSettings> {
                       decoration: BoxDecoration(
                           image: DecorationImage(
                               fit: BoxFit.fitHeight,
-                              image: _image == null
-                                  ? AssetImage('assets/images/placeholder.jpg')
-                                  : FileImage(_image)
-                              )),
+                              image: _icon == null
+                                  ? Globals.user.icon == null
+                                      ? AssetImage(
+                                          'assets/images/placeholder.jpg')
+                                      : NetworkImage(
+                                          Globals.imageUrl + Globals.user.icon)
+                                  : FileImage(_icon))),
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.grey.withOpacity(0.7),
@@ -145,7 +124,6 @@ class _UserSettingsState extends State<UserSettings> {
                           icon: Icon(Icons.edit),
                           color: Colors.blueAccent,
                           onPressed: () {
-                            //userIconPopup();
                             getImage();
                           },
                         ),
@@ -270,6 +248,13 @@ class _UserSettingsState extends State<UserSettings> {
     );
   }
 
+  Future getImage() async {
+    File image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    _icon = image;
+    enableAutoValidation();
+  }
+
   void selectGroupSort(int val) {
     _groupSort = val;
     enableAutoValidation();
@@ -286,7 +271,8 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.muted != _muted ||
         Globals.user.displayName != _displayName ||
         Globals.user.appSettings.groupSort != _groupSort ||
-        newUsers) {
+        newUsers ||
+        _icon != null) {
       setState(() {
         editing = true;
       });
@@ -317,7 +303,7 @@ class _UserSettingsState extends State<UserSettings> {
             boolToInt(_muted),
             _groupSort,
             userNames,
-            _image,
+            _icon,
             context); // blind send for now?
 
         // reset everything and reflect changes made
@@ -327,45 +313,6 @@ class _UserSettingsState extends State<UserSettings> {
     } else {
       setState(() => autoValidate = true);
     }
-  }
-
-  void userIconPopup() {
-    // displays a popup for editing the user's icon's
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Edit User Icon url"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Cancel"),
-                onPressed: () {
-                  userIconController.clear();
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Submit"),
-                onPressed: () {
-                  _icon = userIconController.text;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              ),
-            ],
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: userIconController,
-                    validator: validGroupIcon,
-                    keyboardType: TextInputType.url,
-                    decoration: InputDecoration(
-                      labelText: "Enter a icon link",
-                    )),
-              ],
-            ),
-          );
-        });
   }
 
   void contactsPopup() {

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
@@ -11,7 +10,7 @@ final String idTokenKey = "id";
 
 Future<String> makeApiRequest(
     String apiEndpoint, Map<String, dynamic> requestContent,
-    {firstAttempt: true, isDioRequest: false}) async {
+    {firstAttempt: true}) async {
   SharedPreferences tokens = await Globals.getTokens();
 
   if (tokens.containsKey(idTokenKey)) {
@@ -19,35 +18,19 @@ Future<String> makeApiRequest(
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
 
-    http.Response httpResponse;
-    Response dioResponse;
+    http.Response response;
 
-    if (isDioRequest) {
-      Dio dio = new Dio();
-      FormData formData = FormData.fromMap(requestContent);
-      dioResponse = await dio.post(
-          Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
-          data: formData,
-          options: Options(headers: headers));
-    } else {
-      httpResponse = await http.post(
-          Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
-          headers: headers,
-          body: json.encode(requestContent));
-    }
+    response = await http.post(
+        Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
+        headers: headers,
+        body: json.encode(requestContent));
 
-    if ((!isDioRequest && httpResponse.statusCode == 200) ||
-        (isDioRequest && dioResponse.statusCode == 200)) {
-      if (isDioRequest) {
-        return dioResponse.data.toString();
-      } else {
-        return httpResponse.body;
-      }
+    if (response.statusCode == 200) {
+      return response.body;
     } else if (firstAttempt) {
       // in case the id_token has expired
       if (await refreshUserTokens()) {
-        return makeApiRequest(apiEndpoint, requestContent,
-            firstAttempt: false, isDioRequest: isDioRequest);
+        return makeApiRequest(apiEndpoint, requestContent, firstAttempt: false);
       }
     }
   } else {
