@@ -38,7 +38,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           ),
           RaisedButton(
             child: Text("RSVP"),
-            color: Colors.lightGreenAccent,
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,

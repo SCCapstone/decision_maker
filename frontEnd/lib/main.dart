@@ -19,9 +19,7 @@ class MyApp extends StatelessWidget {
     }
     return MaterialApp(
       title: "Pocket Poll",
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: Globals.darkTheme,
       home: HomePage(),
     );
   }

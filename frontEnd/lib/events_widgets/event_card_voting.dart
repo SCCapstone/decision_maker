@@ -36,7 +36,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
               style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("Vote"),
-            color: Colors.lightGreenAccent,
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,

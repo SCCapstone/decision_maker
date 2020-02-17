@@ -109,7 +109,7 @@ class _CreateEventState extends State<CreateEvent> {
                           ButtonTheme(
                               minWidth: 110,
                               height: 40,
-                              buttonColor: Colors.white60,
+                              buttonColor: Theme.of(context).primaryColor,
                               child: RaisedButton(
                                   onPressed: () {
                                     selectStartDate(context);
@@ -118,7 +118,7 @@ class _CreateEventState extends State<CreateEvent> {
                           ButtonTheme(
                               minWidth: 110,
                               height: 40,
-                              buttonColor: Colors.white60,
+                              buttonColor: Theme.of(context).primaryColor,
                               child: RaisedButton(
                                   onPressed: () {
                                     selectStartTime(context);

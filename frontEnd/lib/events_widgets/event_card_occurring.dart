@@ -36,7 +36,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
               style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("View Results"),
-            color: Colors.lightGreenAccent,
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
