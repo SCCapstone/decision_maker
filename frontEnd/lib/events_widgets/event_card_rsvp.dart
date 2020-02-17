@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_rsvp.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
 
 class EventCardRsvp extends StatefulWidget {
@@ -52,8 +53,12 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(
+              bottom: new BorderSide(
+                  color: (Globals.user.appSettings.darkTheme)
+                      ? Colors.white
+                      : Colors.black))),
     );
   }
 }

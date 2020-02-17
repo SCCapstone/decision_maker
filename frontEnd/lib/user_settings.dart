@@ -6,6 +6,8 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/favorites_popup.dart';
 
+import 'main.dart';
+
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
 
@@ -317,6 +319,7 @@ class _UserSettingsState extends State<UserSettings> {
         originalFavorites.addAll(displayedFavorites);
         editing = false;
         autoValidate = false;
+        changeTheme(context);
       });
     } else {
       setState(() => autoValidate = true);
