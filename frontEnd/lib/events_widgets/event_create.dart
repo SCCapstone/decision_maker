@@ -22,8 +22,10 @@ class _CreateEventState extends State<CreateEvent> {
   String eventName;
   String pollDuration;
   String pollPassPercent;
+  String rsvpDuration;
   final TextEditingController eventNameController = TextEditingController();
   final TextEditingController pollDurationController = TextEditingController();
+  final TextEditingController rsvpDurationController = TextEditingController();
   final TextEditingController passPercentageController =
       TextEditingController();
 
@@ -43,6 +45,7 @@ class _CreateEventState extends State<CreateEvent> {
   void dispose() {
     eventNameController.dispose();
     pollDurationController.dispose();
+    rsvpDurationController.dispose();
     passPercentageController.dispose();
     super.dispose();
   }
@@ -62,6 +65,8 @@ class _CreateEventState extends State<CreateEvent> {
     }
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
+    rsvpDurationController.text =
+        Globals.currentGroup.defaultRsvpDuration.toString();
     passPercentageController.text =
         Globals.currentGroup.defaultPollPassPercent.toString();
     super.initState();
@@ -134,12 +139,22 @@ class _CreateEventState extends State<CreateEvent> {
                     TextFormField(
                       controller: pollDurationController,
                       keyboardType: TextInputType.number,
-                      validator: validPollDuration,
+                      validator: validDuration,
                       onSaved: (String arg) {
                         pollDuration = arg;
                       },
                       decoration: InputDecoration(
                           labelText: "Poll duration (in minutes)"),
+                    ),
+                    TextFormField(
+                      controller: rsvpDurationController,
+                      keyboardType: TextInputType.number,
+                      validator: validDuration,
+                      onSaved: (String arg) {
+                        rsvpDuration = arg;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "RSVP duration (in minutes)"),
                     ),
                     TextFormField(
                       controller: passPercentageController,
@@ -266,6 +281,7 @@ class _CreateEventState extends State<CreateEvent> {
         type: 0,
         // all events are non-recurring for now
         pollDuration: int.parse(this.pollDuration),
+        rsvpDuration: int.parse(this.rsvpDuration),
         pollPassPercent: int.parse(this.pollPassPercent),
         eventCreator: eventCreator,
       );

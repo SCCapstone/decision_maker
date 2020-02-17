@@ -26,6 +26,7 @@ class _CreateGroupState extends State<CreateGroup> {
   int pollPassPercent;
   int pollDuration;
   File icon;
+  int rsvpDuration;
 
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
@@ -38,12 +39,15 @@ class _CreateGroupState extends State<CreateGroup> {
   final TextEditingController pollPassController = new TextEditingController();
   final TextEditingController pollDurationController =
       new TextEditingController();
+  final TextEditingController rsvpDurationController =
+      new TextEditingController();
 
   @override
   void dispose() {
     groupNameController.dispose();
     pollPassController.dispose();
     pollDurationController.dispose();
+    rsvpDurationController.dispose();
     super.dispose();
   }
 
@@ -112,12 +116,23 @@ class _CreateGroupState extends State<CreateGroup> {
                   TextFormField(
                     controller: pollDurationController,
                     keyboardType: TextInputType.number,
-                    validator: validPollDuration,
+                    validator: validDuration,
                     onSaved: (String arg) {
                       pollDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
                       labelText: "Enter a default poll duration (in minutes)",
+                    ),
+                  ),
+                  TextFormField(
+                    controller: rsvpDurationController,
+                    keyboardType: TextInputType.number,
+                    validator: validDuration,
+                    onSaved: (String arg) {
+                      rsvpDuration = int.parse(arg.trim());
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Enter a default RSVP duration (in minutes)",
                     ),
                   ),
                   TextFormField(
@@ -217,6 +232,7 @@ class _CreateGroupState extends State<CreateGroup> {
           categories: selectedCategories,
           members: membersMap,
           defaultPollDuration: pollDuration,
+          defaultRsvpDuration: rsvpDuration,
           defaultPollPassPercent: pollPassPercent);
 
       showLoadingDialog(

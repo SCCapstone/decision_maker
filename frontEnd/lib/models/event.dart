@@ -11,6 +11,7 @@ class Event {
   final DateTime pollEnd;
   final int type;
   final int pollDuration;
+  final int rsvpDuration;
   final int pollPassPercent;
   final Map<String, dynamic> optedIn;
   final Map<String, dynamic> tentativeAlgorithmChoices;
@@ -29,6 +30,7 @@ class Event {
       this.eventStartDateTime,
       this.type,
       this.pollDuration,
+      this.rsvpDuration,
       this.pollPassPercent,
       this.optedIn,
       this.tentativeAlgorithmChoices,
@@ -49,6 +51,7 @@ class Event {
       this.eventStartDateTime,
       this.type,
       this.pollDuration,
+      this.rsvpDuration,
       this.pollPassPercent,
       this.optedIn,
       this.tentativeAlgorithmChoices,
@@ -80,6 +83,7 @@ class Event {
         pollBegin: pollBeginTemp,
         type: int.parse(json[EventsManager.TYPE]),
         pollDuration: int.parse(json[EventsManager.POLL_DURATION]),
+        rsvpDuration: int.parse(json[EventsManager.RSVP_DURATION]),
         pollPassPercent: int.parse(json[EventsManager.POLL_PASS_PERCENT]),
         optedIn: json[EventsManager.OPTED_IN],
         tentativeAlgorithmChoices:
@@ -106,6 +110,7 @@ class Event {
           this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.TYPE: this.type,
       EventsManager.POLL_DURATION: this.pollDuration,
+      EventsManager.RSVP_DURATION: this.rsvpDuration,
       EventsManager.POLL_PASS_PERCENT: this.pollPassPercent,
       EventsManager.OPTED_IN: this.optedIn,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
@@ -119,8 +124,8 @@ class Event {
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
         "$createdDateTime EventStartDateTime: $eventStartDateTime Type: $type PollDuration: $pollDuration "
-        "PollPassPercent $pollPassPercent OptedIn: $optedIn SelectedChoice: $selectedChoice "
-        "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
-        "EventCreator: $eventCreator";
+        "RsvpDuration: $rsvpDuration PollPassPercent $pollPassPercent OptedIn: $optedIn "
+        "SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
+        "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator";
   }
 }

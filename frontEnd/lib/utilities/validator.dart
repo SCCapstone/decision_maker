@@ -42,7 +42,7 @@ String validPassPercentage(String input) {
   return retVal;
 }
 
-String validPollDuration(String input) {
+String validDuration(String input) {
   String retVal;
   try {
     int num = int.parse(input);

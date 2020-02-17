@@ -26,6 +26,7 @@ class GroupsManager {
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 

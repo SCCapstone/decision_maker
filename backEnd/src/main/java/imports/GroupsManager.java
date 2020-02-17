@@ -40,6 +40,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String CATEGORIES = "Categories";
   public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
 
@@ -51,6 +52,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
   public static final String TYPE = "Type";
   public static final String POLL_DURATION = "PollDuration";
+  public static final String RSVP_DURATION = "RsvpDuration";
   public static final String POLL_PASS_PERCENT = "PollPassPercent";
   public static final String OPTED_IN = "OptedIn";
   public static final String NEXT_EVENT_ID = "NextEventId";
@@ -107,15 +109,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus createNewGroup(Map<String, Object> jsonMap, final Metrics metrics,
+  public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.createNewGroup";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
+        .asList(GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -126,6 +128,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         final UUID uuid = UUID.randomUUID();
@@ -148,6 +151,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
+            .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
             .withString(LAST_ACTIVITY,
@@ -174,15 +178,17 @@ public class GroupsManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request.";
         lambdaLogger.log(
             new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     } else {
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
@@ -191,8 +197,8 @@ public class GroupsManager extends DatabaseAccessManager {
       final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
+        .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION, RequestFields.ACTIVE_USER);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -204,6 +210,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         final Map<String, Object> dbGroupDataMap = this.getItemByPrimaryKey(groupId)
@@ -224,6 +231,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
                     + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
                     + DEFAULT_POLL_DURATION + " = :defaultPollDuration, "
+                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration, "
                     + DEFAULT_POLL_PASS_PERCENT + " = :defaultPollPassPercent";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
@@ -231,6 +239,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultPollDuration", defaultPollDuration)
+                .withInt(":defaultRsvpDuration", defaultRsvpDuration)
                 .withInt(":defaultPollPassPercent", defaultPollPassPercent);
 
             //assumption - currently we aren't allowing user's to clear a group's image once set
@@ -286,7 +295,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final List<String> requiredKeys = Arrays
         .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
-            TYPE, POLL_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
+            TYPE, POLL_DURATION, RSVP_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String eventName = (String) jsonMap.get(EVENT_NAME);
@@ -296,6 +305,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
         final Integer type = (Integer) jsonMap.get(TYPE);
         final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
+        final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
         final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
         final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
@@ -328,7 +338,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String eventId = nextEventId.toString();
 
         if (this.validEventInput(groupId, categoryId, pollDuration,
-            pollPassPercent)) {
+            rsvpDuration, pollPassPercent)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
           eventMap.put(CATEGORY_ID, categoryId);
@@ -338,6 +348,7 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
           eventMap.put(TYPE, type);
           eventMap.put(POLL_DURATION, pollDuration);
+          eventMap.put(RSVP_DURATION, rsvpDuration);
           eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, eventCreator);
@@ -502,7 +513,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private boolean validEventInput(
       final String groupId, final String categoryId, final Integer pollDuration,
-      final Integer pollPassPercent) {
+      final Integer rsvpDuration, final Integer pollPassPercent) {
     boolean isValid = true;
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
@@ -513,6 +524,10 @@ public class GroupsManager extends DatabaseAccessManager {
     }
 
     if (pollDuration <= 0 || pollDuration > 10000) {
+      isValid = false;
+    }
+
+    if (rsvpDuration <= 0 || rsvpDuration > 10000) {
       isValid = false;
     }
     return isValid;
