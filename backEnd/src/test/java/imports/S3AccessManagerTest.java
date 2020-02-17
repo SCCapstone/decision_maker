@@ -61,7 +61,7 @@ public class S3AccessManagerTest {
   }
 
   @Test
-  public void uploadImage_validInputS3Dies_failureResult() {
+  public void uploadImage_validInputS3Fails_failureResult() {
     doThrow(AmazonServiceException.class).when(this.s3Client)
         .putObject(any(PutObjectRequest.class));
 

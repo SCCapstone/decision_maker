@@ -232,7 +232,6 @@ public class UsersManager extends DatabaseAccessManager {
         Map<String, Object> user = userDataRaw.asMap();
 
         String oldDisplayName = (String) user.get(DISPLAY_NAME);
-        String oldIcon = (String) user.get(ICON);
         Set<String> oldFavorites = new HashSet<>(((Map) user.get(FAVORITES)).keySet());
 
         //as long as this remains a small group of settings, I think it's okay to always overwrite

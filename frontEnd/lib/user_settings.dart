@@ -24,7 +24,6 @@ class _UserSettingsState extends State<UserSettings> {
   bool editing = false;
   bool _darkTheme = false;
   bool _muted = false;
-
   File _icon;
   String _displayName;
   int _groupSort = 0;
