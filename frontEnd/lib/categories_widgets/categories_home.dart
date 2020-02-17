@@ -26,68 +26,74 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            "Categories",
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
-          ),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.sort),
-              onPressed: () {
-                // can implement a variable that has the sort type, then setState here
-                // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
-              },
-            )
-          ],
-        ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width * .80,
-                height: MediaQuery.of(context).size.height * .75,
-                child: Container(
-                  child: FutureBuilder(
-                    future: widget.categories,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        List<Category> categories = snapshot.data;
-                        return CategoryList(
-                            categories: categories,
-                            sortType: _sortMethod,
-                            refreshPage: this.refreshPage);
-                      } else if (snapshot.hasError) {
-                        return Text("Error: ${snapshot.error}");
-                      }
-                      return Center(child: CircularProgressIndicator());
-                    },
-                  ),
-                ),
-              ),
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              "Categories",
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
+            ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.sort),
+                onPressed: () {
+                  // can implement a variable that has the sort type, then setState here
+                  // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
+                },
+              )
             ],
           ),
+          body: Center(
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+                Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * .80,
+                    height: MediaQuery.of(context).size.height * .75,
+                    child: Container(
+                      child: FutureBuilder(
+                        future: widget.categories,
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.hasData) {
+                            List<Category> categories = snapshot.data;
+                            return CategoryList(
+                                categories: categories,
+                                sortType: _sortMethod,
+                                refreshPage: this.refreshPage);
+                          } else if (snapshot.hasError) {
+                            return Text("Error: ${snapshot.error}");
+                          }
+                          return Center(child: CircularProgressIndicator());
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              // Navigate to second route when tapped.
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateCategory()),
+              ).then((_) => this.refreshPage());
+            },
+          ),
         ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            // Navigate to second route when tapped.
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CreateCategory()),
-            ).then((_) => this.refreshPage());
-          },
-        ),
-      ),
-      onRefresh: refreshList
-    );
+        onRefresh: refreshList);
   }
 
   Future<Null> refreshList() async {
