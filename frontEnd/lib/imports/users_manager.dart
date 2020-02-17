@@ -56,13 +56,8 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserSettings(
-      String displayName,
-      int darkTheme,
-      int muted,
-      int groupSort,
-      List<String> favorites,
-      BuildContext context) async {
+  static void updateUserSettings(String displayName, int darkTheme, int muted,
+      int groupSort, List<String> favorites, BuildContext context) async {
     Map<String, dynamic> settings = new Map<String, dynamic>();
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);

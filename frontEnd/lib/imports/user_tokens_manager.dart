@@ -30,7 +30,6 @@ final String idTokenKey = "id";
 bool gotTokens = false;
 
 Future<bool> hasValidTokensSet() async {
-  print("inside tokens");
   User user = await UsersManager.getUserData();
 
   if (user != null) {

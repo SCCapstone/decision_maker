@@ -34,7 +34,6 @@ class Globals {
       buttonTheme: ButtonThemeData(buttonColor: Colors.grey),
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-  static ThemeData selectedTheme = darkTheme; // default is darkTheme
 
   static void clearGlobals() {
     username = null;

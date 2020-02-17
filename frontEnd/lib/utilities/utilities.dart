@@ -1,4 +1,3 @@
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:provider/provider.dart';
@@ -152,13 +151,13 @@ void hideKeyboard(BuildContext context) {
 }
 
 void changeTheme(BuildContext context) {
+  ThemeData selectedTheme;
   if (Globals.user.appSettings.darkTheme) {
-    Globals.selectedTheme = Globals.darkTheme;
+    selectedTheme = Globals.darkTheme;
   } else {
-    Globals.selectedTheme = Globals.lightTheme;
+    selectedTheme = Globals.lightTheme;
   }
-//  final ThemeNotifier themeNotifier =
-//      Provider.of<ThemeNotifier>(context, listen: false);
-//  themeNotifier.setTheme(Globals.selectedTheme);
-  DynamicTheme.of(context).setThemeData(Globals.selectedTheme);
+  final ThemeNotifier themeNotifier =
+      Provider.of<ThemeNotifier>(context, listen: false);
+  themeNotifier.setTheme(selectedTheme);
 }
