@@ -57,13 +57,13 @@ String validPollDuration(String input) {
   return retVal;
 }
 
-String validUser(String user, Map<String, dynamic> users) {
+String validUser(String user, List<String> users) {
   if (user.isEmpty) {
     return "Username cannot be empty.";
-  } else if (users.keys.contains(user)) {
-    return "Username already added.";
   } else if (user == Globals.username) {
     return "Can't add yourself.";
+  } else if (users.contains(user)) {
+    return "Username already added.";
   } else {
     return null;
   }
@@ -99,7 +99,7 @@ String validEmail(String input) {
 }
 
 String validNewPassword(String input) {
-  String retVal = ""; // need to initialize it this way to avoid null pointer exception
+  String retVal = ""; // initialize it this way to avoid null pointer exception
   if (input.length < 8) {
     retVal += "Must contain at least 8 characters.\n";
   }
@@ -156,11 +156,11 @@ String validNewFavorite(String input, List<Favorite> favorites) {
     }
   }
   if (input.isEmpty) {
-    retVal = "Username cannot be empty!";
+    retVal = "Username cannot be empty.";
   } else if (duplicates) {
-    retVal = "You already have this username saved!";
+    retVal = "You already have this username saved.";
   } else if (input == Globals.username) {
-    retVal = "Cannot add yourself!";
+    retVal = "Cannot add yourself.";
   }
   return retVal;
 }

@@ -21,6 +21,22 @@ bool intToBool(int val) {
   return val == 1;
 }
 
+String convertDateToString(DateTime date) {
+  return date.toString().substring(0, 10);
+}
+
+String convertTimeToString(TimeOfDay time) {
+  return time.toString().substring(10, 15);
+}
+
+int getHour(String time) {
+  return int.parse(time.substring(0, 2));
+}
+
+int getMinute(String time) {
+  return int.parse(time.substring(3, 5));
+}
+
 void showPopupMessage(String message, BuildContext context,
     {Function callback}) {
   if (context == null) {
@@ -88,56 +104,8 @@ void groupIconPopup(BuildContext context, bool validate,
       });
 }
 
-void addUserPopup(BuildContext context, Map<String, dynamic> users,
-    Function function) {
-  // displays a popup for adding a new user to a group
-  TextEditingController controller = new TextEditingController();
-  final formKey = GlobalKey<FormState>();
-  showDialog(
-      context: context,
-      builder: (context) {
-        return Form(
-          autovalidate: false,
-          key: formKey,
-          child: AlertDialog(
-            title: Text("Enter a username"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Cancel"),
-                onPressed: () {
-                  controller.clear();
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Submit"),
-                onPressed: () {
-                  if (formKey.currentState.validate()) {
-                    function(controller.text);
-                    Navigator.of(context).pop();
-                  }
-                },
-              ),
-            ],
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: controller,
-                    validator: (user) => validUser(user, users),
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      labelText: "Username",
-                    )),
-              ],
-            ),
-          ),
-        );
-      });
-}
-
-void showErrorMessage(String errorTitle, String errorMsg,
-    BuildContext context) {
+void showErrorMessage(
+    String errorTitle, String errorMsg, BuildContext context) {
   showDialog(
       context: context,
       builder: (context) {
@@ -154,4 +122,35 @@ void showErrorMessage(String errorTitle, String errorMsg,
           content: Text(errorMsg),
         );
       });
+}
+
+void showLoadingDialog(BuildContext context, String msg) {
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return WillPopScope(
+          // prevents the dialog from being exited by the back button
+          onWillPop: () async => false,
+          child: AlertDialog(
+            content: Flex(
+              direction: Axis.horizontal,
+              children: <Widget>[
+                CircularProgressIndicator(),
+                Padding(
+                  padding: EdgeInsets.all(20),
+                ),
+                Flexible(
+                  flex: 8,
+                  child: Text(msg),
+                )
+              ],
+            ),
+          ),
+        );
+      });
+}
+
+void hideKeyboard(BuildContext context) {
+  FocusScope.of(context).requestFocus(new FocusNode());
 }
