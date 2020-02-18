@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class UserRow extends StatelessWidget {
   final String displayName;
@@ -21,10 +22,9 @@ class UserRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Container(
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    fit: BoxFit.fitHeight, image: NetworkImage(icon))),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Image(image: getIconUrl(icon), fit: BoxFit.fitHeight),
           ),
           Expanded(
             child: Text(

@@ -1,5 +1,6 @@
 //TODO add unit testing https://github.com/SCCapstone/decision_maker/issues/80
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
@@ -56,8 +57,14 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserSettings(String displayName, int darkTheme, int muted,
-      int groupSort, List<String> favorites, BuildContext context) async {
+  static void updateUserSettings(
+      String displayName,
+      int darkTheme,
+      int muted,
+      int groupSort,
+      List<String> favorites,
+      File image,
+      BuildContext context) async {
     Map<String, dynamic> settings = new Map<String, dynamic>();
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
@@ -68,9 +75,13 @@ class UsersManager {
     jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
     jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
-    jsonRequestBody["payload"].putIfAbsent(ICON, () => "asdf");
+    if (image != null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(ICON, () => image.readAsBytesSync());
+    }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);

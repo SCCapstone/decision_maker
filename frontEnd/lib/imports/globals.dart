@@ -33,6 +33,8 @@ class Globals {
       primaryColorDark: Colors.black,
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
+  static String imageUrl =
+      "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
 
   static void clearGlobals() {
     username = null;
