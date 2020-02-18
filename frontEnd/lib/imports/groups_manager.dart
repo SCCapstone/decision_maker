@@ -89,6 +89,37 @@ class GroupsManager {
     return false;
   }
 
+  static Future<bool> createNewGroup(Group group, BuildContext context) async {
+    bool retVal = false;
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "createNewGroup";
+    jsonRequestBody["payload"] = group.asMap();
+
+    //update this to just be the list of usernames
+    //since that is all we need to pass to the backend
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
+
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal = true;
+        } else {
+          showPopupMessage("Error creating group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create group.", context);
+    }
+    return retVal;
+  }
+
   static void editGroup(Group group, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "editGroup";
@@ -161,37 +192,6 @@ class GroupsManager {
     LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
         key: (k) => k, value: (k) => events[k]);
     return sortedMap.cast();
-  }
-
-  static Future<bool> createNewGroup(Group group, BuildContext context) async {
-    bool retVal = false;
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "createNewGroup";
-    jsonRequestBody["payload"] = group.asMap();
-
-    //update this to just be the list of usernames
-    //since that is all we need to pass to the backend
-    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
-
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          retVal = true;
-        } else {
-          showPopupMessage("Error creating group (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error creating group (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to create group.", context);
-    }
-    return retVal;
   }
 
   static void optInOutOfEvent(String groupId, String eventId,
