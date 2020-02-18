@@ -94,6 +94,10 @@ class GroupsManager {
     jsonRequestBody["action"] = "editGroup";
     jsonRequestBody["payload"] = group.asMap();
 
+    //update this to just be the list of usernames
+    //since that is all we need to pass to the backend
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
+
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
@@ -164,6 +168,10 @@ class GroupsManager {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "createNewGroup";
     jsonRequestBody["payload"] = group.asMap();
+
+    //update this to just be the list of usernames
+    //since that is all we need to pass to the backend
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 

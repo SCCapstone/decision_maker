@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
+import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +107,8 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus createNewGroup(Map<String, Object> jsonMap) {
+  public ResultStatus createNewGroup(Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
@@ -116,7 +119,8 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final String icon = (String) jsonMap.get(ICON);
         final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
-        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS); //TODO update members to get their current display name/icon for insertion - probably should do for categories too...
+        List<String> members = (List<String>) jsonMap.get(
+            MEMBERS); //TODO update members to get their current display name/icon for insertion - probably should do for categories too...
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
@@ -124,14 +128,17 @@ public class GroupsManager extends DatabaseAccessManager {
         final UUID uuid = UUID.randomUUID();
         final String newGroupId = uuid.toString();
 
-        this.updateMembersMapForInsertion(members);
+        final Map<String, Object> membersMapped = this
+            .getMembersMapForInsertion(members, metrics, lambdaLogger);
+        //in case any usernames were removed, update the list for use in below methods to keep data consistent
+        members = new LinkedList<>(membersMapped.keySet());
 
         Item newGroup = new Item()
             .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
             .withString(GROUP_NAME, groupName)
             .withString(ICON, icon)
             .withString(GROUP_CREATOR, groupCreator)
-            .withMap(MEMBERS, members)
+            .withMap(MEMBERS, membersMapped)
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
@@ -159,7 +166,8 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus editGroup(final Map<String, Object> jsonMap) {
+  public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
@@ -171,7 +179,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final String icon = (String) jsonMap.get(ICON);
         final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
-        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS);
+        List<String> members = (List<String>) jsonMap.get(MEMBERS);
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
@@ -184,14 +192,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
-            this.updateMembersMapForInsertion(members); // this implicitly changes data
+            final Map<String, Object> membersMapped = this
+                .getMembersMapForInsertion(members, metrics, lambdaLogger);
 
-            //update mappings in users and categories tables
-            this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
-                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName);
-            this.updateCategoriesTable(
-                (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
-                (String) dbGroupDataMap.get(GROUP_NAME), groupName);
+            //in case any usernames were removed, update the list for use in below methods to keep data consistent
+            members = new LinkedList<>(membersMapped.keySet());
 
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + ICON + " = :icon, " + GROUP_CREATOR
@@ -202,7 +207,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 .withString(":name", groupName)
                 .withString(":icon", icon)
                 .withString(":creator", groupCreator)
-                .withMap(":members", members)
+                .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultPollDuration", defaultPollDuration)
                 .withInt(":defaultPollPassPercent", defaultPollPassPercent);
@@ -214,7 +219,12 @@ public class GroupsManager extends DatabaseAccessManager {
 
             this.updateItem(updateItemSpec);
 
-            //TODO update the users and categories tables accordinly (https://github.com/SCCapstone/decision_maker/issues/118)
+            //update mappings in users and categories tables
+            this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
+                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName);
+            this.updateCategoriesTable(
+                (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
+                (String) dbGroupDataMap.get(GROUP_NAME), groupName);
 
             resultStatus = new ResultStatus(true, "The group was saved successfully!");
           } else {
@@ -394,42 +404,40 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   //Note we return the value for clarity in some uses, but the actual input is being updated
-  private Map<String, Object> updateMembersMapForInsertion(final Map<String, Object> members) {
-    List<String> usernamesToDrop = new ArrayList<>();
+  private Map<String, Object> getMembersMapForInsertion(final List<String> members,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.getMembersMapForInsertion";
+    metrics.commonSetup(classMethod);
+    boolean success = true;
 
-    for (String username : members.keySet()) {
+    final Map<String, Object> membersMap = new HashMap<>();
+
+    for (String username : members) {
       try {
+        //get user's display name
         Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
+        Map<String, Object> userData = user.asMap();
+        String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
+        String icon = (String) userData.get(UsersManager.ICON);
 
-        if (user != null) {
-          try {
-            //get user's actual name
-            Map<String, Object> userData = user.asMap();
-            String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
-
-            members.replace(username, displayName);
-          } catch (Exception e) {
-            //couldn't get the user's data, don't add to the group rn
-            //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-            usernamesToDrop.add(username);
-          }
-        } else {
-          usernamesToDrop.add(username); // user not in db
-        }
+        membersMap.put(username, ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, displayName,
+            UsersManager.ICON, icon
+        ));
       } catch (Exception e) {
-        //definitely needs to be logged, probs a db con issue
+        success = false; // this may give false alarms as users may just have put in bad usernames
+        lambdaLogger
+            .log(
+                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
       }
     }
 
-    for (String usernameToDrop : usernamesToDrop) {
-      members.remove(usernameToDrop);
-    }
-
-    return members;
+    metrics.commonClose(success);
+    return membersMap;
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final Map<String, Object> members,
+      final String groupCreator, final List<String> members,
       final Integer defaultPollPassPercent,
       final Integer defaultPollDuration) {
     boolean isValid = true;
@@ -440,7 +448,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     boolean creatorInGroup = false;
     //you can't remove the creator (owner) from the group
-    for (String username : members.keySet()) {
+    for (String username : members) {
       if (groupCreator.equals(username)) {
         creatorInGroup = true;
         break;
@@ -492,7 +500,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private void updateUsersTable(final Map<String, Object> oldMembers,
-      final Map<String, Object> newMembers,
+      final List<String> newMembers,
       final String groupId, final String oldGroupName, final String newGroupName) {
     final UsersManager usersManager = new UsersManager();
     final Set<String> usersToUpdate = new HashSet<>();
@@ -501,15 +509,15 @@ public class GroupsManager extends DatabaseAccessManager {
     ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
     UpdateItemSpec updateItemSpec = new UpdateItemSpec().withNameMap(nameMap);
 
-    if (!oldMembers.keySet().equals(newMembers.keySet())) {
+    if (!oldMembers.keySet().equals(newMembers)) {
       // Make copies of the key sets and use removeAll to figure out where they differ
-      final Set<String> newUsernames = new HashSet<>(newMembers.keySet());
+      final Set<String> newUsernames = new HashSet<>(newMembers);
       final Set<String> removedUsernames = new HashSet<>(oldMembers.keySet());
 
       // Note: using removeAll on a HashSet has linear time complexity when
       // another HashSet is passed in
       newUsernames.removeAll(oldMembers.keySet());
-      removedUsernames.removeAll((newMembers.keySet()));
+      removedUsernames.removeAll((newMembers));
 
       if (newGroupName.equals(oldGroupName) && !newUsernames.isEmpty()) {
         // If the group name wasn't changed and we're adding new users, then only perform
@@ -518,7 +526,7 @@ public class GroupsManager extends DatabaseAccessManager {
       } else if (!newGroupName.equals(oldGroupName)) {
         // If the group name was changed, update every user in newMembers to reflect that.
         // In this case, both the list of members and the group name were changed.
-        usersToUpdate.addAll(newMembers.keySet());
+        usersToUpdate.addAll(newMembers);
       }
 
       if (!removedUsernames.isEmpty()) {
@@ -534,7 +542,7 @@ public class GroupsManager extends DatabaseAccessManager {
     } else if (!newGroupName.equals(oldGroupName)) {
       // If the group name was changed, update every user in newMembers to reflect that.
       // In this case, the list of members wasn't changed, but the group name was.
-      usersToUpdate.addAll(newMembers.keySet());
+      usersToUpdate.addAll(newMembers);
     }
 
     if (!usersToUpdate.isEmpty()) {
