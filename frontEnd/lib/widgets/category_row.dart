@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class CategoryRow extends StatefulWidget {
   final Category category;
@@ -39,8 +39,7 @@ class _CategoryRow extends State<CategoryRow> {
         ],
       ),
       decoration: new BoxDecoration(
-          border: new Border(
-              bottom: new BorderSide(color: Globals.blackOrWhiteBorder))),
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

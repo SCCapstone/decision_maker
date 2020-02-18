@@ -45,6 +45,10 @@ int getMinute(String time) {
   return int.parse(time.substring(3, 5));
 }
 
+Color getBorderColor() {
+  return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
+}
+
 void showPopupMessage(String message, BuildContext context,
     {Function callback}) {
   if (context == null) {

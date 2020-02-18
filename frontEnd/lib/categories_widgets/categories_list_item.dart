@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_edit.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class CategoriesListItem extends StatelessWidget {
   final Category category;
@@ -66,8 +66,7 @@ class CategoriesListItem extends StatelessWidget {
         ],
       ),
       decoration: BoxDecoration(
-          border:
-              Border(bottom: BorderSide(color: Globals.blackOrWhiteBorder))),
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 

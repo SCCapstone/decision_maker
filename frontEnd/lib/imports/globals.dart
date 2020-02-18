@@ -35,8 +35,6 @@ class Globals {
       primaryColorDark: Colors.black,
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-  static Color blackOrWhiteBorder =
-      (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
 
   static void clearGlobals() {
     username = null;

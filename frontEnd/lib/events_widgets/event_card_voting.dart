@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_voting.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class EventCardVoting extends StatefulWidget {
   final String groupId;
@@ -52,8 +52,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
         ],
       ),
       decoration: new BoxDecoration(
-          border: new Border(
-              bottom: new BorderSide(color: Globals.blackOrWhiteBorder))),
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

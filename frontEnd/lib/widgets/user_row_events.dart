@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class UserRow extends StatelessWidget {
   final String displayName;
@@ -24,8 +24,7 @@ class UserRow extends StatelessWidget {
         ],
       ),
       decoration: new BoxDecoration(
-          border: new Border(
-              bottom: new BorderSide(color: Globals.blackOrWhiteBorder))),
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }
