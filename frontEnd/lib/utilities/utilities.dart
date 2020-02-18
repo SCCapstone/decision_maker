@@ -1,9 +1,6 @@
-import 'dart:io';
-import 'package:image/image.dart' as ImageLib;
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/user.dart';
-import 'package:path_provider/path_provider.dart';
 import 'validator.dart';
 
 ImageProvider getUserIconUrl(User user) {
@@ -16,38 +13,6 @@ ImageProvider getIconUrl(String icon) {
   return icon == null
       ? AssetImage('assets/images/placeholder.jpg')
       : NetworkImage(Globals.imageUrl + icon);
-}
-
-//
-final int targetMaxImageSize = 100000; // 100kb
-Future<File> compressImage(File imageFile) async {
-  int fileSizeInBytes = imageFile.lengthSync();
-  print(fileSizeInBytes);
-  print(targetMaxImageSize);
-  print((targetMaxImageSize / fileSizeInBytes * 100).toInt());
-
-//  if (fileSizeInBytes > targetMaxImageSize) {
-//    Im.Image image = Im.decodeImage(imageFile.readAsBytesSync());
-//    Im.Image smallerImage = Im.copyResize(image);
-//  }
-
-//  if (image.width > 500 || image.height > 500) {
-//    image = ImageLib.copyResize(image, 500);
-//  }
-
-  //File destFile = new File("tempPathOrWhatever");
-  if (fileSizeInBytes > targetMaxImageSize) {
-    //this overwrites the current content of the imageFile
-    ImageLib.Image image = ImageLib.decodeImage(imageFile.readAsBytesSync());
-    Directory path = await getApplicationDocumentsDirectory();
-    File newFile = new File(path.path + "/tempFile");
-    newFile.writeAsBytesSync(ImageLib.encodeJpg(image,
-        quality: 70));
-    imageFile = newFile;
-    print(imageFile.lengthSync());
-  }
-
-  return imageFile;
 }
 
 int boolToInt(bool val) {
