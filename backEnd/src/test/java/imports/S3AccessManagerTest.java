@@ -68,7 +68,7 @@ public class S3AccessManagerTest {
     Optional<String> result = this.s3AccessManager
         .uploadImage(this.imageUploadGoodInput, this.metrics, this.lambdaLogger);
 
-    //assertFalse(result.isPresent());
+    assertFalse(result.isPresent());
     verify(this.s3Client, times(1)).putObject(any(PutObjectRequest.class));
     verify(this.lambdaLogger, times(1)).log(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
