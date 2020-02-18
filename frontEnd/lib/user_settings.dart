@@ -24,6 +24,7 @@ class _UserSettingsState extends State<UserSettings> {
   bool editing = false;
   bool _darkTheme = false;
   bool _muted = false;
+  bool newIcon = false;
   File _icon;
   String _displayName;
   int _groupSort = 0;
@@ -252,9 +253,8 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
-    print(image.lengthSync());
-    _icon = image;
+    _icon = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
+    newIcon = true;
     enableAutoValidation();
   }
 
@@ -289,7 +289,7 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.displayName != _displayName ||
         Globals.user.appSettings.groupSort != _groupSort ||
         newUsers ||
-        _icon != null) {
+        newIcon) {
       setState(() {
         editing = true;
       });
@@ -327,6 +327,7 @@ class _UserSettingsState extends State<UserSettings> {
         originalFavorites.clear();
         originalFavorites.addAll(displayedFavorites);
         editing = false;
+        newIcon = false;
         autoValidate = false;
       });
     } else {
