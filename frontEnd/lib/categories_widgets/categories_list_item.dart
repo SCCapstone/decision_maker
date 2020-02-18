@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_edit.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 
 class CategoriesListItem extends StatelessWidget {
@@ -14,86 +15,63 @@ class CategoriesListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isOwner) {
-      return Container(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text(
+    return Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: Text(
               category.categoryName,
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 1.5),
             ),
-            RaisedButton(
-              color: Colors.lightBlue,
-              child: Text(
-                "Edit",
-                style: TextStyle(),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              RaisedButton(
+                color: Colors.lightBlue,
+                child: Text(
+                  "Edit",
+                  style: TextStyle(),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            EditCategory(category: this.category)),
+                  ).then((_) => this.afterEditCallback());
+                },
               ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          EditCategory(category: this.category)),
-                );
-              },
-            )
-          ],
-        ),
-        decoration: BoxDecoration(border: Border(bottom: BorderSide())),
-      );
-    } else {
-      return Container(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                category.categoryName,
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 1.5),
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                child: Visibility(
+                  visible: isOwner,
+                  child: RaisedButton(
+                    color: Colors.red,
+                    child: Text(
+                      "Delete",
+                      style: TextStyle(),
+                    ),
+                    onPressed: () {
+                      confirmDelete(context);
+                    },
+                  ),
+                ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                RaisedButton(
-                  color: Colors.lightBlue,
-                  child: Text(
-                    "Edit",
-                    style: TextStyle(),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              EditCategory(category: this.category)),
-                    ).then((_) => this.afterEditCallback());
-                  },
-                ),
-                Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .007),
-                ),
-                RaisedButton(
-                  color: Colors.red,
-                  child: Text(
-                    "Delete",
-                    style: TextStyle(),
-                  ),
-                  onPressed: () {
-                    confirmDelete(context);
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        decoration: BoxDecoration(border: Border(bottom: BorderSide())),
-      );
-    }
+            ],
+          ),
+        ],
+      ),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: (Globals.user.appSettings.darkTheme)
+                      ? Colors.white
+                      : Colors.black))),
+    );
   }
 
   void confirmDelete(BuildContext context) {

@@ -172,7 +172,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
-                                      "Dark Theme",
+                                      "Light Theme",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
                                                   .style
@@ -181,10 +181,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: _darkTheme,
+                                    value: !_darkTheme,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _darkTheme = value;
+                                        _darkTheme = !value;
                                         enableAutoValidation();
                                       });
                                     },

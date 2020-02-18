@@ -106,19 +106,17 @@ class _CreateEventState extends State<CreateEvent> {
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
-                          ButtonTheme(
-                              minWidth: 110,
+                          Container(
+                              width: 110,
                               height: 40,
-                              buttonColor: Theme.of(context).primaryColor,
                               child: RaisedButton(
                                   onPressed: () {
                                     selectStartDate(context);
                                   },
                                   child: Text(eventStartDate))),
-                          ButtonTheme(
-                              minWidth: 110,
+                          Container(
+                              width: 110,
                               height: 40,
-                              buttonColor: Theme.of(context).primaryColor,
                               child: RaisedButton(
                                   onPressed: () {
                                     selectStartTime(context);

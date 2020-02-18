@@ -22,7 +22,7 @@ class Globals {
       primaryColor: Color(0xff5ce080),
       accentColor: Color(0xff5ce080),
       primaryColorDark: Colors.black,
-      buttonTheme: ButtonThemeData(buttonColor: Color(0xff5ce080)),
+      buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
   static ThemeData lightTheme = ThemeData(
@@ -31,7 +31,6 @@ class Globals {
       primaryColor: Color(0xff5ce080),
       accentColor: Color(0xff5ce080),
       primaryColorDark: Colors.black,
-      buttonTheme: ButtonThemeData(buttonColor: Colors.grey),
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
 
