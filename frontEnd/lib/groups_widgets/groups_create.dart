@@ -185,7 +185,6 @@ class _CreateGroupState extends State<CreateGroup> {
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: groupName,
-          groupCreator: Globals.username,
           icon: groupIcon,
           categories: selectedCategories,
           members: membersMap,

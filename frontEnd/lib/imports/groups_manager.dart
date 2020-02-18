@@ -97,7 +97,7 @@ class GroupsManager {
 
     //update this to just be the list of usernames
     //since that is all we need to pass to the backend
-    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -127,7 +127,7 @@ class GroupsManager {
 
     //update this to just be the list of usernames
     //since that is all we need to pass to the backend
-    jsonRequestBody["payload"][MEMBERS] = group.members.keys;
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 

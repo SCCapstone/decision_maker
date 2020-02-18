@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import utilities.ErrorDescriptor;
@@ -173,20 +174,22 @@ public class GroupsManager extends DatabaseAccessManager {
       final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(GROUP_ID, GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+        .asList(GROUP_ID, GROUP_NAME, GROUP_CREATOR, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
-        final String icon = (String) jsonMap.get(ICON);
+        final Optional<List<Integer>> newIcon = Optional
+            .ofNullable((List<Integer>) jsonMap.get(ICON));
         final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
-        List<String> members = (List<String>) jsonMap.get(MEMBERS);
+
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
             defaultPollPassPercent, defaultPollDuration)) {
@@ -208,12 +211,17 @@ public class GroupsManager extends DatabaseAccessManager {
                     + DEFAULT_POLL_PASS_PERCENT + " = :defaultPollPassPercent";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
-                .withString(":icon", icon)
+                //.withString(":icon", icon)
                 .withString(":creator", groupCreator)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultPollDuration", defaultPollDuration)
                 .withInt(":defaultPollPassPercent", defaultPollPassPercent);
+
+            if (newIcon.isPresent()) {
+              String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+                  .uploadImage(newIcon.get(), metrics, lambdaLogger).orElseThrow(Exception::new);;
+            }
 
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -503,10 +511,10 @@ public class GroupsManager extends DatabaseAccessManager {
     return hasPermission;
   }
 
-  private void updateUsersTable(final Map<String, Object> oldMembers,
-      final List<String> newMembers,
-      final String groupId, final String oldGroupName, final String newGroupName) {
-    final UsersManager usersManager = new UsersManager();
+  private void updateUsersTable(final Map<String, Object> oldMembers, final List<String> newMembers,
+      final String groupId, final String oldGroupName, final String newGroupName,
+      final Optional<String> newIconFileName, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     final Set<String> usersToUpdate = new HashSet<>();
     String updateExpression;
     NameMap nameMap = new NameMap().with("#groupId", groupId);
@@ -539,8 +547,9 @@ public class GroupsManager extends DatabaseAccessManager {
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression);
         for (final String member : removedUsernames) {
-          updateItemSpec.withPrimaryKey(usersManager.getPrimaryKeyIndex(), member);
-          usersManager.updateItem(updateItemSpec);
+          updateItemSpec
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
         }
       }
     } else if (!newGroupName.equals(oldGroupName)) {
@@ -553,8 +562,8 @@ public class GroupsManager extends DatabaseAccessManager {
       updateExpression = "set Groups.#groupId = :groupName";
       updateItemSpec.withUpdateExpression(updateExpression).withValueMap(valueMap);
       for (final String member : usersToUpdate) {
-        updateItemSpec.withPrimaryKey(usersManager.getPrimaryKeyIndex(), member);
-        usersManager.updateItem(updateItemSpec);
+        updateItemSpec.withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
       }
     }
   }
@@ -562,7 +571,6 @@ public class GroupsManager extends DatabaseAccessManager {
   private void updateCategoriesTable(final Map<String, Object> oldCategories,
       final Map<String, Object> newCategories, final String groupId, final String oldGroupName,
       final String newGroupName) {
-    final CategoriesManager categoriesManager = new CategoriesManager();
     final Set<String> categoriesToUpdate = new HashSet<>();
     String updateExpression;
     NameMap nameMap = new NameMap().with("#groupId", groupId);
@@ -593,8 +601,9 @@ public class GroupsManager extends DatabaseAccessManager {
         updateExpression = "remove Groups.#groupId";
         updateItemSpec.withUpdateExpression(updateExpression);
         for (final String categoryId : removedCategoryIds) {
-          updateItemSpec.withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId);
-          categoriesManager.updateItem(updateItemSpec);
+          updateItemSpec
+              .withPrimaryKey(DatabaseManagers.CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId);
+          DatabaseManagers.CATEGORIES_MANAGER.updateItem(updateItemSpec);
         }
       }
     } else if (!newGroupName.equals(oldGroupName)) {
@@ -607,8 +616,9 @@ public class GroupsManager extends DatabaseAccessManager {
       updateExpression = "set Groups.#groupId = :groupName";
       updateItemSpec.withUpdateExpression(updateExpression).withValueMap(valueMap);
       for (final String categoryId : categoriesToUpdate) {
-        updateItemSpec.withPrimaryKey(categoriesManager.getPrimaryKeyIndex(), categoryId);
-        categoriesManager.updateItem(updateItemSpec);
+        updateItemSpec
+            .withPrimaryKey(DatabaseManagers.CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId);
+        DatabaseManagers.CATEGORIES_MANAGER.updateItem(updateItemSpec);
       }
     }
   }
