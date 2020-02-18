@@ -49,9 +49,11 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Container(
-                color: (vote == voteNo)
-                    ? Colors.orangeAccent
-                    : Theme.of(context).scaffoldBackgroundColor,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (vote == voteNo)
+                        ? Colors.orangeAccent
+                        : Theme.of(context).scaffoldBackgroundColor),
                 child: IconButton(
                   icon: Icon(Icons.thumb_down),
                   color: Colors.red,
@@ -65,9 +67,12 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                 ),
               ),
               Container(
-                color: (vote == voteYes)
-                    ? Colors.greenAccent
-                    : Theme.of(context).scaffoldBackgroundColor,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (vote == voteYes)
+                      ? Colors.greenAccent
+                      : Theme.of(context).scaffoldBackgroundColor,
+                ),
                 child: IconButton(
                   icon: Icon(Icons.thumb_up),
                   color: Colors.green,

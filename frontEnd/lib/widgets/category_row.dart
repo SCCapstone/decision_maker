@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class CategoryRow extends StatefulWidget {
   final Category category;
@@ -13,7 +14,6 @@ class CategoryRow extends StatefulWidget {
 }
 
 class _CategoryRow extends State<CategoryRow> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -29,7 +29,7 @@ class _CategoryRow extends State<CategoryRow> {
           ),
           Checkbox(
             value: widget.selected,
-            onChanged: (bool value){
+            onChanged: (bool value) {
               this.widget.onSelect();
               setState(() {
                 widget.selected = value;
@@ -38,8 +38,8 @@ class _CategoryRow extends State<CategoryRow> {
           ),
         ],
       ),
-      decoration:
-      new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

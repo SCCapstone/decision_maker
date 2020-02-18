@@ -115,8 +115,6 @@ class _SignInState extends State<SignInPage> {
                 key: new Key("signInOrUp"),
                 height: MediaQuery.of(context).size.width * .12,
                 child: RaisedButton(
-                  color: Globals.secondaryColor,
-                  textColor: Colors.white,
                   onPressed: () {
                     if (!mutexLock) {
                       // prevents user from spamming the login button if HTTP request is being processed
@@ -170,7 +168,6 @@ class _SignInState extends State<SignInPage> {
                   ),
                   Flexible(
                     child: RaisedButton(
-                      color: Colors.green,
                       onPressed: () {
                         setState(() {
                           // reload widget and switch to either sign up or sign in

@@ -54,7 +54,7 @@ The backend of our application running in the AWS cloud requires deployment.
 ### 5.1 Unit Testing on the Back End
 
 ##### 5.1.1 Dependencies
-* You must have apache maven installed to run the tests.
+* You must have apache [maven](https://maven.apache.org/download.cgi) installed to run the tests.
 
 ##### 5.1.2 Running the Tests
 1. cd into the backEnd directory.
@@ -70,6 +70,7 @@ The backend of our application running in the AWS cloud requires deployment.
 
 ##### 5.2.1 Dependencies
 * These tests should be run using flutter version v1.9.1+hotfix.5
+* To fetch project specific dependencies, run 'flutter pub get' from the frontEnd directory.
 
 ##### 5.2.2 Running the Tests
 1. cd into the frontEnd directory.

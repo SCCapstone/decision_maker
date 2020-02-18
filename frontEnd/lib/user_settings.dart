@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/favorites_popup.dart';
+
+import 'main.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -22,7 +26,8 @@ class _UserSettingsState extends State<UserSettings> {
   bool editing = false;
   bool _darkTheme = false;
   bool _muted = false;
-  String _icon;
+  bool newIcon = false;
+  File _icon;
   String _displayName;
   int _groupSort = 0;
   List<Favorite> displayedFavorites = new List<Favorite>();
@@ -110,8 +115,9 @@ class _UserSettingsState extends State<UserSettings> {
                           decoration: BoxDecoration(
                               image: DecorationImage(
                                   fit: BoxFit.fitHeight,
-                                  image: AssetImage(
-                                      'assets/images/placeholder.jpg'))),
+                                  image: _icon == null
+                                      ? getUserIconUrl(Globals.user)
+                                      : FileImage(_icon))),
                           child: Container(
                             decoration: BoxDecoration(
                                 color: Colors.grey.withOpacity(0.7),
@@ -120,7 +126,7 @@ class _UserSettingsState extends State<UserSettings> {
                               icon: Icon(Icons.edit),
                               color: Colors.blueAccent,
                               onPressed: () {
-                                userIconPopup();
+                                getImage();
                               },
                             ),
                           ),
@@ -170,7 +176,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
-                                      "Dark Theme",
+                                      "Light Theme",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
                                                   .style
@@ -179,10 +185,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: _darkTheme,
+                                    value: !_darkTheme,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _darkTheme = value;
+                                        _darkTheme = !value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -248,6 +254,12 @@ class _UserSettingsState extends State<UserSettings> {
     );
   }
 
+  Future getImage() async {
+    _icon = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
+    newIcon = true;
+    enableAutoValidation();
+  }
+
   void showFavoritesPopup() {
     showDialog(
         context: context,
@@ -278,7 +290,8 @@ class _UserSettingsState extends State<UserSettings> {
         Globals.user.appSettings.muted != _muted ||
         Globals.user.displayName != _displayName ||
         Globals.user.appSettings.groupSort != _groupSort ||
-        newUsers) {
+        newUsers ||
+        newIcon) {
       setState(() {
         editing = true;
       });
@@ -289,76 +302,43 @@ class _UserSettingsState extends State<UserSettings> {
     }
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      setState(() {
-        Globals.user.appSettings.groupSort = _groupSort;
-        Globals.user.appSettings.muted = _muted;
-        Globals.user.appSettings.darkTheme = _darkTheme;
-        Globals.user.displayName = _displayName;
-        Globals.user.favorites = displayedFavorites;
-        Globals.user.icon = _icon;
-        List<String> userNames = new List<String>();
-        for (Favorite favorite in displayedFavorites) {
-          userNames.add(favorite.username);
-        }
-        UsersManager.updateUserSettings(
-            _displayName,
-            boolToInt(_darkTheme),
-            boolToInt(_muted),
-            _groupSort,
-            userNames,
-            context); // blind send for now?
+      Globals.user.appSettings.groupSort = _groupSort;
+      Globals.user.appSettings.muted = _muted;
+      Globals.user.appSettings.darkTheme = _darkTheme;
+      Globals.user.displayName = _displayName;
+      Globals.user.favorites = displayedFavorites;
+      List<String> userNames = new List<String>();
+      for (Favorite favorite in displayedFavorites) {
+        userNames.add(favorite.username);
+      }
 
+      showLoadingDialog(context, "Saving settings..."); // show loading dialog
+      await UsersManager.updateUserSettings(
+          _displayName,
+          boolToInt(_darkTheme),
+          boolToInt(_muted),
+          _groupSort,
+          userNames,
+          _icon,
+          context); // blind send for now?
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      setState(() {
         // reset everything and reflect changes made
         originalFavorites.clear();
         originalFavorites.addAll(displayedFavorites);
         editing = false;
+        newIcon = false;
         autoValidate = false;
+        changeTheme(context);
       });
     } else {
       setState(() => autoValidate = true);
     }
-  }
-
-  void userIconPopup() {
-    // displays a popup for editing the user's icon's
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text("Edit User Icon url"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Cancel"),
-                onPressed: () {
-                  userIconController.clear();
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Submit"),
-                onPressed: () {
-                  _icon = userIconController.text;
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                },
-              ),
-            ],
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: userIconController,
-                    validator: validGroupIcon,
-                    keyboardType: TextInputType.url,
-                    decoration: InputDecoration(
-                      labelText: "Enter a icon link",
-                    )),
-              ],
-            ),
-          );
-        });
   }
 }

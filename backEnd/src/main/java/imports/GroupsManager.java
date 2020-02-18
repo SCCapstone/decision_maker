@@ -90,7 +90,6 @@ public class GroupsManager extends DatabaseAccessManager {
     if (success) {
       List<Map> groups = new ArrayList<>();
       for (String groupId : groupIds) {
-        System.out.println(groupId);
         try {
           Item groupData = this.getItemByPrimaryKey(groupId);
           groups.add(groupData.asMap());
