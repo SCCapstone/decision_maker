@@ -136,14 +136,14 @@ void showErrorMessage(
       });
 }
 
-void showLoadingDialog(BuildContext context, String msg) {
+void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
   showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
         return WillPopScope(
           // prevents the dialog from being exited by the back button
-          onWillPop: () async => false,
+          onWillPop: () async => dismissible,
           child: AlertDialog(
             content: Flex(
               direction: Axis.horizontal,

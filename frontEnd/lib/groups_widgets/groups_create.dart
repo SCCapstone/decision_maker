@@ -192,7 +192,8 @@ class _CreateGroupState extends State<CreateGroup> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 
-      showLoadingDialog(context, "Creating group..."); // show loading dialog
+      showLoadingDialog(
+          context, "Creating group...", true); // show loading dialog
       bool success = await GroupsManager.createNewGroup(group, context);
 
       Navigator.of(context, rootNavigator: true)

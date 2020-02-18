@@ -270,7 +270,8 @@ class _CreateEventState extends State<CreateEvent> {
         eventCreator: eventCreator,
       );
 
-      showLoadingDialog(context, "Creating event..."); // show loading dialog
+      showLoadingDialog(
+          context, "Creating event...", true); // show loading dialog
       bool success = await GroupsManager.addEvent(
           Globals.currentGroup.groupId, event, context);
       Navigator.of(context, rootNavigator: true)
