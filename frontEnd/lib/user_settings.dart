@@ -291,29 +291,33 @@ class _UserSettingsState extends State<UserSettings> {
     }
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      setState(() {
-        Globals.user.appSettings.groupSort = _groupSort;
-        Globals.user.appSettings.muted = _muted;
-        Globals.user.appSettings.darkTheme = _darkTheme;
-        Globals.user.displayName = _displayName;
-        Globals.user.favorites = displayedFavorites;
-        Globals.user.icon = _icon;
-        List<String> userNames = new List<String>();
-        for (Favorite favorite in displayedFavorites) {
-          userNames.add(favorite.username);
-        }
-        UsersManager.updateUserSettings(
-            _displayName,
-            boolToInt(_darkTheme),
-            boolToInt(_muted),
-            _groupSort,
-            userNames,
-            context); // blind send for now?
+      Globals.user.appSettings.groupSort = _groupSort;
+      Globals.user.appSettings.muted = _muted;
+      Globals.user.appSettings.darkTheme = _darkTheme;
+      Globals.user.displayName = _displayName;
+      Globals.user.favorites = displayedFavorites;
+      Globals.user.icon = _icon;
+      List<String> userNames = new List<String>();
+      for (Favorite favorite in displayedFavorites) {
+        userNames.add(favorite.username);
+      }
 
+      showLoadingDialog(context, "Saving settings..."); // show loading dialog
+      await UsersManager.updateUserSettings(
+          _displayName,
+          boolToInt(_darkTheme),
+          boolToInt(_muted),
+          _groupSort,
+          userNames,
+          context); // blind send for now?
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      setState(() {
         // reset everything and reflect changes made
         originalFavorites.clear();
         originalFavorites.addAll(displayedFavorites);
