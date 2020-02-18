@@ -252,8 +252,8 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    File image = await ImagePicker.pickImage(source: ImageSource.gallery);
-
+    File image = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
+    print(image.lengthSync());
     _icon = image;
     enableAutoValidation();
   }
