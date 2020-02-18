@@ -9,6 +9,7 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
 
@@ -48,6 +49,12 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   @override
+  void dispose() {
+    searchBar.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
@@ -55,12 +62,12 @@ class _GroupsHomeState extends State<GroupsHome> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(color: Globals.secondaryColor),
+              decoration: BoxDecoration(color: Theme.of(context).accentColor),
               child: SafeArea(
                 // for phones that have a notch, use a safe area so content isn't obstructed
                 child: Container(
                   height: 80.0,
-                  decoration: BoxDecoration(color: Globals.secondaryColor),
+                  decoration: BoxDecoration(color: Theme.of(context).accentColor),
                   margin: EdgeInsets.zero,
                   child: ListTile(
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
@@ -72,13 +79,12 @@ class _GroupsHomeState extends State<GroupsHome> {
                                 builder: (context) => UserSettings()));
                       },
                       child: CircleAvatar(
-                        backgroundImage:
-                            AssetImage('assets/images/placeholder.jpg'),
+                        backgroundImage: getUserIconUrl(Globals.user)
                       ),
                     ),
                     title: Text(
                       Globals.username,
-                      style: TextStyle(fontSize: 24, color: Colors.white),
+                      style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColorDark),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -91,7 +97,7 @@ class _GroupsHomeState extends State<GroupsHome> {
               ),
             ),
             ListTile(
-                leading: Icon(Icons.apps), // Placeholder icon
+                leading: Icon(Icons.format_list_bulleted),
                 title: Text('Categories', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   Navigator.push(
@@ -99,9 +105,8 @@ class _GroupsHomeState extends State<GroupsHome> {
                       MaterialPageRoute(
                           builder: (context) => CategoriesHome()));
                 }),
-            //TODO implement an app settings page and navigate to it from a new ListTile here (https://github.com/SCCapstone/decision_maker/issues/141)
             ListTile(
-                leading: Icon(Icons.subdirectory_arrow_left),
+                leading: Icon(Icons.exit_to_app),
                 title: Text('Log out', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   logOutUser();
@@ -121,7 +126,8 @@ class _GroupsHomeState extends State<GroupsHome> {
           visible: !(searching),
           child: Text(
             "Pocket Poll",
-            style: TextStyle(fontSize: 35),
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
           ),
         ),
         actions: <Widget>[
@@ -131,7 +137,8 @@ class _GroupsHomeState extends State<GroupsHome> {
               visible: searching,
               child: Container(
                 width: MediaQuery.of(context).size.width * .70,
-                child: TextFormField(
+                child: TextField(
+                  autofocus: true,
                   controller: searchBar,
                   style: TextStyle(color: Colors.white, fontSize: 30),
                   decoration: InputDecoration(
@@ -160,7 +167,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Expanded(
               child: new Container(
-                  width: MediaQuery.of(context).size.width * .80,
+                  width: MediaQuery.of(context).size.width * .90,
                   height: MediaQuery.of(context).size.height * .60,
                   child: FutureBuilder(
                     future: widget.groupsFuture,
@@ -178,20 +185,23 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .08),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          // Navigate to second route when tapped.
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateGroup()),
-          ).then((_) => GroupsHome());
-        },
+      floatingActionButton: Visibility(
+        visible: !searching,
+        child: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            // Navigate to second route when tapped.
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateGroup()),
+            ).then((_) => GroupsHome());
+          },
+        ),
       ),
     );
   }
@@ -228,16 +238,16 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   void searchGroup() {
     if (searching) {
-      searching = false;
       // already searching, so user has clicked the stop button
       setState(() {
+        searching = false;
         searchBar.clear();
         displayedGroups = totalGroups;
         searchIcon = new Icon(Icons.search);
       });
     } else {
-      searching = true;
       setState(() {
+        searching = true;
         searchIcon = new Icon(Icons.close);
       });
     }

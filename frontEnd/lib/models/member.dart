@@ -1,19 +1,27 @@
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/favorite.dart';
 
-class Favorite {
+class Member {
   final String username;
   final String icon;
   final String displayName;
 
-  Favorite({this.username, this.displayName, this.icon});
+  Member({this.username, this.displayName, this.icon});
 
-  Favorite.debug(this.username, this.displayName, this.icon);
+  Member.debug(this.username, this.displayName, this.icon);
 
-  factory Favorite.fromJson(Map<String, dynamic> json, String username) {
-    return Favorite(
+  factory Member.fromJson(Map<String, dynamic> json, String username) {
+    return Member(
         username: username,
         displayName: json[UsersManager.DISPLAY_NAME],
         icon: json[UsersManager.ICON]);
+  }
+
+  factory Member.fromFavorite(Favorite favorite) {
+    return Member(
+        username: favorite.username,
+        displayName: favorite.displayName,
+        icon: favorite.icon);
   }
 
   @override
@@ -21,7 +29,7 @@ class Favorite {
     if (identical(this, other)) {
       return true;
     }
-    return other is Favorite && this.username == other.username;
+    return other is Member && this.username == other.username;
   }
 
   @override

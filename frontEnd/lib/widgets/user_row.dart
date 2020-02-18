@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class UserRow extends StatelessWidget {
   final String displayName;
   final String username;
-  final bool activeUserIsGroupOwner;
+  final String icon;
+  final bool showDelete;
+  final bool adding;
+  final bool isGroupOwner;
   final VoidCallback deleteUser;
+  final VoidCallback addUser;
 
-  UserRow(this.displayName, this.username, this.activeUserIsGroupOwner,
-      {this.deleteUser});
+  UserRow(this.displayName, this.username, this.icon, this.showDelete,
+      this.adding, this.isGroupOwner,
+      {this.deleteUser, this.addUser});
 
   @override
   Widget build(BuildContext context) {
-    bool showDelete = ((this.activeUserIsGroupOwner &&
-            this.username != Globals.username) ||
-        (!this.activeUserIsGroupOwner && this.username == Globals.username));
-
     return Container(
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Image(image: getIconUrl(icon), fit: BoxFit.fitHeight),
+          ),
           Expanded(
             child: Text(
-              this.displayName,
-              style: TextStyle(fontSize: 20),
+              "${this.displayName} (@${this.username})",
+              style: TextStyle(fontSize: 18),
             ),
           ),
           Visibility(
@@ -34,11 +39,25 @@ class UserRow extends StatelessWidget {
               color: Colors.red,
               onPressed: this.deleteUser,
             ),
+          ),
+          Visibility(
+            visible: isGroupOwner,
+            // show a special icon if user is the owner of the group. Used a button to make it centered
+            child: IconButton(icon: Icon(Icons.star, color: Colors.yellow)),
+          ),
+          Visibility(
+            visible: adding,
+            // show this if the user is typing in a username from their favorites
+            child: IconButton(
+              icon: Icon(Icons.add_circle_outline),
+              color: Colors.greenAccent,
+              onPressed: this.addUser,
+            ),
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 
@@ -7,6 +6,7 @@ import 'app_settings.dart';
 class User {
   final String username;
   String displayName;
+  String icon;
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> categories;
@@ -18,10 +18,11 @@ class User {
       this.appSettings,
       this.groups,
       this.categories,
-      this.favorites});
+      this.favorites,
+      this.icon});
 
   User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.categories, this.favorites);
+      this.categories, this.favorites, this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
@@ -36,12 +37,13 @@ class User {
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
         categories: json[UsersManager.CATEGORIES],
-        favorites: favoriteList);
+        favorites: favoriteList,
+        icon: json[UsersManager.ICON]);
   }
 
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "Categories: $categories Favorites: $favorites";
+        "Categories: $categories Favorites: $favorites Icon: $icon";
   }
 }

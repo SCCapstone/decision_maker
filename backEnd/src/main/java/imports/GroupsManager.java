@@ -88,7 +88,6 @@ public class GroupsManager extends DatabaseAccessManager {
     if (success) {
       List<Map> groups = new ArrayList<>();
       for (String groupId : groupIds) {
-        System.out.println(groupId);
         try {
           Item groupData = this.getItemByPrimaryKey(groupId);
           groups.add(groupData.asMap());
@@ -116,7 +115,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final String icon = (String) jsonMap.get(ICON);
         final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
-        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS);
+        final Map<String, Object> members = (Map<String, Object>) jsonMap.get(MEMBERS); //TODO update members to get their current display name/icon for insertion - probably should do for categories too...
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);

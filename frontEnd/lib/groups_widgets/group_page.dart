@@ -45,14 +45,16 @@ class _GroupPageState extends State<GroupPage> {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
-            Container(
-              height: MediaQuery.of(context).size.height * .70,
-              child: RefreshIndicator(
-                child: EventsList(
-                  group: Globals.currentGroup,
-                  events: widget.events,
+            Expanded(
+              child: Container(
+                height: MediaQuery.of(context).size.height * .80,
+                child: RefreshIndicator(
+                  child: EventsList(
+                    group: Globals.currentGroup,
+                    events: widget.events,
+                  ),
+                  onRefresh: refreshList,
                 ),
-                onRefresh: refreshList,
               ),
             ),
             Padding(

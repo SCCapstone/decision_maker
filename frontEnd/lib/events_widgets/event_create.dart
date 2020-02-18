@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/widgets/category_dropdown.dart';
 
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/widgets/category_popup_single.dart';
 
 class CreateEvent extends StatefulWidget {
   @required
@@ -29,7 +30,7 @@ class _CreateEventState extends State<CreateEvent> {
   Future<List<Category>> categoriesInGroup;
   bool autoValidate = false;
   final formKey = GlobalKey<FormState>();
-  final List<Category> categoriesSelected = new List<Category>();
+  final List<Category> categorySelected = new List<Category>();
   final DateTime currentDate = DateTime.now();
   final TimeOfDay currentTime = TimeOfDay.now();
 
@@ -37,22 +38,6 @@ class _CreateEventState extends State<CreateEvent> {
   // make the API request for making the event
   String eventStartDate;
   String eventStartTime;
-
-  String convertDateToString(DateTime date) {
-    return date.toString().substring(0, 10);
-  }
-
-  String convertTimeToString(TimeOfDay time) {
-    return time.toString().substring(10, 15);
-  }
-
-  int getHour(String time) {
-    return int.parse(time.substring(0, 2));
-  }
-
-  int getMinute(String time) {
-    return int.parse(time.substring(3, 5));
-  }
 
   @override
   void dispose() {
@@ -70,15 +55,152 @@ class _CreateEventState extends State<CreateEvent> {
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
     if ((currentTime.hour + 1) < 10) {
       eventStartTime = "0" + eventStartTime;
-    } else if((currentTime.hour + 1) > 23) {
+    } else if ((currentTime.hour + 1) > 23) {
       eventStartTime = "00:00";
-      eventStartDate = convertDateToString(DateTime.now().add(Duration(days: 1)));
+      eventStartDate =
+          convertDateToString(DateTime.now().add(Duration(days: 1)));
     }
     pollDurationController.text =
         Globals.currentGroup.defaultPollDuration.toString();
     passPercentageController.text =
         Globals.currentGroup.defaultPollPassPercent.toString();
     super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      // allows for anywhere on the screen to be clicked to lose focus of a textfield
+      onTap: () {
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text("Create Event")),
+        body: Form(
+            key: formKey,
+            autovalidate: autoValidate,
+            child: ListView(
+              shrinkWrap: true,
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    TextFormField(
+                      controller: eventNameController,
+                      validator: validEventName,
+                      onSaved: (String arg) {
+                        eventName = arg;
+                      },
+                      decoration:
+                          InputDecoration(labelText: "Enter an event name"),
+                    ),
+                    Container(height: 20),
+                    // Temporarily using Containers to space out the elements
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Text("Start date and time for the event",
+                              style: TextStyle(fontSize: 16)),
+                        ]),
+                    Container(height: 10),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Container(
+                              width: 110,
+                              height: 40,
+                              child: RaisedButton(
+                                  onPressed: () {
+                                    selectStartDate(context);
+                                  },
+                                  child: Text(eventStartDate))),
+                          Container(
+                              width: 110,
+                              height: 40,
+                              child: RaisedButton(
+                                  onPressed: () {
+                                    selectStartTime(context);
+                                  },
+                                  child: Text(eventStartTime))),
+                        ]),
+                    Container(height: 20),
+                    RaisedButton(
+                      child: Text(getCategoryButtonMessage()),
+                      onPressed: () {
+                        showCategoriesPopup();
+                      },
+                    ),
+                    Container(height: 10),
+                    TextFormField(
+                      controller: pollDurationController,
+                      keyboardType: TextInputType.number,
+                      validator: validPollDuration,
+                      onSaved: (String arg) {
+                        pollDuration = arg;
+                      },
+                      decoration: InputDecoration(
+                          labelText: "Poll duration (in minutes)"),
+                    ),
+                    TextFormField(
+                      controller: passPercentageController,
+                      keyboardType: TextInputType.number,
+                      validator: validPassPercentage,
+                      onSaved: (String arg) {
+                        pollPassPercent = arg;
+                      },
+                      decoration:
+                          InputDecoration(labelText: "Poll pass percentage"),
+                    ),
+                  ],
+                )
+              ],
+            )),
+        bottomNavigationBar: BottomAppBar(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+              RaisedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel")),
+              RaisedButton.icon(
+                  onPressed: () {
+                    if (categorySelected.isEmpty) {
+                      showPopupMessage("Select a category.", context);
+                    } else {
+                      validateInput();
+                    }
+                  },
+                  icon: Icon(Icons.add),
+                  label: Text("Create"))
+            ])),
+      ),
+    );
+  }
+
+  void showCategoriesPopup() {
+    showDialog(
+        context: context,
+        child: CategoryPopupSingle(
+          categorySelected,
+          handlePopupClosed: categoryPopupClosed,
+        )).then((value) {
+      categoryPopupClosed();
+    });
+  }
+
+  void categoryPopupClosed() {
+    hideKeyboard(context);
+    setState(() {});
+  }
+
+  String getCategoryButtonMessage() {
+    if (categorySelected.isEmpty) {
+      return "Select Category";
+    } else {
+      return categorySelected.first.categoryName;
+    }
   }
 
   Future selectStartDate(BuildContext context) async {
@@ -125,124 +247,7 @@ class _CreateEventState extends State<CreateEvent> {
                 startTime.minute < currentTime.minute));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Create Event")),
-      body: Form(
-          key: formKey,
-          autovalidate: autoValidate,
-          child: ListView(
-            shrinkWrap: true,
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  TextFormField(
-                    controller: eventNameController,
-                    validator: validEventName,
-                    onSaved: (String arg) {
-                      eventName = arg;
-                    },
-                    decoration:
-                        InputDecoration(labelText: "Enter an event name"),
-                  ),
-                  Container(height: 20),
-                  // Temporarily using Containers to space out the elements
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text("Start date and time for the event",
-                            style: TextStyle(fontSize: 16)),
-                      ]),
-                  Container(height: 10),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        ButtonTheme(
-                            minWidth: 110,
-                            height: 40,
-                            buttonColor: Colors.white60,
-                            child: RaisedButton(
-                                onPressed: () {
-                                  selectStartDate(context);
-                                },
-                                child: Text(eventStartDate))),
-                        ButtonTheme(
-                            minWidth: 110,
-                            height: 40,
-                            buttonColor: Colors.white60,
-                            child: RaisedButton(
-                                onPressed: () {
-                                  selectStartTime(context);
-                                },
-                                child: Text(eventStartTime))),
-                      ]),
-                  Container(height: 20),
-                  FutureBuilder(
-                      future: categoriesInGroup,
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.hasData) {
-                          List<Category> categories = snapshot.data;
-
-                          return CategoryDropdown("Select a category",
-                              categories, categoriesSelected,
-                              callback: (category) => selectCategory(category));
-                        } else if (snapshot.hasError) {
-                          return Text("Error: ${snapshot.error}");
-                        } else {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                      }),
-                  Container(height: 10),
-                  TextFormField(
-                    controller: pollDurationController,
-                    keyboardType: TextInputType.number,
-                    validator: validPollDuration,
-                    onSaved: (String arg) {
-                      pollDuration = arg;
-                    },
-                    decoration: InputDecoration(
-                        labelText: "Poll duration (in minutes)"),
-                  ),
-                  TextFormField(
-                    controller: passPercentageController,
-                    keyboardType: TextInputType.number,
-                    validator: validPassPercentage,
-                    onSaved: (String arg) {
-                      pollPassPercent = arg;
-                    },
-                    decoration:
-                        InputDecoration(labelText: "Poll pass percentage"),
-                  ),
-                ],
-              )
-            ],
-          )),
-      bottomNavigationBar: BottomAppBar(
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-            RaisedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("Cancel")),
-            RaisedButton.icon(
-                onPressed: () {
-                  if (categoriesSelected.isEmpty) {
-                    showPopupMessage("Select a category.", context);
-                  } else {
-                    validateInput();
-                  }
-                },
-                icon: Icon(Icons.add),
-                label: Text("Create"))
-          ])),
-    );
-  }
-
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -252,8 +257,8 @@ class _CreateEventState extends State<CreateEvent> {
 
       Event event = new Event(
         eventName: this.eventName,
-        categoryId: this.categoriesSelected.first.categoryId,
-        categoryName: this.categoriesSelected.first.categoryName,
+        categoryId: this.categorySelected.first.categoryId,
+        categoryName: this.categorySelected.first.categoryName,
         createdDateTime:
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(
@@ -265,25 +270,21 @@ class _CreateEventState extends State<CreateEvent> {
         eventCreator: eventCreator,
       );
 
-      GroupsManager.addEvent(Globals.currentGroup.groupId, event, context);
-      setState(() {
-        autoValidate = false;
-      });
+      showLoadingDialog(context, "Creating event..."); // show loading dialog
+      bool success = await GroupsManager.addEvent(
+          Globals.currentGroup.groupId, event, context);
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      if (success) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            new MaterialPageRoute(
+                builder: (BuildContext context) => GroupsHome()),
+            (Route<dynamic> route) => false);
+      }
     } else {
       setState(() => autoValidate = true);
     }
-  }
-
-  void selectCategory(Category category) {
-    setState(() {
-      if (categoriesSelected.contains(category)) {
-        categoriesSelected.remove(category);
-      } else if (categoriesSelected.isEmpty) {
-        categoriesSelected.add(category);
-      } else {
-        categoriesSelected.clear();
-        categoriesSelected.add(category);
-      }
-    });
   }
 }
