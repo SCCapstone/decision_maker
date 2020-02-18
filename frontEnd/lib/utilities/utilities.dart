@@ -1,5 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/user.dart';
 import 'validator.dart';
+
+ImageProvider getUserIconUrl(User user) {
+  return user.icon == null
+      ? AssetImage('assets/images/placeholder.jpg')
+      : NetworkImage(Globals.imageUrl + user.icon);
+}
+
+ImageProvider getIconUrl(String icon) {
+  return icon == null
+      ? AssetImage('assets/images/placeholder.jpg')
+      : NetworkImage(Globals.imageUrl + icon);
+}
 
 int boolToInt(bool val) {
   if (val) {

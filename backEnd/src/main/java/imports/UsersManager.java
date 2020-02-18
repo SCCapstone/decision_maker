@@ -218,13 +218,12 @@ public class UsersManager extends DatabaseAccessManager {
      */
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, ICON, DISPLAY_NAME, APP_SETTINGS, FAVORITES);
+        .asList(RequestFields.ACTIVE_USER, DISPLAY_NAME, APP_SETTINGS, FAVORITES);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
-        String newIcon = (String) jsonMap.get(ICON);
         Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
@@ -233,7 +232,6 @@ public class UsersManager extends DatabaseAccessManager {
         Map<String, Object> user = userDataRaw.asMap();
 
         String oldDisplayName = (String) user.get(DISPLAY_NAME);
-        String oldIcon = (String) user.get(ICON);
         Set<String> oldFavorites = new HashSet<>(((Map) user.get(FAVORITES)).keySet());
 
         //as long as this remains a small group of settings, I think it's okay to always overwrite
@@ -267,19 +265,26 @@ public class UsersManager extends DatabaseAccessManager {
           favoritesOfNameMap.with("#username", activeUser);
         }
 
-        if (!oldIcon.equals(newIcon)) {
+        //ICON is an optional api payload key, if present it's assumed it has the contents of a new file for upload
+        if (jsonMap.containsKey(ICON)) {
+          List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
+
+          //try to create the file in s3, if no filename returned, throw exception
+          String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+              .uploadImage(newIcon, metrics, lambdaLogger).orElseThrow(Exception::new);
+
           updateUserExpression += ", " + ICON + " = :icon";
-          userValueMap.withString(":icon", newIcon);
+          userValueMap.withString(":icon", newIconFileName);
 
           updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
               GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
-          groupsValueMap.withString(":icon", newIcon);
+          groupsValueMap.withString(":icon", newIconFileName);
           groupsNameMap.with("#username2", activeUser);
 
           updateFavoritesOfExpression = this
               .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
                   ":icon");
-          favoritesOfValueMap.withString(":icon", newIcon);
+          favoritesOfValueMap.withString(":icon", newIconFileName);
           favoritesOfNameMap.with("#username2", activeUser);
         }
 

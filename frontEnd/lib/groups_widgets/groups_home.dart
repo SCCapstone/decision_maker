@@ -9,6 +9,7 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
 
@@ -78,8 +79,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                                 builder: (context) => UserSettings()));
                       },
                       child: CircleAvatar(
-                        backgroundImage:
-                            AssetImage('assets/images/placeholder.jpg'),
+                        backgroundImage: getUserIconUrl(Globals.user)
                       ),
                     ),
                     title: Text(

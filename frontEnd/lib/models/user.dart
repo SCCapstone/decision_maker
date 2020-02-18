@@ -18,10 +18,11 @@ class User {
       this.appSettings,
       this.groups,
       this.categories,
-      this.favorites});
+      this.favorites,
+      this.icon});
 
   User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.categories, this.favorites);
+      this.categories, this.favorites, this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
@@ -36,7 +37,8 @@ class User {
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
         categories: json[UsersManager.CATEGORIES],
-        favorites: favoriteList);
+        favorites: favoriteList,
+        icon: json[UsersManager.ICON]);
   }
 
   @override
