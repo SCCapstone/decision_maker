@@ -111,14 +111,14 @@ public class GroupsManager extends DatabaseAccessManager {
       final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(GROUP_NAME, ICON, GROUP_CREATOR, MEMBERS, CATEGORIES,
+        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, ICON, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final String icon = (String) jsonMap.get(ICON);
-        final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
         List<String> members = (List<String>) jsonMap.get(
             MEMBERS); //TODO update members to get their current display name/icon for insertion - probably should do for categories too...
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
@@ -128,8 +128,12 @@ public class GroupsManager extends DatabaseAccessManager {
         final UUID uuid = UUID.randomUUID();
         final String newGroupId = uuid.toString();
 
+        //sanity check, add the active user to this mapping to make sure his data is added
+        members.add(activeUser);
+
         final Map<String, Object> membersMapped = this
             .getMembersMapForInsertion(members, metrics, lambdaLogger);
+
         //in case any usernames were removed, update the list for use in below methods to keep data consistent
         members = new LinkedList<>(membersMapped.keySet());
 
@@ -137,7 +141,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
             .withString(GROUP_NAME, groupName)
             .withString(ICON, icon)
-            .withString(GROUP_CREATOR, groupCreator)
+            .withString(GROUP_CREATOR, activeUser)
             .withMap(MEMBERS, membersMapped)
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
@@ -404,7 +408,8 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   //Note we return the value for clarity in some uses, but the actual input is being updated
-  private Map<String, Object> getMembersMapForInsertion(final List<String> members,
+  private Map<String, Object> getMembersMapForInsertion
+  (final List<String> members,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.getMembersMapForInsertion";
     metrics.commonSetup(classMethod);
@@ -420,7 +425,7 @@ public class GroupsManager extends DatabaseAccessManager {
         String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
         String icon = (String) userData.get(UsersManager.ICON);
 
-        membersMap.put(username, ImmutableMap.of(
+        membersMap.putIfAbsent(username, ImmutableMap.of(
             UsersManager.DISPLAY_NAME, displayName,
             UsersManager.ICON, icon
         ));
