@@ -16,6 +16,8 @@ class Globals {
   static int alphabeticalSort = 1;
   static String resetUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://www.shiftadmin.com";
+  static String imageUrl =
+      "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
   static ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
       primarySwatch: Colors.green,
@@ -33,8 +35,8 @@ class Globals {
       primaryColorDark: Colors.black,
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-  static String imageUrl =
-      "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
+  static Color blackOrWhiteBorder =
+      (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
 
   static void clearGlobals() {
     username = null;

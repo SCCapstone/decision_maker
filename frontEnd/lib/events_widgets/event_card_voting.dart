@@ -53,10 +53,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
       ),
       decoration: new BoxDecoration(
           border: new Border(
-              bottom: new BorderSide(
-                  color: (Globals.user.appSettings.darkTheme)
-                      ? Colors.white
-                      : Colors.black))),
+              bottom: new BorderSide(color: Globals.blackOrWhiteBorder))),
     );
   }
 }

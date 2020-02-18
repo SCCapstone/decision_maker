@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 class UserRow extends StatelessWidget {
@@ -56,8 +57,9 @@ class UserRow extends StatelessWidget {
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(
+              bottom: new BorderSide(color: Globals.blackOrWhiteBorder))),
     );
   }
 }

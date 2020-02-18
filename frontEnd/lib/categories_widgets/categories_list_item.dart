@@ -66,11 +66,8 @@ class CategoriesListItem extends StatelessWidget {
         ],
       ),
       decoration: BoxDecoration(
-          border: Border(
-              bottom: BorderSide(
-                  color: (Globals.user.appSettings.darkTheme)
-                      ? Colors.white
-                      : Colors.black))),
+          border:
+              Border(bottom: BorderSide(color: Globals.blackOrWhiteBorder))),
     );
   }
 
