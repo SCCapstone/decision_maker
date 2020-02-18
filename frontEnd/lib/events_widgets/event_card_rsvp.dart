@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_rsvp.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class EventCardRsvp extends StatefulWidget {
   final String groupId;
@@ -38,7 +39,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           ),
           RaisedButton(
             child: Text("RSVP"),
-            color: Colors.lightGreenAccent,
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
@@ -52,8 +53,8 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

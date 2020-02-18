@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:provider/provider.dart';
+import '../main.dart';
 import 'package:frontEnd/models/user.dart';
 import 'validator.dart';
 
@@ -41,6 +43,10 @@ int getHour(String time) {
 
 int getMinute(String time) {
   return int.parse(time.substring(3, 5));
+}
+
+Color getBorderColor() {
+  return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
 }
 
 void showPopupMessage(String message, BuildContext context,
@@ -159,4 +165,16 @@ void showLoadingDialog(BuildContext context, String msg) {
 
 void hideKeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(new FocusNode());
+}
+
+void changeTheme(BuildContext context) {
+  ThemeData selectedTheme;
+  if (Globals.user.appSettings.darkTheme) {
+    selectedTheme = Globals.darkTheme;
+  } else {
+    selectedTheme = Globals.lightTheme;
+  }
+  final ThemeNotifier themeNotifier =
+      Provider.of<ThemeNotifier>(context, listen: false);
+  themeNotifier.setTheme(selectedTheme);
 }

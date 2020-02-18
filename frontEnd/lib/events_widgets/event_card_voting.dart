@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_voting.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class EventCardVoting extends StatefulWidget {
   final String groupId;
@@ -36,7 +37,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
               style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("Vote"),
-            color: Colors.lightGreenAccent,
+            color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
@@ -50,8 +51,8 @@ class _EventCardVotingState extends State<EventCardVoting> {
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

@@ -8,6 +8,8 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/favorites_popup.dart';
 
+import 'main.dart';
+
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
 
@@ -174,7 +176,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
-                                      "Dark Theme",
+                                      "Light Theme",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
                                                   .style
@@ -183,10 +185,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: _darkTheme,
+                                    value: !_darkTheme,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _darkTheme = value;
+                                        _darkTheme = !value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -300,35 +302,40 @@ class _UserSettingsState extends State<UserSettings> {
     }
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      setState(() {
-        Globals.user.appSettings.groupSort = _groupSort;
-        Globals.user.appSettings.muted = _muted;
-        Globals.user.appSettings.darkTheme = _darkTheme;
-        Globals.user.displayName = _displayName;
-        Globals.user.favorites = displayedFavorites;
-        List<String> userNames = new List<String>();
-        for (Favorite favorite in displayedFavorites) {
-          userNames.add(favorite.username);
-        }
-        UsersManager.updateUserSettings(
-            _displayName,
-            boolToInt(_darkTheme),
-            boolToInt(_muted),
-            _groupSort,
-            userNames,
-            _icon,
-            context); // blind send for now?
+      Globals.user.appSettings.groupSort = _groupSort;
+      Globals.user.appSettings.muted = _muted;
+      Globals.user.appSettings.darkTheme = _darkTheme;
+      Globals.user.displayName = _displayName;
+      Globals.user.favorites = displayedFavorites;
+      List<String> userNames = new List<String>();
+      for (Favorite favorite in displayedFavorites) {
+        userNames.add(favorite.username);
+      }
 
+      showLoadingDialog(context, "Saving settings..."); // show loading dialog
+      await UsersManager.updateUserSettings(
+          _displayName,
+          boolToInt(_darkTheme),
+          boolToInt(_muted),
+          _groupSort,
+          userNames,
+          _icon,
+          context); // blind send for now?
+      Navigator.of(context, rootNavigator: true)
+          .pop('dialog'); // dismiss the loading dialog
+
+      setState(() {
         // reset everything and reflect changes made
         originalFavorites.clear();
         originalFavorites.addAll(displayedFavorites);
         editing = false;
         newIcon = false;
         autoValidate = false;
+        changeTheme(context);
       });
     } else {
       setState(() => autoValidate = true);

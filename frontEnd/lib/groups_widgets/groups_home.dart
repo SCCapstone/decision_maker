@@ -62,12 +62,12 @@ class _GroupsHomeState extends State<GroupsHome> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(color: Globals.secondaryColor),
+              decoration: BoxDecoration(color: Theme.of(context).accentColor),
               child: SafeArea(
                 // for phones that have a notch, use a safe area so content isn't obstructed
                 child: Container(
                   height: 80.0,
-                  decoration: BoxDecoration(color: Globals.secondaryColor),
+                  decoration: BoxDecoration(color: Theme.of(context).accentColor),
                   margin: EdgeInsets.zero,
                   child: ListTile(
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
@@ -84,7 +84,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                     ),
                     title: Text(
                       Globals.username,
-                      style: TextStyle(fontSize: 24, color: Colors.white),
+                      style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColorDark),
                     ),
                     onTap: () {
                       Navigator.push(
