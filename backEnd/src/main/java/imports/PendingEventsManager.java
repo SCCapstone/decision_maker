@@ -116,6 +116,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //  run the algorithm
             //  update the event object
             //  update the pending events table with the new data time for the end of voting
+            Integer votingDuration = (Integer) eventDataMapped.get(GroupsManager.VOTING_DURATION);
 
             final Map<String, Object> tentativeChoices = this
                 .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
@@ -136,6 +137,15 @@ public class PendingEventsManager extends DatabaseAccessManager {
                 .withValueMap(valueMap);
 
             DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+
+            //this overwrites the old mapping
+            ResultStatus updatePendingEvent = this.addPendingEvent(groupId, eventId, votingDuration);
+            if (updatePendingEvent.success) {
+              resultStatus = new ResultStatus(true, "Event updated successfully");
+            } else {
+              resultStatus.resultMessage = "Error updating pending event mapping with voting duration";
+              lambdaLogger.log("balh");
+            }
           } else {
             //we need to loop over the voting results and figure out the yes percentage of votes for the choices
             //set the selected choice as the one with the highest percent
@@ -168,6 +178,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
                 .withNameMap(nameMap);
 
             this.updateItem(updateItemSpec);
+
+            resultStatus = new ResultStatus(true, "Pending event finalized successfully");
           }
         }
       } catch (Exception e) {
@@ -194,8 +206,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
       Map<String, Object> categoryDataMapped = categoryData.asMap();
 
       //with the category, we can now get the first choice in the category which is our result
-      tentativeChoice = (Map<String, Object>) categoryDataMapped
-          .get(CategoriesManager.CHOICES);
+      tentativeChoice = (Map<String, Object>) categoryDataMapped.get(CategoriesManager.CHOICES);
 
       //limit to only three
       while (tentativeChoice.size() > 3) {
@@ -211,8 +222,17 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
+    String selectedChoice;
 
-    return null;
+    try {
+      Map<String, Object> tentativeChoice = (Map<String, Object>) eventDataMapped
+          .get(GroupsManager.TENTATIVE_CHOICES);
+      selectedChoice = tentativeChoice.keySet().toArray(new String[0])[0];
+    } catch (Exception e) {
+      selectedChoice = "Error";
+    }
+
+    return selectedChoice;
   }
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
