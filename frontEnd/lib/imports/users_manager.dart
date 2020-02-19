@@ -61,7 +61,7 @@ class UsersManager {
     return ret;
   }
 
-  static void updateUserSettings(
+  static Future updateUserSettings(
       String displayName,
       int darkTheme,
       int muted,

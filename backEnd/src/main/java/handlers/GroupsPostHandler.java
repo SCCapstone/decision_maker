@@ -41,9 +41,11 @@ public class GroupsPostHandler implements
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
                     .getGroups(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("createNewGroup")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap);
+                resultStatus = DatabaseManagers.GROUPS_MANAGER
+                    .createNewGroup(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("editGroup")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap);
+                resultStatus = DatabaseManagers.GROUPS_MANAGER
+                    .editGroup(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("newEvent")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
                     .newEvent(payloadJsonMap, metrics, lambdaLogger);

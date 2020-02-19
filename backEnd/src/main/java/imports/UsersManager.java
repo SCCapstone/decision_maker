@@ -39,7 +39,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String FAVORITE_OF = "FavoriteOf";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
-  public static final int DEFAULT_DARK_THEME = 0;
+  public static final int DEFAULT_DARK_THEME = 1;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
 
