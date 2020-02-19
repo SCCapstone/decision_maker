@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/models/member.dart';
+import 'package:frontEnd/models/user.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
 
@@ -66,19 +69,7 @@ class _MembersPopupState extends State<MembersPopup> {
             child: Text("Add User"),
             onPressed: () {
               if (formKey.currentState.validate()) {
-                // TODO launch api request to add user. Then parse info and create appropriate Favorite model
-                String username = userController.text.trim();
-                widget.displayedMembers.add(new Member(
-                    username: username, displayName: username, icon: username));
-                setState(() {
-                  displayedUserRows.add(new UserRow(
-                      username, username, username, true, false, false,
-                      deleteUser: () {
-                    removeMember(username, displayedUserRows);
-                  }));
-                  userController.clear();
-                  searching = false;
-                });
+                addNewMember();
               }
             },
           ),
@@ -175,6 +166,34 @@ class _MembersPopupState extends State<MembersPopup> {
         ),
       ),
     );
+  }
+
+  void addNewMember() async {
+    User newMember =
+        await UsersManager.getUserData(username: userController.text.trim());
+    if (newMember != null) {
+      widget.displayedMembers.add(new Member(
+          username: newMember.username,
+          displayName: newMember.displayName,
+          icon: newMember.icon));
+      displayedUserRows.add(new UserRow(
+          newMember.displayName,
+          newMember.username,
+          newMember.icon,
+          true,
+          false,
+          false, deleteUser: () {
+        removeMember(newMember.username, displayedUserRows);
+      }));
+    } else {
+      showErrorMessage(
+          "Error", "User: ${userController.text} does not exist.", context);
+      hideKeyboard(context);
+    }
+    setState(() {
+      userController.clear();
+      searching = false;
+    });
   }
 
   void addMemberFromFavorites(Favorite memberToAdd) {

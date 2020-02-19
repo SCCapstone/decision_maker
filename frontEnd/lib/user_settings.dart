@@ -8,8 +8,6 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/favorites_popup.dart';
 
-import 'main.dart';
-
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
 
@@ -86,7 +84,10 @@ class _UserSettingsState extends State<UserSettings> {
                     Column(
                       children: [
                         Container(
-                            width: MediaQuery.of(context).size.width * .6,
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width * .6,
                             child: TextFormField(
                               maxLength: 50,
                               controller: displayNameController,
@@ -97,20 +98,30 @@ class _UserSettingsState extends State<UserSettings> {
                               },
                               onSaved: (String arg) {},
                               style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
+                                  fontSize: DefaultTextStyle
+                                      .of(context)
+                                      .style
+                                      .fontSize *
                                       0.6),
                               decoration: InputDecoration(
                                   labelText: "Name", counterText: ""),
                             )),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .01),
+                              MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height * .01),
                         ),
                         Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          height: MediaQuery.of(context).size.height * .3,
+                          width: MediaQuery
+                              .of(context)
+                              .size
+                              .width * .6,
+                          height: MediaQuery
+                              .of(context)
+                              .size
+                              .height * .3,
                           alignment: Alignment.topRight,
                           decoration: BoxDecoration(
                               image: DecorationImage(
@@ -133,7 +144,10 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
+                              MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height * .004),
                         ),
                         RaisedButton.icon(
                             onPressed: () {
@@ -142,20 +156,24 @@ class _UserSettingsState extends State<UserSettings> {
                             icon: Icon(Icons.contacts),
                             label: Text("My Favorites")),
                         Container(
-                          width: MediaQuery.of(context).size.width * .7,
+                          width: MediaQuery
+                              .of(context)
+                              .size
+                              .width * .7,
                           child: Column(
                             children: <Widget>[
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
                                       "Mute Notifcations",
                                       style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
+                                          fontSize: DefaultTextStyle
+                                              .of(context)
+                                              .style
+                                              .fontSize *
                                               0.4),
                                     ),
                                   ),
@@ -172,15 +190,16 @@ class _UserSettingsState extends State<UserSettings> {
                               ),
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
                                       "Light Theme",
                                       style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
+                                          fontSize: DefaultTextStyle
+                                              .of(context)
+                                              .style
+                                              .fontSize *
                                               0.4),
                                     ),
                                   ),
@@ -200,21 +219,28 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         Container(
                           // have to do this hack because the expansiontile title wouldn't line up
-                          width: MediaQuery.of(context).size.width * .78,
+                          width: MediaQuery
+                              .of(context)
+                              .size
+                              .width * .78,
                           child: ExpansionTile(
                             title: Text(
                               "Group Sort Method",
                               style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
+                                  fontSize: DefaultTextStyle
+                                      .of(context)
+                                      .style
+                                      .fontSize *
                                       0.4),
                               textAlign: TextAlign.left,
                             ),
                             children: <Widget>[
                               SizedBox(
                                 height:
-                                    MediaQuery.of(context).size.height * .12,
+                                MediaQuery
+                                    .of(context)
+                                    .size
+                                    .height * .12,
                                 child: ListView(
                                   shrinkWrap: true,
                                   children: <Widget>[
@@ -255,7 +281,10 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    File newIconFile = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
+    File newIconFile = await ImagePicker.pickImage(source: ImageSource.gallery,
+        imageQuality: 75,
+        maxWidth: 600,
+        maxHeight: 600);
 
     if (newIconFile != null) {
       _icon = newIconFile;
@@ -272,7 +301,9 @@ class _UserSettingsState extends State<UserSettings> {
       popupClosed();
     });
   }
-print
+
+  print
+
   void popupClosed() {
     enableAutoValidation();
     hideKeyboard(context);
@@ -320,7 +351,8 @@ print
         userNames.add(favorite.username);
       }
 
-      showLoadingDialog(context, "Saving settings..."); // show loading dialog
+      showLoadingDialog(
+          context, "Saving settings...", true); // show loading dialog
       await UsersManager.updateUserSettings(
           _displayName,
           boolToInt(_darkTheme),

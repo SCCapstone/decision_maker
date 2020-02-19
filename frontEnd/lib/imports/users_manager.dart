@@ -27,9 +27,13 @@ class UsersManager {
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
 
-  static Future<User> getUserData({BuildContext context}) async {
+  static Future<User> getUserData(
+      {BuildContext context, String username}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserData";
+    if (username != null) {
+      jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
+    }
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
     User ret;
@@ -80,8 +84,7 @@ class UsersManager {
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);

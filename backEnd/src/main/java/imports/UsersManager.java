@@ -120,7 +120,11 @@ public class UsersManager extends DatabaseAccessManager {
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+    if (jsonMap.containsKey(UsersManager.USERNAME)) {
+      final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
+      Item user = this.getItemByPrimaryKey(otherUser);
+      resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         Item user = this.getItemByPrimaryKey(activeUser);
