@@ -92,7 +92,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     alignment: Alignment.topRight,
                     decoration: BoxDecoration(
                         image: DecorationImage(
-                            fit: BoxFit.fitHeight,
+                            fit: BoxFit.cover,
                             image: this.icon == null
                                 ? getIconUrl(null)
                                 : FileImage(this.icon))),

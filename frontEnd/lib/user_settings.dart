@@ -112,7 +112,7 @@ class _UserSettingsState extends State<UserSettings> {
                           alignment: Alignment.topRight,
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  fit: BoxFit.fitHeight,
+                                  fit: BoxFit.cover,
                                   image: _icon == null
                                       ? getUserIconUrl(Globals.user)
                                       : FileImage(_icon))),

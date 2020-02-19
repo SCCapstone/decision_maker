@@ -146,7 +146,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           alignment: Alignment.topRight,
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  fit: BoxFit.fitHeight,
+                                  fit: BoxFit.cover,
                                   image: this.icon == null
                                       ? getIconUrl(currentGroupIcon)
                                       : FileImage(this.icon))),
