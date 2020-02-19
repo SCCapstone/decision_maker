@@ -249,6 +249,22 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void getUserData_validOtherUsername_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserData(ImmutableMap.of(UsersManager.USERNAME, "userName"), this.metrics,
+            this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
   public void getUserData_newUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
@@ -373,7 +389,8 @@ public class UsersManagerTest {
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
+            this.lambdaLogger);
 
     assertTrue(resultStatus.success);
     verify(this.lambdaLogger, times(0)).log(any(String.class));
