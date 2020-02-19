@@ -255,9 +255,13 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    _icon = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
-    newIcon = true;
-    enableAutoValidation();
+    File newIconFile = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
+
+    if (newIconFile != null) {
+      _icon = newIconFile;
+      newIcon = true;
+      enableAutoValidation();
+    }
   }
 
   void showFavoritesPopup() {
@@ -268,7 +272,7 @@ class _UserSettingsState extends State<UserSettings> {
       popupClosed();
     });
   }
-
+print
   void popupClosed() {
     enableAutoValidation();
     hideKeyboard(context);

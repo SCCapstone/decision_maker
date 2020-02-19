@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -89,11 +90,18 @@ class GroupsManager {
     return false;
   }
 
-  static Future<bool> createNewGroup(Group group, BuildContext context) async {
+  static Future<bool> createNewGroup(
+      Group group, File iconFile, BuildContext context) async {
     bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "createNewGroup";
     jsonRequestBody["payload"] = group.asMap();
+
+    jsonRequestBody["payload"].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
 
     //update this to just be the list of usernames
     //since that is all we need to pass to the backend
@@ -120,10 +128,17 @@ class GroupsManager {
     return retVal;
   }
 
-  static void editGroup(Group group, BuildContext context) async {
+  static void editGroup(
+      Group group, File iconFile, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "editGroup";
     jsonRequestBody["payload"] = group.asMap();
+
+    jsonRequestBody["payload"].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
 
     //update this to just be the list of usernames
     //since that is all we need to pass to the backend

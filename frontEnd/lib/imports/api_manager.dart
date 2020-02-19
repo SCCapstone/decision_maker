@@ -18,8 +18,6 @@ Future<String> makeApiRequest(
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
     };
 
-    print(requestContent);
-
     http.Response response = await http.post(
         Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
         headers: headers,
