@@ -96,8 +96,8 @@ class _UserSettingsState extends State<UserSettings> {
                               onSaved: (String arg) {},
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
-                                      .style
-                                      .fontSize *
+                                          .style
+                                          .fontSize *
                                       0.6),
                               decoration: InputDecoration(
                                   labelText: "Name", counterText: ""),
@@ -145,15 +145,15 @@ class _UserSettingsState extends State<UserSettings> {
                             children: <Widget>[
                               Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
+                                    MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
                                       "Mute Notifcations",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
-                                              .style
-                                              .fontSize *
+                                                  .style
+                                                  .fontSize *
                                               0.4),
                                     ),
                                   ),
@@ -170,15 +170,15 @@ class _UserSettingsState extends State<UserSettings> {
                               ),
                               Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
+                                    MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
                                       "Light Theme",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
-                                              .style
-                                              .fontSize *
+                                                  .style
+                                                  .fontSize *
                                               0.4),
                                     ),
                                   ),
@@ -204,15 +204,15 @@ class _UserSettingsState extends State<UserSettings> {
                               "Group Sort Method",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
-                                      .style
-                                      .fontSize *
+                                          .style
+                                          .fontSize *
                                       0.4),
                               textAlign: TextAlign.left,
                             ),
                             children: <Widget>[
                               SizedBox(
                                 height:
-                                MediaQuery.of(context).size.height * .12,
+                                    MediaQuery.of(context).size.height * .12,
                                 child: ListView(
                                   shrinkWrap: true,
                                   children: <Widget>[

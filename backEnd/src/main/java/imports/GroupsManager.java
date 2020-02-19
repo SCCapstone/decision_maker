@@ -66,9 +66,8 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus getGroups
-      (final Map<String, Object> jsonMap, final Metrics metrics,
-          final LambdaLogger lambdaLogger) {
+  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.getGroups";
     metrics.commonSetup(classMethod);
 
@@ -192,26 +191,26 @@ public class GroupsManager extends DatabaseAccessManager {
       final LambdaLogger lambdaLogger) {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(GROUP_ID, GROUP_NAME, GROUP_CREATOR, MEMBERS, CATEGORIES,
+        .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
             DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String groupName = (String) jsonMap.get(GROUP_NAME);
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
-        final String groupCreator = (String) jsonMap.get(GROUP_CREATOR);
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
+        final Map<String, Object> dbGroupDataMap = this.getItemByPrimaryKey(groupId)
+            .asMap();
+        final String groupCreator = (String) dbGroupDataMap.get(GROUP_CREATOR);
         if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
             defaultPollPassPercent, defaultPollDuration)) {
-          final Map<String, Object> dbGroupDataMap = this.getItemByPrimaryKey(groupId)
-              .asMap();
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
@@ -437,9 +436,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  //Note we return the value for clarity in some uses, but the actual input is being updated
-  private Map<String, Object> getMembersMapForInsertion
-  (final List<String> members,
+  private Map<String, Object> getMembersMapForInsertion(final List<String> members,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.getMembersMapForInsertion";
     metrics.commonSetup(classMethod);
