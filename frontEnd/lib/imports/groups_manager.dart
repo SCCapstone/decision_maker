@@ -276,16 +276,12 @@ class GroupsManager {
     }
   }
 
-  static List<Group> sortByDate(List<Group> groups) {
-    List<Group> retGroups = groups;
-    retGroups.sort((a, b) => DateTime.parse(b.lastActivity)
+  static void sortByDate(List<Group> groups) {
+    groups.sort((a, b) => DateTime.parse(b.lastActivity)
         .compareTo(DateTime.parse(a.lastActivity)));
-    return retGroups;
   }
 
-  static List<Group> sortByAlpha(List<Group> groups) {
-    List<Group> retGroups = groups;
-    retGroups.sort((a, b) => a.groupName.compareTo(b.groupName));
-    return retGroups;
+  static void sortByAlpha(List<Group> groups) {
+    groups.sort((a, b) => a.groupName.compareTo(b.groupName));
   }
 }
