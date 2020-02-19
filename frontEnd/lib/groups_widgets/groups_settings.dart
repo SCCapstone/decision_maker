@@ -26,6 +26,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   bool newIcon = false;
   File icon;
   String groupName;
+  String currentGroupIcon;
   int pollPassPercent;
   int pollDuration;
   bool owner;
@@ -77,6 +78,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     groupName = Globals.currentGroup.groupName;
     pollDuration = Globals.currentGroup.defaultPollDuration;
     pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
+    currentGroupIcon = Globals.currentGroup.icon;
 
     groupNameController.text = groupName;
     pollDurationController.text = pollDuration.toString();
@@ -138,25 +140,29 @@ class _GroupSettingsState extends State<GroupSettings> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .01),
                         ),
-                        Visibility(
-                            visible: (this.icon != null ||
-                                Globals.currentGroup.icon != null),
-                            child: Container(
-                                width: MediaQuery.of(context).size.width * .6,
-                                height: MediaQuery.of(context).size.height * .3,
-                                decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        fit: BoxFit.fitHeight,
-                                        image: icon == null
-                                            ? getIconUrl(
-                                                Globals.currentGroup.icon)
-                                            : FileImage(icon))))),
-                        RaisedButton.icon(
-                            onPressed: () {
-                              getImage();
-                            },
-                            icon: Icon(Icons.edit),
-                            label: Text("Upload group icon")),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .6,
+                          height: MediaQuery.of(context).size.height * .3,
+                          alignment: Alignment.topRight,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  fit: BoxFit.fitHeight,
+                                  image: this.icon == null
+                                      ? getIconUrl(currentGroupIcon)
+                                      : FileImage(this.icon))),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.7),
+                                shape: BoxShape.circle),
+                            child: IconButton(
+                              icon: Icon(Icons.edit),
+                              color: Colors.blueAccent,
+                              onPressed: () {
+                                getImage();
+                              },
+                            ),
+                          ),
+                        ),
                         Padding(
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .004),
@@ -407,6 +413,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
         membersMap.putIfAbsent(member.username, () => memberInfo);
       }
+
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: groupName,
@@ -417,8 +424,6 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent,
           nextEventId: Globals.currentGroup.nextEventId);
-
-      Globals.currentGroup = group;
       GroupsManager.editGroup(group, icon, context);
 
       setState(() {
@@ -433,6 +438,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         editing = false;
         autoValidate = false;
         newIcon = false;
+        hideKeyboard(context);
       });
     } else {
       setState(() => autoValidate = true);
