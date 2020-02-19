@@ -424,6 +424,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent,
           nextEventId: Globals.currentGroup.nextEventId);
+
+      Globals.currentGroup = group;
       GroupsManager.editGroup(group, icon, context);
 
       setState(() {
