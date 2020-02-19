@@ -86,23 +86,29 @@ class _CreateGroupState extends State<CreateGroup> {
                     padding: EdgeInsets.all(
                         MediaQuery.of(context).size.height * .004),
                   ),
-                  Visibility(
-                      visible: this.icon != null,
-                      child: Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          height: MediaQuery.of(context).size.height * .3,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  fit: BoxFit.fitHeight,
-                                  image: icon == null
-                                      ? getIconUrl(null)
-                                      : FileImage(icon))))),
-                  RaisedButton.icon(
-                      onPressed: () {
-                        getImage();
-                      },
-                      icon: Icon(Icons.edit),
-                      label: Text("Upload group icon")),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .6,
+                    height: MediaQuery.of(context).size.height * .3,
+                    alignment: Alignment.topRight,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: this.icon == null
+                                ? getIconUrl(null)
+                                : FileImage(this.icon))),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.7),
+                          shape: BoxShape.circle),
+                      child: IconButton(
+                        icon: Icon(Icons.edit),
+                        color: Colors.blueAccent,
+                        onPressed: () {
+                          getImage();
+                        },
+                      ),
+                    ),
+                  ),
                   TextFormField(
                     controller: pollDurationController,
                     keyboardType: TextInputType.number,
