@@ -136,17 +136,6 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   TextFormField(
-                    controller: rsvpDurationController,
-                    keyboardType: TextInputType.number,
-                    validator: validDuration,
-                    onSaved: (String arg) {
-                      rsvpDuration = int.parse(arg.trim());
-                    },
-                    decoration: InputDecoration(
-                      labelText: "Enter a default RSVP duration (in minutes)",
-                    ),
-                  ),
-                  TextFormField(
                     controller: pollPassController,
                     keyboardType: TextInputType.number,
                     validator: validPassPercentage,
