@@ -103,6 +103,9 @@ class GroupsManager {
           .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
     }
 
+    print(jsonRequestBody);
+    context = null;
+
     //update this to just be the list of usernames
     //since that is all we need to pass to the backend
     jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
