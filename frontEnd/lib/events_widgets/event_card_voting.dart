@@ -43,9 +43,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsVoting(
-                        groupId: widget.groupId,
-                        event: widget.event,
-                        eventId: widget.eventId)),
+                        groupId: widget.groupId, eventId: widget.eventId)),
               );
             },
           )

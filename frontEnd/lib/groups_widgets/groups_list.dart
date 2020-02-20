@@ -34,7 +34,7 @@ class _GroupsListState extends State<GroupsList> {
           shrinkWrap: true,
           itemCount: widget.groups.length,
           itemBuilder: (context, index) {
-            return GroupRow(widget.groups[index], index);
+            return GroupRow(widget.groups[index]);
           },
         ),
       );

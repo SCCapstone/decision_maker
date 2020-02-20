@@ -23,7 +23,6 @@ class GroupsHome extends StatefulWidget {
 
 class _GroupsHomeState extends State<GroupsHome> {
   final TextEditingController searchBar = new TextEditingController();
-  String searchInput = "";
   List<Group> searchGroups = new List<Group>();
   List<Group> totalGroups = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
@@ -40,7 +39,7 @@ class _GroupsHomeState extends State<GroupsHome> {
         });
       } else {
         setState(() {
-          searchInput = searchBar.text;
+          String searchInput = searchBar.text;
           List<Group> temp = new List<Group>();
           for (int i = 0; i < totalGroups.length; i++) {
             if (totalGroups[i]
@@ -221,16 +220,15 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   void loadGroups() {
+    totalGroups.clear();
     for (String groupId in Globals.user.groups.keys) {
       Group group = new Group(
           groupId: groupId,
           groupName: Globals.user.groups[groupId][GroupsManager.GROUP_NAME],
           icon: Globals.user.groups[groupId][GroupsManager.ICON]);
-      if (!totalGroups.contains(group)) {
-        totalGroups.add(group);
-      }
+      totalGroups.add(group);
     }
-    // TODO re-enable once group objects in user have the last modified date
+    // TODO re-enable once group attribute in user object have the last modified date
 //    if (sortVal == Globals.dateSort) {
 //      displayedGroups = GroupsManager.sortByDate(displayedGroups);
 //    } else if (sortVal == Globals.alphabeticalSort) {
