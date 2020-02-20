@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -8,6 +10,7 @@ import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/category_popup.dart';
 import 'package:frontEnd/widgets/members_popup.dart';
+import 'package:image_picker/image_picker.dart';
 
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
@@ -20,8 +23,10 @@ class _GroupSettingsState extends State<GroupSettings> {
   bool autoValidate = false;
   bool validGroupIcon = true;
   bool editing = false;
+  bool newIcon = false;
+  File icon;
   String groupName;
-  String groupIcon;
+  String currentGroupIcon;
   int pollPassPercent;
   int pollDuration;
   bool owner;
@@ -34,7 +39,6 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController groupIconController = new TextEditingController();
   final TextEditingController pollPassController = new TextEditingController();
   final TextEditingController pollDurationController =
       new TextEditingController();
@@ -42,7 +46,6 @@ class _GroupSettingsState extends State<GroupSettings> {
   @override
   void dispose() {
     groupNameController.dispose();
-    groupIconController.dispose();
     pollPassController.dispose();
     pollDurationController.dispose();
     super.dispose();
@@ -73,9 +76,9 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
     }
     groupName = Globals.currentGroup.groupName;
-    groupIcon = Globals.currentGroup.icon; // icon only changes via popup
     pollDuration = Globals.currentGroup.defaultPollDuration;
     pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
+    currentGroupIcon = Globals.currentGroup.icon;
 
     groupNameController.text = groupName;
     pollDurationController.text = pollDuration.toString();
@@ -138,13 +141,15 @@ class _GroupSettingsState extends State<GroupSettings> {
                               MediaQuery.of(context).size.height * .01),
                         ),
                         Container(
-                          width: MediaQuery.of(context).size.width * .5,
+                          width: MediaQuery.of(context).size.width * .6,
                           height: MediaQuery.of(context).size.height * .3,
                           alignment: Alignment.topRight,
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  fit: BoxFit.fitHeight,
-                                  image: NetworkImage(groupIcon))),
+                                  fit: BoxFit.cover,
+                                  image: this.icon == null
+                                      ? getIconUrl(currentGroupIcon)
+                                      : FileImage(this.icon))),
                           child: Container(
                             decoration: BoxDecoration(
                                 color: Colors.grey.withOpacity(0.7),
@@ -153,8 +158,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                               icon: Icon(Icons.edit),
                               color: Colors.blueAccent,
                               onPressed: () {
-                                groupIconPopup(context, autoValidate,
-                                    groupIconController, updateIcon);
+                                getImage();
                               },
                             ),
                           ),
@@ -294,6 +298,20 @@ class _GroupSettingsState extends State<GroupSettings> {
     );
   }
 
+  Future getImage() async {
+    File newIconFile = await ImagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 75,
+        maxWidth: 600,
+        maxHeight: 600);
+
+    if (newIconFile != null) {
+      this.newIcon = true;
+      this.icon = newIconFile;
+      enableAutoValidation();
+    }
+  }
+
   void showMembersPopup() {
     showDialog(
             context: context,
@@ -369,7 +387,8 @@ class _GroupSettingsState extends State<GroupSettings> {
         pollDuration != Globals.currentGroup.defaultPollDuration ||
         groupName != Globals.currentGroup.groupName ||
         newUsersAdded ||
-        newCategoriesAdded) {
+        newCategoriesAdded ||
+        newIcon) {
       setState(() {
         editing = true;
       });
@@ -378,17 +397,6 @@ class _GroupSettingsState extends State<GroupSettings> {
         editing = false;
       });
     }
-  }
-
-  void updateIcon(String iconUrl) {
-    setState(() {
-      groupIcon = iconUrl;
-      groupIconController.clear();
-      editing = true;
-      validGroupIcon = true;
-      autoValidate = true;
-      Navigator.of(context, rootNavigator: true).pop('dialog');
-    });
   }
 
   void validateInput() {
@@ -405,11 +413,11 @@ class _GroupSettingsState extends State<GroupSettings> {
         memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
         membersMap.putIfAbsent(member.username, () => memberInfo);
       }
+
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: groupName,
           groupCreator: Globals.currentGroup.groupCreator,
-          icon: groupIcon,
           categories: selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
@@ -418,7 +426,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           nextEventId: Globals.currentGroup.nextEventId);
 
       Globals.currentGroup = group;
-      GroupsManager.editGroup(group, context);
+      GroupsManager.editGroup(group, icon, context);
 
       setState(() {
         // reset everything and reflect changes made
@@ -427,11 +435,12 @@ class _GroupSettingsState extends State<GroupSettings> {
         originalCategories.clear();
         originalCategories.addAll(selectedCategories);
         groupNameController.text = groupName;
-        groupIconController.clear();
         pollDurationController.text = pollDuration.toString();
         pollPassController.text = pollPassPercent.toString();
         editing = false;
         autoValidate = false;
+        newIcon = false;
+        hideKeyboard(context);
       });
     } else {
       setState(() => autoValidate = true);

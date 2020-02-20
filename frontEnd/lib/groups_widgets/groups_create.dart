@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
@@ -9,6 +11,7 @@ import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/widgets/category_popup.dart';
 import 'package:frontEnd/widgets/members_popup.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'groups_home.dart';
 
@@ -20,9 +23,9 @@ class CreateGroup extends StatefulWidget {
 class _CreateGroupState extends State<CreateGroup> {
   bool autoValidate = false;
   String groupName;
-  String groupIcon;
   int pollPassPercent;
   int pollDuration;
+  File icon;
 
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
@@ -32,7 +35,6 @@ class _CreateGroupState extends State<CreateGroup> {
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController groupIconController = new TextEditingController();
   final TextEditingController pollPassController = new TextEditingController();
   final TextEditingController pollDurationController =
       new TextEditingController();
@@ -40,7 +42,6 @@ class _CreateGroupState extends State<CreateGroup> {
   @override
   void dispose() {
     groupNameController.dispose();
-    groupIconController.dispose();
     pollPassController.dispose();
     pollDurationController.dispose();
     super.dispose();
@@ -81,15 +82,31 @@ class _CreateGroupState extends State<CreateGroup> {
                       labelText: "Enter a group name",
                     ),
                   ),
-                  TextFormField(
-                    controller: groupIconController,
-                    keyboardType: TextInputType.url,
-                    validator: validGroupIcon,
-                    onSaved: (String arg) {
-                      groupIcon = arg.trim();
-                    },
-                    decoration: InputDecoration(
-                      labelText: "Enter an icon link",
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .004),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .6,
+                    height: MediaQuery.of(context).size.height * .3,
+                    alignment: Alignment.topRight,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: this.icon == null
+                                ? getIconUrl(null)
+                                : FileImage(this.icon))),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.7),
+                          shape: BoxShape.circle),
+                      child: IconButton(
+                        icon: Icon(Icons.edit),
+                        color: Colors.blueAccent,
+                        onPressed: () {
+                          getImage();
+                        },
+                      ),
                     ),
                   ),
                   TextFormField(
@@ -144,6 +161,18 @@ class _CreateGroupState extends State<CreateGroup> {
     );
   }
 
+  Future getImage() async {
+    File newIcon = await ImagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 75,
+        maxWidth: 600,
+        maxHeight: 600);
+
+    setState(() {
+      this.icon = newIcon;
+    });
+  }
+
   void showMembersPopup() {
     showDialog(
             context: context,
@@ -185,15 +214,14 @@ class _CreateGroupState extends State<CreateGroup> {
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: groupName,
-          groupCreator: Globals.username,
-          icon: groupIcon,
           categories: selectedCategories,
           members: membersMap,
           defaultPollDuration: pollDuration,
           defaultPollPassPercent: pollPassPercent);
 
-      showLoadingDialog(context, "Creating group..."); // show loading dialog
-      bool success = await GroupsManager.createNewGroup(group, context);
+      showLoadingDialog(
+          context, "Creating group...", true); // show loading dialog
+      bool success = await GroupsManager.createNewGroup(group, icon, context);
 
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog

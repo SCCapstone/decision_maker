@@ -8,8 +8,6 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/favorites_popup.dart';
 
-import 'main.dart';
-
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
 
@@ -114,7 +112,7 @@ class _UserSettingsState extends State<UserSettings> {
                           alignment: Alignment.topRight,
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  fit: BoxFit.fitHeight,
+                                  fit: BoxFit.cover,
                                   image: _icon == null
                                       ? getUserIconUrl(Globals.user)
                                       : FileImage(_icon))),
@@ -255,9 +253,17 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   Future getImage() async {
-    _icon = await ImagePicker.pickImage(source: ImageSource.gallery, imageQuality: 75, maxWidth: 600, maxHeight: 600);
-    newIcon = true;
-    enableAutoValidation();
+    File newIconFile = await ImagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 75,
+        maxWidth: 600,
+        maxHeight: 600);
+
+    if (newIconFile != null) {
+      _icon = newIconFile;
+      newIcon = true;
+      enableAutoValidation();
+    }
   }
 
   void showFavoritesPopup() {
@@ -316,7 +322,8 @@ class _UserSettingsState extends State<UserSettings> {
         userNames.add(favorite.username);
       }
 
-      showLoadingDialog(context, "Saving settings..."); // show loading dialog
+      showLoadingDialog(
+          context, "Saving settings...", true); // show loading dialog
       await UsersManager.updateUserSettings(
           _displayName,
           boolToInt(_darkTheme),

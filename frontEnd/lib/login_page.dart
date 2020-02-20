@@ -207,7 +207,7 @@ class _SignInState extends State<SignInPage> {
   }
 
   void attemptSignIn() async {
-    showLoadingDialog(context, "Loading..."); // show loading dialog
+    showLoadingDialog(context, "Loading...", false); // show loading dialog
     mutexLock = true;
 
     bool signedIn = false;
@@ -243,7 +243,7 @@ class _SignInState extends State<SignInPage> {
   }
 
   void attemptSignUp() async {
-    showLoadingDialog(context, "Loading..."); // show loading dialog
+    showLoadingDialog(context, "Loading...", false); // show loading dialog
     mutexLock = true;
 
     final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',

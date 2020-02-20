@@ -35,11 +35,12 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   public static final String GROUPS = "Groups";
   public static final String CATEGORIES = "Categories";
+  public static final String OWNED_CATEGORIES = "OwnedCategories";
   public static final String FAVORITES = "Favorites";
   public static final String FAVORITE_OF = "FavoriteOf";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
-  public static final int DEFAULT_DARK_THEME = 0;
+  public static final int DEFAULT_DARK_THEME = 1;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
 
@@ -120,7 +121,11 @@ public class UsersManager extends DatabaseAccessManager {
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+    if (jsonMap.containsKey(UsersManager.USERNAME)) {
+      final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
+      Item user = this.getItemByPrimaryKey(otherUser);
+      resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         Item user = this.getItemByPrimaryKey(activeUser);
@@ -129,8 +134,10 @@ public class UsersManager extends DatabaseAccessManager {
           user = new Item()
               .withString(USERNAME, activeUser)
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
+              .withNull(ICON)
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
               .withMap(CATEGORIES, EMPTY_MAP)
+              .withMap(OWNED_CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP)
               .withMap(FAVORITES, EMPTY_MAP)
               .withMap(FAVORITE_OF, EMPTY_MAP);
@@ -440,10 +447,10 @@ public class UsersManager extends DatabaseAccessManager {
               .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
               .withUpdateExpression(updateFavoriteExpression)
               .withNameMap(new NameMap().with("#newFavoriteUser", username))
-              .withValueMap(new ValueMap().withMap(":newFavorite", ImmutableMap.of(
-                  DISPLAY_NAME, (String) newFavoriteUserMapped.get(DISPLAY_NAME),
-                  ICON, (String) newFavoriteUserMapped.get(ICON)
-              )));
+              .withValueMap(new ValueMap().withMap(":newFavorite", new HashMap<String, Object>() {{
+                put(DISPLAY_NAME, (String) newFavoriteUserMapped.get(DISPLAY_NAME));
+                put(ICON, (String) newFavoriteUserMapped.get(ICON));
+              }}));
 
           this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {

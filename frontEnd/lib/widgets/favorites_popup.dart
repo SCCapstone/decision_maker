@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
+import 'package:frontEnd/models/user.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
 
@@ -47,13 +50,7 @@ class _FavoritesPopupState extends State<FavoritesPopup> {
             child: Text("Add User"),
             onPressed: () {
               if (formKey.currentState.validate()) {
-                // TODO launch api request to add user. Then parse info and create appropriate Favorite model
-                widget.displayedFavorites.add(new Favorite(
-                    username: userController.text.trim(),
-                    displayName: userController.text.trim(),
-                    icon: userController.text.trim()));
-                userController.clear();
-                setState(() {});
+                addNewFavorite();
               }
             },
           ),
@@ -99,5 +96,23 @@ class _FavoritesPopupState extends State<FavoritesPopup> {
         ),
       ),
     );
+  }
+
+  void addNewFavorite() async {
+    User newFavorite =
+        await UsersManager.getUserData(username: userController.text.trim());
+    if (newFavorite != null) {
+      widget.displayedFavorites.add(new Favorite(
+          username: newFavorite.username,
+          displayName: newFavorite.displayName,
+          icon: newFavorite.icon));
+    } else {
+      showErrorMessage(
+          "Error", "User: ${userController.text} does not exist.", context);
+      hideKeyboard(context);
+    }
+    setState(() {
+      userController.clear();
+    });
   }
 }
