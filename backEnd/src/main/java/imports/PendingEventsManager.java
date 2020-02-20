@@ -148,7 +148,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
             //update the event
             String updateExpression =
-                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
+                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
                     + " = :selectedChoice, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
             NameMap nameMap = new NameMap().with("#eventId", eventId);
             ValueMap valueMap = new ValueMap().withString(":selectedChoice", result)
@@ -228,7 +228,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     try {
       Map<String, Object> tentativeChoice = (Map<String, Object>) eventDataMapped
           .get(GroupsManager.TENTATIVE_CHOICES);
-      selectedChoice = tentativeChoice.keySet().toArray(new String[0])[0];
+      selectedChoice = (String) tentativeChoice.values().toArray()[0];
     } catch (Exception e) {
       selectedChoice = "Error";
     }
