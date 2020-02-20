@@ -396,7 +396,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
-            RequestFields.ACTIVE_USER, RequestFields.DISPLAY_NAME);
+            RequestFields.ACTIVE_USER);
     
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -405,18 +405,17 @@ public class GroupsManager extends DatabaseAccessManager {
         final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
         final String voteValue = (String) jsonMap.get(RequestFields.VOTE_VALUE);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String displayName = (String) jsonMap.get(RequestFields.DISPLAY_NAME);
  
               
         String updateExpression = 
             "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." + 
-            "#displayName = :voteValue"; 
+            "#activeUser = :voteValue"; 
         ValueMap valueMap = new ValueMap().withString(":voteValue", voteValue);
           
         final NameMap  nameMap = new NameMap()
           .with("#eventId", eventId)
           .with("#choiceId", choiceId)
-          .with("#displayName", displayName);
+          .with("#activeUser", activeUser);
           
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
           .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -427,7 +426,7 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch(Exception e) {
-        resultStatus.resultMessage = "Error: unable to parse request in manager.";
+        resultStatus.resultMessage = "Error: unable to parse request in manager. Exception: "+ e;
       }
     } else {
       resultStatus.resultMessage = "Error: required request keys not found.";

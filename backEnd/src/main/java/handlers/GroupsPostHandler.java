@@ -32,14 +32,9 @@ public class GroupsPostHandler implements
             Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
             
             if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-              if (jsonMap.containsKey(RequestFields.TESTER_ADMIN)) {
-                payloadJsonMap
-                  .put(RequestFields.ACTIVE_USER, RequestFields.TESTER_ADMIN);
-              } else {
                 payloadJsonMap
                     .put(RequestFields.ACTIVE_USER,
                        GetActiveUser.getActiveUserFromRequest(request, context));
-              }
 
               String action = (String) jsonMap.get("action");
 
@@ -80,7 +75,7 @@ public class GroupsPostHandler implements
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus.resultMessage = "Error: Unable to handle request.";
+      resultStatus.resultMessage = "Error: Unable to handle request. Message: "+e;
     }
 
     metrics.logMetrics(lambdaLogger);
