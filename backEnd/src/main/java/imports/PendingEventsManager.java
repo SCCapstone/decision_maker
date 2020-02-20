@@ -12,6 +12,7 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -112,7 +113,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //  run the algorithm
             //  update the event object
             //  update the pending events table with the new data time for the end of voting
-            Integer votingDuration = (Integer) eventDataMapped.get(GroupsManager.VOTING_DURATION);
+            Integer votingDuration = ((BigDecimal) eventDataMapped
+                .get(GroupsManager.VOTING_DURATION)).intValue();
 
             final Map<String, Object> tentativeChoices = this
                 .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
@@ -135,7 +137,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
             DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
             //this overwrites the old mapping
-            ResultStatus updatePendingEvent = this.addPendingEvent(groupId, eventId, votingDuration);
+            ResultStatus updatePendingEvent = this
+                .addPendingEvent(groupId, eventId, votingDuration);
             if (updatePendingEvent.success) {
               resultStatus = new ResultStatus(true, "Event updated successfully");
             } else {
@@ -184,7 +187,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
         lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            "Unable to parse request in manager.").toString());
+            e).toString());
       }
     } else {
       resultStatus.resultMessage = "Error: Required request keys not found.";
