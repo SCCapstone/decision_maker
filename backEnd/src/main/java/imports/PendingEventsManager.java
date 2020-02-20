@@ -138,7 +138,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
-                .addPendingEvent(groupId, eventId, votingDuration);
+                .addPendingEvent(groupId, eventId, votingDuration, metrics, lambdaLogger);
             if (updatePendingEvent.success) {
               resultStatus = new ResultStatus(true, "Event updated successfully");
             } else {
@@ -199,8 +199,13 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public Map<String, Object> getTentativeAlgorithmChoices(final Map<String, Object> eventDataMapped,
+  private Map<String, Object> getTentativeAlgorithmChoices(
+      final Map<String, Object> eventDataMapped,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
     Map<String, Object> tentativeChoice;
 
     try {
@@ -219,8 +224,13 @@ public class PendingEventsManager extends DatabaseAccessManager {
     } catch (Exception e) {
       // we have an event pointing to a non existent category
       tentativeChoice = ImmutableMap.of("1", "Error");
+      success = false;
+      lambdaLogger
+          .log(new ErrorDescriptor<>(eventDataMapped, classMethod, metrics.getRequestId(), e)
+              .toString());
     }
 
+    metrics.commonClose(success);
     return tentativeChoice;
   }
 
@@ -240,7 +250,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
-      final Integer pollDuration) {
+      final Integer pollDuration, final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.addPendingEvent";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
 
     try {
@@ -266,8 +279,12 @@ public class PendingEventsManager extends DatabaseAccessManager {
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
       resultStatus.resultMessage = "Error adding pending event.";
+      lambdaLogger.log(new ErrorDescriptor<>(String
+          .format("Group: %s, Event: %s, duration: %s", groupId, eventId, pollDuration.toString()),
+          classMethod, metrics.getRequestId(), e).toString());
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

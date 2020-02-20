@@ -361,7 +361,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, votingDuration);
+              .addPendingEvent(groupId, eventId, votingDuration, metrics, lambdaLogger);
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
