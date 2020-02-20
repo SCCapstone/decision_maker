@@ -266,9 +266,6 @@ class _CreateEventState extends State<CreateEvent> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      Map<String, dynamic> eventCreator = new Map<String, dynamic>();
-      eventCreator.putIfAbsent(Globals.username,
-          () => Globals.currentGroup.members[Globals.username]);
 
       Event event = new Event(
         eventName: this.eventName,
@@ -278,17 +275,14 @@ class _CreateEventState extends State<CreateEvent> {
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(
             this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-        type: 0,
-        // all events are non-recurring for now
         pollDuration: int.parse(this.pollDuration),
         rsvpDuration: int.parse(this.rsvpDuration),
-        pollPassPercent: int.parse(this.pollPassPercent),
-        eventCreator: eventCreator,
+        pollPassPercent: int.parse(this.pollPassPercent)
       );
 
       showLoadingDialog(
           context, "Creating event...", true); // show loading dialog
-      bool success = await GroupsManager.addEvent(
+      bool success = await GroupsManager.newEvent(
           Globals.currentGroup.groupId, event, context);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog

@@ -165,7 +165,7 @@ class GroupsManager {
     }
   }
 
-  static Future<bool> addEvent(
+  static Future<bool> newEvent(
       String groupId, Event event, BuildContext context) async {
     bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();

@@ -292,20 +292,19 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
-            TYPE, POLL_DURATION, RSVP_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME,
+            EVENT_START_DATE_TIME, POLL_DURATION, RSVP_DURATION, POLL_PASS_PERCENT, GROUP_ID);
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String eventName = (String) jsonMap.get(EVENT_NAME);
         final String categoryId = (String) jsonMap.get(CATEGORY_ID);
         final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
         final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
         final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
-        final Integer type = (Integer) jsonMap.get(TYPE);
         final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
         final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
         final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
-        final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
         final String groupId = (String) jsonMap.get(GROUP_ID);
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
@@ -344,12 +343,11 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(EVENT_NAME, eventName);
           eventMap.put(CREATED_DATE_TIME, createdDateTime);
           eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
-          eventMap.put(TYPE, type);
           eventMap.put(POLL_DURATION, pollDuration);
           eventMap.put(RSVP_DURATION, rsvpDuration);
           eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
           eventMap.put(OPTED_IN, optedIn);
-          eventMap.put(EVENT_CREATOR, eventCreator);
+          eventMap.put(EVENT_CREATOR, activeUser);
           eventMap.put(SELECTED_CHOICE, "calculating...");
 
           String updateExpression =
