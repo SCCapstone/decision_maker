@@ -452,10 +452,10 @@ public class GroupsManager extends DatabaseAccessManager {
         String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
         String icon = (String) userData.get(UsersManager.ICON);
 
-        membersMap.putIfAbsent(username, ImmutableMap.of(
-            UsersManager.DISPLAY_NAME, displayName,
-            UsersManager.ICON, icon
-        ));
+        membersMap.putIfAbsent(username, new HashMap<String, Object>() {{
+          put(UsersManager.DISPLAY_NAME, displayName);
+          put(UsersManager.ICON, icon);
+        }});
       } catch (Exception e) {
         success = false; // this may give false alarms as users may just have put in bad usernames
         lambdaLogger
@@ -535,10 +535,14 @@ public class GroupsManager extends DatabaseAccessManager {
       final String groupId, final String oldGroupName, final String newGroupName,
       final String oldIconFileName, final Optional<String> newIconFileName, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.updateUsersTable";
+    metrics.commonSetup(classMethod);
+    boolean success = true;
+
     final Set<String> usersToUpdate = new HashSet<>();
 
     NameMap nameMap = new NameMap().with("#groupId", groupId);
-    String updateExpression = null;
+    String updateExpression;
     ValueMap valueMap;
     UpdateItemSpec updateItemSpec;
 
@@ -568,9 +572,15 @@ public class GroupsManager extends DatabaseAccessManager {
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression);
         for (final String member : removedUsernames) {
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          try {
+            updateItemSpec
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          } catch (Exception e) {
+            success = false;
+            lambdaLogger
+                .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+          }
         }
       }
     } else if (!newGroupName.equals(oldGroupName) || newIconFileName.isPresent()) {
@@ -585,15 +595,15 @@ public class GroupsManager extends DatabaseAccessManager {
           "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
 
       if (newIconFileName.isPresent()) {
-        valueMap = new ValueMap().withMap(":nameIconMap", ImmutableMap.of(
-            GROUP_NAME, newGroupName,
-            ICON, newIconFileName.get()
-        ));
+        valueMap = new ValueMap().withMap(":nameIconMap", new HashMap<String, Object>() {{
+          put(GROUP_NAME, newGroupName);
+          put(ICON, newIconFileName.get());
+        }});
       } else {
-        valueMap = new ValueMap().withMap(":nameIconMap", ImmutableMap.of(
-            GROUP_NAME, newGroupName,
-            ICON, oldIconFileName
-        ));
+        valueMap = new ValueMap().withMap(":nameIconMap", new HashMap<String, Object>() {{
+          put(GROUP_NAME, newGroupName);
+          put(ICON, null);
+        }});
       }
 
       updateItemSpec = new UpdateItemSpec()
@@ -602,10 +612,19 @@ public class GroupsManager extends DatabaseAccessManager {
           .withNameMap(nameMap);
 
       for (final String member : usersToUpdate) {
-        updateItemSpec.withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
-        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+        try {
+          updateItemSpec
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+        } catch (Exception e) {
+          success = false;
+          lambdaLogger
+              .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+        }
       }
     }
+
+    metrics.commonClose(success);
   }
 
   private void updateCategoriesTable(final Map<String, Object> oldCategories,
