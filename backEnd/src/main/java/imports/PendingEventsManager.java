@@ -97,16 +97,12 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          //Dumb algorithm simply gets first choice from category!
-
           //First thing to do is get the category data from the db.
           final Map<String, Object> groupDataMapped = groupData.asMap();
           Map<String, Object> groupEventDataMapped = (Map<String, Object>) groupDataMapped
               .get(GroupsManager.EVENTS);
           Map<String, Object> eventDataMapped = (Map<String, Object>) groupEventDataMapped
               .get(eventId);
-
-          //TODO right here we need to determine if we're doing pending choice or voting finalization
 
           Map<String, Object> currentTentativeChoices = (Map<String, Object>) eventDataMapped
               .get(GroupsManager.TENTATIVE_CHOICES);
@@ -144,7 +140,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
               resultStatus = new ResultStatus(true, "Event updated successfully");
             } else {
               resultStatus.resultMessage = "Error updating pending event mapping with voting duration";
-              lambdaLogger.log("balh");
             }
           } else {
             //we need to loop over the voting results and figure out the yes percentage of votes for the choices
@@ -181,14 +176,20 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
             resultStatus = new ResultStatus(true, "Pending event finalized successfully");
           }
+        } else {
+          resultStatus.resultMessage = "Error: Group data not found.";
+          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Group data not found.").toString());
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+            "Unable to parse request in manager.").toString());
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found.").toString());
     }
 
     metrics.commonClose(resultStatus.success);
