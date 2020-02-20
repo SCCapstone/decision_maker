@@ -4,6 +4,7 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class GroupRow extends StatelessWidget {
   final Group group;
@@ -23,7 +24,7 @@ class GroupRow extends StatelessWidget {
               IconButton(
                   iconSize: MediaQuery.of(context).size.width * .20,
                   icon: Image(
-                    image: NetworkImage(group.icon),
+                    image: getIconUrl(group.icon),
                   ),
                   onPressed: () {
                     Globals.currentGroup = group;

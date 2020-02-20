@@ -49,15 +49,17 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Container(
-                color: (vote == voteNo)
-                    ? Colors.orangeAccent
-                    : Theme.of(context).scaffoldBackgroundColor,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (vote == voteNo)
+                        ? Colors.orangeAccent
+                        : Theme.of(context).scaffoldBackgroundColor),
                 child: IconButton(
                   icon: Icon(Icons.thumb_down),
                   color: Colors.red,
                   onPressed: () {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
-                        widget.choiceId, 0, context);
+                        widget.choiceId, voteNo, context);
                     setState(() {
                       vote = voteNo;
                     });
@@ -65,15 +67,18 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                 ),
               ),
               Container(
-                color: (vote == voteYes)
-                    ? Colors.greenAccent
-                    : Theme.of(context).scaffoldBackgroundColor,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (vote == voteYes)
+                      ? Colors.greenAccent
+                      : Theme.of(context).scaffoldBackgroundColor,
+                ),
                 child: IconButton(
                   icon: Icon(Icons.thumb_up),
                   color: Colors.green,
                   onPressed: () {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
-                        widget.choiceId, 1, context);
+                        widget.choiceId, voteYes, context);
                     setState(() {
                       vote = voteYes;
                     });

@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -89,10 +90,59 @@ class GroupsManager {
     return false;
   }
 
-  static void editGroup(Group group, BuildContext context) async {
+  static Future<bool> createNewGroup(
+      Group group, File iconFile, BuildContext context) async {
+    bool retVal = false;
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "createNewGroup";
+    jsonRequestBody["payload"] = group.asMap();
+
+    jsonRequestBody["payload"].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
+
+    //update this to just be the list of usernames
+    //since that is all we need to pass to the backend
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
+
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal = true;
+        } else {
+          showPopupMessage("Error creating group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error creating group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to create group.", context);
+    }
+    return retVal;
+  }
+
+  static void editGroup(
+      Group group, File iconFile, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "editGroup";
     jsonRequestBody["payload"] = group.asMap();
+
+    jsonRequestBody["payload"].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody["payload"]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
+
+    //update this to just be the list of usernames
+    //since that is all we need to pass to the backend
+    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
 
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
@@ -114,8 +164,9 @@ class GroupsManager {
     }
   }
 
-  static void addEvent(
+  static Future<bool> addEvent(
       String groupId, Event event, BuildContext context) async {
+    bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "newEvent";
     jsonRequestBody["payload"] = event.asMap();
@@ -127,14 +178,8 @@ class GroupsManager {
       try {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context,
-              callback: (_) => Navigator.pushAndRemoveUntil(
-                  context,
-                  new MaterialPageRoute(
-                      builder: (BuildContext context) => GroupsHome()),
-                  (Route<dynamic> route) => false));
+          retVal = true;
         } else {
           showPopupMessage("Error creating event (1).", context);
         }
@@ -144,6 +189,7 @@ class GroupsManager {
     } else {
       showPopupMessage("Unable to create event.", context);
     }
+    return retVal;
   }
 
   static Map<String, Event> getGroupEvents(Group group) {
@@ -161,31 +207,6 @@ class GroupsManager {
     LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
         key: (k) => k, value: (k) => events[k]);
     return sortedMap.cast();
-  }
-
-  static void createNewGroup(Group group, BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "createNewGroup";
-    jsonRequestBody["payload"] = group.asMap();
-
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
-          showPopupMessage("Error creating group (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error creating group (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to create group.", context);
-    }
   }
 
   static void optInOutOfEvent(String groupId, String eventId,

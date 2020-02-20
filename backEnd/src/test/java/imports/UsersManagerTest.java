@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -16,10 +17,12 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,20 +55,53 @@ public class UsersManagerTest {
       RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")
   );
 
-  private final Map<String, Object> updateUserAppSettingsGoodInputDarkTheme = ImmutableMap.of(
-      UsersManager.APP_SETTINGS_DARK_THEME, 0,
-      RequestFields.ACTIVE_USER, "ActiveUser"
+  private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "ActiveUser",
+      UsersManager.APP_SETTINGS, ImmutableMap.of(
+          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_GROUP_SORT, 0,
+          UsersManager.APP_SETTINGS_MUTED, 0
+      ),
+      UsersManager.DISPLAY_NAME, "DisplayName",
+      UsersManager.FAVORITES, ImmutableList.of("fav1")
   );
 
-  private final Map<String, Object> updateUserAppSettingsGoodInputMuted = ImmutableMap.of(
-      UsersManager.APP_SETTINGS_MUTED, 0,
-      RequestFields.ACTIVE_USER, "ActiveUser"
+  private final Map<String, Object> updateUserSettingsGoodInputWithIcon = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "ActiveUser",
+      UsersManager.APP_SETTINGS, ImmutableMap.of(
+          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_GROUP_SORT, 0,
+          UsersManager.APP_SETTINGS_MUTED, 0
+      ),
+      UsersManager.DISPLAY_NAME, "DisplayName",
+      UsersManager.ICON, ImmutableList.of(1, 2, 3),
+      UsersManager.FAVORITES, ImmutableList.of("fav1")
   );
 
-  private final Map<String, Object> updateUserAppSettingsGoodInputGroupSort = ImmutableMap.of(
-      UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-      RequestFields.ACTIVE_USER, "ActiveUser"
-  );
+  private final Item userItem = new Item()
+      .withString(RequestFields.ACTIVE_USER, "ActiveUser")
+      .withMap(UsersManager.APP_SETTINGS, ImmutableMap.of(
+          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_GROUP_SORT, 0,
+          UsersManager.APP_SETTINGS_MUTED, 0
+      ))
+      .withString(UsersManager.DISPLAY_NAME, "DisplayName")
+      .withString(UsersManager.ICON, "Icon")
+      .withMap(UsersManager.FAVORITES, ImmutableMap.of(
+          "fav1", ImmutableMap.of(
+              UsersManager.DISPLAY_NAME, "favDisplayName",
+              UsersManager.ICON, "favIcon"
+          )
+      ))
+      .withMap(UsersManager.GROUPS, ImmutableMap.of(
+          "gid1", ImmutableMap.of(
+              GroupsManager.GROUP_NAME, "gidName",
+              GroupsManager.ICON, "gidIcon"
+          )
+      ))
+      .withMap(UsersManager.FAVORITE_OF, ImmutableMap.of(
+          "favOf1", true
+      ));
 
   @Mock
   private Table table;
@@ -80,6 +116,9 @@ public class UsersManagerTest {
   private GroupsManager groupsManager;
 
   @Mock
+  private S3AccessManager s3AccessManager;
+
+  @Mock
   private LambdaLogger lambdaLogger;
 
   @Mock
@@ -92,6 +131,7 @@ public class UsersManagerTest {
     DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
+    DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
   }
 
   /////////////////////////////
@@ -209,6 +249,22 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void getUserData_validOtherUsername_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserData(ImmutableMap.of(UsersManager.USERNAME, "userName"), this.metrics,
+            this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
   public void getUserData_newUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
@@ -306,102 +362,169 @@ public class UsersManagerTest {
   }
 
   /////////////////////////////////endregion
-  // updateUserAppSettings tests //
+  // updateUserSettings tests //
   /////////////////////////////////region
   @Test
-  public void updateUserAppSettings_validInputDarkTheme_successfulResult() {
+  public void updateUserSettings_validInputNoChanges_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.updateUserAppSettingsGoodInputDarkTheme, this.metrics,
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(3)).getTable(any(String.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void updateUserSettings_validInputDisplayNameChangeNewIcon_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+    doReturn(Optional.of("newIconFileName")).when(this.s3AccessManager)
+        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
+    userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
             this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(4)).getTable(any(String.class));
+    verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void updateUserAppSettings_validInputMuted_successfulResult() {
+  public void updateUserSettings_validInputS3UploadFails_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(Optional.empty()).when(this.s3AccessManager)
+        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.updateUserAppSettingsGoodInputMuted, this.metrics,
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
             this.lambdaLogger);
+
+    assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(1)).log(any(String.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserSettings_validInputRemoveFavorite_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of(
+        "fav1", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        ),
+        "fav2", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        )
+    ));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(5)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(3)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void updateUserAppSettings_validInputGroupSort_successfulResult() {
+  public void updateUserSettings_validInputAddFavorite_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of());
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.updateUserAppSettingsGoodInputGroupSort, this.metrics,
-            this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.lambdaLogger, times(0)).log(any(String.class));
+    verify(this.dynamoDB, times(6)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(3)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(3)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void updateUserAppSettings_missingSettings_failureResult() {
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+  public void updateUserSettings_validInputDbDiesDuringDisplayNameUpdate_failureResult() {
+    doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
+    doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
+
+    userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
+    doThrow(NullPointerException.class).when(this.groupsManager)
+        .updateItem(any(UpdateItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.lambdaLogger, times(3)).log(any(String.class));
+    verify(this.dynamoDB, times(4)).getTable(any(String.class));
+    verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true); // favorites still works here
     verify(this.metrics, times(1)).commonClose(false);
   }
 
   @Test
-  public void updateUserAppSettings_noActiveUser_failureResult() {
+  public void updateUserSettings_validInputDbDiesDuringFavoritesUpdate_failureResult() {
+    doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
+    //adding fav2 and removing fav1
+    userItem.withMap(UsersManager.FAVORITES, ImmutableMap.of(
+        "fav2", ImmutableMap.of(
+            UsersManager.DISPLAY_NAME, "favDisplayName",
+            UsersManager.ICON, "favIcon"
+        )
+    ));
+    doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
+
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.lambdaLogger, times(3)).log(any(String.class));
+    verify(this.dynamoDB, times(5)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
   }
 
   @Test
-  public void updateUserAppSettings_incorrectSettingsValue_failureResult() {
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-    this.badInput.put(UsersManager.APP_SETTINGS_DARK_THEME, 100);
-
+  public void updateUserSettings_invalidInputMissingKeys_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.badInput, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
+    verify(this.lambdaLogger, times(1)).log(any(String.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
-
-  @Test
-  public void updateUserAppSettings_incorrectSettingType_failureResult() {
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-    this.badInput.put(UsersManager.APP_SETTINGS_DARK_THEME, "hello there");
-
-    ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.badInput, this.metrics, this.lambdaLogger);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
-
-  @Test
-  public void updateUserAppSettings_noDbConnection_failureResult() {
-    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .updateUserAppSettings(this.updateUserAppSettingsGoodInputMuted, this.metrics,
-            this.lambdaLogger);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
 
