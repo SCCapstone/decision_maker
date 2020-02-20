@@ -196,7 +196,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-        DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
