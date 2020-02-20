@@ -51,6 +51,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
           // if user is not the category owner, they cannot delete choices
           visible: widget.isOwner,
           child: IconButton(
+            color: Colors.red,
             icon: Icon(Icons.cancel),
             onPressed: () {
               widget.deleteChoice(widget);

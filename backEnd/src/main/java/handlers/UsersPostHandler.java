@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
 import java.util.Map;
+import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonParsers;
 import utilities.Metrics;
@@ -19,64 +20,64 @@ public class UsersPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    Metrics metrics = new Metrics(context.getAwsRequestId());
-    LambdaLogger lambdaLogger = context.getLogger();
+    final Metrics metrics = new Metrics(context.getAwsRequestId());
+    final LambdaLogger lambdaLogger = context.getLogger();
+
+    final String classMethod = "UsersPostHandler.handleRequest";
+    metrics.commonSetup(classMethod);
 
     try {
-      Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
+      final Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
 
-      if (!jsonMap.isEmpty()) {
-        if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
-          try {
-            Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
+      if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
+        final Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
 
-            if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-              payloadJsonMap
-                  .put(RequestFields.ACTIVE_USER,
-                      GetActiveUser.getActiveUserFromRequest(request, context));
+        if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+          payloadJsonMap
+              .put(RequestFields.ACTIVE_USER,
+                  GetActiveUser.getActiveUserFromRequest(request, context));
 
-              String action = (String) jsonMap.get("action");
+          final String action = (String) jsonMap.get("action");
 
-              if (action.equals("updateUserChoiceRatings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER
-                    .updateUserChoiceRatings(payloadJsonMap, metrics, lambdaLogger);
-              } else if (action.equals("getUserRatings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER
-                    .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
-              } else if (action.equals("updateUserAppSettings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER
-                    .updateUserAppSettings(payloadJsonMap, metrics, lambdaLogger);
-              } else if (action.equals("getUserAppSettings")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER.getUserAppSettings(payloadJsonMap);
-              } else if (action.equals("getUserData")) {
-                resultStatus = DatabaseManagers.USERS_MANAGER
-                    .getUserData(payloadJsonMap, metrics, lambdaLogger);
-              } else if (action.equals("warmingEndpoint")) {
-                resultStatus = new ResultStatus(true, "Warming users endpoint.");
-              } else {
-                resultStatus.resultMessage = "Error: Invalid action entered";
-              }
-            } else {
-              resultStatus.resultMessage = "Error: Invalid key in payload.";
-            }
-          } catch (Exception e) {
-            resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
+          if (action.equals("updateUserChoiceRatings")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .updateUserChoiceRatings(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("getUserRatings")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .getUserRatings(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("updateUserSettings")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .updateUserSettings(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("getUserData")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .getUserData(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("warmingEndpoint")) {
+            resultStatus = new ResultStatus(true, "Warming users endpoint.");
+          } else {
+            resultStatus.resultMessage = "Error: Invalid action entered.";
+            lambdaLogger.log(
+                new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                    "Invalid action entered.").toString());
           }
         } else {
-          //probably want to log this somewhere as front end validation shouldn't have let this through
-          //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-          resultStatus.resultMessage = "Error: No action/payload entered.";
+          resultStatus.resultMessage = "Error: Invalid key in payload.";
+          lambdaLogger.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "Invalid key in payload.").toString());
         }
       } else {
-        //probably want to log this somewhere as front end validation shouldn't have let this through
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-        resultStatus.resultMessage = "Error: No data entered.";
+        resultStatus.resultMessage = "Error: No action/payload entered.";
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                "No action/payload entered.").toString());
       }
     } catch (Exception e) {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Unable to handle request.";
+      lambdaLogger.log(
+          new ErrorDescriptor<>(request.getBody(), classMethod, metrics.getRequestId(), e).toString());
     }
 
+    metrics.commonClose(resultStatus.success);
     metrics.logMetrics(lambdaLogger);
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());

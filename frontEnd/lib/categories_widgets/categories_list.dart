@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'categories_list_item.dart';
 
@@ -27,7 +28,7 @@ class _CategoryListState extends State<CategoryList> {
     if (widget.categories.length == 0) {
       return Center(
         child:
-            Text("No categories found! Click \"New Category\" to create some!"),
+            Text("No categories found! Click the button below to create some!"),
       );
     } else {
       return Scrollbar(
@@ -35,16 +36,16 @@ class _CategoryListState extends State<CategoryList> {
           shrinkWrap: true,
           itemCount: widget.categories.length,
           itemBuilder: (BuildContext context, int index) {
-            bool defaultCategory = false;
-            if (widget.categories[index].owner.isEmpty) {
-              defaultCategory = true;
+            bool isOwner = false;
+            if (widget.categories[index].owner == Globals.username) {
+              isOwner = true;
             }
             return CategoriesListItem(
-                widget.categories[index], index, defaultCategory,
+                widget.categories[index], index, isOwner,
                 onDelete: () => removeItem(index),
                 afterEditCallback: widget.refreshPage);
-          },
-        ),
+          }
+        )
       );
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_closed.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 
 class EventCardClosed extends StatefulWidget {
   final String groupId;
@@ -14,7 +15,6 @@ class EventCardClosed extends StatefulWidget {
 }
 
 class _EventCardClosedState extends State<EventCardClosed> {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -53,8 +53,8 @@ class _EventCardClosedState extends State<EventCardClosed> {
           )
         ],
       ),
-      decoration:
-          new BoxDecoration(border: new Border(bottom: new BorderSide())),
+      decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
     );
   }
 }

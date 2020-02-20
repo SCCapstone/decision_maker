@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/models/category.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'categories_list.dart';
 
 class CategoriesHome extends StatefulWidget {
@@ -26,90 +25,81 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   @override
   Widget build(BuildContext context) {
-    Icon navIcon;
-    if (Globals.android) {
-      navIcon = new Icon(Icons.dehaze);
-    } else {
-      navIcon = new Icon(Icons.arrow_back);
-    }
-    return new Scaffold(
-      appBar: new AppBar(
-        centerTitle: true,
-        title: Text(
-          "Categories",
-          style: TextStyle(fontSize: 35),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.sort),
-            onPressed: () {
-              // can implement a variable that has the sort type, then setState here
-              // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
-            },
-          )
-        ],
-//        leading: IconButton(
-//          icon: navIcon,
-//          onPressed: () {
-//            // TODO link up with nav bar (https://github.com/SCCapstone/decision_maker/issues/78
-//          },
-//        ),
-      ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+    return RefreshIndicator(
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              "Categories",
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
             ),
-            new Container(
-              width: MediaQuery.of(context).size.width * .80,
-              height: MediaQuery.of(context).size.height * .60,
-              child: new Container(
-                child: FutureBuilder(
-                  future: widget.categories,
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.hasData) {
-                      List<Category> categories = snapshot.data;
-                      return CategoryList(
-                          categories: categories,
-                          sortType: _sortMethod,
-                          refreshPage: this.refreshPage);
-                    } else if (snapshot.hasError) {
-                      return Text("Error: ${snapshot.error}");
-                    }
-                    return Center(child: CircularProgressIndicator());
-                  },
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .01),
-            ),
-            Divider(
-              color: Colors.black,
-            ),
-            Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .01),
-            ),
-            RaisedButton(
-                child: Text(
-                  "New Category",
-                  style: TextStyle(fontSize: 30),
-                ),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(Icons.sort),
                 onPressed: () {
-                  // Navigate to second route when tapped.
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            CreateCategory()),
-                  ).then((_) => this.refreshPage());
-                })
-          ],
+                  // can implement a variable that has the sort type, then setState here
+                  // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
+                },
+              )
+            ],
+          ),
+          body: Center(
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+                Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * .80,
+                    height: MediaQuery.of(context).size.height * .75,
+                    child: Container(
+                      child: FutureBuilder(
+                        future: widget.categories,
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.hasData) {
+                            List<Category> categories = snapshot.data;
+                            return CategoryList(
+                                categories: categories,
+                                sortType: _sortMethod,
+                                refreshPage: this.refreshPage);
+                          } else if (snapshot.hasError) {
+                            return Text("Error: ${snapshot.error}");
+                          }
+                          return Center(child: CircularProgressIndicator());
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              // Navigate to second route when tapped.
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateCategory()),
+              ).then((_) => this.refreshPage());
+            },
+          ),
         ),
-      ),
-    );
+        onRefresh: refreshList);
+  }
+
+  Future<Null> refreshList() async {
+    setState(() {
+      widget.categories = CategoriesManager.getAllCategoriesList();
+    });
   }
 
   void refreshPage() {
