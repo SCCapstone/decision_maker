@@ -52,10 +52,9 @@ public class GroupsManagerTest {
       .put(GroupsManager.CATEGORY_NAME, "CategoryName")
       .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
       .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-      .put(GroupsManager.TYPE, 1)
-      .put(GroupsManager.POLL_DURATION, 50)
+      .put(GroupsManager.VOTING_DURATION, 50)
       .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
-      .put(GroupsManager.POLL_PASS_PERCENT, 50)
+      .put(GroupsManager.RSVP_DURATION, 50)
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
@@ -67,10 +66,9 @@ public class GroupsManagerTest {
           .put(GroupsManager.CATEGORY_NAME, "CategoryName")
           .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
           .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-          .put(GroupsManager.TYPE, 1)
-          .put(GroupsManager.POLL_DURATION, 50)
+          .put(GroupsManager.VOTING_DURATION, 50)
           .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
-          .put(GroupsManager.POLL_PASS_PERCENT, 50)
+          .put(GroupsManager.RSVP_DURATION, 50)
           .put(GroupsManager.GROUP_ID, "GroupId")
           .build());
 
@@ -211,7 +209,7 @@ public class GroupsManagerTest {
 
   @Test
   public void newEvent_badInput_failureResult() {
-    this.newEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, "General Kenobi!");
+    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, "General Kenobi!");
 
     ResultStatus result = this.groupsManager
         .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
@@ -310,35 +308,35 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void validEventInput_invalidPollDuration_failureResult() {
+  public void validEventInput_invalidVotingDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
-    this.newEventBadInput.put(GroupsManager.POLL_DURATION, -1);
+    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, -1);
     ResultStatus result = this.groupsManager
         .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
 
-    this.newEventBadInput.put(GroupsManager.POLL_DURATION, 1000000);
+    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, 1000000);
     result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
   }
 
   @Test
-  public void validEventInput_invalidPercentage_failureResult() {
+  public void validEventInput_invalidRsvpDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
         .getItem(any(GetItemSpec.class));
 
-    this.newEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, -1);
+    this.newEventBadInput.put(GroupsManager.RSVP_DURATION, -1);
     ResultStatus result = this.groupsManager
         .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
 
-    this.newEventBadInput.put(GroupsManager.POLL_PASS_PERCENT, 1000000);
+    this.newEventBadInput.put(GroupsManager.RSVP_DURATION, 1000000);
     result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
     assertFalse(result.success);
   }
