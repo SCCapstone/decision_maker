@@ -9,7 +9,6 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
-import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -55,6 +54,8 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
   public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
+
+  public static final Integer MAX_DURATION = 10000;
 
   public static final Map EMPTY_MAP = new HashMap();
 
@@ -506,11 +507,11 @@ public class GroupsManager extends DatabaseAccessManager {
       isValid = false;
     }
 
-    if (votingDuration <= 0 || votingDuration > 10000) {
+    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
       isValid = false;
     }
 
-    if (rsvpDuration < 0 || rsvpDuration > 10000) {
+    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
       isValid = false;
     }
     return isValid;
