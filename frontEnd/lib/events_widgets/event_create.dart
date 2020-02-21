@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
@@ -271,11 +272,7 @@ class _CreateEventState extends State<CreateEvent> {
           .pop('dialog'); // dismiss the loading dialog
 
       if (success) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            new MaterialPageRoute(
-                builder: (BuildContext context) => GroupsHome()),
-            (Route<dynamic> route) => false);
+        Navigator.of(context).pop();
       }
     } else {
       setState(() => autoValidate = true);

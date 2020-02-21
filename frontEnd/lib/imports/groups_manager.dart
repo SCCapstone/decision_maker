@@ -196,8 +196,6 @@ class GroupsManager {
     Map<String, Event> events = new Map<String, Event>();
     for (String eventId in group.events.keys) {
       Event event = new Event.fromJson(group.events[eventId]);
-      Map<String, String> optInList = event.optedIn.cast();
-      // if user has opted in, display the event to them
       events.putIfAbsent(eventId, () => event);
     }
     // sorting based on create time for now, most recently created at the top
@@ -276,16 +274,12 @@ class GroupsManager {
     }
   }
 
-  static List<Group> sortByDate(List<Group> groups) {
-    List<Group> retGroups = groups;
-    retGroups.sort((a, b) => DateTime.parse(b.lastActivity)
+  static void sortByDate(List<Group> groups) {
+    groups.sort((a, b) => DateTime.parse(b.lastActivity)
         .compareTo(DateTime.parse(a.lastActivity)));
-    return retGroups;
   }
 
-  static List<Group> sortByAlpha(List<Group> groups) {
-    List<Group> retGroups = groups;
-    retGroups.sort((a, b) => a.groupName.compareTo(b.groupName));
-    return retGroups;
+  static void sortByAlpha(List<Group> groups) {
+    groups.sort((a, b) => a.groupName.compareTo(b.groupName));
   }
 }

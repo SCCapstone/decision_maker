@@ -56,8 +56,8 @@ class UserRow extends StatelessWidget {
           )
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }
