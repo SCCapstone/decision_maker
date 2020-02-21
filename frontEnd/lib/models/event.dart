@@ -9,7 +9,6 @@ class Event {
   final DateTime eventStartDateTime;
   final DateTime pollBegin;
   final DateTime pollEnd;
-  final int type;
   final int votingDuration;
   final int rsvpDuration;
   final Map<String, dynamic> optedIn;
@@ -27,7 +26,6 @@ class Event {
       this.eventName,
       this.createdDateTime,
       this.eventStartDateTime,
-      this.type,
       this.votingDuration,
       this.rsvpDuration,
       this.optedIn,
@@ -47,7 +45,6 @@ class Event {
       this.eventName,
       this.createdDateTime,
       this.eventStartDateTime,
-      this.type,
       this.votingDuration,
       this.rsvpDuration,
       this.optedIn,
@@ -78,7 +75,6 @@ class Event {
             DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
         pollEnd: pollEndTemp,
         pollBegin: pollBeginTemp,
-        type: int.parse(json[EventsManager.TYPE]),
         votingDuration: int.parse(json[EventsManager.VOTING_DURATION]),
         rsvpDuration: int.parse(json[EventsManager.RSVP_DURATION]),
         optedIn: json[EventsManager.OPTED_IN],
@@ -104,7 +100,6 @@ class Event {
           this.createdDateTime.toString().substring(0, 19),
       EventsManager.EVENT_START_DATE_TIME:
           this.eventStartDateTime.toString().substring(0, 19),
-      EventsManager.TYPE: this.type,
       EventsManager.VOTING_DURATION: this.votingDuration,
       EventsManager.RSVP_DURATION: this.rsvpDuration,
       EventsManager.OPTED_IN: this.optedIn,
@@ -118,7 +113,7 @@ class Event {
   @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
-        "$createdDateTime EventStartDateTime: $eventStartDateTime Type: $type PollDuration: $votingDuration "
+        "$createdDateTime EventStartDateTime: $eventStartDateTime PollDuration: $votingDuration "
         "RsvpDuration: $rsvpDuration OptedIn: $optedIn SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
         "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator";
   }

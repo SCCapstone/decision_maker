@@ -329,6 +329,8 @@ public class GroupsManager extends DatabaseAccessManager {
         if (this.validEventInput(groupId, categoryId, votingDuration,
             rsvpDuration)) {
           final Map<String, Object> eventMap = new HashMap<>();
+          final Map<String, Object> eventCreator = new HashMap<>();
+          eventCreator.put("username", activeUser);
 
           eventMap.put(CATEGORY_ID, categoryId);
           eventMap.put(CATEGORY_NAME, categoryName);
@@ -339,7 +341,7 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(VOTING_DURATION, votingDuration);
           eventMap.put(RSVP_DURATION, rsvpDuration);
           eventMap.put(OPTED_IN, optedIn);
-          eventMap.put(EVENT_CREATOR, activeUser);
+          eventMap.put(EVENT_CREATOR, eventCreator);
           eventMap.put(SELECTED_CHOICE, "calculating...");
 
           String updateExpression =
