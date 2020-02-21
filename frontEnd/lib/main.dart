@@ -25,14 +25,17 @@ class MyApp extends StatelessWidget {
         //We use a FutureBuilder here since the display of the widget depends on
         //the asynchronous function hasValidTokensSet being able to fully execute
         //and return a Future<bool>.
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Color(0xff303030),
         child: FutureBuilder<bool>(
             future: hasValidTokensSet(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               final ThemeNotifier themeNotifier =
                   Provider.of<ThemeNotifier>(context);
               if (!snapshot.hasData) {
-                return Center(child: new CircularProgressIndicator());
+                return Center(
+                    child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xff5ce080))));
               } else {
                 //If and only if the tokens are not valid or don't exist, open the login page.
                 if (!snapshot.data) {

@@ -10,6 +10,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
@@ -213,10 +214,13 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Future<Null> refreshList() async {
-    Globals.user = await UsersManager.getUserData();
-    setState(() {
-      loadGroups();
-    });
+    User temp = await UsersManager.getUserData();
+    if (temp != null) {
+      Globals.user = temp;
+      setState(() {
+        loadGroups();
+      });
+    }
   }
 
   void loadGroups() {
