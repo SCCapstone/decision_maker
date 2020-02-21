@@ -16,7 +16,7 @@ class EventDetailsRsvp extends StatefulWidget {
 }
 
 class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
-  List<Widget> userRows = new List<Widget>();
+  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
   String eventCreator = "";
   Event event;
 
@@ -121,7 +121,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           height: MediaQuery.of(context).size.height * .2,
                           child: ListView(
                             shrinkWrap: true,
-                            children: userRows,
+                            children: userRows.values.toList(),
                           ),
                         ),
                       ],
@@ -144,13 +144,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           onPressed: () {
                             GroupsManager.optInOutOfEvent(
                                 widget.groupId, widget.eventId, false, context);
-                            UserRowEvents rowToRemove;
-                            for (UserRowEvents row in userRows) {
-                              if (row.username == Globals.username) {
-                                rowToRemove = row;
-                              }
-                            }
-                            userRows.remove(rowToRemove);
+                            userRows.remove(Globals.username);
                             setState(() {});
                           },
                         ),
@@ -177,17 +171,16 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   void getEvent() {
     Map<String, Event> events =
         GroupsManager.getGroupEvents(Globals.currentGroup);
-    for (String _eventId in events.keys) {
-      if (_eventId == widget.eventId) {
-        event = events[_eventId];
-      }
-    }
+    event = events[widget.eventId];
+
     userRows.clear();
     for (String username in event.optedIn.keys) {
-      userRows.add(UserRowEvents(
-          event.optedIn[username][UsersManager.DISPLAY_NAME],
+      userRows.putIfAbsent(
           username,
-          event.optedIn[username][UsersManager.ICON]));
+          () => UserRowEvents(
+              event.optedIn[username][UsersManager.DISPLAY_NAME],
+              username,
+              event.optedIn[username][UsersManager.ICON]));
     }
   }
 

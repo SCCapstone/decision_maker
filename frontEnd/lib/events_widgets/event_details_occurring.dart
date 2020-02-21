@@ -141,11 +141,8 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   void getEvent() {
     Map<String, Event> events =
         GroupsManager.getGroupEvents(Globals.currentGroup);
-    for (String _eventId in events.keys) {
-      if (_eventId == widget.eventId) {
-        event = events[_eventId];
-      }
-    }
+    event = events[widget.eventId];
+
     userRows.clear();
     for (String username in event.optedIn.keys) {
       userRows.add(UserRowEvents(
