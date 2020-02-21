@@ -184,7 +184,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validDuration,
+                                validator: validRsvpDuration,
                                 controller: rsvpDurationController,
                                 onChanged: (String arg) {
                                   try {
@@ -224,7 +224,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validDuration,
+                                validator: validVotingDuration,
                                 controller: votingDurationController,
                                 onChanged: (String arg) {
                                   try {

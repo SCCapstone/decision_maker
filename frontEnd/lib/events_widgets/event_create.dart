@@ -134,7 +134,7 @@ class _CreateEventState extends State<CreateEvent> {
                     TextFormField(
                       controller: rsvpDurationController,
                       keyboardType: TextInputType.number,
-                      validator: validDuration,
+                      validator: validRsvpDuration,
                       onSaved: (String arg) {
                         rsvpDuration = arg;
                       },
@@ -144,7 +144,7 @@ class _CreateEventState extends State<CreateEvent> {
                     TextFormField(
                       controller: votingDurationController,
                       keyboardType: TextInputType.number,
-                      validator: validDuration,
+                      validator: validVotingDuration,
                       onSaved: (String arg) {
                         votingDuration = arg;
                       },

@@ -113,7 +113,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   TextFormField(
                     controller: rsvpDurationController,
                     keyboardType: TextInputType.number,
-                    validator: validDuration,
+                    validator: validRsvpDuration,
                     onSaved: (String arg) {
                       rsvpDuration = int.parse(arg.trim());
                     },
@@ -124,7 +124,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   TextFormField(
                     controller: votingDurationController,
                     keyboardType: TextInputType.number,
-                    validator: validDuration,
+                    validator: validVotingDuration,
                     onSaved: (String arg) {
                       votingDuration = int.parse(arg.trim());
                     },

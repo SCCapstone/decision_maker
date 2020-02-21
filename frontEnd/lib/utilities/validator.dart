@@ -42,11 +42,26 @@ String validPassPercentage(String input) {
   return retVal;
 }
 
-String validDuration(String input) {
+String validVotingDuration(String input) {
   String retVal;
   try {
     int num = int.parse(input);
     if (num <= 0) {
+      retVal = "Too small.";
+    } else if (num > 10000) {
+      retVal = "Too big.";
+    }
+  } catch (e) {
+    retVal = "Not a number.";
+  }
+  return retVal;
+}
+
+String validRsvpDuration(String input) {
+  String retVal;
+  try {
+    int num = int.parse(input);
+    if (num < 0) {
       retVal = "Too small.";
     } else if (num > 10000) {
       retVal = "Too big.";
