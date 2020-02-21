@@ -99,10 +99,11 @@ class _GroupPageState extends State<GroupPage> {
   void getGroup() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    Group temp = (await GroupsManager.getGroups(groupIds: groupId)).first;
-    if (temp != null) {
+    List<Group> tempList = await GroupsManager.getGroups(groupIds: groupId);
+    if (tempList.length != 0) {
+      print(tempList.first);
       initialLoad = false;
-      Globals.currentGroup = temp;
+      Globals.currentGroup = tempList.first;
       setState(() {});
     } else {
       initialLoad = false;
@@ -132,14 +133,15 @@ class _GroupPageState extends State<GroupPage> {
               style: TextStyle(
                   fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
             )),
-        body: Center(child: Text("Error loading the group.")));
+        body: Center(
+            child: Text(
+          "Error loading the group.",
+          style: TextStyle(fontSize: 30),
+        )));
   }
 
   Future<Null> refreshList() async {
-    List<String> groupId = new List<String>();
-    groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(groupIds: groupId)).first;
+    getGroup();
     setState(() {});
   }
 }
