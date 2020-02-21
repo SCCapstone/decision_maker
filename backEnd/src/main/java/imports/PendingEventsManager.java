@@ -12,6 +12,7 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -79,7 +80,11 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return success;
   }
 
-  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap) {
+  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.processPendingEvent";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
@@ -93,8 +98,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          //Dumb algorithm simply gets first choice from category!
-
           //First thing to do is get the category data from the db.
           final Map<String, Object> groupDataMapped = groupData.asMap();
           Map<String, Object> groupEventDataMapped = (Map<String, Object>) groupDataMapped
@@ -102,23 +105,26 @@ public class PendingEventsManager extends DatabaseAccessManager {
           Map<String, Object> eventDataMapped = (Map<String, Object>) groupEventDataMapped
               .get(eventId);
 
-          String categoryId = (String) eventDataMapped.get(GroupsManager.CATEGORY_ID);
-          Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
-          if (categoryData != null) {
-            Map<String, Object> categoryDataMapped = categoryData.asMap();
+          Map<String, Object> currentTentativeChoices = (Map<String, Object>) eventDataMapped
+              .get(GroupsManager.TENTATIVE_CHOICES);
 
-            //with the category, we can now get the first choice in the category which is our result
-            Map<String, Object> choices = (Map<String, Object>) categoryDataMapped
-                .get(CategoriesManager.CHOICES);
-            String result = (String) choices.values()
-                .toArray()[0]; // assuming we can never have empty choices
+          if (currentTentativeChoices.isEmpty()) {
+            //we need to:
+            //  run the algorithm
+            //  update the event object
+            //  update the pending events table with the new data time for the end of voting
+            Integer votingDuration = ((BigDecimal) eventDataMapped
+                .get(GroupsManager.VOTING_DURATION)).intValue();
+
+            final Map<String, Object> tentativeChoices = this
+                .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
 
             //update the event
             String updateExpression =
-                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
-                    + " = :result, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
+                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
             NameMap nameMap = new NameMap().with("#eventId", eventId);
-            ValueMap valueMap = new ValueMap().withString(":result", result)
+            ValueMap valueMap = new ValueMap().withMap(":tentativeChoices", tentativeChoices)
                 .withString(":currentDate",
                     LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
@@ -130,7 +136,37 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
             DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
-            //remove the pending entry from the pending events table
+            //this overwrites the old mapping
+            ResultStatus updatePendingEvent = this
+                .addPendingEvent(groupId, eventId, votingDuration, metrics, lambdaLogger);
+            if (updatePendingEvent.success) {
+              resultStatus = new ResultStatus(true, "Event updated successfully");
+            } else {
+              resultStatus.resultMessage = "Error updating pending event mapping with voting duration";
+            }
+          } else {
+            //we need to loop over the voting results and figure out the yes percentage of votes for the choices
+            //set the selected choice as the one with the highest percent
+            String result = this.getSelectedChoice(eventDataMapped, metrics, lambdaLogger);
+
+            //update the event
+            String updateExpression =
+                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
+                    + " = :selectedChoice, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+            NameMap nameMap = new NameMap().with("#eventId", eventId);
+            ValueMap valueMap = new ValueMap().withString(":selectedChoice", result)
+                .withString(":currentDate",
+                    LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
+
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap)
+                .withValueMap(valueMap);
+
+            DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+
+            // now remove the entry from the pending events table since it has been fully processed now
             updateExpression = "remove #groupEventKey";
             nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
 
@@ -141,26 +177,83 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
             this.updateItem(updateItemSpec);
 
-            resultStatus = new ResultStatus(true, "Pending event processed successfully.");
-          } else {
-            // we have an event pointing to a non existent category
-            resultStatus.resultMessage = "Associated category no longer exists?";
+            resultStatus = new ResultStatus(true, "Pending event finalized successfully");
           }
+        } else {
+          resultStatus.resultMessage = "Error: Group data not found.";
+          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Group data not found.").toString());
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+            e).toString());
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
       resultStatus.resultMessage = "Error: Required request keys not found.";
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found.").toString());
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
+  private Map<String, Object> getTentativeAlgorithmChoices(
+      final Map<String, Object> eventDataMapped,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+    Map<String, Object> tentativeChoice;
+
+    try {
+      String categoryId = (String) eventDataMapped.get(GroupsManager.CATEGORY_ID);
+      Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
+
+      Map<String, Object> categoryDataMapped = categoryData.asMap();
+
+      //with the category, we can now get the first choice in the category which is our result
+      tentativeChoice = (Map<String, Object>) categoryDataMapped.get(CategoriesManager.CHOICES);
+
+      //limit to only three
+      while (tentativeChoice.size() > 3) {
+        tentativeChoice.remove(tentativeChoice.keySet().toArray(new String[0])[0]);
+      }
+    } catch (Exception e) {
+      // we have an event pointing to a non existent category
+      tentativeChoice = ImmutableMap.of("1", "Error");
+      success = false;
+      lambdaLogger
+          .log(new ErrorDescriptor<>(eventDataMapped, classMethod, metrics.getRequestId(), e)
+              .toString());
+    }
+
+    metrics.commonClose(success);
+    return tentativeChoice;
+  }
+
+  public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    String selectedChoice;
+
+    try {
+      Map<String, Object> tentativeChoice = (Map<String, Object>) eventDataMapped
+          .get(GroupsManager.TENTATIVE_CHOICES);
+      selectedChoice = (String) tentativeChoice.values().toArray()[0];
+    } catch (Exception e) {
+      selectedChoice = "Error";
+    }
+
+    return selectedChoice;
+  }
+
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
-      final Integer pollDuration) {
+      final Integer pollDuration, final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.addPendingEvent";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
 
     try {
@@ -186,8 +279,12 @@ public class PendingEventsManager extends DatabaseAccessManager {
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
       resultStatus.resultMessage = "Error adding pending event.";
+      lambdaLogger.log(new ErrorDescriptor<>(String
+          .format("Group: %s, Event: %s, duration: %s", groupId, eventId, pollDuration.toString()),
+          classMethod, metrics.getRequestId(), e).toString());
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

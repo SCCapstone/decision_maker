@@ -9,7 +9,6 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
-import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -50,13 +49,14 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENT_CREATOR = "EventCreator";
   public static final String CREATED_DATE_TIME = "CreatedDateTime";
   public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
-  public static final String TYPE = "Type";
-  public static final String POLL_DURATION = "PollDuration";
+  public static final String VOTING_DURATION = "VotingDuration";
   public static final String RSVP_DURATION = "RsvpDuration";
-  public static final String POLL_PASS_PERCENT = "PollPassPercent";
   public static final String OPTED_IN = "OptedIn";
+  public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
   public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
+
+  public static final Integer MAX_DURATION = 10000;
 
   public static final Map EMPTY_MAP = new HashMap();
 
@@ -292,19 +292,17 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME,
-            EVENT_START_DATE_TIME, POLL_DURATION, RSVP_DURATION, POLL_PASS_PERCENT, GROUP_ID);
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME,
+            EVENT_START_DATE_TIME, VOTING_DURATION, RSVP_DURATION, GROUP_ID);
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String eventName = (String) jsonMap.get(EVENT_NAME);
         final String categoryId = (String) jsonMap.get(CATEGORY_ID);
         final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
         final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
-        final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
+        final Integer votingDuration = (Integer) jsonMap.get(VOTING_DURATION);
         final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
-        final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
         final String groupId = (String) jsonMap.get(GROUP_ID);
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
@@ -334,18 +332,18 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.validEventInput(groupId, categoryId, pollDuration,
-            rsvpDuration, pollPassPercent)) {
+        if (this.validEventInput(groupId, categoryId, votingDuration,
+            rsvpDuration)) {
           final Map<String, Object> eventMap = new HashMap<>();
 
           eventMap.put(CATEGORY_ID, categoryId);
           eventMap.put(CATEGORY_NAME, categoryName);
           eventMap.put(EVENT_NAME, eventName);
-          eventMap.put(CREATED_DATE_TIME, createdDateTime);
+          eventMap.put(CREATED_DATE_TIME,
+              LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
           eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
-          eventMap.put(POLL_DURATION, pollDuration);
+          eventMap.put(VOTING_DURATION, votingDuration);
           eventMap.put(RSVP_DURATION, rsvpDuration);
-          eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, activeUser);
           eventMap.put(SELECTED_CHOICE, "calculating...");
@@ -370,7 +368,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, pollDuration);
+              .addPendingEvent(groupId, eventId, votingDuration, metrics, lambdaLogger);
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
@@ -508,22 +506,18 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean validEventInput(
-      final String groupId, final String categoryId, final Integer pollDuration,
-      final Integer rsvpDuration, final Integer pollPassPercent) {
+      final String groupId, final String categoryId, final Integer votingDuration,
+      final Integer rsvpDuration) {
     boolean isValid = true;
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
     }
 
-    if (pollPassPercent < 0 || pollPassPercent > 100) {
+    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
       isValid = false;
     }
 
-    if (pollDuration <= 0 || pollDuration > 10000) {
-      isValid = false;
-    }
-
-    if (rsvpDuration <= 0 || rsvpDuration > 10000) {
+    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
       isValid = false;
     }
     return isValid;
