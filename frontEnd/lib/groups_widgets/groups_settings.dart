@@ -180,7 +180,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20  ,
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
@@ -220,7 +220,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20,
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
