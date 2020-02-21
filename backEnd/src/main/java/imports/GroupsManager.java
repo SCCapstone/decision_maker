@@ -37,7 +37,6 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String GROUP_CREATOR = "GroupCreator";
   public static final String MEMBERS = "Members";
   public static final String CATEGORIES = "Categories";
-  public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
   public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
@@ -116,8 +115,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
+        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES, DEFAULT_POLL_DURATION,
+            DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -126,7 +125,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
@@ -149,7 +147,6 @@ public class GroupsManager extends DatabaseAccessManager {
             .withString(GROUP_CREATOR, activeUser)
             .withMap(MEMBERS, membersMapped)
             .withMap(CATEGORIES, categories)
-            .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
             .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
             .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
             .withMap(EVENTS, EMPTY_MAP)
@@ -196,7 +193,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -206,7 +203,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
         final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
@@ -215,7 +211,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .asMap();
         final String groupCreator = (String) dbGroupDataMap.get(GROUP_CREATOR);
         if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
-            defaultPollPassPercent, defaultPollDuration)) {
+            defaultPollDuration, defaultRsvpDuration)) {
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
@@ -229,16 +225,14 @@ public class GroupsManager extends DatabaseAccessManager {
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
                     + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
                     + DEFAULT_POLL_DURATION + " = :defaultPollDuration, "
-                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration, "
-                    + DEFAULT_POLL_PASS_PERCENT + " = :defaultPollPassPercent";
+                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
                 .withString(":creator", groupCreator)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultPollDuration", defaultPollDuration)
-                .withInt(":defaultRsvpDuration", defaultRsvpDuration)
-                .withInt(":defaultPollPassPercent", defaultPollPassPercent);
+                .withInt(":defaultRsvpDuration", defaultRsvpDuration);
 
             //assumption - currently we aren't allowing user's to clear a group's image once set
             String newIconFileName = null;
@@ -474,9 +468,8 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final List<String> members,
-      final Integer defaultPollPassPercent,
-      final Integer defaultPollDuration) {
+      final String groupCreator, final List<String> members, final Integer defaultPollDuration,
+      final Integer defaultRsvpDuration) {
     boolean isValid = true;
 
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(activeUser)) {
@@ -494,11 +487,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
     isValid = isValid && creatorInGroup;
 
-    if (defaultPollPassPercent < 0 || defaultPollPassPercent > 100) {
+    if (defaultPollDuration <= 0 || defaultPollDuration > MAX_DURATION) {
       isValid = false;
     }
 
-    if (defaultPollDuration <= 0 || defaultPollDuration > 10000) {
+    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
       isValid = false;
     }
 
