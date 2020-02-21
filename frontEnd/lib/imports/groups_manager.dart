@@ -29,7 +29,8 @@ class GroupsManager {
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 
-  static Future<List<Group>> getGroups({List<String> groupIds}) async {
+  static Future<List<Group>> getGroups(BuildContext context,
+      {List<String> groupIds}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getGroups";
     if (groupIds != null) {
@@ -37,7 +38,8 @@ class GroupsManager {
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -66,7 +68,8 @@ class GroupsManager {
     jsonRequestBody["action"] = "deleteGroup";
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -107,7 +110,8 @@ class GroupsManager {
     //since that is all we need to pass to the backend
     jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -144,7 +148,8 @@ class GroupsManager {
     //since that is all we need to pass to the backend
     jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -172,7 +177,8 @@ class GroupsManager {
     jsonRequestBody["payload"] = event.asMap();
     jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -223,7 +229,8 @@ class GroupsManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {
@@ -256,7 +263,8 @@ class GroupsManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       try {

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -24,6 +25,7 @@ class GroupRow extends StatelessWidget {
               IconButton(
                   iconSize: MediaQuery.of(context).size.width * .20,
                   icon: Image(
+                    fit: BoxFit.cover,
                     image: getIconUrl(group.icon),
                   ),
                   onPressed: () {

@@ -32,7 +32,7 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   @override
   void initState() {
-    widget.groupsFuture = GroupsManager.getGroups();
+    widget.groupsFuture = GroupsManager.getGroups(context);
     searchBar.addListener(() {
       if (searchBar.text.isEmpty) {
         setState(() {
@@ -67,7 +67,8 @@ class _GroupsHomeState extends State<GroupsHome> {
                 // for phones that have a notch, use a safe area so content isn't obstructed
                 child: Container(
                   height: 80.0,
-                  decoration: BoxDecoration(color: Theme.of(context).accentColor),
+                  decoration:
+                      BoxDecoration(color: Theme.of(context).accentColor),
                   margin: EdgeInsets.zero,
                   child: ListTile(
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
@@ -79,12 +80,13 @@ class _GroupsHomeState extends State<GroupsHome> {
                                 builder: (context) => UserSettings()));
                       },
                       child: CircleAvatar(
-                        backgroundImage: getUserIconUrl(Globals.user)
-                      ),
+                          backgroundImage: getUserIconUrl(Globals.user)),
                     ),
                     title: Text(
                       Globals.username,
-                      style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColorDark),
+                      style: TextStyle(
+                          fontSize: 24,
+                          color: Theme.of(context).primaryColorDark),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -185,7 +187,8 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
           ],
         ),
@@ -232,7 +235,7 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   Future<Null> refreshList() async {
     setState(() {
-      widget.groupsFuture = GroupsManager.getGroups();
+      widget.groupsFuture = GroupsManager.getGroups(context);
     });
   }
 

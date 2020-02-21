@@ -35,7 +35,8 @@ class UsersManager {
       jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
     User ret;
 
     if (response != "") {
@@ -46,9 +47,7 @@ class UsersManager {
 
         ret = User.fromJson(json.decode(responseItem.resultMessage));
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success) {
           showPopupMessage("Error getting the user (1).", context);
         }
       } catch (e) {
@@ -84,7 +83,8 @@ class UsersManager {
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -114,7 +114,8 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -146,7 +147,8 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
