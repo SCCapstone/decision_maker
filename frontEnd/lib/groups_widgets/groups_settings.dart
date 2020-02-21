@@ -80,7 +80,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
     }
     groupName = Globals.currentGroup.groupName;
-    pollDuration = Globals.currentGroup.defaultPollDuration;
+    pollDuration = Globals.currentGroup.defaultVotingDuration;
     rsvpDuration = Globals.currentGroup.defaultRsvpDuration;
     pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
     currentGroupIcon = Globals.currentGroup.icon;
@@ -430,7 +430,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         oldCategories.length == newCategories.length);
 
     if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
-        pollDuration != Globals.currentGroup.defaultPollDuration ||
+        pollDuration != Globals.currentGroup.defaultVotingDuration ||
         rsvpDuration != Globals.currentGroup.defaultRsvpDuration ||
         groupName != Globals.currentGroup.groupName ||
         newUsersAdded ||
@@ -468,7 +468,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           categories: selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
-          defaultPollDuration: pollDuration,
+          defaultVotingDuration: pollDuration,
           defaultRsvpDuration: rsvpDuration,
           defaultPollPassPercent: pollPassPercent,
           nextEventId: Globals.currentGroup.nextEventId);

@@ -23,8 +23,7 @@ class CreateGroup extends StatefulWidget {
 class _CreateGroupState extends State<CreateGroup> {
   bool autoValidate = false;
   String groupName;
-  int pollPassPercent;
-  int pollDuration;
+  int votingDuration;
   File icon;
   int rsvpDuration;
 
@@ -36,8 +35,7 @@ class _CreateGroupState extends State<CreateGroup> {
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController pollPassController = new TextEditingController();
-  final TextEditingController pollDurationController =
+  final TextEditingController votingDurationController =
       new TextEditingController();
   final TextEditingController rsvpDurationController =
       new TextEditingController();
@@ -45,8 +43,7 @@ class _CreateGroupState extends State<CreateGroup> {
   @override
   void dispose() {
     groupNameController.dispose();
-    pollPassController.dispose();
-    pollDurationController.dispose();
+    votingDurationController.dispose();
     rsvpDurationController.dispose();
     super.dispose();
   }
@@ -114,17 +111,6 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   TextFormField(
-                    controller: pollDurationController,
-                    keyboardType: TextInputType.number,
-                    validator: validDuration,
-                    onSaved: (String arg) {
-                      pollDuration = int.parse(arg.trim());
-                    },
-                    decoration: InputDecoration(
-                      labelText: "Enter a default poll duration (in minutes)",
-                    ),
-                  ),
-                  TextFormField(
                     controller: rsvpDurationController,
                     keyboardType: TextInputType.number,
                     validator: validDuration,
@@ -136,14 +122,14 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   TextFormField(
-                    controller: pollPassController,
+                    controller: votingDurationController,
                     keyboardType: TextInputType.number,
-                    validator: validPassPercentage,
+                    validator: validDuration,
                     onSaved: (String arg) {
-                      pollPassPercent = int.parse(arg.trim());
+                      votingDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
-                      labelText: "Enter a default poll pass percentage (0-100)",
+                      labelText: "Enter a default voting duration (in minutes)",
                     ),
                   ),
                   Row(
@@ -231,9 +217,8 @@ class _CreateGroupState extends State<CreateGroup> {
           groupName: groupName,
           categories: selectedCategories,
           members: membersMap,
-          defaultPollDuration: pollDuration,
-          defaultRsvpDuration: rsvpDuration,
-          defaultPollPassPercent: pollPassPercent);
+          defaultVotingDuration: votingDuration,
+          defaultRsvpDuration: rsvpDuration);
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
