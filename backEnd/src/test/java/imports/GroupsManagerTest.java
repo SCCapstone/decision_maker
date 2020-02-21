@@ -308,7 +308,7 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void validEventInput_invalidPollDuration_failureResult() {
+  public void validEventInput_invalidVotingDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
@@ -325,7 +325,7 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void validEventInput_invalidPercentage_failureResult() {
+  public void validEventInput_invalidRsvpDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
         .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)

@@ -506,7 +506,7 @@ public class GroupsManager extends DatabaseAccessManager {
       isValid = false;
     }
 
-    if (votingDuration <= 0 || votingDuration > 100) {
+    if (votingDuration <= 0 || votingDuration > 10000) {
       isValid = false;
     }
 
