@@ -37,7 +37,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String GROUP_CREATOR = "GroupCreator";
   public static final String MEMBERS = "Members";
   public static final String CATEGORIES = "Categories";
-  public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
@@ -115,7 +115,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES, DEFAULT_POLL_DURATION,
+        .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES, DEFAULT_VOTING_DURATION,
             DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
@@ -125,7 +125,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
@@ -147,7 +147,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .withString(GROUP_CREATOR, activeUser)
             .withMap(MEMBERS, membersMapped)
             .withMap(CATEGORIES, categories)
-            .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
+            .withInt(DEFAULT_VOTING_DURATION, defaultVotingDuration)
             .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
@@ -193,7 +193,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -203,7 +203,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
@@ -211,7 +211,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .asMap();
         final String groupCreator = (String) dbGroupDataMap.get(GROUP_CREATOR);
         if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
-            defaultPollDuration, defaultRsvpDuration)) {
+            defaultVotingDuration, defaultRsvpDuration)) {
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
@@ -224,14 +224,14 @@ public class GroupsManager extends DatabaseAccessManager {
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
                     + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
-                    + DEFAULT_POLL_DURATION + " = :defaultPollDuration, "
+                    + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
                     + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
                 .withString(":creator", groupCreator)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
-                .withInt(":defaultPollDuration", defaultPollDuration)
+                .withInt(":defaultVotingDuration", defaultVotingDuration)
                 .withInt(":defaultRsvpDuration", defaultRsvpDuration);
 
             //assumption - currently we aren't allowing user's to clear a group's image once set
@@ -468,7 +468,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final List<String> members, final Integer defaultPollDuration,
+      final String groupCreator, final List<String> members, final Integer defaultVotingDuration,
       final Integer defaultRsvpDuration) {
     boolean isValid = true;
 
@@ -487,7 +487,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     isValid = isValid && creatorInGroup;
 
-    if (defaultPollDuration <= 0 || defaultPollDuration > MAX_DURATION) {
+    if (defaultVotingDuration <= 0 || defaultVotingDuration > MAX_DURATION) {
       isValid = false;
     }
 
