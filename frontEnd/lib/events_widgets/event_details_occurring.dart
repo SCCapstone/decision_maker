@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsOccurring extends StatefulWidget {
   final String groupId;
-  final Event event;
   final String eventId;
-  final List<Widget> userRows = new List<Widget>();
 
-  EventDetailsOccurring({Key key, this.groupId, this.event, this.eventId})
+  EventDetailsOccurring({Key key, this.groupId, this.eventId})
       : super(key: key);
 
   @override
@@ -19,16 +19,14 @@ class EventDetailsOccurring extends StatefulWidget {
 
 class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   String eventCreator = "";
+  List<Widget> userRows = new List<Widget>();
+  Event event;
 
   @override
   void initState() {
-    for (String username in widget.event.optedIn.keys) {
-      widget.userRows.add(
-          UserRow(widget.event.optedIn[username][UsersManager.DISPLAY_NAME]));
-    }
-    for (String username in widget.event.eventCreator.keys) {
-      eventCreator =
-          widget.event.eventCreator[username][UsersManager.DISPLAY_NAME];
+    getEvent();
+    for (String username in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[username][UsersManager.DISPLAY_NAME];
     }
     super.initState();
   }
@@ -36,10 +34,10 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(
+      appBar: AppBar(
         centerTitle: true,
         title: Text(
-          widget.event.eventName,
+          event.eventName,
           style: TextStyle(
               fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
         ),
@@ -68,7 +66,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       ),
                     ),
                     Text(
-                      widget.event.eventStartDateTimeFormatted,
+                      event.eventStartDateTimeFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -87,7 +85,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       ),
                     ),
                     Text(
-                      widget.event.categoryName,
+                      event.categoryName,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -104,7 +102,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                                     0.8,
                           )),
                     ),
-                    Text(widget.event.selectedChoice,
+                    Text(event.selectedChoice,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -119,13 +117,13 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${widget.event.optedIn.length})"),
+                      title: Text("Attendees (${event.optedIn.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
                           child: ListView(
                             shrinkWrap: true,
-                            children: widget.userRows,
+                            children: userRows,
                           ),
                         ),
                       ],
@@ -140,9 +138,27 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     );
   }
 
+  void getEvent() {
+    Map<String, Event> events =
+        GroupsManager.getGroupEvents(Globals.currentGroup);
+    event = events[widget.eventId];
+
+    userRows.clear();
+    for (String username in event.optedIn.keys) {
+      userRows.add(UserRowEvents(
+          event.optedIn[username][UsersManager.DISPLAY_NAME],
+          username,
+          event.optedIn[username][UsersManager.ICON]));
+    }
+  }
+
   Future<Null> refreshList() async {
-    await Future.delayed(
-        Duration(milliseconds: 70)); // required to remove the loading animation
+    List<String> groupId = new List<String>();
+    groupId.add(widget.groupId);
+    Globals.currentGroup =
+        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
+    getEvent();
+    // TODO if in different stage kick the user out of this page?
     setState(() {});
   }
 }

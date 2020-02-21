@@ -57,6 +57,19 @@ class Group {
   }
 
   @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is Group && this.groupId == other.groupId;
+  }
+
+  @override
+  int get hashCode {
+    return groupId.hashCode;
+  }
+
+  @override
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"

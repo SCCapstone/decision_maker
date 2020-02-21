@@ -27,26 +27,25 @@ class _CategoryListState extends State<CategoryList> {
   Widget build(BuildContext context) {
     if (widget.categories.length == 0) {
       return Center(
-        child:
-            Text("No categories found! Click the button below to create some!"),
+        child: Text(
+            "No categories found! Click the button below to create some!",
+            style: TextStyle(fontSize: 30)),
       );
     } else {
       return Scrollbar(
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.categories.length,
-          itemBuilder: (BuildContext context, int index) {
-            bool isOwner = false;
-            if (widget.categories[index].owner == Globals.username) {
-              isOwner = true;
-            }
-            return CategoriesListItem(
-                widget.categories[index], index, isOwner,
-                onDelete: () => removeItem(index),
-                afterEditCallback: widget.refreshPage);
-          }
-        )
-      );
+          child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.categories.length,
+              itemBuilder: (BuildContext context, int index) {
+                bool isOwner = false;
+                if (widget.categories[index].owner == Globals.username) {
+                  isOwner = true;
+                }
+                return CategoriesListItem(
+                    widget.categories[index], index, isOwner,
+                    onDelete: () => removeItem(index),
+                    afterEditCallback: widget.refreshPage);
+              }));
     }
   }
 
