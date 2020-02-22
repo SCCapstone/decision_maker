@@ -13,7 +13,6 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
-import java.security.acl.Group;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
