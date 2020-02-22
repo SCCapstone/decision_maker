@@ -470,8 +470,8 @@ public class GroupsManager extends DatabaseAccessManager {
                 "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
             ValueMap valueMap = new ValueMap()
                 .withMap(":nameIconMap", new HashMap<String, Object>() {{
-                  put(GROUP_NAME, (String) groupDataMapped.get(GROUP_NAME));
-                  put(ICON, (String) groupDataMapped.get(ICON));
+                  put(GROUP_NAME, groupDataMapped.get(GROUP_NAME));
+                  put(ICON, groupDataMapped.get(ICON));
                 }});
 
             updateItemSpec = new UpdateItemSpec()
