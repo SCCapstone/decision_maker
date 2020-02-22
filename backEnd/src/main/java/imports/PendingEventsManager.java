@@ -13,10 +13,12 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
+import java.security.acl.Group;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import utilities.ErrorDescriptor;
@@ -119,12 +121,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
             final Map<String, Object> tentativeChoices = this
                 .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
 
+            final Map<String, Object> votingNumbersSetup = this
+                .getVotingNumbersSetup(tentativeChoices);
+
             //update the event
             String updateExpression =
                 "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
-                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate, "
+                    + GroupsManager.VOTING_NUMBERS + " = :votingNumbers";
             NameMap nameMap = new NameMap().with("#eventId", eventId);
-            ValueMap valueMap = new ValueMap().withMap(":tentativeChoices", tentativeChoices)
+            ValueMap valueMap = new ValueMap()
+                .withMap(":tentativeChoices", tentativeChoices)
+                .withMap(":votingNumbers", votingNumbersSetup)
                 .withString(":currentDate",
                     LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
@@ -232,6 +240,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
     metrics.commonClose(success);
     return tentativeChoice;
+  }
+
+  private Map<String, Object> getVotingNumbersSetup(
+      final Map<String, Object> tentativeAlgorithmChoices) {
+    final Map<String, Object> votingNumbers = new HashMap<>();
+
+    //we're filling a map keyed by choiceId with empty maps
+    for (String choiceId: tentativeAlgorithmChoices.keySet()) {
+      votingNumbers.put(choiceId, ImmutableMap.of());
+    }
+
+    return votingNumbers;
   }
 
   public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
