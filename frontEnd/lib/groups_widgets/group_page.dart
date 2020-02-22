@@ -81,16 +81,13 @@ class _GroupPageState extends State<GroupPage> {
             ],
           ),
         ),
-        floatingActionButton: Visibility(
-          visible: !initialLoad,
-          child: FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => CreateEvent()))
-                  .then((_) => GroupPage());
-            },
-          ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CreateEvent()))
+                .then((_) => GroupPage());
+          },
         ),
       );
     }
@@ -101,7 +98,6 @@ class _GroupPageState extends State<GroupPage> {
     groupId.add(widget.groupId);
     List<Group> tempList = await GroupsManager.getGroups(groupIds: groupId);
     if (tempList.length != 0) {
-      print(tempList.first);
       initialLoad = false;
       Globals.currentGroup = tempList.first;
       setState(() {});
@@ -117,7 +113,7 @@ class _GroupPageState extends State<GroupPage> {
         appBar: AppBar(
             centerTitle: true,
             title: Text(
-              (initialLoad) ? widget.groupName : Globals.currentGroup.groupName,
+              widget.groupName,
               style: TextStyle(
                   fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
             )),
@@ -133,11 +129,22 @@ class _GroupPageState extends State<GroupPage> {
               style: TextStyle(
                   fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
             )),
-        body: Center(
-            child: Text(
-          "Error loading the group.",
-          style: TextStyle(fontSize: 30),
-        )));
+        body: Container(
+          height: MediaQuery.of(context).size.height * .80,
+          child: RefreshIndicator(
+            onRefresh: refreshList,
+            child: ListView(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .15)),
+                Center(
+                    child: Text("Error loading the group.",
+                        style: TextStyle(fontSize: 30))),
+              ],
+            ),
+          ),
+        ));
   }
 
   Future<Null> refreshList() async {
