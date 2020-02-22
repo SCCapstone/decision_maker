@@ -18,95 +18,137 @@ class GroupPage extends StatefulWidget {
 }
 
 class _GroupPageState extends State<GroupPage> {
-  Future<List<Group>> groupFuture;
   bool initialLoad = true;
+  bool errorLoading = false;
 
   @override
   void initState() {
-    List<String> groupId = new List<String>();
-    groupId.add(widget.groupId);
-    groupFuture = GroupsManager.getGroups(groupIds: groupId);
+    getGroup();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          (initialLoad) ? widget.groupName : Globals.currentGroup.groupName,
-          style: TextStyle(
-              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => GroupSettings()),
-              ).then((_) => GroupPage());
-            },
+    if (initialLoad) {
+      return groupLoading();
+    } else if (errorLoading) {
+      return groupError();
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(
+            Globals.currentGroup.groupName,
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
           ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-            ),
-            FutureBuilder(
-              future: groupFuture,
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData) {
-                  if (initialLoad) {
-                    Globals.currentGroup = snapshot.data.first;
-                    initialLoad = false;
-                  }
-                  return Expanded(
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * .80,
-                      child: RefreshIndicator(
-                        child: EventsList(
-                          group: Globals.currentGroup,
-                          events: GroupsManager.getGroupEvents(
-                              Globals.currentGroup),
-                        ),
-                        onRefresh: refreshList,
-                      ),
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Text("Error: ${snapshot.error}");
-                }
-                return Center(child: CircularProgressIndicator());
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GroupSettings()),
+                ).then((_) => GroupPage());
               },
             ),
-            Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
-            )
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CreateEvent()))
-              .then((_) => GroupPage());
-        },
-      ),
-    );
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              ),
+              Expanded(
+                child: Container(
+                  height: MediaQuery.of(context).size.height * .80,
+                  child: RefreshIndicator(
+                    child: EventsList(
+                      group: Globals.currentGroup,
+                      events:
+                          GroupsManager.getGroupEvents(Globals.currentGroup),
+                    ),
+                    onRefresh: refreshList,
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .02),
+              )
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CreateEvent()))
+                .then((_) => GroupPage());
+          },
+        ),
+      );
+    }
+  }
+
+  void getGroup() async {
+    List<String> groupId = new List<String>();
+    groupId.add(widget.groupId);
+    List<Group> tempList = await GroupsManager.getGroups(groupIds: groupId);
+    if (tempList.length != 0) {
+      initialLoad = false;
+      Globals.currentGroup = tempList.first;
+      setState(() {});
+    } else {
+      initialLoad = false;
+      errorLoading = true;
+      setState(() {});
+    }
+  }
+
+  Widget groupLoading() {
+    return Scaffold(
+        appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              widget.groupName,
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            )),
+        body: Center(child: CircularProgressIndicator()));
+  }
+
+  Widget groupError() {
+    return Scaffold(
+        appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              widget.groupName,
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            )),
+        body: Container(
+          height: MediaQuery.of(context).size.height * .80,
+          child: RefreshIndicator(
+            onRefresh: refreshList,
+            child: ListView(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .15)),
+                Center(
+                    child: Text("Error loading the group.",
+                        style: TextStyle(fontSize: 30))),
+              ],
+            ),
+          ),
+        ));
   }
 
   Future<Null> refreshList() async {
-    List<String> groupId = new List<String>();
-    groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(groupIds: groupId)).first;
+    getGroup();
     setState(() {});
   }
 }

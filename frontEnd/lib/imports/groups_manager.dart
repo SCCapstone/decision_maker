@@ -24,8 +24,8 @@ class GroupsManager {
   static final String LAST_ACTIVITY = "LastActivity";
   static final String MEMBERS = "Members";
   static final String CATEGORIES = "Categories";
-  static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
-  static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 
@@ -164,7 +164,7 @@ class GroupsManager {
     }
   }
 
-  static Future<bool> addEvent(
+  static Future<bool> newEvent(
       String groupId, Event event, BuildContext context) async {
     bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();

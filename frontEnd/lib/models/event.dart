@@ -9,9 +9,8 @@ class Event {
   final DateTime eventStartDateTime;
   final DateTime pollBegin;
   final DateTime pollEnd;
-  final int type;
-  final int pollDuration;
-  final int pollPassPercent;
+  final int votingDuration;
+  final int rsvpDuration;
   final Map<String, dynamic> optedIn;
   final Map<String, dynamic> tentativeAlgorithmChoices;
   final Map<String, dynamic> votingNumbers;
@@ -27,9 +26,8 @@ class Event {
       this.eventName,
       this.createdDateTime,
       this.eventStartDateTime,
-      this.type,
-      this.pollDuration,
-      this.pollPassPercent,
+      this.votingDuration,
+      this.rsvpDuration,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -47,9 +45,8 @@ class Event {
       this.eventName,
       this.createdDateTime,
       this.eventStartDateTime,
-      this.type,
-      this.pollDuration,
-      this.pollPassPercent,
+      this.votingDuration,
+      this.rsvpDuration,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -64,10 +61,10 @@ class Event {
   factory Event.fromJson(Map<String, dynamic> json) {
     DateTime pollBeginTemp =
         DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).add(new Duration(
-            minutes: (int.parse(json[EventsManager.POLL_DURATION]))));
+            minutes: (int.parse(json[EventsManager.VOTING_DURATION]))));
     DateTime pollEndTemp = DateTime.parse(json[EventsManager.CREATED_DATE_TIME])
         .add(new Duration(
-            minutes: (int.parse(json[EventsManager.POLL_DURATION])) * 2));
+            minutes: (int.parse(json[EventsManager.VOTING_DURATION])) * 2));
 
     return Event(
         categoryId: json[EventsManager.CATEGORY_ID],
@@ -78,9 +75,8 @@ class Event {
             DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
         pollEnd: pollEndTemp,
         pollBegin: pollBeginTemp,
-        type: int.parse(json[EventsManager.TYPE]),
-        pollDuration: int.parse(json[EventsManager.POLL_DURATION]),
-        pollPassPercent: int.parse(json[EventsManager.POLL_PASS_PERCENT]),
+        votingDuration: int.parse(json[EventsManager.VOTING_DURATION]),
+        rsvpDuration: int.parse(json[EventsManager.RSVP_DURATION]),
         optedIn: json[EventsManager.OPTED_IN],
         tentativeAlgorithmChoices:
             json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
@@ -104,9 +100,8 @@ class Event {
           this.createdDateTime.toString().substring(0, 19),
       EventsManager.EVENT_START_DATE_TIME:
           this.eventStartDateTime.toString().substring(0, 19),
-      EventsManager.TYPE: this.type,
-      EventsManager.POLL_DURATION: this.pollDuration,
-      EventsManager.POLL_PASS_PERCENT: this.pollPassPercent,
+      EventsManager.VOTING_DURATION: this.votingDuration,
+      EventsManager.RSVP_DURATION: this.rsvpDuration,
       EventsManager.OPTED_IN: this.optedIn,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
       EventsManager.SELECTED_CHOICE: this.selectedChoice,
@@ -118,9 +113,8 @@ class Event {
   @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
-        "$createdDateTime EventStartDateTime: $eventStartDateTime Type: $type PollDuration: $pollDuration "
-        "PollPassPercent $pollPassPercent OptedIn: $optedIn SelectedChoice: $selectedChoice "
-        "VotingNumbers: $votingNumbers TentativeAlgorithmChoices $tentativeAlgorithmChoices "
-        "EventCreator: $eventCreator";
+        "$createdDateTime EventStartDateTime: $eventStartDateTime PollDuration: $votingDuration "
+        "RsvpDuration: $rsvpDuration OptedIn: $optedIn SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
+        "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator";
   }
 }

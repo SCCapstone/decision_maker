@@ -9,8 +9,8 @@ class Group {
   final Map<String, dynamic> members;
   final Map<String, dynamic> categories;
   final Map<String, dynamic> events;
-  final int defaultPollPassPercent;
-  final int defaultPollDuration;
+  final int defaultVotingDuration;
+  final int defaultRsvpDuration;
   final int nextEventId;
 
   Group(
@@ -22,8 +22,8 @@ class Group {
       this.members,
       this.categories,
       this.events,
-      this.defaultPollPassPercent,
-      this.defaultPollDuration,
+      this.defaultVotingDuration,
+      this.defaultRsvpDuration,
       this.nextEventId});
 
   Group.debug(
@@ -35,8 +35,8 @@ class Group {
       this.members,
       this.categories,
       this.events,
-      this.defaultPollPassPercent,
-      this.defaultPollDuration,
+      this.defaultVotingDuration,
+      this.defaultRsvpDuration,
       this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
@@ -49,10 +49,10 @@ class Group {
         members: json[GroupsManager.MEMBERS],
         categories: json[GroupsManager.CATEGORIES],
         events: json[GroupsManager.EVENTS],
-        defaultPollPassPercent:
-            int.parse(json[GroupsManager.DEFAULT_POLL_PASS_PERCENT]),
-        defaultPollDuration:
-            int.parse(json[GroupsManager.DEFAULT_POLL_DURATION]),
+        defaultVotingDuration:
+            int.parse(json[GroupsManager.DEFAULT_VOTING_DURATION]),
+        defaultRsvpDuration:
+            int.parse(json[GroupsManager.DEFAULT_RSVP_DURATION]),
         nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
   }
 
@@ -73,8 +73,7 @@ class Group {
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"
-        "DefaultPollPassPercent: $defaultPollPassPercent DefaultPollDuration: $defaultPollDuration "
-        "NextEventId: $nextEventId";
+        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultRsvpDuration NextEventId: $nextEventId";
   }
 
   Map asMap() {
@@ -87,8 +86,8 @@ class Group {
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: this.events,
-      GroupsManager.DEFAULT_POLL_PASS_PERCENT: this.defaultPollPassPercent,
-      GroupsManager.DEFAULT_POLL_DURATION: this.defaultPollDuration,
+      GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
+      GroupsManager.DEFAULT_RSVP_DURATION: this.defaultRsvpDuration,
       GroupsManager.NEXT_EVENT_ID: this.nextEventId
     };
   }
