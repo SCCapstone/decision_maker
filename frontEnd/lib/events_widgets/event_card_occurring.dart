@@ -43,9 +43,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsOccurring(
-                        groupId: widget.groupId,
-                        event: widget.event,
-                        eventId: widget.eventId)),
+                        groupId: widget.groupId, eventId: widget.eventId)),
               );
             },
           )

@@ -82,6 +82,20 @@ public class PendingEventsManagerTest {
   // processPendingEvent tests //
   ///////////////////////////////region
 
+  @Test
+  public void processPendingEvent_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY)
+        .withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
+
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+    verify(this.awsStepFunctions, times(1)).startExecution(any(StartExecutionRequest.class));
+  }
+
   ///////////////////////////endregion
   // addPendingEvent tests //
   ///////////////////////////region

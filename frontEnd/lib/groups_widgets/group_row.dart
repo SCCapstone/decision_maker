@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
@@ -8,9 +6,8 @@ import 'package:frontEnd/utilities/utilities.dart';
 
 class GroupRow extends StatelessWidget {
   final Group group;
-  final int index;
 
-  GroupRow(this.group, this.index);
+  GroupRow(this.group);
 
   @override
   Widget build(BuildContext context) {
@@ -27,24 +24,24 @@ class GroupRow extends StatelessWidget {
                     image: getIconUrl(group.icon),
                   ),
                   onPressed: () {
-                    Globals.currentGroup = group;
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => GroupPage(
-                                events: GroupsManager.getGroupEvents(group),
+                                groupId: group.groupId,
+                                groupName: group.groupName,
                               )),
                     ).then((_) => GroupsHome());
                   }),
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    Globals.currentGroup = group;
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => GroupPage(
-                                events: GroupsManager.getGroupEvents(group),
+                                groupId: group.groupId,
+                                groupName: group.groupName,
                               )),
                     ).then((_) => GroupsHome());
                   },

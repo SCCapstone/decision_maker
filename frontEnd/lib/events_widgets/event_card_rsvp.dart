@@ -45,9 +45,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsRsvp(
-                        groupId: widget.groupId,
-                        event: widget.event,
-                        eventId: widget.eventId)),
+                        groupId: widget.groupId, eventId: widget.eventId)),
               );
             },
           )

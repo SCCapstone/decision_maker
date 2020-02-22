@@ -7,28 +7,24 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsRsvp extends StatefulWidget {
   final String groupId;
-  final Event event;
   final String eventId;
-  final List<Widget> userRows = new List<Widget>();
 
-  EventDetailsRsvp({Key key, this.groupId, this.event, this.eventId})
-      : super(key: key);
+  EventDetailsRsvp({Key key, this.groupId, this.eventId}) : super(key: key);
 
   @override
   _EventDetailsRsvpState createState() => new _EventDetailsRsvpState();
 }
 
 class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
+  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
   String eventCreator = "";
+  Event event;
 
   @override
   void initState() {
-    for (String username in widget.event.optedIn.keys) {
-      widget.userRows.add(
-          UserRow(widget.event.optedIn[username][UsersManager.DISPLAY_NAME]));
-    }
-    for (String username in widget.event.eventCreator.keys) {
-      eventCreator = widget.event.eventCreator[username][UsersManager.DISPLAY_NAME];
+    getEvent();
+    for (String username in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[username];
     }
     super.initState();
   }
@@ -36,10 +32,10 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(
+      appBar: AppBar(
         centerTitle: true,
         title: Text(
-          widget.event.eventName,
+          event.eventName,
           style: TextStyle(
               fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
         ),
@@ -68,7 +64,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                       ),
                     ),
                     Text(
-                      Globals.formatter.format(widget.event.eventStartDateTime),
+                      Globals.formatter.format(event.eventStartDateTime),
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -85,7 +81,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                                     0.8,
                           )),
                     ),
-                    Text(widget.event.pollBeginFormatted,
+                    Text(event.pollBeginFormatted,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -103,7 +99,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                       ),
                     ),
                     Text(
-                      widget.event.categoryName,
+                      event.categoryName,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -119,13 +115,13 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${widget.event.optedIn.length})"),
+                      title: Text("Attendees (${userRows.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
                           child: ListView(
                             shrinkWrap: true,
-                            children: widget.userRows,
+                            children: userRows.values.toList(),
                           ),
                         ),
                       ],
@@ -148,6 +144,8 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           onPressed: () {
                             GroupsManager.optInOutOfEvent(
                                 widget.groupId, widget.eventId, false, context);
+                            userRows.remove(Globals.username);
+                            setState(() {});
                           },
                         ),
                         RaisedButton(
@@ -156,6 +154,11 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           onPressed: () {
                             GroupsManager.optInOutOfEvent(
                                 widget.groupId, widget.eventId, true, context);
+                            userRows.putIfAbsent(
+                                Globals.username,
+                                () => UserRowEvents(Globals.user.displayName,
+                                    Globals.username, Globals.user.icon));
+                            setState(() {});
                           },
                         )
                       ],
@@ -170,9 +173,29 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
     );
   }
 
+  void getEvent() {
+    Map<String, Event> events =
+        GroupsManager.getGroupEvents(Globals.currentGroup);
+    event = events[widget.eventId];
+
+    userRows.clear();
+    for (String username in event.optedIn.keys) {
+      userRows.putIfAbsent(
+          username,
+          () => UserRowEvents(
+              event.optedIn[username][UsersManager.DISPLAY_NAME],
+              username,
+              event.optedIn[username][UsersManager.ICON]));
+    }
+  }
+
   Future<Null> refreshList() async {
-    await Future.delayed(
-        Duration(milliseconds: 70)); // required to remove the loading animation
+    List<String> groupId = new List<String>();
+    groupId.add(widget.groupId);
+    Globals.currentGroup =
+        (await GroupsManager.getGroups(groupIds: groupId)).first;
+    getEvent();
+    // TODO if in different stage kick the user out of this page?
     setState(() {});
   }
 }

@@ -45,9 +45,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsClosed(
-                        groupId: widget.groupId,
-                        event: widget.event,
-                        eventId: widget.eventId)),
+                        groupId: widget.groupId, eventId: widget.eventId)),
               );
             },
           )

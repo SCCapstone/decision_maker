@@ -9,7 +9,6 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
-import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,8 +37,8 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String GROUP_CREATOR = "GroupCreator";
   public static final String MEMBERS = "Members";
   public static final String CATEGORIES = "Categories";
-  public static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
-  public static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
 
@@ -49,14 +48,15 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENT_CREATOR = "EventCreator";
   public static final String CREATED_DATE_TIME = "CreatedDateTime";
   public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
-  public static final String TYPE = "Type";
-  public static final String POLL_DURATION = "PollDuration";
-  public static final String POLL_PASS_PERCENT = "PollPassPercent";
+  public static final String VOTING_DURATION = "VotingDuration";
+  public static final String RSVP_DURATION = "RsvpDuration";
   public static final String OPTED_IN = "OptedIn";
-  public static final String TENTATIVE_ALGORITHM_CHOICES = "TentativeAlgorithmChoices";
   public static final String VOTING_NUMBERS = "VotingNumbers";
+  public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
   public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
+
+  public static final Integer MAX_DURATION = 10000;
 
   public static final Map EMPTY_MAP = new HashMap();
 
@@ -109,7 +109,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus createNewGroup(Map<String, Object> jsonMap, final Metrics metrics,
+  public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.createNewGroup";
     metrics.commonSetup(classMethod);
@@ -117,7 +117,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -126,8 +126,8 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
-        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
+        final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         final UUID uuid = UUID.randomUUID();
@@ -148,8 +148,8 @@ public class GroupsManager extends DatabaseAccessManager {
             .withString(GROUP_CREATOR, activeUser)
             .withMap(MEMBERS, membersMapped)
             .withMap(CATEGORIES, categories)
-            .withInt(DEFAULT_POLL_PASS_PERCENT, defaultPollPassPercent)
-            .withInt(DEFAULT_POLL_DURATION, defaultPollDuration)
+            .withInt(DEFAULT_VOTING_DURATION, defaultVotingDuration)
+            .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
             .withString(LAST_ACTIVITY,
@@ -176,25 +176,28 @@ public class GroupsManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request.";
         lambdaLogger.log(
             new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     } else {
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
   public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.editGroup";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_POLL_PASS_PERCENT, DEFAULT_POLL_DURATION, RequestFields.ACTIVE_USER);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -204,15 +207,15 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<List<Integer>> newIcon = Optional
             .ofNullable((List<Integer>) jsonMap.get(ICON));
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultPollPassPercent = (Integer) jsonMap.get(DEFAULT_POLL_PASS_PERCENT);
-        final Integer defaultPollDuration = (Integer) jsonMap.get(DEFAULT_POLL_DURATION);
+        final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
+        final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         final Map<String, Object> dbGroupDataMap = this.getItemByPrimaryKey(groupId)
             .asMap();
         final String groupCreator = (String) dbGroupDataMap.get(GROUP_CREATOR);
         if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
-            defaultPollPassPercent, defaultPollDuration)) {
+            defaultVotingDuration, defaultRsvpDuration)) {
 
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
@@ -225,15 +228,15 @@ public class GroupsManager extends DatabaseAccessManager {
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
                     + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
-                    + DEFAULT_POLL_DURATION + " = :defaultPollDuration, "
-                    + DEFAULT_POLL_PASS_PERCENT + " = :defaultPollPassPercent";
+                    + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
+                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
                 .withString(":creator", groupCreator)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
-                .withInt(":defaultPollDuration", defaultPollDuration)
-                .withInt(":defaultPollPassPercent", defaultPollPassPercent);
+                .withInt(":defaultVotingDuration", defaultVotingDuration)
+                .withInt(":defaultRsvpDuration", defaultRsvpDuration);
 
             //assumption - currently we aren't allowing user's to clear a group's image once set
             String newIconFileName = null;
@@ -269,14 +272,16 @@ public class GroupsManager extends DatabaseAccessManager {
           resultStatus.resultMessage = "Invalid request, bad input.";
         }
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
         resultStatus.resultMessage = "Error: Unable to parse request in manager";
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+          "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -287,19 +292,17 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, CREATED_DATE_TIME, EVENT_START_DATE_TIME,
-            TYPE, POLL_DURATION, EVENT_CREATOR, POLL_PASS_PERCENT, GROUP_ID);
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME,
+            EVENT_START_DATE_TIME, VOTING_DURATION, RSVP_DURATION, GROUP_ID);
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String eventName = (String) jsonMap.get(EVENT_NAME);
         final String categoryId = (String) jsonMap.get(CATEGORY_ID);
         final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        final String createdDateTime = (String) jsonMap.get(CREATED_DATE_TIME);
         final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
-        final Integer type = (Integer) jsonMap.get(TYPE);
-        final Integer pollDuration = (Integer) jsonMap.get(POLL_DURATION);
-        final Integer pollPassPercent = (Integer) jsonMap.get(POLL_PASS_PERCENT);
-        final Map<String, Object> eventCreator = (Map<String, Object>) jsonMap.get(EVENT_CREATOR);
+        final Integer votingDuration = (Integer) jsonMap.get(VOTING_DURATION);
+        final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
         final String groupId = (String) jsonMap.get(GROUP_ID);
         BigDecimal nextEventId;
         Map<String, Object> optedIn;
@@ -329,21 +332,25 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final String eventId = nextEventId.toString();
 
-        if (this.validEventInput(groupId, categoryId, pollDuration,
-            pollPassPercent)) {
+        if (this.validEventInput(groupId, categoryId, votingDuration,
+            rsvpDuration)) {
           final Map<String, Object> eventMap = new HashMap<>();
+          final Map<String, Object> eventCreator = new HashMap<>();
+          eventCreator.put("username", activeUser);
 
           eventMap.put(CATEGORY_ID, categoryId);
           eventMap.put(CATEGORY_NAME, categoryName);
           eventMap.put(EVENT_NAME, eventName);
-          eventMap.put(CREATED_DATE_TIME, createdDateTime);
+          eventMap.put(CREATED_DATE_TIME,
+              LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
           eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
-          eventMap.put(TYPE, type);
-          eventMap.put(POLL_DURATION, pollDuration);
-          eventMap.put(POLL_PASS_PERCENT, pollPassPercent);
+          eventMap.put(VOTING_DURATION, votingDuration);
+          eventMap.put(RSVP_DURATION, rsvpDuration);
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, eventCreator);
-          eventMap.put(SELECTED_CHOICE, "calculating...");
+          eventMap.put(SELECTED_CHOICE, null);
+          eventMap.put(TENTATIVE_CHOICES, EMPTY_MAP);
+          eventMap.put(VOTING_NUMBERS, EMPTY_MAP);
 
           String updateExpression =
               "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "
@@ -365,7 +372,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, pollDuration);
+              .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
@@ -437,47 +444,60 @@ public class GroupsManager extends DatabaseAccessManager {
 
     return resultStatus;
   }
-  
-  public ResultStatus voteForChoice(final Map<String, Object> jsonMap) {
-    
+
+  public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.voteForChoice";
+    metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
             RequestFields.ACTIVE_USER);
-    
+
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
-        final String voteValue = (String) jsonMap.get(RequestFields.VOTE_VALUE);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
- 
-              
-        String updateExpression = 
-            "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." + 
-            "#activeUser = :voteValue"; 
-        ValueMap valueMap = new ValueMap().withString(":voteValue", voteValue);
-          
-        final NameMap  nameMap = new NameMap()
-          .with("#eventId", eventId)
-          .with("#choiceId", choiceId)
-          .with("#activeUser", activeUser);
-          
+        Integer voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
+
+        if (voteValue != 1) {
+          voteValue = 0;
+        }
+
+        String updateExpression =
+            "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." +
+                "#activeUser = :voteValue";
+        ValueMap valueMap = new ValueMap().withInt(":voteValue", voteValue);
+
+        final NameMap nameMap = new NameMap()
+            .with("#eventId", eventId)
+            .with("#choiceId", choiceId)
+            .with("#activeUser", activeUser);
+
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap)
-          .withValueMap(valueMap);
-          
+            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
+
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
-      } catch(Exception e) {
-        resultStatus.resultMessage = "Error: unable to parse request in manager. Exception: "+ e;
+      } catch (Exception e) {
+        resultStatus.resultMessage = "Error: unable to parse request in manager.";
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
       }
     } else {
       resultStatus.resultMessage = "Error: required request keys not found.";
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Error: required request keys not found.").toString());
     }
+
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -514,9 +534,8 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final List<String> members,
-      final Integer defaultPollPassPercent,
-      final Integer defaultPollDuration) {
+      final String groupCreator, final List<String> members, final Integer defaultVotingDuration,
+      final Integer defaultRsvpDuration) {
     boolean isValid = true;
 
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(activeUser)) {
@@ -534,11 +553,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
     isValid = isValid && creatorInGroup;
 
-    if (defaultPollPassPercent < 0 || defaultPollPassPercent > 100) {
+    if (defaultVotingDuration <= 0 || defaultVotingDuration > MAX_DURATION) {
       isValid = false;
     }
 
-    if (defaultPollDuration <= 0 || defaultPollDuration > 10000) {
+    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
       isValid = false;
     }
 
@@ -546,18 +565,18 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean validEventInput(
-      final String groupId, final String categoryId, final Integer pollDuration,
-      final Integer pollPassPercent) {
+      final String groupId, final String categoryId, final Integer votingDuration,
+      final Integer rsvpDuration) {
     boolean isValid = true;
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
       isValid = false;
     }
 
-    if (pollPassPercent < 0 || pollPassPercent > 100) {
+    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
       isValid = false;
     }
 
-    if (pollDuration <= 0 || pollDuration > 10000) {
+    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
       isValid = false;
     }
     return isValid;
@@ -624,7 +643,8 @@ public class GroupsManager extends DatabaseAccessManager {
           } catch (Exception e) {
             success = false;
             lambdaLogger
-                .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+                .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e)
+                    .toString());
           }
         }
       }
@@ -664,7 +684,8 @@ public class GroupsManager extends DatabaseAccessManager {
         } catch (Exception e) {
           success = false;
           lambdaLogger
-              .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+              .log(
+                  new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
         }
       }
     }

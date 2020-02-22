@@ -27,8 +27,8 @@ class _GroupSettingsState extends State<GroupSettings> {
   File icon;
   String groupName;
   String currentGroupIcon;
-  int pollPassPercent;
-  int pollDuration;
+  int votingDuration;
+  int rsvpDuration;
   bool owner;
   List<Member> originalMembers = new List<Member>();
   List<Member> displayedMembers = new List<Member>();
@@ -39,15 +39,16 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController pollPassController = new TextEditingController();
-  final TextEditingController pollDurationController =
+  final TextEditingController votingDurationController =
+      new TextEditingController();
+  final TextEditingController rsvpDurationController =
       new TextEditingController();
 
   @override
   void dispose() {
     groupNameController.dispose();
-    pollPassController.dispose();
-    pollDurationController.dispose();
+    votingDurationController.dispose();
+    rsvpDurationController.dispose();
     super.dispose();
   }
 
@@ -76,13 +77,13 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
     }
     groupName = Globals.currentGroup.groupName;
-    pollDuration = Globals.currentGroup.defaultPollDuration;
-    pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
+    votingDuration = Globals.currentGroup.defaultVotingDuration;
+    rsvpDuration = Globals.currentGroup.defaultRsvpDuration;
     currentGroupIcon = Globals.currentGroup.icon;
 
     groupNameController.text = groupName;
-    pollDurationController.text = pollDuration.toString();
-    pollPassController.text = pollPassPercent.toString();
+    votingDurationController.text = votingDuration.toString();
+    rsvpDurationController.text = rsvpDuration.toString();
 
     super.initState();
   }
@@ -171,30 +172,30 @@ class _GroupSettingsState extends State<GroupSettings> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
                             Text(
-                              "Default poll duration (mins)",
+                              "Default RSVP duration (mins)",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
+                                      .style
+                                      .fontSize *
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20  ,
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validPollDuration,
-                                controller: pollDurationController,
+                                validator: validRsvpDuration,
+                                controller: rsvpDurationController,
                                 onChanged: (String arg) {
                                   try {
-                                    pollDuration = int.parse(arg);
+                                    rsvpDuration = int.parse(arg);
                                     enableAutoValidation();
                                   } catch (e) {
                                     autoValidate = true;
                                   }
                                 },
                                 onSaved: (String arg) {
-                                  pollDuration = int.parse(arg);
+                                  rsvpDuration = int.parse(arg);
                                 },
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(),
@@ -211,7 +212,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
                             Text(
-                              "Default pass percentage     ",
+                              "Default voting duration (mins)",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
                                           .style
@@ -219,28 +220,28 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20,
                               child: TextFormField(
-                                maxLength: 3,
-                                controller: pollPassController,
+                                maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validPassPercentage,
+                                validator: validVotingDuration,
+                                controller: votingDurationController,
                                 onChanged: (String arg) {
                                   try {
-                                    pollPassPercent = int.parse(arg.trim());
+                                    votingDuration = int.parse(arg);
                                     enableAutoValidation();
                                   } catch (e) {
                                     autoValidate = true;
                                   }
                                 },
                                 onSaved: (String arg) {
-                                  pollPassPercent = int.parse(arg.trim());
+                                  votingDuration = int.parse(arg);
                                 },
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(),
                                     counterText: ""),
                               ),
-                            )
+                            ),
                           ],
                         ),
                         Padding(
@@ -383,8 +384,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
         oldCategories.length == newCategories.length);
 
-    if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
-        pollDuration != Globals.currentGroup.defaultPollDuration ||
+    if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
+        rsvpDuration != Globals.currentGroup.defaultRsvpDuration ||
         groupName != Globals.currentGroup.groupName ||
         newUsersAdded ||
         newCategoriesAdded ||
@@ -421,8 +422,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           categories: selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
-          defaultPollDuration: pollDuration,
-          defaultPollPassPercent: pollPassPercent,
+          defaultVotingDuration: votingDuration,
+          defaultRsvpDuration: rsvpDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
       Globals.currentGroup = group;
@@ -435,8 +436,8 @@ class _GroupSettingsState extends State<GroupSettings> {
         originalCategories.clear();
         originalCategories.addAll(selectedCategories);
         groupNameController.text = groupName;
-        pollDurationController.text = pollDuration.toString();
-        pollPassController.text = pollPassPercent.toString();
+        votingDurationController.text = votingDuration.toString();
+        rsvpDurationController.text = rsvpDuration.toString();
         editing = false;
         autoValidate = false;
         newIcon = false;

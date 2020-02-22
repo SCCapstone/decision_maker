@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
@@ -8,12 +9,9 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class EventDetailsVoting extends StatefulWidget {
   final String groupId;
-  final Event event;
   final String eventId;
-  final List<Widget> userRows = new List<Widget>();
 
-  EventDetailsVoting({Key key, this.groupId, this.event, this.eventId})
-      : super(key: key);
+  EventDetailsVoting({Key key, this.groupId, this.eventId}) : super(key: key);
 
   @override
   _EventDetailsVotingState createState() => new _EventDetailsVotingState();
@@ -22,16 +20,14 @@ class EventDetailsVoting extends StatefulWidget {
 class _EventDetailsVotingState extends State<EventDetailsVoting> {
   final PageController controller = new PageController();
   String eventCreator = "";
+  List<Widget> userRows = new List<Widget>();
+  Event event;
 
   @override
   void initState() {
-    for (String username in widget.event.optedIn.keys) {
-      widget.userRows.add(
-          UserRow(widget.event.optedIn[username][UsersManager.DISPLAY_NAME]));
-    }
-    for (String username in widget.event.eventCreator.keys) {
-      eventCreator =
-          widget.event.eventCreator[username][UsersManager.DISPLAY_NAME];
+    getEvent();
+    for (String username in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[username];
     }
     super.initState();
   }
@@ -43,10 +39,10 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
       exampleChoices.add("Choice Number $i");
     }
     return Scaffold(
-      appBar: new AppBar(
+      appBar: AppBar(
         centerTitle: true,
         title: Text(
-          widget.event.eventName,
+          event.eventName,
           style: TextStyle(
               fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
         ),
@@ -75,7 +71,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       ),
                     ),
                     Text(
-                      widget.event.eventStartDateTimeFormatted,
+                      event.eventStartDateTimeFormatted,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -92,7 +88,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                                     0.8,
                           )),
                     ),
-                    Text(widget.event.pollEndFormatted,
+                    Text(event.pollEndFormatted,
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -110,7 +106,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       ),
                     ),
                     Text(
-                      widget.event.categoryName,
+                      event.categoryName,
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
@@ -126,13 +122,13 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${widget.event.optedIn.length})"),
+                      title: Text("Attendees (${event.optedIn.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
                           child: ListView(
                             shrinkWrap: true,
-                            children: widget.userRows,
+                            children: userRows,
                           ),
                         ),
                       ],
@@ -151,7 +147,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                           return EventProposedChoice(
                             groupId: widget.groupId,
                             eventId: widget.eventId,
-                            event: widget.event,
+                            event: event,
                             choiceName: exampleChoices[index],
                             choiceId: index.toString(),
                           );
@@ -175,10 +171,27 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     );
   }
 
+  void getEvent() {
+    Map<String, Event> events =
+        GroupsManager.getGroupEvents(Globals.currentGroup);
+    event = events[widget.eventId];
+
+    userRows.clear();
+    for (String username in event.optedIn.keys) {
+      userRows.add(UserRowEvents(
+          event.optedIn[username][UsersManager.DISPLAY_NAME],
+          username,
+          event.optedIn[username][UsersManager.ICON]));
+    }
+  }
+
   Future<Null> refreshList() async {
-    await Future.delayed(
-        // required to remove the loading animation
-        Duration(milliseconds: 70));
+    List<String> groupId = new List<String>();
+    groupId.add(widget.groupId);
+    Globals.currentGroup =
+        (await GroupsManager.getGroups(groupIds: groupId)).first;
+    getEvent();
+    // TODO if in different stage kick the user out of this page?
     setState(() {});
   }
 }

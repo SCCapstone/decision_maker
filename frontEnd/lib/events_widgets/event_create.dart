@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
@@ -20,12 +21,11 @@ class CreateEvent extends StatefulWidget {
 
 class _CreateEventState extends State<CreateEvent> {
   String eventName;
-  String pollDuration;
-  String pollPassPercent;
+  String votingDuration;
+  String rsvpDuration;
   final TextEditingController eventNameController = TextEditingController();
-  final TextEditingController pollDurationController = TextEditingController();
-  final TextEditingController passPercentageController =
-      TextEditingController();
+  final TextEditingController votingDurationController = TextEditingController();
+  final TextEditingController rsvpDurationController = TextEditingController();
 
   Future<List<Category>> categoriesInGroup;
   bool autoValidate = false;
@@ -42,8 +42,8 @@ class _CreateEventState extends State<CreateEvent> {
   @override
   void dispose() {
     eventNameController.dispose();
-    pollDurationController.dispose();
-    passPercentageController.dispose();
+    votingDurationController.dispose();
+    rsvpDurationController.dispose();
     super.dispose();
   }
 
@@ -60,10 +60,10 @@ class _CreateEventState extends State<CreateEvent> {
       eventStartDate =
           convertDateToString(DateTime.now().add(Duration(days: 1)));
     }
-    pollDurationController.text =
-        Globals.currentGroup.defaultPollDuration.toString();
-    passPercentageController.text =
-        Globals.currentGroup.defaultPollPassPercent.toString();
+    votingDurationController.text =
+        Globals.currentGroup.defaultVotingDuration.toString();
+    rsvpDurationController.text =
+        Globals.currentGroup.defaultRsvpDuration.toString();
     super.initState();
   }
 
@@ -132,24 +132,24 @@ class _CreateEventState extends State<CreateEvent> {
                     ),
                     Container(height: 10),
                     TextFormField(
-                      controller: pollDurationController,
+                      controller: rsvpDurationController,
                       keyboardType: TextInputType.number,
-                      validator: validPollDuration,
+                      validator: validRsvpDuration,
                       onSaved: (String arg) {
-                        pollDuration = arg;
+                        rsvpDuration = arg;
                       },
                       decoration: InputDecoration(
-                          labelText: "Poll duration (in minutes)"),
+                          labelText: "RSVP duration (in minutes)"),
                     ),
                     TextFormField(
-                      controller: passPercentageController,
+                      controller: votingDurationController,
                       keyboardType: TextInputType.number,
-                      validator: validPassPercentage,
+                      validator: validVotingDuration,
                       onSaved: (String arg) {
-                        pollPassPercent = arg;
+                        votingDuration = arg;
                       },
-                      decoration:
-                          InputDecoration(labelText: "Poll pass percentage"),
+                      decoration: InputDecoration(
+                          labelText: "Voting duration (in minutes)"),
                     ),
                   ],
                 )
@@ -251,9 +251,6 @@ class _CreateEventState extends State<CreateEvent> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      Map<String, dynamic> eventCreator = new Map<String, dynamic>();
-      eventCreator.putIfAbsent(Globals.username,
-          () => Globals.currentGroup.members[Globals.username]);
 
       Event event = new Event(
         eventName: this.eventName,
@@ -263,26 +260,19 @@ class _CreateEventState extends State<CreateEvent> {
             DateTime.parse(currentDate.toString().substring(0, 19)),
         eventStartDateTime: DateTime.parse(
             this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-        type: 0,
-        // all events are non-recurring for now
-        pollDuration: int.parse(this.pollDuration),
-        pollPassPercent: int.parse(this.pollPassPercent),
-        eventCreator: eventCreator,
+        votingDuration: int.parse(this.votingDuration),
+        rsvpDuration: int.parse(this.rsvpDuration)
       );
 
       showLoadingDialog(
           context, "Creating event...", true); // show loading dialog
-      bool success = await GroupsManager.addEvent(
+      bool success = await GroupsManager.newEvent(
           Globals.currentGroup.groupId, event, context);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
       if (success) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            new MaterialPageRoute(
-                builder: (BuildContext context) => GroupsHome()),
-            (Route<dynamic> route) => false);
+        Navigator.of(context).pop();
       }
     } else {
       setState(() => autoValidate = true);
