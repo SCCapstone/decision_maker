@@ -34,6 +34,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String APP_SETTINGS_MUTED = "Muted";
   public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   public static final String GROUPS = "Groups";
+  public static final String GROUPS_LEFT = "GroupsLeft";
   public static final String CATEGORIES = "Categories";
   public static final String OWNED_CATEGORIES = "OwnedCategories";
   public static final String FAVORITES = "Favorites";
@@ -139,6 +140,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(CATEGORIES, EMPTY_MAP)
               .withMap(OWNED_CATEGORIES, EMPTY_MAP)
               .withMap(GROUPS, EMPTY_MAP)
+              .withMap(GROUPS_LEFT, EMPTY_MAP)
               .withMap(FAVORITES, EMPTY_MAP)
               .withMap(FAVORITE_OF, EMPTY_MAP);
 
