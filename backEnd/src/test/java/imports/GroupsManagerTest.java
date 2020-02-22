@@ -53,7 +53,6 @@ public class GroupsManagerTest {
       .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
       .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
       .put(GroupsManager.VOTING_DURATION, 50)
-      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
       .put(GroupsManager.RSVP_DURATION, 50)
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
@@ -67,7 +66,6 @@ public class GroupsManagerTest {
           .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
           .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
           .put(GroupsManager.VOTING_DURATION, 50)
-          .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
           .put(GroupsManager.RSVP_DURATION, 50)
           .put(GroupsManager.GROUP_ID, "GroupId")
           .build());
