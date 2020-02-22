@@ -12,6 +12,8 @@ import 'package:frontEnd/widgets/category_popup.dart';
 import 'package:frontEnd/widgets/members_popup.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'groups_home.dart';
+
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
 
@@ -175,12 +177,12 @@ class _GroupSettingsState extends State<GroupSettings> {
                               "Default RSVP duration (mins)",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
-                                      .style
-                                      .fontSize *
+                                          .style
+                                          .fontSize *
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .20  ,
+                              width: MediaQuery.of(context).size.width * .20,
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
@@ -285,7 +287,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             child: Text("Leave Group"),
                             color: Colors.red,
                             onPressed: () {
-                              // TODO leave group
+                              confirmLeaveGroup(context);
                             },
                           ),
                         )
@@ -340,6 +342,32 @@ class _GroupSettingsState extends State<GroupSettings> {
     hideKeyboard(context);
   }
 
+  void confirmLeaveGroup(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Leave group?"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  tryLeave(context);
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text("Are you sure you wish to leave the group: $groupName?"),
+          );
+        });
+  }
+
   void confirmDeleteGroup(BuildContext context) {
     showDialog(
         context: context,
@@ -364,6 +392,25 @@ class _GroupSettingsState extends State<GroupSettings> {
             content: Text("Are you sure you wish to delete this group?"),
           );
         });
+  }
+
+  void tryLeave(BuildContext context) async {
+    showLoadingDialog(context, "Leaving group...", true);
+    bool success =
+        await GroupsManager.leaveGroup(Globals.currentGroup.groupId, context);
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+    if (success) {
+      Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Navigator.pushAndRemoveUntil(
+          context,
+          new MaterialPageRoute(
+              builder: (BuildContext context) => GroupsHome()),
+          (Route<dynamic> route) => false);
+    } else {
+      Navigator.of(context, rootNavigator: true).pop(
+          'dialog'); // this is hacky, but until we implement returning resultStatuses we have to do it this way
+      showErrorMessage("Error", "Error leaving the group.", context);
+    }
   }
 
   void tryDelete(BuildContext context) async {

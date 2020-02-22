@@ -461,9 +461,9 @@ public class GroupsManager extends DatabaseAccessManager {
           Map<String, Object> groupDataMapped = groupData.asMap();
           final String groupCreator = (String) groupDataMapped.get(GROUP_CREATOR);
           if (!groupCreator.equals(activeUser)) {
-            String updateExpression = "remove " + MEMBERS + ".#username.";
+            String updateExpression = "remove " + MEMBERS + ".#username";
 
-            final NameMap nameMap = new NameMap()
+            NameMap nameMap = new NameMap()
                 .with("#username", activeUser);
 
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
@@ -472,11 +472,25 @@ public class GroupsManager extends DatabaseAccessManager {
                 .withNameMap(nameMap);
 
             this.updateItem(updateItemSpec);
+
+            // remove this group from the group attribute in active user object
+            updateExpression = "remove " + UsersManager.GROUPS + ".#groupId";
+            nameMap = new NameMap()
+                .with("#groupId", groupId);
+            updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap);
+            updateItemSpec
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
             // add this now left group to the groupsLeft attribute in active user object
             updateExpression =
-                "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
+                "set " + UsersManager.GROUPS_LEFT + ".#groupId = :groupMap";
             ValueMap valueMap = new ValueMap()
-                .withMap(":nameIconMap", new HashMap<String, Object>() {{
+                .with("groupId", groupId)
+                .withMap(":groupMap", new HashMap<String, Object>() {{
                   put(GROUP_NAME, groupDataMapped.get(GROUP_NAME));
                   put(ICON, groupDataMapped.get(ICON));
                 }});
