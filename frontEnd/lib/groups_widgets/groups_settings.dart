@@ -353,7 +353,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 child: Text("Yes"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
-                  tryLeave(context);
+                  tryLeave();
                 },
               ),
               FlatButton(
@@ -363,7 +363,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               )
             ],
-            content: Text("Are you sure you wish to leave the group: $groupName?"),
+            content:
+                Text("Are you sure you wish to leave the group: $groupName?"),
           );
         });
   }
@@ -394,7 +395,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         });
   }
 
-  void tryLeave(BuildContext context) async {
+  void tryLeave() async {
     showLoadingDialog(context, "Leaving group...", true);
     bool success =
         await GroupsManager.leaveGroup(Globals.currentGroup.groupId, context);

@@ -201,7 +201,6 @@ class GroupsManager {
     String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
-      print(response);
       try {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);

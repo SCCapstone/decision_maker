@@ -480,8 +480,7 @@ public class GroupsManager extends DatabaseAccessManager {
             updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
                 .withUpdateExpression(updateExpression)
-                .withNameMap(nameMap);
-            updateItemSpec
+                .withNameMap(nameMap)
                 .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
             DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
 
@@ -489,7 +488,6 @@ public class GroupsManager extends DatabaseAccessManager {
             updateExpression =
                 "set " + UsersManager.GROUPS_LEFT + ".#groupId = :groupMap";
             ValueMap valueMap = new ValueMap()
-                .with("groupId", groupId)
                 .withMap(":groupMap", new HashMap<String, Object>() {{
                   put(GROUP_NAME, groupDataMapped.get(GROUP_NAME));
                   put(ICON, groupDataMapped.get(ICON));
@@ -498,8 +496,7 @@ public class GroupsManager extends DatabaseAccessManager {
             updateItemSpec = new UpdateItemSpec()
                 .withUpdateExpression(updateExpression)
                 .withValueMap(valueMap)
-                .withNameMap(nameMap);
-            updateItemSpec
+                .withNameMap(nameMap)
                 .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
             DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
 
