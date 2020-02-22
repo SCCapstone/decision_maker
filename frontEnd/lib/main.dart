@@ -38,8 +38,8 @@ class MyApp extends StatelessWidget {
                 if (!snapshot.hasData) {
                   return Center(
                       child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xff5ce080))));
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xff5ce080))));
                 } else {
                   //If and only if the tokens are not valid or don't exist, open the login page.
                   if (!snapshot.data) {
