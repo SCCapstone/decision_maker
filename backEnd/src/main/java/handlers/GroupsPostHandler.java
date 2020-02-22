@@ -28,13 +28,12 @@ public class GroupsPostHandler implements
       if (!jsonMap.isEmpty()) {
         if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
           try {
-
             Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
-            
+
             if (!payloadJsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-                payloadJsonMap
-                    .put(RequestFields.ACTIVE_USER,
-                       GetActiveUser.getActiveUserFromRequest(request, context));
+              payloadJsonMap
+                  .put(RequestFields.ACTIVE_USER,
+                      GetActiveUser.getActiveUserFromRequest(request, context));
 
               String action = (String) jsonMap.get("action");
 
@@ -52,15 +51,13 @@ public class GroupsPostHandler implements
                     .newEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
-              } else if (action.equals("voteForChoice")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {
                 resultStatus.resultMessage = "Error: Invalid action entered";
               }
             } else {
-              resultStatus.resultMessage = "Error: Invalid key in payload."; 
+              resultStatus.resultMessage = "Error: Invalid key in payload.";
             }
           } catch (Exception e) {
             resultStatus.resultMessage = "Error: Unable to parse request in handler.";
@@ -77,7 +74,7 @@ public class GroupsPostHandler implements
       }
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
-      resultStatus.resultMessage = "Error: Unable to handle request. Message: "+e;
+      resultStatus.resultMessage = "Error: Unable to handle request.";
     }
 
     metrics.logMetrics(lambdaLogger);
