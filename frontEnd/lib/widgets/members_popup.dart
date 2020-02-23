@@ -12,8 +12,7 @@ class MembersPopup extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<Member> originalMembers;
   final Function handlePopupClosed;
-  final bool
-      isCreating; // if creating you don't have to worry about group creator
+  final bool isCreating; // if creating don't have to bother with group creator
 
   MembersPopup(this.displayedMembers, this.originalMembers, this.isCreating,
       {this.handlePopupClosed});
@@ -26,11 +25,25 @@ class _MembersPopupState extends State<MembersPopup> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
   List<UserRow> displayedUserRows = new List<UserRow>();
-  List<UserRow> searchResults = new List<UserRow>();
-  bool searching = false;
+  List<UserRow> displayedFavoritesRows = new List<UserRow>();
+  bool showFavorites = false;
 
   @override
   void initState() {
+    for (Favorite favorite in Globals.user.favorites) {
+      // can't ever add the owner of a group, so it's always false below
+      displayedFavoritesRows.add(new UserRow(
+        favorite.displayName,
+        favorite.username,
+        favorite.icon,
+        false,
+        true,
+        false,
+        addUser: () {
+          addMemberFromFavorites(favorite);
+        },
+      ));
+    }
     for (Member user in widget.displayedMembers) {
       // if you're creating a group, you can always remove members from the group
       bool displayDelete = true;
@@ -43,19 +56,22 @@ class _MembersPopupState extends State<MembersPopup> {
       }
       displayedUserRows.add(new UserRow(user.displayName, user.username,
           user.icon, displayDelete, false, displayOwner, deleteUser: () {
-        removeMember(user.username, displayedUserRows);
+        removeMember(user.username);
       }));
+      // if favorite is already in group, don't show in the favorites section
+      displayedFavoritesRows
+          .removeWhere((row) => row.username == user.username);
     }
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // displays a popup for editing the group's members
     return Form(
       key: formKey,
       child: AlertDialog(
-        title: Text("Group Memebers"),
+        title: Text("Group Members"),
         actions: <Widget>[
           FlatButton(
             child: Text("Back"),
@@ -65,13 +81,16 @@ class _MembersPopupState extends State<MembersPopup> {
               widget.handlePopupClosed();
             },
           ),
-          FlatButton(
-            child: Text("Add User"),
-            onPressed: () {
-              if (formKey.currentState.validate()) {
-                addNewMember();
-              }
-            },
+          Visibility(
+            visible: !showFavorites,
+            child: FlatButton(
+              child: Text("Add User"),
+              onPressed: () {
+                if (formKey.currentState.validate()) {
+                  addNewMember();
+                }
+              },
+            ),
           ),
         ],
         content: SingleChildScrollView(
@@ -81,79 +100,87 @@ class _MembersPopupState extends State<MembersPopup> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                TextFormField(
-                    controller: userController,
-                    validator: (value) {
-                      List<String> allUsers = new List<String>();
-                      for (Member user in widget.displayedMembers) {
-                        allUsers.add(user.username);
-                      }
-                      for (Member user in widget.originalMembers) {
-                        if (!allUsers.contains(user.username)) {
-                          allUsers.add(user.username);
-                        }
-                      }
-                      return validUser(value.trim(), allUsers);
-                    },
-                    onChanged: (value) {
-                      // anytime the user is searching, immediately display results
-                      if (value.isNotEmpty) {
-                        searching = true;
-                        List<UserRow> currentSearch = new List<UserRow>();
-                        for (Favorite favorite in Globals.user.favorites) {
-                          // show suggestion if match to username or displayname of a favorite
-                          if ((favorite.username
-                                      .toLowerCase()
-                                      .contains(value.toLowerCase()) &&
-                                  !widget.displayedMembers.contains(
-                                      new Member.fromFavorite(favorite))) ||
-                              (favorite.displayName
-                                      .toLowerCase()
-                                      .contains(value.toLowerCase()) &&
-                                  !widget.displayedMembers.contains(
-                                      new Member.fromFavorite(favorite)))) {
-                            // when searching, only show suggestions if the user hasn't already added the user to the group
-                            currentSearch.add(new UserRow(
-                                favorite.displayName,
-                                favorite.username,
-                                favorite.icon,
-                                false,
-                                true,
-                                false,
-                                addUser: () =>
-                                    addMemberFromFavorites(favorite)));
-                          }
-                        }
-                        setState(() {
-                          searchResults = currentSearch;
-                        });
-                      } else {
-                        setState(() {
-                          searching = false;
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      labelText: "Enter a username to add",
-                    )),
+                Row(
+                  children: <Widget>[
+                    Visibility(
+                      visible: !showFavorites,
+                      child: Expanded(
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * .08,
+                          child: TextFormField(
+                              maxLength: 100,
+                              controller: userController,
+                              validator: (value) {
+                                List<String> allUsers = new List<String>();
+                                for (Member user in widget.displayedMembers) {
+                                  allUsers.add(user.username);
+                                }
+                                for (Member user in widget.originalMembers) {
+                                  if (!allUsers.contains(user.username)) {
+                                    allUsers.add(user.username);
+                                  }
+                                }
+                                return validUser(value.trim(), allUsers);
+                              },
+                              decoration: InputDecoration(
+                                  labelText: "Enter a username to add",
+                                  counterText: "")),
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: showFavorites,
+                      child: Expanded(
+                        child: Container(
+                            height: MediaQuery.of(context).size.height * .08,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  "Add from Favorites List",
+                                )
+                              ],
+                            )),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: (showFavorites)
+                              ? Theme.of(context).accentColor
+                              : Theme.of(context).dialogBackgroundColor),
+                      child: IconButton(
+                        icon: Icon(Icons.contacts),
+                        onPressed: () {
+                          setState(() {
+                            showFavorites = !showFavorites;
+                          });
+                        },
+                      ),
+                    )
+                  ],
+                ),
+                Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .005)),
                 Scrollbar(
                   child: Container(
                     height: MediaQuery.of(context).size.height * .25,
                     child: ListView.builder(
                         shrinkWrap: true,
-                        itemCount: (searching)
-                            ? searchResults.length
+                        itemCount: (showFavorites)
+                            ? displayedFavoritesRows.length
                             : displayedUserRows.length,
                         itemBuilder: (context, index) {
                           // sorting by alphabetical by displayname for now
-                          searchResults.sort((a, b) => b.displayName
+                          displayedUserRows.sort((a, b) => b.displayName
                               .toLowerCase()
                               .compareTo(a.displayName.toLowerCase()));
                           displayedUserRows.sort((a, b) => a.displayName
                               .toLowerCase()
                               .compareTo(b.displayName.toLowerCase()));
-                          if (searching) {
-                            return searchResults[index];
+                          if (showFavorites) {
+                            return displayedFavoritesRows[index];
                           } else {
                             return displayedUserRows[index];
                           }
@@ -183,7 +210,7 @@ class _MembersPopupState extends State<MembersPopup> {
           true,
           false,
           false, deleteUser: () {
-        removeMember(newMember.username, displayedUserRows);
+        removeMember(newMember.username);
       }));
     } else {
       showErrorMessage(
@@ -192,7 +219,6 @@ class _MembersPopupState extends State<MembersPopup> {
     }
     setState(() {
       userController.clear();
-      searching = false;
     });
   }
 
@@ -206,17 +232,14 @@ class _MembersPopupState extends State<MembersPopup> {
         true,
         false,
         false, deleteUser: () {
-      removeMember(memberToAdd.username, displayedUserRows);
+      removeMember(memberToAdd.username);
     }));
-    // update the alertdialog to show the new user added
-    setState(() {
-      searching = false;
-      searchResults.clear();
-      userController.clear();
-    });
+    displayedFavoritesRows
+        .removeWhere((row) => row.username == memberToAdd.username);
+    setState(() {});
   }
 
-  void removeMember(String username, List<UserRow> displayedUserRows) {
+  void removeMember(String username) {
     Member userToRemove;
     for (Member user in widget.displayedMembers) {
       if (user.username == username) {
@@ -229,6 +252,22 @@ class _MembersPopupState extends State<MembersPopup> {
     for (UserRow row in displayedUserRows) {
       if (row.username == username) {
         rowToRemove = row;
+      }
+    }
+    // if removed user is a favorite of the user, add it to the favorites rows
+    for (Favorite favorite in Globals.user.favorites) {
+      if (favorite.username == username) {
+        displayedFavoritesRows.add(new UserRow(
+          favorite.displayName,
+          favorite.username,
+          favorite.icon,
+          false,
+          true,
+          false,
+          addUser: () {
+            addMemberFromFavorites(favorite);
+          },
+        ));
       }
     }
     displayedUserRows.remove(rowToRemove);

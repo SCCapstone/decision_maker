@@ -22,10 +22,17 @@ class UserRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Image(image: getIconUrl(icon), fit: BoxFit.fitHeight),
+          Container(
+            // TODO allow user to click on image to get blown up pic
+            height: MediaQuery.of(context).size.height * .2,
+            width: MediaQuery.of(context).size.width * .15,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: getIconUrl(icon), fit: BoxFit.cover)),
           ),
+          Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .005)),
           Expanded(
             child: Text(
               "${this.displayName} (@${this.username})",
