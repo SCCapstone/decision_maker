@@ -126,7 +126,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
             String updateExpression =
                 "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
                     + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate, "
-                    + GroupsManager.VOTING_NUMBERS + " = :votingNumbers";
+                    + GroupsManager.EVENTS + ".#eventId." + GroupsManager.VOTING_NUMBERS
+                    + " = :votingNumbers";
             NameMap nameMap = new NameMap().with("#eventId", eventId);
             ValueMap valueMap = new ValueMap()
                 .withMap(":tentativeChoices", tentativeChoices)
@@ -245,7 +246,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final Map<String, Object> votingNumbers = new HashMap<>();
 
     //we're filling a map keyed by choiceId with empty maps
-    for (String choiceId: tentativeAlgorithmChoices.keySet()) {
+    for (String choiceId : tentativeAlgorithmChoices.keySet()) {
       votingNumbers.put(choiceId, ImmutableMap.of());
     }
 
