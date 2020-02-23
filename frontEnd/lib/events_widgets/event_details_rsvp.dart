@@ -24,7 +24,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   void initState() {
     getEvent();
     for (String username in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[username][UsersManager.DISPLAY_NAME];
+      eventCreator = event.eventCreator[username];
     }
     super.initState();
   }
@@ -154,6 +154,11 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           onPressed: () {
                             GroupsManager.optInOutOfEvent(
                                 widget.groupId, widget.eventId, true, context);
+                            userRows.putIfAbsent(
+                                Globals.username,
+                                () => UserRowEvents(Globals.user.displayName,
+                                    Globals.username, Globals.user.icon));
+                            setState(() {});
                           },
                         )
                       ],

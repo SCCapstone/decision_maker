@@ -19,22 +19,28 @@ class GroupRow extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              IconButton(
-                  iconSize: MediaQuery.of(context).size.width * .20,
-                  icon: Image(
-                    fit: BoxFit.cover,
-                    image: getIconUrl(group.icon),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => GroupPage(
-                                groupId: group.groupId,
-                                groupName: group.groupName,
-                              )),
-                    ).then((_) => GroupsHome());
-                  }),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GroupPage(
+                              groupId: group.groupId,
+                              groupName: group.groupName,
+                            )),
+                  ).then((_) => GroupsHome());
+                },
+                child: Container(
+                  height: MediaQuery.of(context).size.width * .20,
+                  width: MediaQuery.of(context).size.width * .20,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: getIconUrl(group.icon), fit: BoxFit.cover)),
+                ),
+              ),
+              Padding(
+                  padding: EdgeInsets.all(
+                      MediaQuery.of(context).size.height * .002)),
               Expanded(
                 child: GestureDetector(
                   onTap: () {

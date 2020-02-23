@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import utilities.ErrorDescriptor;
@@ -98,7 +99,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          //First thing to do is get the category data from the db.
           final Map<String, Object> groupDataMapped = groupData.asMap();
           Map<String, Object> groupEventDataMapped = (Map<String, Object>) groupDataMapped
               .get(GroupsManager.EVENTS);
@@ -119,12 +119,19 @@ public class PendingEventsManager extends DatabaseAccessManager {
             final Map<String, Object> tentativeChoices = this
                 .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
 
+            final Map<String, Object> votingNumbersSetup = this
+                .getVotingNumbersSetup(tentativeChoices);
+
             //update the event
             String updateExpression =
                 "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
-                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate, "
+                    + GroupsManager.EVENTS + ".#eventId." + GroupsManager.VOTING_NUMBERS
+                    + " = :votingNumbers";
             NameMap nameMap = new NameMap().with("#eventId", eventId);
-            ValueMap valueMap = new ValueMap().withMap(":tentativeChoices", tentativeChoices)
+            ValueMap valueMap = new ValueMap()
+                .withMap(":tentativeChoices", tentativeChoices)
+                .withMap(":votingNumbers", votingNumbersSetup)
                 .withString(":currentDate",
                     LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
 
@@ -232,6 +239,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
     metrics.commonClose(success);
     return tentativeChoice;
+  }
+
+  private Map<String, Object> getVotingNumbersSetup(
+      final Map<String, Object> tentativeAlgorithmChoices) {
+    final Map<String, Object> votingNumbers = new HashMap<>();
+
+    //we're filling a map keyed by choiceId with empty maps
+    for (String choiceId : tentativeAlgorithmChoices.keySet()) {
+      votingNumbers.put(choiceId, ImmutableMap.of());
+    }
+
+    return votingNumbers;
   }
 
   public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
@@ -343,7 +362,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private String getPartitionKey() throws NullPointerException, NumberFormatException {
+  public String getPartitionKey() throws NullPointerException, NumberFormatException {
     //this gives a 'randomized' key based on the system's clock time.
     return Long.toString(
         (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))

@@ -27,7 +27,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   void initState() {
     getEvent();
     for (String username in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[username][UsersManager.DISPLAY_NAME];
+      eventCreator = event.eventCreator[username];
     }
     super.initState();
   }

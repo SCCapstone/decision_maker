@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,10 +54,16 @@ public class GroupsManagerTest {
       .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
       .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
       .put(GroupsManager.VOTING_DURATION, 50)
-      .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
       .put(GroupsManager.RSVP_DURATION, 50)
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
+
+  private final ImmutableMap<String, Object> leaveGroupGoodInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "ActiveUser")
+      .put(GroupsManager.GROUP_ID, "GroupId")
+      .build();
+
+  private final Map<String, Object> badInput = new HashMap<>();
 
   private final Map<String, Object> newEventBadInput = Maps
       .newHashMap(ImmutableMap.<String, Object>builder()
@@ -67,7 +74,6 @@ public class GroupsManagerTest {
           .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
           .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
           .put(GroupsManager.VOTING_DURATION, 50)
-          .put(GroupsManager.EVENT_CREATOR, ImmutableMap.of("username", "name"))
           .put(GroupsManager.RSVP_DURATION, 50)
           .put(GroupsManager.GROUP_ID, "GroupId")
           .build());
@@ -446,5 +452,22 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
-  //endregion
+
+  /////////////////////////////endregion
+  // leaveGroup tests //
+  /////////////////////////////region
+  @Test
+  public void leaveGroup_missingKeys_failureResult() {
+    ResultStatus resultStatus = this.groupsManager
+        .leaveGroup(this.badInput, metrics, lambdaLogger);
+    assertFalse(resultStatus.success);
+
+    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+
+    resultStatus = this.groupsManager.leaveGroup(this.badInput, metrics, lambdaLogger);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
 }

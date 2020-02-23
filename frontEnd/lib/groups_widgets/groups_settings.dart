@@ -12,6 +12,8 @@ import 'package:frontEnd/widgets/category_popup.dart';
 import 'package:frontEnd/widgets/members_popup.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'groups_home.dart';
+
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
 
@@ -27,8 +29,8 @@ class _GroupSettingsState extends State<GroupSettings> {
   File icon;
   String groupName;
   String currentGroupIcon;
-  int pollPassPercent;
-  int pollDuration;
+  int votingDuration;
+  int rsvpDuration;
   bool owner;
   List<Member> originalMembers = new List<Member>();
   List<Member> displayedMembers = new List<Member>();
@@ -39,15 +41,16 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController pollPassController = new TextEditingController();
-  final TextEditingController pollDurationController =
+  final TextEditingController votingDurationController =
+      new TextEditingController();
+  final TextEditingController rsvpDurationController =
       new TextEditingController();
 
   @override
   void dispose() {
     groupNameController.dispose();
-    pollPassController.dispose();
-    pollDurationController.dispose();
+    votingDurationController.dispose();
+    rsvpDurationController.dispose();
     super.dispose();
   }
 
@@ -76,13 +79,13 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
     }
     groupName = Globals.currentGroup.groupName;
-    pollDuration = Globals.currentGroup.defaultPollDuration;
-    pollPassPercent = Globals.currentGroup.defaultPollPassPercent;
+    votingDuration = Globals.currentGroup.defaultVotingDuration;
+    rsvpDuration = Globals.currentGroup.defaultRsvpDuration;
     currentGroupIcon = Globals.currentGroup.icon;
 
     groupNameController.text = groupName;
-    pollDurationController.text = pollDuration.toString();
-    pollPassController.text = pollPassPercent.toString();
+    votingDurationController.text = votingDuration.toString();
+    rsvpDurationController.text = rsvpDuration.toString();
 
     super.initState();
   }
@@ -171,7 +174,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
                             Text(
-                              "Default poll duration (mins)",
+                              "Default RSVP duration (mins)",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
                                           .style
@@ -179,22 +182,22 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20,
                               child: TextFormField(
                                 maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validPollDuration,
-                                controller: pollDurationController,
+                                validator: validRsvpDuration,
+                                controller: rsvpDurationController,
                                 onChanged: (String arg) {
                                   try {
-                                    pollDuration = int.parse(arg);
+                                    rsvpDuration = int.parse(arg);
                                     enableAutoValidation();
                                   } catch (e) {
                                     autoValidate = true;
                                   }
                                 },
                                 onSaved: (String arg) {
-                                  pollDuration = int.parse(arg);
+                                  rsvpDuration = int.parse(arg);
                                 },
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(),
@@ -211,7 +214,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: <Widget>[
                             Text(
-                              "Default pass percentage     ",
+                              "Default voting duration (mins)",
                               style: TextStyle(
                                   fontSize: DefaultTextStyle.of(context)
                                           .style
@@ -219,28 +222,28 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       0.4),
                             ),
                             Container(
-                              width: MediaQuery.of(context).size.width * .25,
+                              width: MediaQuery.of(context).size.width * .20,
                               child: TextFormField(
-                                maxLength: 3,
-                                controller: pollPassController,
+                                maxLength: 6,
                                 keyboardType: TextInputType.number,
-                                validator: validPassPercentage,
+                                validator: validVotingDuration,
+                                controller: votingDurationController,
                                 onChanged: (String arg) {
                                   try {
-                                    pollPassPercent = int.parse(arg.trim());
+                                    votingDuration = int.parse(arg);
                                     enableAutoValidation();
                                   } catch (e) {
                                     autoValidate = true;
                                   }
                                 },
                                 onSaved: (String arg) {
-                                  pollPassPercent = int.parse(arg.trim());
+                                  votingDuration = int.parse(arg);
                                 },
                                 decoration: InputDecoration(
                                     border: OutlineInputBorder(),
                                     counterText: ""),
                               ),
-                            )
+                            ),
                           ],
                         ),
                         Padding(
@@ -284,7 +287,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             child: Text("Leave Group"),
                             color: Colors.red,
                             onPressed: () {
-                              // TODO leave group
+                              confirmLeaveGroup(context);
                             },
                           ),
                         )
@@ -339,6 +342,33 @@ class _GroupSettingsState extends State<GroupSettings> {
     hideKeyboard(context);
   }
 
+  void confirmLeaveGroup(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Leave group?"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  tryLeave();
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content:
+                Text("Are you sure you wish to leave the group: $groupName?"),
+          );
+        });
+  }
+
   void confirmDeleteGroup(BuildContext context) {
     showDialog(
         context: context,
@@ -365,6 +395,25 @@ class _GroupSettingsState extends State<GroupSettings> {
         });
   }
 
+  void tryLeave() async {
+    showLoadingDialog(context, "Leaving group...", true);
+    bool success =
+        await GroupsManager.leaveGroup(Globals.currentGroup.groupId, context);
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+    if (success) {
+      Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Navigator.pushAndRemoveUntil(
+          context,
+          new MaterialPageRoute(
+              builder: (BuildContext context) => GroupsHome()),
+          (Route<dynamic> route) => false);
+    } else {
+      Navigator.of(context, rootNavigator: true).pop(
+          'dialog'); // this is hacky, but until we implement returning resultStatuses we have to do it this way
+      showErrorMessage("Error", "Error leaving the group.", context);
+    }
+  }
+
   void tryDelete(BuildContext context) async {
     // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
     bool success =
@@ -383,8 +432,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
         oldCategories.length == newCategories.length);
 
-    if (pollPassPercent != Globals.currentGroup.defaultPollPassPercent ||
-        pollDuration != Globals.currentGroup.defaultPollDuration ||
+    if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
+        rsvpDuration != Globals.currentGroup.defaultRsvpDuration ||
         groupName != Globals.currentGroup.groupName ||
         newUsersAdded ||
         newCategoriesAdded ||
@@ -421,8 +470,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           categories: selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
-          defaultPollDuration: pollDuration,
-          defaultPollPassPercent: pollPassPercent,
+          defaultVotingDuration: votingDuration,
+          defaultRsvpDuration: rsvpDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
       Globals.currentGroup = group;
@@ -435,8 +484,8 @@ class _GroupSettingsState extends State<GroupSettings> {
         originalCategories.clear();
         originalCategories.addAll(selectedCategories);
         groupNameController.text = groupName;
-        pollDurationController.text = pollDuration.toString();
-        pollPassController.text = pollPassPercent.toString();
+        votingDurationController.text = votingDuration.toString();
+        rsvpDurationController.text = rsvpDuration.toString();
         editing = false;
         autoValidate = false;
         newIcon = false;

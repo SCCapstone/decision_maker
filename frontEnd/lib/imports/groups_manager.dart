@@ -24,8 +24,8 @@ class GroupsManager {
   static final String LAST_ACTIVITY = "LastActivity";
   static final String MEMBERS = "Members";
   static final String CATEGORIES = "Categories";
-  static final String DEFAULT_POLL_PASS_PERCENT = "DefaultPollPassPercent";
-  static final String DEFAULT_POLL_DURATION = "DefaultPollDuration";
+  static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 
@@ -169,7 +169,7 @@ class GroupsManager {
     }
   }
 
-  static Future<bool> addEvent(
+  static Future<bool> newEvent(
       String groupId, Event event, BuildContext context) async {
     bool retVal = false;
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -195,6 +195,34 @@ class GroupsManager {
     } else {
       showPopupMessage("Unable to create event.", context);
     }
+    return retVal;
+  }
+
+  static Future<bool> leaveGroup(String groupId, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    bool retVal = false;
+    jsonRequestBody["action"] = "leaveGroup";
+    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal = true;
+        } else {
+          showPopupMessage("Error leaving the group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error leaving the group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to leave the group.", context);
+    }
+
     return retVal;
   }
 
