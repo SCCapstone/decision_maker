@@ -445,6 +445,93 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.leaveGroup";
+    metrics.commonSetup(classMethod);
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, RequestFields.ACTIVE_USER);
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        Item groupData = this.getItemByPrimaryKey(groupId);
+
+        if (groupData != null) {
+          Map<String, Object> groupDataMapped = groupData.asMap();
+          final String groupCreator = (String) groupDataMapped.get(GROUP_CREATOR);
+          if (!groupCreator.equals(activeUser)) {
+            String updateExpression = "remove " + MEMBERS + ".#username";
+
+            NameMap nameMap = new NameMap()
+                .with("#username", activeUser);
+
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap);
+
+            this.updateItem(updateItemSpec);
+
+            // remove this group from the group attribute in active user object
+            updateExpression = "remove " + UsersManager.GROUPS + ".#groupId";
+            nameMap = new NameMap()
+                .with("#groupId", groupId);
+            updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+                .withUpdateExpression(updateExpression)
+                .withNameMap(nameMap)
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+            // add this now left group to the groupsLeft attribute in active user object
+            updateExpression =
+                "set " + UsersManager.GROUPS_LEFT + ".#groupId = :groupMap";
+            ValueMap valueMap = new ValueMap()
+                .withMap(":groupMap", new HashMap<String, Object>() {{
+                  put(GROUP_NAME, groupDataMapped.get(GROUP_NAME));
+                  put(ICON, groupDataMapped.get(ICON));
+                }});
+
+            updateItemSpec = new UpdateItemSpec()
+                .withUpdateExpression(updateExpression)
+                .withValueMap(valueMap)
+                .withNameMap(nameMap)
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+            resultStatus = new ResultStatus(true, "Group left successfully.");
+          } else {
+            lambdaLogger
+                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                    "Owner cannot leave group").toString());
+            resultStatus.resultMessage = "Error: Owner cannot leave group.";
+          }
+        } else {
+          lambdaLogger
+              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+                  "Group not found").toString());
+          resultStatus.resultMessage = "Error: Group not found.";
+        }
+      } catch (Exception e) {
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+      }
+    } else {
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Request keys not found").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
   public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.voteForChoice";

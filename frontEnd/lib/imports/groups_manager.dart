@@ -192,6 +192,34 @@ class GroupsManager {
     return retVal;
   }
 
+  static Future<bool> leaveGroup(String groupId, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    bool retVal = false;
+    jsonRequestBody["action"] = "leaveGroup";
+    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal = true;
+        } else {
+          showPopupMessage("Error leaving the group (1).", context);
+        }
+      } catch (e) {
+        showPopupMessage("Error leaving the group (2).", context);
+      }
+    } else {
+      showPopupMessage("Unable to leave the group.", context);
+    }
+
+    return retVal;
+  }
+
   static Map<String, Event> getGroupEvents(Group group) {
     Map<String, Event> events = new Map<String, Event>();
     for (String eventId in group.events.keys) {
