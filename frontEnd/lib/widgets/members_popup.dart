@@ -55,7 +55,7 @@ class _MembersPopupState extends State<MembersPopup> {
     return Form(
       key: formKey,
       child: AlertDialog(
-        title: Text("Group Memebers"),
+        title: Text("Group Members"),
         actions: <Widget>[
           FlatButton(
             child: Text("Back"),
