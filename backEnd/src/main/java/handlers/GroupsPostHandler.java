@@ -54,6 +54,9 @@ public class GroupsPostHandler implements
               } else if (action.equals("leaveGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
                     .leaveGroup(payloadJsonMap, metrics, lambdaLogger);
+              } else if (action.equals("voteForChoice")) {
+                resultStatus = DatabaseManagers.GROUPS_MANAGER
+                    .voteForChoice(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {

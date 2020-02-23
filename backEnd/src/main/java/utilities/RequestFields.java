@@ -9,4 +9,6 @@ public class RequestFields {
   public static final String EVENT_ID = "EventId";
   public static final String PARTICIPATING = "Participating";
   public static final String DISPLAY_NAME = "DisplayName";
+  public static final String CHOICE_ID = "ChoiceId";
+  public static final String VOTE_VALUE = "VoteValue";
 }
