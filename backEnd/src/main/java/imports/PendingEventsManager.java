@@ -99,7 +99,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          //First thing to do is get the category data from the db.
           final Map<String, Object> groupDataMapped = groupData.asMap();
           Map<String, Object> groupEventDataMapped = (Map<String, Object>) groupDataMapped
               .get(GroupsManager.EVENTS);
@@ -362,7 +361,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private String getPartitionKey() throws NullPointerException, NumberFormatException {
+  public String getPartitionKey() throws NullPointerException, NumberFormatException {
     //this gives a 'randomized' key based on the system's clock time.
     return Long.toString(
         (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))

@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
+import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -371,8 +372,17 @@ public class GroupsManager extends DatabaseAccessManager {
           this.updateItem(updateItemSpec);
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
-          ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
+          if (rsvpDuration > 0) {
+            ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
+                .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
+          } else {
+            //this will set potential algo choices and create the entry for voting duration timeout
+            Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
+                RequestFields.EVENT_ID, eventId, PendingEventsManager.SCANNER_ID,
+                DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey());
+            ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
+                .processPendingEvent(processPendingEventInput, metrics, lambdaLogger);
+          }
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
