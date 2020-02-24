@@ -53,8 +53,8 @@ class _EventCardVotingState extends State<EventCardVoting> {
           )
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }
