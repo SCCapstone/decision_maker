@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
@@ -8,8 +9,9 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 class EventDetailsOccurring extends StatefulWidget {
   final String groupId;
   final String eventId;
+  final String mode;
 
-  EventDetailsOccurring({Key key, this.groupId, this.eventId})
+  EventDetailsOccurring({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);
 
   @override
@@ -158,7 +160,10 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     Globals.currentGroup =
         (await GroupsManager.getGroups(groupIds: groupId)).first;
     getEvent();
-    // TODO if in different stage kick the user out of this page?
+    if (EventsManager.getEventMode(event) != widget.mode) {
+      // if while the user was here and the mode changed, take them back to the group page
+      Navigator.of(context).pop();
+    }
     setState(() {});
   }
 }

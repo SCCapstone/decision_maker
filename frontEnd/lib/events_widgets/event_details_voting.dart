@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
@@ -10,8 +11,9 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 class EventDetailsVoting extends StatefulWidget {
   final String groupId;
   final String eventId;
+  final String mode;
 
-  EventDetailsVoting({Key key, this.groupId, this.eventId}) : super(key: key);
+  EventDetailsVoting({Key key, this.groupId, this.eventId, this.mode}) : super(key: key);
 
   @override
   _EventDetailsVotingState createState() => new _EventDetailsVotingState();
@@ -21,6 +23,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   final PageController controller = new PageController();
   String eventCreator = "";
   List<Widget> userRows = new List<Widget>();
+  Map<String, String> choices = new Map<String, String>();
   Event event;
 
   @override
@@ -29,15 +32,15 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     for (String username in event.eventCreator.keys) {
       eventCreator = event.eventCreator[username];
     }
+    for (String choiceId in event.tentativeAlgorithmChoices.keys) {
+      choices.putIfAbsent(
+          choiceId, () => event.tentativeAlgorithmChoices[choiceId]);
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<String> exampleChoices = new List();
-    for (int i = 0; i < 5; i++) {
-      exampleChoices.add("Choice Number $i");
-    }
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -142,14 +145,15 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       width: MediaQuery.of(context).size.width * .95,
                       child: PageView.builder(
                         controller: controller,
-                        itemCount: exampleChoices.length,
+                        itemCount: choices.length,
                         itemBuilder: (context, index) {
+                          String key = choices.keys.elementAt(index);
                           return EventProposedChoice(
                             groupId: widget.groupId,
                             eventId: widget.eventId,
                             event: event,
-                            choiceName: exampleChoices[index],
-                            choiceId: index.toString(),
+                            choiceName: choices[key],
+                            choiceId: key,
                           );
                         },
                         scrollDirection: Axis.horizontal,
@@ -157,7 +161,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     ),
                     SmoothPageIndicator(
                       controller: controller,
-                      count: exampleChoices.length,
+                      count: choices.length,
                       effect: SlideEffect(
                           dotColor: Colors.grey, activeDotColor: Colors.green),
                     )
@@ -191,7 +195,10 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     Globals.currentGroup =
         (await GroupsManager.getGroups(groupIds: groupId)).first;
     getEvent();
-    // TODO if in different stage kick the user out of this page?
+    if(EventsManager.getEventMode(event)!=widget.mode){
+      // if while the user was here and the mode changed, take them back to the group page
+      Navigator.of(context).pop();
+    }
     setState(() {});
   }
 }

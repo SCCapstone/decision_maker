@@ -157,7 +157,6 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     Globals.currentGroup =
         (await GroupsManager.getGroups(groupIds: groupId)).first;
     getEvent();
-    // TODO if in different stage kick the user out of this page?
     setState(() {});
   }
 }

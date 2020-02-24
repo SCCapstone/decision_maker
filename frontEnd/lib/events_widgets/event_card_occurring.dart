@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_occurring.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -43,14 +44,16 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsOccurring(
-                        groupId: widget.groupId, eventId: widget.eventId)),
+                        groupId: widget.groupId,
+                        eventId: widget.eventId,
+                        mode: EventsManager.occurringMode)),
               );
             },
           )
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }

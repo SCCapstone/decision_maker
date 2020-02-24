@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/event.dart';
 
@@ -24,14 +25,18 @@ class EventProposedChoice extends StatefulWidget {
 
 class _EventProposedChoiceState extends State<EventProposedChoice> {
   int vote;
+  Map<String, dynamic> voteMap = new Map<String, dynamic>();
   static final int voteYes = 1;
   static final int voteNo = 0;
   static final int voteEmpty = -1;
 
   @override
   void initState() {
-    // find the vote from the DB, assuming true for now
     vote = voteEmpty;
+    voteMap = widget.event.votingNumbers[widget.choiceId];
+    if (voteMap.containsKey(Globals.username)) {
+      vote = int.parse(voteMap[Globals.username]);
+    }
     super.initState();
   }
 
@@ -61,6 +66,15 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
                         widget.choiceId, voteNo, context);
                     setState(() {
+                      // update changes locally so user doesn't have to fetch from DB to see new vote
+                      Event event = Event.fromJson(
+                          Globals.currentGroup.events[widget.eventId]);
+                      event.votingNumbers[widget.choiceId].update(
+                          Globals.username, (existing) => voteNo.toString(),
+                          ifAbsent: () => voteNo.toString());
+                      widget.event.votingNumbers[widget.choiceId].update(
+                          Globals.username, (existing) => voteNo.toString(),
+                          ifAbsent: () => voteNo.toString());
                       vote = voteNo;
                     });
                   },
@@ -80,6 +94,15 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                     GroupsManager.voteForChoice(widget.groupId, widget.eventId,
                         widget.choiceId, voteYes, context);
                     setState(() {
+                      // update changes locally so user doesn't have to fetch from DB to see new vote
+                      Event event = Event.fromJson(
+                          Globals.currentGroup.events[widget.eventId]);
+                      event.votingNumbers[widget.choiceId].update(
+                          Globals.username, (existing) => voteYes.toString(),
+                          ifAbsent: () => voteYes.toString());
+                      widget.event.votingNumbers[widget.choiceId].update(
+                          Globals.username, (existing) => voteYes.toString(),
+                          ifAbsent: () => voteYes.toString());
                       vote = voteYes;
                     });
                   },
