@@ -25,18 +25,17 @@ class EventsManager {
     DateTime timeNow = DateTime.now();
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
         hours: 24)); // assumption that after 24 hours the event is done
-    // TODO until backend handlers are complete, alter the below string to test the different stages (https://github.com/SCCapstone/decision_maker/issues/178)
-    String retVal = votingMode;
-//    if (event.tentativeAlgorithmChoices == null) {
-//      retVal = rsvpMode;
-//    } else if (event.selectedChoice == null) {
-//      retVal = votingMode;
-//    } else if (event.selectedChoice.isNotEmpty &&
-//        timeNow.isBefore(eventClosed)) {
-//      retVal = occurringMode;
-//    } else if (timeNow.isAfter(eventClosed)) {
-//      retVal = closedMode;
-//    }
+    String retVal;
+    if (event.tentativeAlgorithmChoices.isEmpty) {
+      retVal = rsvpMode;
+    } else if (event.selectedChoice == null) {
+      retVal = votingMode;
+    } else if (event.selectedChoice.isNotEmpty &&
+        timeNow.isBefore(eventClosed)) {
+      retVal = occurringMode;
+    } else if (timeNow.isAfter(eventClosed)) {
+      retVal = closedMode;
+    }
     return retVal;
   }
 }

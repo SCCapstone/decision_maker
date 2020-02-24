@@ -59,12 +59,33 @@ class Event {
       this.pollEndFormatted);
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    // we always add 1 to the end times since the chron job runs on the minute
     DateTime pollBeginTemp =
-        DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).add(new Duration(
-            minutes: (int.parse(json[EventsManager.VOTING_DURATION]))));
-    DateTime pollEndTemp = DateTime.parse(json[EventsManager.CREATED_DATE_TIME])
-        .add(new Duration(
-            minutes: (int.parse(json[EventsManager.VOTING_DURATION])) * 2));
+        DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).toLocal().add(
+            new Duration(
+                minutes: (int.parse(json[EventsManager.RSVP_DURATION]) + 1)));
+    /*
+      Time in DB is in UTC, but dart parses by default as a local time. 
+      So convert this local to UTC, then back to local to get the real local time.
+     */
+    DateTime pollBeginUTC = DateTime.utc(
+        pollBeginTemp.year,
+        pollBeginTemp.month,
+        pollBeginTemp.day,
+        pollBeginTemp.hour,
+        pollBeginTemp.minute,
+        pollBeginTemp.millisecond,
+        pollBeginTemp.microsecond);
+    DateTime pollEndTemp = pollBeginTemp.toLocal().add(new Duration(
+        minutes: (int.parse(json[EventsManager.VOTING_DURATION])) + 1));
+    DateTime pollEndUTC = DateTime.utc(
+        pollEndTemp.year,
+        pollEndTemp.month,
+        pollEndTemp.day,
+        pollEndTemp.hour,
+        pollEndTemp.minute,
+        pollEndTemp.millisecond,
+        pollEndTemp.microsecond);
 
     return Event(
         categoryId: json[EventsManager.CATEGORY_ID],
@@ -73,8 +94,8 @@ class Event {
         createdDateTime: DateTime.parse(json[EventsManager.CREATED_DATE_TIME]),
         eventStartDateTime:
             DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
-        pollEnd: pollEndTemp,
-        pollBegin: pollBeginTemp,
+        pollEnd: pollEndUTC.toLocal(),
+        pollBegin: pollBeginUTC.toLocal(),
         votingDuration: int.parse(json[EventsManager.VOTING_DURATION]),
         rsvpDuration: int.parse(json[EventsManager.RSVP_DURATION]),
         optedIn: json[EventsManager.OPTED_IN],
@@ -85,8 +106,8 @@ class Event {
         eventCreator: json[EventsManager.EVENT_CREATOR],
         eventStartDateTimeFormatted: Globals.formatter
             .format(DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME])),
-        pollEndFormatted: Globals.formatter.format(pollEndTemp),
-        pollBeginFormatted: Globals.formatter.format(pollBeginTemp));
+        pollEndFormatted: Globals.formatter.format(pollEndUTC.toLocal()),
+        pollBeginFormatted: Globals.formatter.format(pollBeginUTC.toLocal()));
   }
 
   Map asMap() {

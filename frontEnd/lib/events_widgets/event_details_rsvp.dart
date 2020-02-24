@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
@@ -8,8 +9,9 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 class EventDetailsRsvp extends StatefulWidget {
   final String groupId;
   final String eventId;
+  final String mode;
 
-  EventDetailsRsvp({Key key, this.groupId, this.eventId}) : super(key: key);
+  EventDetailsRsvp({Key key, this.groupId, this.eventId, this.mode}) : super(key: key);
 
   @override
   _EventDetailsRsvpState createState() => new _EventDetailsRsvpState();
@@ -195,7 +197,9 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
     Globals.currentGroup =
         (await GroupsManager.getGroups(groupIds: groupId)).first;
     getEvent();
-    // TODO if in different stage kick the user out of this page?
-    setState(() {});
+    if(EventsManager.getEventMode(event)!=widget.mode){
+      // if while the user was here and the mode changed, take them back to the group page
+      Navigator.of(context).pop();
+    }    setState(() {});
   }
 }

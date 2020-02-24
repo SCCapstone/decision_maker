@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_voting.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -43,14 +44,17 @@ class _EventCardVotingState extends State<EventCardVoting> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsVoting(
-                        groupId: widget.groupId, eventId: widget.eventId)),
+                          groupId: widget.groupId,
+                          eventId: widget.eventId,
+                          mode: EventsManager.votingMode,
+                        )),
               );
             },
           )
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }
