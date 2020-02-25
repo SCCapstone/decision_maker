@@ -697,6 +697,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return hasPermission;
   }
 
+  //TODO update all of this to use a Groups Model
   private void updateUsersTable(final Map<String, Object> oldMembers, final List<String> newMembers,
       final String groupId, final String oldGroupName, final String newGroupName,
       final String oldIconFileName, final Optional<String> newIconFileName,
