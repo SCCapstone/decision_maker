@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -406,11 +407,14 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap) {
+  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.optInOutOfEvent";
+    metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(GROUP_ID, RequestFields.PARTICIPATING, RequestFields.EVENT_ID,
-            RequestFields.ACTIVE_USER, RequestFields.DISPLAY_NAME);
+            RequestFields.ACTIVE_USER);
 
     if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
       try {
@@ -418,15 +422,17 @@ public class GroupsManager extends DatabaseAccessManager {
         final Boolean participating = (Boolean) jsonMap.get(RequestFields.PARTICIPATING);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String displayName = (String) jsonMap.get(RequestFields.DISPLAY_NAME);
+        final Map<String, Object> userMap =
+            this.getMembersMapForInsertion(Arrays.asList(activeUser), metrics, lambdaLogger);
 
         String updateExpression;
         ValueMap valueMap = null;
 
         if (participating) { // add the user to the optIn
           updateExpression =
-              "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :displayName";
-          valueMap = new ValueMap().withString(":displayName", displayName);
+              "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :userMap";
+          valueMap = new ValueMap()
+              .withMap(":userMap", (Map<String, Object>) userMap.get(activeUser));
         } else {
           updateExpression = "remove " + EVENTS + ".#eventId." + OPTED_IN + ".#username";
         }
@@ -444,14 +450,17 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
-        //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+        lambdaLogger
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
