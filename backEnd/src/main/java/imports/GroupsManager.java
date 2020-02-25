@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -133,6 +134,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final UUID uuid = UUID.randomUUID();
         final String newGroupId = uuid.toString();
+        final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
+            .format(this.getDateTimeFormatter());
 
         //sanity check, add the active user to this mapping to make sure his data is added
         members.add(activeUser);
@@ -153,8 +156,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
             .withMap(EVENTS, EMPTY_MAP)
             .withInt(NEXT_EVENT_ID, 1)
-            .withString(LAST_ACTIVITY,
-                LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
+            .withString(LAST_ACTIVITY, lastActivity);
 
         String newIconFileName = null;
         if (newIcon.isPresent()) { // if it's there, assume it's new image data
@@ -171,8 +173,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
         this.putItem(putItemSpec);
 
-        this.updateUsersTable(EMPTY_MAP, members, newGroupId, "", groupName, "",
-            Optional.ofNullable(newIconFileName), metrics, lambdaLogger);
+        this.updateUsersTable(EMPTY_MAP, members, newGroupId, "", groupName, null,
+            Optional.ofNullable(newIconFileName), null, Optional.of(lastActivity), metrics,
+            lambdaLogger);
         this.updateCategoriesTable(EMPTY_MAP, categories, newGroupId, "", groupName);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
@@ -259,7 +262,8 @@ public class GroupsManager extends DatabaseAccessManager {
             //update mappings in users and categories tables
             this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
                 members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName,
-                (String) dbGroupDataMap.get(ICON), Optional.ofNullable(newIconFileName), metrics,
+                (String) dbGroupDataMap.get(ICON), Optional.ofNullable(newIconFileName),
+                (String) dbGroupDataMap.get(LAST_ACTIVITY), Optional.empty(), metrics,
                 lambdaLogger);
             this.updateCategoriesTable(
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
@@ -305,33 +309,14 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer votingDuration = (Integer) jsonMap.get(VOTING_DURATION);
         final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
         final String groupId = (String) jsonMap.get(GROUP_ID);
-        BigDecimal nextEventId;
-        Map<String, Object> optedIn;
 
-        Item groupData = this.getItemByPrimaryKey(groupId);
-        if (groupData != null) {
-          Map<String, Object> groupDataMapped = groupData.asMap();
-          if (groupDataMapped.containsKey(MEMBERS)) {
-            optedIn = (Map<String, Object>) groupDataMapped.get(MEMBERS);
-            nextEventId = (BigDecimal) groupDataMapped.get(NEXT_EVENT_ID);
-          } else {
-            lambdaLogger
-                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                    "Groups has no members field").toString());
-            resultStatus.resultMessage = "Error: group has no members field";
-            metrics.commonClose(resultStatus.success);
-            return resultStatus;
-          }
-        } else {
-          lambdaLogger
-              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                  "Group not found").toString());
-          resultStatus.resultMessage = "Error: group not found";
-          metrics.commonClose(resultStatus.success);
-          return resultStatus;
-        }
-
+        final Item groupData = this.getItemByPrimaryKey(groupId);
+        final Map<String, Object> groupDataMapped = groupData.asMap();
+        final Map<String, Object> optedIn = (Map<String, Object>) groupDataMapped.get(MEMBERS);
+        final BigDecimal nextEventId = (BigDecimal) groupDataMapped.get(NEXT_EVENT_ID);
         final String eventId = nextEventId.toString();
+        final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
+            .format(this.getDateTimeFormatter());
 
         if (this.validEventInput(groupId, categoryId, votingDuration,
             rsvpDuration)) {
@@ -360,8 +345,7 @@ public class GroupsManager extends DatabaseAccessManager {
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
               .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)))
-              .withString(":lastActivity",
-                  LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
+              .withString(":lastActivity", lastActivity);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -375,6 +359,20 @@ public class GroupsManager extends DatabaseAccessManager {
           if (rsvpDuration > 0) {
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
+
+            this.updateUsersTable(
+                (Map<String, Object>) groupDataMapped.get(MEMBERS),
+                new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+                groupId,
+                (String) groupDataMapped.get(GROUP_NAME),
+                (String) groupDataMapped.get(GROUP_NAME),
+                (String) groupDataMapped.get(ICON),
+                Optional.empty(),
+                null,
+                Optional.of(lastActivity),
+                metrics,
+                lambdaLogger
+            );
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
             Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
@@ -702,8 +700,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private void updateUsersTable(final Map<String, Object> oldMembers, final List<String> newMembers,
       final String groupId, final String oldGroupName, final String newGroupName,
-      final String oldIconFileName, final Optional<String> newIconFileName, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+      final String oldIconFileName, final Optional<String> newIconFileName,
+      final String currentLastActivity, final Optional<String> lastActivity,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
@@ -753,28 +752,32 @@ public class GroupsManager extends DatabaseAccessManager {
           }
         }
       }
-    } else if (!newGroupName.equals(oldGroupName) || newIconFileName.isPresent()) {
-      // If the group name was changed, update every user in newMembers to reflect that.
-      // In this case, the list of members wasn't changed, but the group name was.
+    } else if (!newGroupName.equals(oldGroupName) || newIconFileName.isPresent() ||
+        lastActivity.isPresent()) {
+      // If the group name/icon/or last activity was changed, update every user in newMembers to reflect that.
       usersToUpdate.addAll(newMembers);
     }
 
     if (!usersToUpdate.isEmpty()) {
-      //we blindly update the users groups mapping with the group name and icon file name
-      updateExpression =
-          "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
+      //we blindly update the users groups mapping with the group name
+      updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
+
+      Map<String, Object> groupDataForUser = new HashMap<>();
+      groupDataForUser.put(GROUP_NAME, newGroupName);
 
       if (newIconFileName.isPresent()) {
-        valueMap = new ValueMap().withMap(":nameIconMap", new HashMap<String, Object>() {{
-          put(GROUP_NAME, newGroupName);
-          put(ICON, newIconFileName.get());
-        }});
+        groupDataForUser.put(ICON, newIconFileName.get());
       } else {
-        valueMap = new ValueMap().withMap(":nameIconMap", new HashMap<String, Object>() {{
-          put(GROUP_NAME, newGroupName);
-          put(ICON, null);
-        }});
+        groupDataForUser.put(ICON, oldIconFileName);
       }
+
+      if (lastActivity.isPresent()) {
+        groupDataForUser.put(LAST_ACTIVITY, lastActivity.get());
+      } else {
+        groupDataForUser.put(LAST_ACTIVITY, currentLastActivity);
+      }
+
+      valueMap = new ValueMap().withMap(":nameIconMap", groupDataForUser);
 
       updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)
@@ -851,6 +854,129 @@ public class GroupsManager extends DatabaseAccessManager {
         DatabaseManagers.CATEGORIES_MANAGER.updateItem(updateItemSpec);
       }
     }
+  }
+
+  public ResultStatus setEventTentativeChoices(final String groupId, final String eventId,
+      final Map<String, Object> tentativeChoices, final Map<String, Object> groupDataMapped,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.setEventTentativeChoices";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final Map<String, Object> votingNumbersSetup = this
+          .getVotingNumbersSetup(tentativeChoices);
+
+      final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
+          .format(this.getDateTimeFormatter());
+
+      //update the event
+      String updateExpression =
+          "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
+              + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate, "
+              + GroupsManager.EVENTS + ".#eventId." + GroupsManager.VOTING_NUMBERS
+              + " = :votingNumbers";
+      NameMap nameMap = new NameMap().with("#eventId", eventId);
+      ValueMap valueMap = new ValueMap()
+          .withMap(":tentativeChoices", tentativeChoices)
+          .withMap(":votingNumbers", votingNumbersSetup)
+          .withString(":currentDate", lastActivity);
+
+      UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
+
+      this.updateItem(updateItemSpec);
+      this.updateUsersTable(
+          (Map<String, Object>) groupDataMapped.get(MEMBERS),
+          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+          groupId,
+          (String) groupDataMapped.get(GROUP_NAME),
+          (String) groupDataMapped.get(GROUP_NAME),
+          (String) groupDataMapped.get(ICON),
+          Optional.empty(),
+          null,
+          Optional.of(lastActivity),
+          metrics,
+          lambdaLogger
+      );
+    } catch (Exception e) {
+      resultStatus.resultMessage = "Error setting tentative algorithm choices";
+      lambdaLogger.log(
+          new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
+              classMethod, metrics.getRequestId(), e).toString());
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  private Map<String, Object> getVotingNumbersSetup(
+      final Map<String, Object> tentativeAlgorithmChoices) {
+    final Map<String, Object> votingNumbers = new HashMap<>();
+
+    //we're filling a map keyed by choiceId with empty maps
+    for (String choiceId : tentativeAlgorithmChoices.keySet()) {
+      votingNumbers.put(choiceId, ImmutableMap.of());
+    }
+
+    return votingNumbers;
+  }
+
+  public ResultStatus setEventSelectedChoice(final String groupId, final String eventId,
+      final String result, final Map<String, Object> groupDataMapped,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.setEventSelectedChoice";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
+          .format(this.getDateTimeFormatter());
+
+      //update the event
+      String updateExpression =
+          "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
+              + " = :selectedChoice, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
+      NameMap nameMap = new NameMap().with("#eventId", eventId);
+      ValueMap valueMap = new ValueMap().withString(":selectedChoice", result)
+          .withString(":currentDate", lastActivity);
+
+      UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
+
+      DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+
+      this.updateItem(updateItemSpec);
+      this.updateUsersTable(
+          (Map<String, Object>) groupDataMapped.get(MEMBERS),
+          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+          groupId,
+          (String) groupDataMapped.get(GROUP_NAME),
+          (String) groupDataMapped.get(GROUP_NAME),
+          (String) groupDataMapped.get(ICON),
+          Optional.empty(),
+          null,
+          Optional.of(lastActivity),
+          metrics,
+          lambdaLogger
+      );
+    } catch (Exception e) {
+      resultStatus.resultMessage = "Error setting selected choice";
+      lambdaLogger.log(
+          new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
+              classMethod, metrics.getRequestId(), e).toString());
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   public List<String> getAllCategoryIds(String groupId, Metrics metrics,
