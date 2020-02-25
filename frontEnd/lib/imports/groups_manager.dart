@@ -263,9 +263,7 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success) {
           showPopupMessage("Error opting in/out (1).", context);
         }
       } catch (e) {
@@ -297,9 +295,7 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success) {
           showPopupMessage("Error voting yes/no (1).", context);
         }
       } catch (e) {

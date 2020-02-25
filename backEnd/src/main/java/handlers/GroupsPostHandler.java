@@ -50,7 +50,8 @@ public class GroupsPostHandler implements
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
                     .newEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("optUserInOut")) {
-                resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap);
+                resultStatus = DatabaseManagers.GROUPS_MANAGER
+                    .optInOutOfEvent(payloadJsonMap, metrics, lambdaLogger);
               } else if (action.equals("leaveGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
                     .leaveGroup(payloadJsonMap, metrics, lambdaLogger);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_rsvp.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -34,7 +35,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           Text("RSVP By: ${widget.event.pollBeginFormatted}",
               style: TextStyle(fontSize: 20)),
           Text(
-            "Tenative attendees: ${widget.event.optedIn.length}",
+            "Tentative attendees: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
           RaisedButton(
@@ -45,14 +46,16 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => EventDetailsRsvp(
-                        groupId: widget.groupId, eventId: widget.eventId)),
+                        groupId: widget.groupId,
+                        eventId: widget.eventId,
+                        mode: EventsManager.rsvpMode)),
               );
             },
           )
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }
