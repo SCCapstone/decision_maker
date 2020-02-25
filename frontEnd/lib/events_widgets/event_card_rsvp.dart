@@ -35,7 +35,7 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           Text("RSVP By: ${widget.event.pollBeginFormatted}",
               style: TextStyle(fontSize: 20)),
           Text(
-            "Tenative attendees: ${widget.event.optedIn.length}",
+            "Tentative attendees: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
           RaisedButton(
