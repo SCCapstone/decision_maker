@@ -371,11 +371,8 @@ public class GroupsManager extends DatabaseAccessManager {
                 .processPendingEvent(processPendingEventInput, metrics, lambdaLogger);
           }
 
-//          final Group newGroup = oldGroup.clone();
-//          newGroup.setLastActivity(lastActivity);
           this.updateUsersTable(
               oldGroup,
-              //newGroup,
               oldGroup.toBuilder().lastActivity(lastActivity).build(),
               metrics,
               lambdaLogger
