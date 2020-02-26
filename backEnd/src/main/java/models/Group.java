@@ -5,12 +5,16 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor // needed for the clone method to work
+@Builder(toBuilder = true)
 public class Group {
 
   private String groupId;
@@ -34,9 +38,9 @@ public class Group {
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
     this.setDefaultRsvpDuration(
         this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
-    this.setDefaultRsvpDuration(
+    this.setDefaultVotingDuration(
         this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
-    this.setDefaultRsvpDuration(
+    this.setNextEventId(
         this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
 
@@ -85,6 +89,21 @@ public class Group {
 
   public boolean lastActivityIsSet() {
     return this.lastActivity != null;
+  }
+
+  public Group clone() {
+    return this.toBuilder()
+        .groupId(this.groupId)
+        .groupName(this.groupName)
+        .icon(this.icon)
+        .defaultRsvpDuration(this.defaultRsvpDuration)
+        .defaultVotingDuration(this.defaultVotingDuration)
+        .nextEventId(this.nextEventId)
+        .lastActivity(this.lastActivity)
+        .members(this.members)
+        .categories(this.categories)
+        .events(this.events)
+        .build();
   }
 
   private Integer getIntFromBigInt(final BigDecimal input) {

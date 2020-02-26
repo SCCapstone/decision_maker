@@ -2,9 +2,11 @@ package models;
 
 import imports.UsersManager;
 import java.util.Map;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class Member {
   private String displayName;
   private String icon;

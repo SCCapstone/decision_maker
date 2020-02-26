@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import models.Group;
+import models.Member;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -226,9 +227,6 @@ public class GroupsManager extends DatabaseAccessManager {
             final Map<String, Object> membersMapped = this
                 .getMembersMapForInsertion(members, metrics, lambdaLogger);
 
-            //in case any usernames were removed, update the list for use in below methods to keep data consistent
-            members = new LinkedList<>(membersMapped.keySet());
-
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
                     + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
@@ -260,11 +258,15 @@ public class GroupsManager extends DatabaseAccessManager {
             this.updateItem(updateItemSpec);
 
             //update mappings in users and categories tables
-//            this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
-//                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName,
-//                (String) dbGroupDataMap.get(ICON), Optional.ofNullable(newIconFileName),
-//                (String) dbGroupDataMap.get(LAST_ACTIVITY), Optional.empty(), metrics,
-//                lambdaLogger);
+            final Group oldGroup = new Group(dbGroupDataMap);
+            final Group newGroup = Group.builder()
+                .groupId(groupId)
+                .groupName(groupName)
+                .icon(newIconFileName)
+                .lastActivity(oldGroup.getLastActivity())
+                .build();
+            newGroup.setMembers(membersMapped);
+            this.updateUsersTable(oldGroup, newGroup, metrics, lambdaLogger);
             this.updateCategoriesTable(
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
                 (String) dbGroupDataMap.get(GROUP_NAME), groupName);
@@ -312,9 +314,10 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Item groupData = this.getItemByPrimaryKey(groupId);
         final Map<String, Object> groupDataMapped = groupData.asMap();
-        final Map<String, Object> optedIn = (Map<String, Object>) groupDataMapped.get(MEMBERS);
-        final BigDecimal nextEventId = (BigDecimal) groupDataMapped.get(NEXT_EVENT_ID);
-        final String eventId = nextEventId.toString();
+        final Group oldGroup = new Group(groupDataMapped);
+        final Map<String, Object> optedIn = (Map<String, Object>) groupDataMapped
+            .get(MEMBERS); //TODO figure out how use oldGroup for this
+        final String eventId = oldGroup.getNextEventId().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
 
@@ -344,7 +347,7 @@ public class GroupsManager extends DatabaseAccessManager {
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
               .withMap(":map", eventMap)
-              .withNumber(":nextEventId", nextEventId.add(new BigDecimal(1)))
+              .withNumber(":nextEventId", oldGroup.getNextEventId() + 1)
               .withString(":lastActivity", lastActivity);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
@@ -359,20 +362,6 @@ public class GroupsManager extends DatabaseAccessManager {
           if (rsvpDuration > 0) {
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
-
-//            this.updateUsersTable(
-//                (Map<String, Object>) groupDataMapped.get(MEMBERS),
-//                new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-//                groupId,
-//                (String) groupDataMapped.get(GROUP_NAME),
-//                (String) groupDataMapped.get(GROUP_NAME),
-//                (String) groupDataMapped.get(ICON),
-//                Optional.empty(),
-//                null,
-//                Optional.of(lastActivity),
-//                metrics,
-//                lambdaLogger
-//            );
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
             Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
@@ -381,6 +370,16 @@ public class GroupsManager extends DatabaseAccessManager {
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .processPendingEvent(processPendingEventInput, metrics, lambdaLogger);
           }
+
+//          final Group newGroup = oldGroup.clone();
+//          newGroup.setLastActivity(lastActivity);
+          this.updateUsersTable(
+              oldGroup,
+              //newGroup,
+              oldGroup.toBuilder().lastActivity(lastActivity).build(),
+              metrics,
+              lambdaLogger
+          );
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
@@ -722,19 +721,15 @@ public class GroupsManager extends DatabaseAccessManager {
     addedUsernames.removeAll(oldMembers);
     removedUsernames.removeAll(newMembers);
 
-    if (newGroup.groupNameIsSet() && oldGroup.groupNameIsSet()) {
-      // If the group name/icon/or last activity was changed, update every user in newMembers to reflect that.
-      if (!newGroup.getGroupName().equals(oldGroup.getGroupName())) {
-        usersToUpdate.addAll(newMembers);
-      }
-    } else if (newGroup.iconIsSet() && oldGroup.iconIsSet()) {
-      if (!newGroup.getIcon().equals(oldGroup.getIcon())) {
-        usersToUpdate.addAll(newMembers);
-      }
-    } else if (newGroup.lastActivityIsSet() && oldGroup.lastActivityIsSet()) {
-      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
-        usersToUpdate.addAll(newMembers);
-      }
+    if (newGroup.groupNameIsSet() && oldGroup.groupNameIsSet() && !newGroup.getGroupName()
+        .equals(oldGroup.getGroupName())) {
+      usersToUpdate.addAll(newMembers);
+    } else if (newGroup.iconIsSet() && oldGroup.iconIsSet() && !newGroup.getIcon()
+        .equals(oldGroup.getIcon())) {
+      usersToUpdate.addAll(newMembers);
+    } else if (newGroup.lastActivityIsSet() && oldGroup.lastActivityIsSet() && !newGroup
+        .getLastActivity().equals(oldGroup.getLastActivity())) {
+      usersToUpdate.addAll(newMembers);
     } else if (!oldMembers.equals(newMembers)) {
       // Make copies of the key sets and use removeAll to figure out where they differ
       usersToUpdate.addAll(addedUsernames);
@@ -892,19 +887,14 @@ public class GroupsManager extends DatabaseAccessManager {
           .withValueMap(valueMap);
 
       this.updateItem(updateItemSpec);
-//      this.updateUsersTable(
-//          (Map<String, Object>) groupDataMapped.get(MEMBERS),
-//          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-//          groupId,
-//          (String) groupDataMapped.get(GROUP_NAME),
-//          (String) groupDataMapped.get(GROUP_NAME),
-//          (String) groupDataMapped.get(ICON),
-//          Optional.empty(),
-//          null,
-//          Optional.of(lastActivity),
-//          metrics,
-//          lambdaLogger
-//      );
+
+      final Group oldGroup = new Group(groupDataMapped);
+      this.updateUsersTable(
+          oldGroup,
+          oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          metrics,
+          lambdaLogger
+      );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting tentative algorithm choices";
       lambdaLogger.log(
@@ -957,19 +947,14 @@ public class GroupsManager extends DatabaseAccessManager {
       DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
       this.updateItem(updateItemSpec);
-//      this.updateUsersTable(
-//          (Map<String, Object>) groupDataMapped.get(MEMBERS),
-//          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-//          groupId,
-//          (String) groupDataMapped.get(GROUP_NAME),
-//          (String) groupDataMapped.get(GROUP_NAME),
-//          (String) groupDataMapped.get(ICON),
-//          Optional.empty(),
-//          null,
-//          Optional.of(lastActivity),
-//          metrics,
-//          lambdaLogger
-//      );
+
+      final Group oldGroup = new Group(groupDataMapped);
+      this.updateUsersTable(
+          oldGroup,
+          oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          metrics,
+          lambdaLogger
+      );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting selected choice";
       lambdaLogger.log(
