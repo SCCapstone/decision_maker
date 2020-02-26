@@ -718,14 +718,12 @@ public class GroupsManager extends DatabaseAccessManager {
     addedUsernames.removeAll(oldMembers);
     removedUsernames.removeAll(newMembers);
 
-    if (newGroup.groupNameIsSet() && oldGroup.groupNameIsSet() && !newGroup.getGroupName()
-        .equals(oldGroup.getGroupName())) {
+    if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
       usersToUpdate.addAll(newMembers);
-    } else if (newGroup.iconIsSet() && oldGroup.iconIsSet() && !newGroup.getIcon()
-        .equals(oldGroup.getIcon())) {
+    } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
       usersToUpdate.addAll(newMembers);
-    } else if (newGroup.lastActivityIsSet() && oldGroup.lastActivityIsSet() && !newGroup
-        .getLastActivity().equals(oldGroup.getLastActivity())) {
+    } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+        .equals(oldGroup.getLastActivity())) {
       usersToUpdate.addAll(newMembers);
     } else if (!oldMembers.equals(newMembers)) {
       // Make copies of the key sets and use removeAll to figure out where they differ
