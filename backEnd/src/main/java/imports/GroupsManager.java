@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import models.Group;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -59,7 +60,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public static final Integer MAX_DURATION = 10000;
 
-  public static final Map EMPTY_MAP = new HashMap();
+  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -172,9 +173,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
         this.putItem(putItemSpec);
 
-        this.updateUsersTable(EMPTY_MAP, members, newGroupId, "", groupName, null,
-            Optional.ofNullable(newIconFileName), null, Optional.of(lastActivity), metrics,
-            lambdaLogger);
+        final Group oldGroup = new Group();
+        oldGroup.setMembers(EMPTY_MAP);
+        this.updateUsersTable(oldGroup, new Group(newGroup.asMap()), metrics, lambdaLogger);
         this.updateCategoriesTable(EMPTY_MAP, categories, newGroupId, "", groupName);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
@@ -259,11 +260,11 @@ public class GroupsManager extends DatabaseAccessManager {
             this.updateItem(updateItemSpec);
 
             //update mappings in users and categories tables
-            this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
-                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName,
-                (String) dbGroupDataMap.get(ICON), Optional.ofNullable(newIconFileName),
-                (String) dbGroupDataMap.get(LAST_ACTIVITY), Optional.empty(), metrics,
-                lambdaLogger);
+//            this.updateUsersTable((Map<String, Object>) dbGroupDataMap.get(MEMBERS),
+//                members, groupId, (String) dbGroupDataMap.get(GROUP_NAME), groupName,
+//                (String) dbGroupDataMap.get(ICON), Optional.ofNullable(newIconFileName),
+//                (String) dbGroupDataMap.get(LAST_ACTIVITY), Optional.empty(), metrics,
+//                lambdaLogger);
             this.updateCategoriesTable(
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
                 (String) dbGroupDataMap.get(GROUP_NAME), groupName);
@@ -359,19 +360,19 @@ public class GroupsManager extends DatabaseAccessManager {
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
 
-            this.updateUsersTable(
-                (Map<String, Object>) groupDataMapped.get(MEMBERS),
-                new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-                groupId,
-                (String) groupDataMapped.get(GROUP_NAME),
-                (String) groupDataMapped.get(GROUP_NAME),
-                (String) groupDataMapped.get(ICON),
-                Optional.empty(),
-                null,
-                Optional.of(lastActivity),
-                metrics,
-                lambdaLogger
-            );
+//            this.updateUsersTable(
+//                (Map<String, Object>) groupDataMapped.get(MEMBERS),
+//                new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+//                groupId,
+//                (String) groupDataMapped.get(GROUP_NAME),
+//                (String) groupDataMapped.get(GROUP_NAME),
+//                (String) groupDataMapped.get(ICON),
+//                Optional.empty(),
+//                null,
+//                Optional.of(lastActivity),
+//                metrics,
+//                lambdaLogger
+//            );
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
             Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
@@ -698,83 +699,65 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   //TODO update all of this to use a Groups Model
-  private void updateUsersTable(final Map<String, Object> oldMembers, final List<String> newMembers,
-      final String groupId, final String oldGroupName, final String newGroupName,
-      final String oldIconFileName, final Optional<String> newIconFileName,
-      final String currentLastActivity, final Optional<String> lastActivity,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+  private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
 
     final Set<String> usersToUpdate = new HashSet<>();
 
-    NameMap nameMap = new NameMap().with("#groupId", groupId);
+    NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
     String updateExpression;
     ValueMap valueMap;
     UpdateItemSpec updateItemSpec;
 
-    if (!oldMembers.keySet().equals(newMembers)) {
-      // Make copies of the key sets and use removeAll to figure out where they differ
-      final Set<String> newUsernames = new HashSet<>(newMembers);
-      final Set<String> removedUsernames = new HashSet<>(oldMembers.keySet());
+    final Set<String> newMembers = newGroup.getMembers().keySet();
+    final Set<String> addedUsernames = new HashSet<>(newMembers);
 
-      // Note: using removeAll on a HashSet has linear time complexity when
-      // another HashSet is passed in
-      newUsernames.removeAll(oldMembers.keySet());
-      removedUsernames.removeAll((newMembers));
+    final Set<String> oldMembers = oldGroup.getMembers().keySet();
+    final Set<String> removedUsernames = new HashSet<>(oldMembers);
 
-      if (newGroupName.equals(oldGroupName) && !newUsernames.isEmpty()) {
-        // If the group name wasn't changed and we're adding new users, then only perform
-        // updates for the newly added users
-        usersToUpdate.addAll(newUsernames);
-      } else if (!newGroupName.equals(oldGroupName) || newIconFileName.isPresent()) {
-        // If the group name was changed, update every user in newMembers to reflect that.
-        // In this case, both the list of members and the group name were changed.
+    // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
+    addedUsernames.removeAll(oldMembers);
+    removedUsernames.removeAll(newMembers);
+
+    if (newGroup.groupNameIsSet() && oldGroup.groupNameIsSet()) {
+      // If the group name/icon/or last activity was changed, update every user in newMembers to reflect that.
+      if (!newGroup.getGroupName().equals(oldGroup.getGroupName())) {
         usersToUpdate.addAll(newMembers);
       }
-
-      if (!removedUsernames.isEmpty()) {
-        updateExpression = "remove Groups.#groupId";
-        updateItemSpec = new UpdateItemSpec()
-            .withNameMap(nameMap)
-            .withUpdateExpression(updateExpression);
-        for (final String member : removedUsernames) {
-          try {
-            updateItemSpec
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-          } catch (Exception e) {
-            success = false;
-            lambdaLogger
-                .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e)
-                    .toString());
-          }
-        }
+    } else if (newGroup.iconIsSet() && oldGroup.iconIsSet()) {
+      if (!newGroup.getIcon().equals(oldGroup.getIcon())) {
+        usersToUpdate.addAll(newMembers);
       }
-    } else if (!newGroupName.equals(oldGroupName) || newIconFileName.isPresent() ||
-        lastActivity.isPresent()) {
-      // If the group name/icon/or last activity was changed, update every user in newMembers to reflect that.
-      usersToUpdate.addAll(newMembers);
+    } else if (newGroup.lastActivityIsSet() && oldGroup.lastActivityIsSet()) {
+      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
+        usersToUpdate.addAll(newMembers);
+      }
+    } else if (!oldMembers.equals(newMembers)) {
+      // Make copies of the key sets and use removeAll to figure out where they differ
+      usersToUpdate.addAll(addedUsernames);
     }
 
     if (!usersToUpdate.isEmpty()) {
-      //we blindly update the users groups mapping with the group name
+      //we have to update the entire mapping because the groupId key may
+      //not be in the mapping yet if this is a new group
       updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
 
       Map<String, Object> groupDataForUser = new HashMap<>();
-      groupDataForUser.put(GROUP_NAME, newGroupName);
+      groupDataForUser.put(GROUP_NAME, newGroup.getGroupName());
 
-      if (newIconFileName.isPresent()) {
-        groupDataForUser.put(ICON, newIconFileName.get());
+      if (newGroup.iconIsSet()) {
+        groupDataForUser.put(ICON, newGroup.getIcon());
       } else {
-        groupDataForUser.put(ICON, oldIconFileName);
+        groupDataForUser.put(ICON, oldGroup.getIcon());
       }
 
-      if (lastActivity.isPresent()) {
-        groupDataForUser.put(LAST_ACTIVITY, lastActivity.get());
+      if (newGroup.lastActivityIsSet()) {
+        groupDataForUser.put(LAST_ACTIVITY, newGroup.getLastActivity());
       } else {
-        groupDataForUser.put(LAST_ACTIVITY, currentLastActivity);
+        groupDataForUser.put(LAST_ACTIVITY, oldGroup.getLastActivity());
       }
 
       valueMap = new ValueMap().withMap(":nameIconMap", groupDataForUser);
@@ -794,6 +777,25 @@ public class GroupsManager extends DatabaseAccessManager {
           lambdaLogger
               .log(
                   new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+    }
+
+    if (!removedUsernames.isEmpty()) {
+      updateExpression = "remove Groups.#groupId";
+      updateItemSpec = new UpdateItemSpec()
+          .withNameMap(nameMap)
+          .withUpdateExpression(updateExpression);
+      for (final String member : removedUsernames) {
+        try {
+          updateItemSpec
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+        } catch (Exception e) {
+          success = false;
+          lambdaLogger
+              .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e)
+                  .toString());
         }
       }
     }
@@ -890,19 +892,19 @@ public class GroupsManager extends DatabaseAccessManager {
           .withValueMap(valueMap);
 
       this.updateItem(updateItemSpec);
-      this.updateUsersTable(
-          (Map<String, Object>) groupDataMapped.get(MEMBERS),
-          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-          groupId,
-          (String) groupDataMapped.get(GROUP_NAME),
-          (String) groupDataMapped.get(GROUP_NAME),
-          (String) groupDataMapped.get(ICON),
-          Optional.empty(),
-          null,
-          Optional.of(lastActivity),
-          metrics,
-          lambdaLogger
-      );
+//      this.updateUsersTable(
+//          (Map<String, Object>) groupDataMapped.get(MEMBERS),
+//          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+//          groupId,
+//          (String) groupDataMapped.get(GROUP_NAME),
+//          (String) groupDataMapped.get(GROUP_NAME),
+//          (String) groupDataMapped.get(ICON),
+//          Optional.empty(),
+//          null,
+//          Optional.of(lastActivity),
+//          metrics,
+//          lambdaLogger
+//      );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting tentative algorithm choices";
       lambdaLogger.log(
@@ -955,19 +957,19 @@ public class GroupsManager extends DatabaseAccessManager {
       DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
 
       this.updateItem(updateItemSpec);
-      this.updateUsersTable(
-          (Map<String, Object>) groupDataMapped.get(MEMBERS),
-          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
-          groupId,
-          (String) groupDataMapped.get(GROUP_NAME),
-          (String) groupDataMapped.get(GROUP_NAME),
-          (String) groupDataMapped.get(ICON),
-          Optional.empty(),
-          null,
-          Optional.of(lastActivity),
-          metrics,
-          lambdaLogger
-      );
+//      this.updateUsersTable(
+//          (Map<String, Object>) groupDataMapped.get(MEMBERS),
+//          new ArrayList<>(((Map<String, Object>) groupDataMapped.get(MEMBERS)).keySet()),
+//          groupId,
+//          (String) groupDataMapped.get(GROUP_NAME),
+//          (String) groupDataMapped.get(GROUP_NAME),
+//          (String) groupDataMapped.get(ICON),
+//          Optional.empty(),
+//          null,
+//          Optional.of(lastActivity),
+//          metrics,
+//          lambdaLogger
+//      );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting selected choice";
       lambdaLogger.log(

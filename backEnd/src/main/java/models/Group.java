@@ -1,13 +1,16 @@
 package models;
 
 import imports.GroupsManager;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
+@NoArgsConstructor
 public class Group {
 
   private String groupId;
@@ -16,6 +19,7 @@ public class Group {
   private Integer defaultRsvpDuration;
   private Integer defaultVotingDuration;
   private Integer nextEventId;
+  private String lastActivity;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
@@ -28,9 +32,13 @@ public class Group {
     this.setGroupId((String) jsonMap.get(GroupsManager.GROUP_ID));
     this.setGroupName((String) jsonMap.get(GroupsManager.GROUP_NAME));
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
-    this.setDefaultRsvpDuration((Integer) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION));
-    this.setDefaultRsvpDuration((Integer) jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION));
-    this.setDefaultRsvpDuration((Integer) jsonMap.get(GroupsManager.NEXT_EVENT_ID));
+    this.setDefaultRsvpDuration(
+        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
+    this.setDefaultRsvpDuration(
+        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
+    this.setDefaultRsvpDuration(
+        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
+    this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
     this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
@@ -38,6 +46,7 @@ public class Group {
   }
 
   public void setMembers(Map<String, Object> jsonMap) {
+    this.members = null;
     if (jsonMap != null) {
       this.members = new HashMap<>();
       for (String username : jsonMap.keySet()) {
@@ -47,6 +56,7 @@ public class Group {
   }
 
   public void setCategories(Map<String, Object> jsonMap) {
+    this.categories = null;
     if (jsonMap != null) {
       this.categories = new HashMap<>();
       for (String categoryId : jsonMap.keySet()) {
@@ -56,11 +66,31 @@ public class Group {
   }
 
   public void setEvents(Map<String, Object> jsonMap) {
+    this.events = null;
     if (jsonMap != null) {
       this.events = new HashMap<>();
       for (String username : jsonMap.keySet()) {
         this.events.putIfAbsent(username, new Event((Map<String, Object>) jsonMap.get(username)));
       }
     }
+  }
+
+  public boolean groupNameIsSet() {
+    return this.groupName != null;
+  }
+
+  public boolean iconIsSet() {
+    return this.icon != null;
+  }
+
+  public boolean lastActivityIsSet() {
+    return this.lastActivity != null;
+  }
+
+  private Integer getIntFromBigInt(final BigDecimal input) {
+    if (input != null) {
+      return input.intValue();
+    }
+    return null;
   }
 }
