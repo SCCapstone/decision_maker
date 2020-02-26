@@ -51,10 +51,14 @@ class UsersManager {
           showPopupMessage("Error getting the user (1).", context);
         }
       } catch (e) {
-        showPopupMessage("Error getting the user (2).", context);
+        if (showPopup) {
+          showPopupMessage("Error getting the user (2).", context);
+        }
       }
     } else {
-      showPopupMessage("Unable to get the user.", context);
+      if (showPopup) {
+        showPopupMessage("Unable to get the user.", context);
+      }
     }
 
     return ret;
