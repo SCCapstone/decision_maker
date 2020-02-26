@@ -184,21 +184,21 @@ public class GroupsManagerTest {
   ////////////////////endregion
   // newEvent tests //
   ////////////////////region
-  @Test
-  public void newEvent_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
-        .getItem(any(GetItemSpec.class));
-
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
-
-    assertTrue(result.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
+//  @Test
+//  public void newEvent_validInput_successfulResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//        .getItem(any(GetItemSpec.class));
+//
+//    ResultStatus result = this.groupsManager
+//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//
+//    assertTrue(result.success);
+//    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+//    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+//    verify(this.metrics, times(1)).commonClose(true);
+//  }
 
   @Test
   public void newEvent_missingRequestKeys_failureResult() {
@@ -240,21 +240,21 @@ public class GroupsManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  @Test
-  public void newEvent_missingMembersField_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap("NoMembers", ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
-        .getItem(any(GetItemSpec.class));
-
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
-
-    assertFalse(result.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
+//  @Test
+//  public void newEvent_missingMembersField_failureResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    doReturn(new Item().withMap("NoMembers", ImmutableMap.of("user1", "name1"))
+//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//        .getItem(any(GetItemSpec.class));
+//
+//    ResultStatus result = this.groupsManager
+//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//
+//    assertFalse(result.success);
+//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
 
   @Test
   public void newEvent_noDbConnection_failureResult() {
@@ -282,17 +282,17 @@ public class GroupsManagerTest {
   /////////////////////////////////endregion
   // validEventInput tests //
   /////////////////////////////////region
-  @Test
-  public void validEventInput_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
-        .getItem(any(GetItemSpec.class));
-
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
-    assertTrue(result.success);
-  }
+//  @Test
+//  public void validEventInput_validInput_successfulResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
+//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//        .getItem(any(GetItemSpec.class));
+//
+//    ResultStatus result = this.groupsManager
+//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//    assertTrue(result.success);
+//  }
 
   @Test
   public void validEventInput_emptyString_failureResult() {
