@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/login_page.dart';
+import 'package:frontEnd/utilities/utilities.dart';
+import 'package:frontEnd/widgets/internet_loss.dart';
 import 'package:provider/provider.dart';
 
 import 'imports/globals.dart';
@@ -11,8 +13,51 @@ import 'imports/user_tokens_manager.dart';
 
 void main() => runApp(ChangeNotifierProvider<ThemeNotifier>(
       create: (_) => ThemeNotifier(Globals.darkTheme),
-      child: MyApp(),
+      child: AppStart(),
     ));
+
+class AppStart extends StatelessWidget {
+  /*
+    Lil hacky, but otherwise when re-trying to gain connection the user can hit the back button
+    and be brought back to that loss of internet page.
+   */
+  @override
+  Widget build(BuildContext context) {
+    return InternetCheck();
+  }
+}
+
+class InternetCheck extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        // when app first loads, see if the user has internet or not
+        color: Color(0xff303030),
+        child: AnnotatedRegion(
+          value: SystemUiOverlayStyle.dark,
+          child: FutureBuilder<bool>(
+              future: internetCheck(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                      child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xff5ce080))));
+                } else {
+                  if (!snapshot.data) {
+                    return MaterialApp(
+                        home: InternetLoss(
+                          initialCheck: true,
+                        ),
+                        theme: Globals.darkTheme);
+                  } else {
+                    return MyApp();
+                  }
+                }
+              }),
+        ));
+  }
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -23,9 +68,6 @@ class MyApp extends StatelessWidget {
       Globals.android = false;
     }
     return Container(
-        //We use a FutureBuilder here since the display of the widget depends on
-        //the asynchronous function hasValidTokensSet being able to fully execute
-        //and return a Future<bool>.
         color: Color(0xff303030),
         child: AnnotatedRegion(
           // make the bottom navigation bar black instead of default white

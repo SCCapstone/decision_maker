@@ -1,9 +1,27 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import 'package:frontEnd/models/user.dart';
 import 'validator.dart';
+
+Future<bool> internetCheck() async {
+  bool retVal = true;
+  try {
+    await InternetAddress.lookup('google.com');
+  } on SocketException catch (_) {
+    retVal = false;
+  }
+  return retVal;
+}
+
+void logOutUser() {
+  Globals.clearGlobals();
+  clearTokens();
+}
 
 ImageProvider getUserIconUrl(User user) {
   return user.icon == null

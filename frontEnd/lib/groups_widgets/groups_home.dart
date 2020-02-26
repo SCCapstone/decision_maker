@@ -7,7 +7,6 @@ import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
-import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user.dart';
