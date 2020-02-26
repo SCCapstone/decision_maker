@@ -231,13 +231,12 @@ class _GroupsHomeState extends State<GroupsHome> {
           icon: Globals.user.groups[groupId][GroupsManager.ICON]);
       totalGroups.add(group);
     }
-    // TODO re-enable once group attribute in user object have the last modified date
-//    if (sortVal == Globals.dateSort) {
-//      displayedGroups = GroupsManager.sortByDate(displayedGroups);
-//    } else if (sortVal == Globals.alphabeticalSort) {
-//      displayedGroups = GroupsManager.sortByAlpha(displayedGroups);
-//    }
-    GroupsManager.sortByAlpha(totalGroups);
+
+    if (Globals.user.appSettings.groupSort == Globals.dateSort) {
+      GroupsManager.sortByDate(totalGroups);
+    } else if (Globals.user.appSettings.groupSort == Globals.alphabeticalSort) {
+      GroupsManager.sortByAlpha(totalGroups);
+    }
   }
 
   void toggleSearch() {

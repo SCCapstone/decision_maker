@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import utilities.ErrorDescriptor;
@@ -119,29 +118,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
             final Map<String, Object> tentativeChoices = this
                 .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
 
-            final Map<String, Object> votingNumbersSetup = this
-                .getVotingNumbersSetup(tentativeChoices);
-
-            //update the event
-            String updateExpression =
-                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.TENTATIVE_CHOICES
-                    + " = :tentativeChoices, " + GroupsManager.LAST_ACTIVITY + " = :currentDate, "
-                    + GroupsManager.EVENTS + ".#eventId." + GroupsManager.VOTING_NUMBERS
-                    + " = :votingNumbers";
-            NameMap nameMap = new NameMap().with("#eventId", eventId);
-            ValueMap valueMap = new ValueMap()
-                .withMap(":tentativeChoices", tentativeChoices)
-                .withMap(":votingNumbers", votingNumbersSetup)
-                .withString(":currentDate",
-                    LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
-
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
-                .withUpdateExpression(updateExpression)
-                .withNameMap(nameMap)
-                .withValueMap(valueMap);
-
-            DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+            DatabaseManagers.GROUPS_MANAGER
+                .setEventTentativeChoices(groupId, eventId, tentativeChoices, groupDataMapped,
+                    metrics, lambdaLogger);
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
@@ -156,28 +135,15 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //set the selected choice as the one with the highest percent
             String result = this.getSelectedChoice(eventDataMapped, metrics, lambdaLogger);
 
-            //update the event
-            String updateExpression =
-                "set " + GroupsManager.EVENTS + ".#eventId." + GroupsManager.SELECTED_CHOICE
-                    + " = :selectedChoice, " + GroupsManager.LAST_ACTIVITY + " = :currentDate";
-            NameMap nameMap = new NameMap().with("#eventId", eventId);
-            ValueMap valueMap = new ValueMap().withString(":selectedChoice", result)
-                .withString(":currentDate",
-                    LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
-
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(GroupsManager.GROUP_ID, groupId)
-                .withUpdateExpression(updateExpression)
-                .withNameMap(nameMap)
-                .withValueMap(valueMap);
-
-            DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+            DatabaseManagers.GROUPS_MANAGER
+                .setEventSelectedChoice(groupId, eventId, result, groupDataMapped,
+                    metrics, lambdaLogger);
 
             // now remove the entry from the pending events table since it has been fully processed now
-            updateExpression = "remove #groupEventKey";
-            nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
+            String updateExpression = "remove #groupEventKey";
+            NameMap nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
 
-            updateItemSpec = new UpdateItemSpec()
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), scannerId)
                 .withUpdateExpression(updateExpression)
                 .withNameMap(nameMap);
@@ -239,18 +205,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
     metrics.commonClose(success);
     return tentativeChoice;
-  }
-
-  private Map<String, Object> getVotingNumbersSetup(
-      final Map<String, Object> tentativeAlgorithmChoices) {
-    final Map<String, Object> votingNumbers = new HashMap<>();
-
-    //we're filling a map keyed by choiceId with empty maps
-    for (String choiceId : tentativeAlgorithmChoices.keySet()) {
-      votingNumbers.put(choiceId, ImmutableMap.of());
-    }
-
-    return votingNumbers;
   }
 
   public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
