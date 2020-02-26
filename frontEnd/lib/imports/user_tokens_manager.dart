@@ -29,8 +29,8 @@ final String refreshTokenKey = "refresh"; //the keys for the tokens here.
 final String idTokenKey = "id";
 bool gotTokens = false;
 
-Future<bool> hasValidTokensSet() async {
-  User user = await UsersManager.getUserData();
+Future<bool> hasValidTokensSet(BuildContext context) async {
+  User user = await UsersManager.getUserData(context, false);
 
   if (user != null) {
     Globals.user = user;

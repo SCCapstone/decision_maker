@@ -155,7 +155,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
     Globals.currentGroup =
-        (await GroupsManager.getGroups(groupIds: groupId)).first;
+        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
     getEvent();
     setState(() {});
   }

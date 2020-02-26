@@ -58,7 +58,8 @@ class CategoriesManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -83,11 +84,13 @@ class CategoriesManager {
     }
   }
 
-  static Future<List<Category>> getAllCategoriesList() async {
+  static Future<List<Category>> getAllCategoriesList(
+      BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -107,13 +110,14 @@ class CategoriesManager {
   }
 
   static Future<List<Category>> getAllCategoriesFromGroup(
-      String groupId) async {
+      String groupId, BuildContext context) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getCategories";
     jsonRequestBody["payload"]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -137,7 +141,8 @@ class CategoriesManager {
     jsonRequestBody["action"] = "deleteCategory";
     jsonRequestBody["payload"].putIfAbsent(CATEGORY_ID, () => categoryId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {

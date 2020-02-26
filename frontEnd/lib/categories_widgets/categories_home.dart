@@ -19,7 +19,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   @override
   void initState() {
-    widget.categories = CategoriesManager.getAllCategoriesList();
+    widget.categories = CategoriesManager.getAllCategoriesList(context);
     super.initState();
   }
 
@@ -98,14 +98,14 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   Future<Null> refreshList() async {
     setState(() {
-      widget.categories = CategoriesManager.getAllCategoriesList();
+      widget.categories = CategoriesManager.getAllCategoriesList(context);
     });
   }
 
   void refreshPage() {
     //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
     setState(() {
-      widget.categories = CategoriesManager.getAllCategoriesList();
+      widget.categories = CategoriesManager.getAllCategoriesList(context);
     });
   }
 }

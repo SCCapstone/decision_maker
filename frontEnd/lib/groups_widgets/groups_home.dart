@@ -7,7 +7,6 @@ import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
-import 'package:frontEnd/log_out.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user.dart';
@@ -214,7 +213,7 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Future<Null> refreshList() async {
-    User temp = await UsersManager.getUserData();
+    User temp = await UsersManager.getUserData(context, true);
     if (temp != null) {
       Globals.user = temp;
       setState(() {
@@ -229,7 +228,9 @@ class _GroupsHomeState extends State<GroupsHome> {
       Group group = new Group(
           groupId: groupId,
           groupName: Globals.user.groups[groupId][GroupsManager.GROUP_NAME],
-          icon: Globals.user.groups[groupId][GroupsManager.ICON]);
+          icon: Globals.user.groups[groupId][GroupsManager.ICON],
+          lastActivity: Globals.user.groups[groupId]
+              [GroupsManager.LAST_ACTIVITY]);
       totalGroups.add(group);
     }
 

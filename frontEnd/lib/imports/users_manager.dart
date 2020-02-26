@@ -27,15 +27,16 @@ class UsersManager {
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
 
-  static Future<User> getUserData(
-      {BuildContext context, String username}) async {
+  static Future<User> getUserData(BuildContext context, bool showPopup,
+      {String username}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserData";
     if (username != null) {
       jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
     User ret;
 
     if (response != "") {
@@ -46,16 +47,18 @@ class UsersManager {
 
         ret = User.fromJson(json.decode(responseItem.resultMessage));
 
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
+        if (!responseItem.success && showPopup) {
           showPopupMessage("Error getting the user (1).", context);
         }
       } catch (e) {
-        showPopupMessage("Error getting the user (2).", context);
+        if (showPopup) {
+          showPopupMessage("Error getting the user (2).", context);
+        }
       }
     } else {
-      showPopupMessage("Unable to get the user.", context);
+      if (showPopup) {
+        showPopupMessage("Unable to get the user.", context);
+      }
     }
 
     return ret;
@@ -84,7 +87,8 @@ class UsersManager {
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -114,7 +118,8 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -146,7 +151,8 @@ class UsersManager {
     jsonRequestBody["payload"]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);

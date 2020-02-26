@@ -99,8 +99,8 @@ class _FavoritesPopupState extends State<FavoritesPopup> {
   }
 
   void addNewFavorite() async {
-    User newFavorite =
-        await UsersManager.getUserData(username: userController.text.trim());
+    User newFavorite = await UsersManager.getUserData(context, true,
+        username: userController.text.trim());
     if (newFavorite != null) {
       widget.displayedFavorites.add(new Favorite(
           username: newFavorite.username,

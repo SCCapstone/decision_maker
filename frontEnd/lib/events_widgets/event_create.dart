@@ -50,7 +50,7 @@ class _CreateEventState extends State<CreateEvent> {
   @override
   void initState() {
     categoriesInGroup = CategoriesManager.getAllCategoriesFromGroup(
-        Globals.currentGroup.groupId);
+        Globals.currentGroup.groupId, context);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
     if ((currentTime.hour + 1) < 10) {

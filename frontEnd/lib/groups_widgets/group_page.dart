@@ -96,7 +96,8 @@ class _GroupPageState extends State<GroupPage> {
   void getGroup() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    List<Group> tempList = await GroupsManager.getGroups(groupIds: groupId);
+    List<Group> tempList =
+        await GroupsManager.getGroups(context, groupIds: groupId);
     if (tempList.length != 0) {
       initialLoad = false;
       Globals.currentGroup = tempList.first;

@@ -158,7 +158,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
     Globals.currentGroup =
-        (await GroupsManager.getGroups(groupIds: groupId)).first;
+        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
     getEvent();
     if (EventsManager.getEventMode(event) != widget.mode) {
       // if while the user was here and the mode changed, take them back to the group page
