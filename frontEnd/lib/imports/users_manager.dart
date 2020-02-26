@@ -27,8 +27,8 @@ class UsersManager {
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
 
-  static Future<User> getUserData(
-      {BuildContext context, String username}) async {
+  static Future<User> getUserData(BuildContext context, bool showPopup,
+      {String username}) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "getUserData";
     if (username != null) {
@@ -36,7 +36,7 @@ class UsersManager {
     }
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
     User ret;
 
     if (response != "") {
@@ -47,7 +47,7 @@ class UsersManager {
 
         ret = User.fromJson(json.decode(responseItem.resultMessage));
 
-        if (!responseItem.success) {
+        if (!responseItem.success && showPopup) {
           showPopupMessage("Error getting the user (1).", context);
         }
       } catch (e) {
@@ -84,7 +84,7 @@ class UsersManager {
     }
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -115,7 +115,7 @@ class UsersManager {
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -148,7 +148,7 @@ class UsersManager {
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);

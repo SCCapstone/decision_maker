@@ -59,7 +59,7 @@ class CategoriesManager {
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -90,7 +90,7 @@ class CategoriesManager {
     jsonRequestBody["action"] = "getCategories";
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -117,7 +117,7 @@ class CategoriesManager {
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -142,7 +142,7 @@ class CategoriesManager {
     jsonRequestBody["payload"].putIfAbsent(CATEGORY_ID, () => categoryId);
 
     String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context: context);
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {

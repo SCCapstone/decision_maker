@@ -30,7 +30,7 @@ final String idTokenKey = "id";
 bool gotTokens = false;
 
 Future<bool> hasValidTokensSet(BuildContext context) async {
-  User user = await UsersManager.getUserData();
+  User user = await UsersManager.getUserData(context, false);
 
   if (user != null) {
     Globals.user = user;
