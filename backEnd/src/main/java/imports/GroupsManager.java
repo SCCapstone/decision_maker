@@ -726,10 +726,10 @@ public class GroupsManager extends DatabaseAccessManager {
         .equals(oldGroup.getLastActivity())) {
       usersToUpdate.addAll(newMembers);
     } else if (!oldMembers.equals(newMembers)) {
-      // Make copies of the key sets and use removeAll to figure out where they differ
       usersToUpdate.addAll(addedUsernames);
     }
 
+    //update users with new group mapping based on which attributes were updated
     if (!usersToUpdate.isEmpty()) {
       //we have to update the entire mapping because the groupId key may
       //not be in the mapping yet if this is a new group
@@ -771,6 +771,7 @@ public class GroupsManager extends DatabaseAccessManager {
       }
     }
 
+    //update user objects of all of the users removed
     if (!removedUsernames.isEmpty()) {
       updateExpression = "remove Groups.#groupId";
       updateItemSpec = new UpdateItemSpec()
