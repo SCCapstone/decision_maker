@@ -699,6 +699,7 @@ public class GroupsManager extends DatabaseAccessManager {
         Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
         Map<String, Object> userDataMapped = user.asMap();
 
+        //if (/*!*/username.equals(addedTo.getGroupCreator())) {
         if (userDataMapped.containsKey(UsersManager.PUSH_ENDPOINT_ARN)) {
           final String pushEndpointArn = (String) userDataMapped
               .get(UsersManager.PUSH_ENDPOINT_ARN);
@@ -706,6 +707,7 @@ public class GroupsManager extends DatabaseAccessManager {
           DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(pushEndpointArn,
               "You have been added to new group: " + addedTo.getGroupName());
         }
+        //}
       } catch (Exception e) {
         lambdaLogger
             .log(
@@ -736,10 +738,6 @@ public class GroupsManager extends DatabaseAccessManager {
     // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
     addedUsernames.removeAll(oldMembers);
     removedUsernames.removeAll(newMembers);
-
-    //blind send...
-    this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics,
-        lambdaLogger);
 
     if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
       usersToUpdate.addAll(newMembers);
@@ -812,6 +810,18 @@ public class GroupsManager extends DatabaseAccessManager {
                   .toString());
         }
       }
+    }
+
+    try {
+      //blind send...
+      this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics,
+          lambdaLogger);
+    } catch (final Exception e) {
+      success = false;
+      lambdaLogger
+          .log(
+              new ErrorDescriptor<>(new ArrayList<>(addedUsernames) , classMethod,
+                  metrics.getRequestId(), e).toString());
     }
 
     metrics.commonClose(success);

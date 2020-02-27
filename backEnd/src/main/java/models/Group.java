@@ -20,6 +20,7 @@ public class Group {
   private String groupId;
   private String groupName;
   private String icon;
+  private String groupCreator;
   private Integer defaultRsvpDuration;
   private Integer defaultVotingDuration;
   private Integer nextEventId;
@@ -36,6 +37,7 @@ public class Group {
     this.setGroupId((String) jsonMap.get(GroupsManager.GROUP_ID));
     this.setGroupName((String) jsonMap.get(GroupsManager.GROUP_NAME));
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
+    this.setGroupCreator((String) jsonMap.get(GroupsManager.GROUP_CREATOR));
     this.setDefaultRsvpDuration(
         this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
     this.setDefaultVotingDuration(
@@ -96,6 +98,7 @@ public class Group {
         .groupId(this.groupId)
         .groupName(this.groupName)
         .icon(this.icon)
+        .groupCreator(this.groupCreator)
         .defaultRsvpDuration(this.defaultRsvpDuration)
         .defaultVotingDuration(this.defaultVotingDuration)
         .nextEventId(this.nextEventId)
