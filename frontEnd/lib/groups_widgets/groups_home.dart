@@ -62,7 +62,7 @@ class _GroupsHomeState extends State<GroupsHome> {
 
 
     Future<String> token = this.firebaseMessaging.getToken();
-    printAsync(token);
+    UsersManager.registerPushEndpoint(token, context);
 
     print("configuring");
     this.firebaseMessaging.configure(

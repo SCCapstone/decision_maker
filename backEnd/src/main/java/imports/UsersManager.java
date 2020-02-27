@@ -564,6 +564,7 @@ public class UsersManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         this.updateItem(updateItemSpec);
+        resultStatus = new ResultStatus(true, "user post arn set successfully");
       } catch (Exception e) {
         lambdaLogger.log(
             new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
@@ -576,6 +577,7 @@ public class UsersManager extends DatabaseAccessManager {
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

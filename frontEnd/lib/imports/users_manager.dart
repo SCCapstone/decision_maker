@@ -175,11 +175,13 @@ class UsersManager {
     return null;
   }
 
-  static Future registerPushEndpoint(String token, BuildContext context) async {
+  static Future registerPushEndpoint(Future<String> token, BuildContext context) async {
+    String tokenAfter = await token;
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody["action"] = "registerPushEndpoint";
     jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.DEVICE_TOKEN, () => token);
+        .putIfAbsent(RequestFields.DEVICE_TOKEN, () => tokenAfter);
 
     String response =
         await makeApiRequest(apiEndpoint, jsonRequestBody, context);
