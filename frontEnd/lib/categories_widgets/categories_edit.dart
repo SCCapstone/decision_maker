@@ -37,6 +37,7 @@ class _EditCategoryState extends State<EditCategory> {
   bool autoValidate = false;
   bool isCategoryOwner;
   int nextChoiceNum;
+  ChoiceRow currentChoice;
 
   @override
   void dispose() {
@@ -83,160 +84,175 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Edit ${widget.category.categoryName}"),
-          actions: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0)),
-                child: Text("Save"),
-                color: Colors.blue,
-                onPressed: () {
-                  saveCategory();
-                },
+    if (this.currentChoice != null) {
+      // this allows for the keyboard to be displayed when clicking new choice button
+      this.currentChoice.requestFocus(context);
+      this.currentChoice = null;
+    }
+    return GestureDetector(
+      onTap: () {
+        // allows for anywhere on the screen to be clicked to lose focus of a textfield
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text("Edit ${widget.category.categoryName}"),
+            actions: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0)),
+                  child: Text("Save"),
+                  color: Colors.blue,
+                  onPressed: () {
+                    saveCategory();
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .008),
-            ),
-          ],
-        ),
-        body: Center(
-          child: Form(
-            key: this.formKey,
-            autovalidate: this.autoValidate,
-            child: Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    width: MediaQuery.of(context).size.width * .7,
-                    child: Visibility(
-                      visible: this.isCategoryOwner,
-                      child: TextFormField(
-                        maxLength: 40,
-                        controller: this.categoryNameController,
-                        validator: validCategory,
-                        textCapitalization: TextCapitalization.sentences,
-                        style: TextStyle(fontSize: 20),
-                        decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Category Name",
-                            counterText: ""),
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .008),
+              ),
+            ],
+          ),
+          body: Center(
+            child: Form(
+              key: this.formKey,
+              autovalidate: this.autoValidate,
+              child: Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .008),
+                    ),
+                    Container(
+                      width: MediaQuery.of(context).size.width * .7,
+                      child: Visibility(
+                        visible: this.isCategoryOwner,
+                        child: TextFormField(
+                          maxLength: 40,
+                          controller: this.categoryNameController,
+                          validator: validCategory,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: TextStyle(fontSize: 20),
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Category Name",
+                              counterText: ""),
+                        ),
                       ),
                     ),
-                  ),
-                  Visibility(
-                    visible: !this.isCategoryOwner,
-                    child: Text(
-                      "Category: ${widget.category.categoryName}\nBy: ${widget.category.owner}",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.5),
+                    Visibility(
+                      visible: !this.isCategoryOwner,
+                      child: Text(
+                        "Category: ${widget.category.categoryName}\nBy: ${widget.category.owner}",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                DefaultTextStyle.of(context).style.fontSize *
+                                    0.5),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .008),
-                  ),
-                  Expanded(
-                    child: Scrollbar(
-                      child: FutureBuilder(
-                          future: this.ratingsFromDb,
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.hasData) {
-                              if (this.initialPageLoad) {
-                                Map<String, dynamic> userRatings =
-                                    snapshot.data;
-                                //if the mapping exists in the user's table, override the default
-                                for (String choiceId
-                                    in this.labelControllers.keys) {
-                                  if (userRatings
-                                      .containsKey(choiceId.toString())) {
-                                    this.ratesControllers[choiceId].text =
-                                        userRatings[choiceId.toString()]
-                                            .toString();
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .008),
+                    ),
+                    Expanded(
+                      child: Scrollbar(
+                        child: FutureBuilder(
+                            future: this.ratingsFromDb,
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                if (this.initialPageLoad) {
+                                  Map<String, dynamic> userRatings =
+                                      snapshot.data;
+                                  //if the mapping exists in the user's table, override the default
+                                  for (String choiceId
+                                      in this.labelControllers.keys) {
+                                    if (userRatings
+                                        .containsKey(choiceId.toString())) {
+                                      this.ratesControllers[choiceId].text =
+                                          userRatings[choiceId.toString()]
+                                              .toString();
+                                    }
                                   }
+                                  this.initialPageLoad = false;
                                 }
-                                this.initialPageLoad = false;
+                                this.doneLoading = true;
+                                return CustomScrollView(
+                                  controller: scrollController,
+                                  slivers: <Widget>[
+                                    SliverList(
+                                      delegate: SliverChildBuilderDelegate(
+                                          (context, index) =>
+                                              this.choiceRows[index],
+                                          childCount: this.choiceRows.length),
+                                    )
+                                  ],
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text("Error: ${snapshot.error}");
                               }
-                              this.doneLoading = true;
-                              return CustomScrollView(
-                                controller: scrollController,
-                                slivers: <Widget>[
-                                  SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                        (context, index) =>
-                                            this.choiceRows[index],
-                                        childCount: this.choiceRows.length),
-                                  )
-                                ],
-                              );
-                            } else if (snapshot.hasError) {
-                              return Text("Error: ${snapshot.error}");
-                            }
-                            return Center(child: CircularProgressIndicator());
-                          }),
+                              return Center(child: CircularProgressIndicator());
+                            }),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .035),
-                  ),
-                ],
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .035),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            if (this.doneLoading && this.isCategoryOwner) {
-              // don't let the user add new choices while data is being pulled from DB
-              setState(() {
-                focusNode = new FocusNode();
-                TextEditingController labelController =
-                    new TextEditingController();
-                labelControllers.putIfAbsent(
-                    this.nextChoiceNum.toString(), () => labelController);
-                TextEditingController rateController =
-                    new TextEditingController();
-                rateController.text = defaultRate.toString();
-                ratesControllers.putIfAbsent(
-                    this.nextChoiceNum.toString(), () => rateController);
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              if (this.doneLoading && this.isCategoryOwner) {
+                // don't let the user add new choices while data is being pulled from DB
+                setState(() {
+                  focusNode = new FocusNode();
+                  TextEditingController labelController =
+                      new TextEditingController();
+                  labelControllers.putIfAbsent(
+                      this.nextChoiceNum.toString(), () => labelController);
+                  TextEditingController rateController =
+                      new TextEditingController();
+                  rateController.text = defaultRate.toString();
+                  ratesControllers.putIfAbsent(
+                      this.nextChoiceNum.toString(), () => rateController);
 
-                ChoiceRow choice = new ChoiceRow(
-                  this.nextChoiceNum.toString(),
-                  null,
-                  this.isCategoryOwner,
-                  labelController,
-                  rateController,
-                  deleteChoice: (choice) => deleteChoice(choice),
-                  focusNode: focusNode,
-                );
-                this.choiceRows.add(choice);
-                this.nextChoiceNum++;
-                FocusScope.of(context).requestFocus(focusNode);
-                // allow the list to automatically scroll down as it grows
-                SchedulerBinding.instance.addPostFrameCallback((_) {
-                  scrollController.animateTo(
-                    scrollController.position.maxScrollExtent,
-                    duration: const Duration(microseconds: 100),
-                    curve: Curves.easeOut,
+                  ChoiceRow choice = new ChoiceRow(
+                    this.nextChoiceNum.toString(),
+                    null,
+                    this.isCategoryOwner,
+                    labelController,
+                    rateController,
+                    deleteChoice: (choice) => deleteChoice(choice),
+                    focusNode: focusNode,
                   );
+                  this.currentChoice = choice;
+                  this.choiceRows.add(choice);
+                  this.nextChoiceNum++;
+                  // allow the list to automatically scroll down as it grows
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    scrollController.animateTo(
+                      scrollController.position.maxScrollExtent,
+                      duration: const Duration(microseconds: 100),
+                      curve: Curves.easeOut,
+                    );
+                  });
                 });
-              });
-            }
-          },
-        ));
+              }
+            },
+          )),
+    );
   }
 
   void saveCategory() {

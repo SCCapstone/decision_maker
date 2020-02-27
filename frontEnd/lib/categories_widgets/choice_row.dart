@@ -15,6 +15,10 @@ class ChoiceRow extends StatefulWidget {
       this.labelController, this.rateController,
       {this.deleteChoice, this.focusNode});
 
+  void requestFocus(BuildContext context) {
+    FocusScope.of(context).requestFocus(focusNode);
+  }
+
   @override
   _ChoiceRowState createState() => new _ChoiceRowState();
 }

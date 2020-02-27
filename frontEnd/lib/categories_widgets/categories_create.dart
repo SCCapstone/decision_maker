@@ -31,6 +31,7 @@ class _CreateCategoryState extends State<CreateCategory> {
   int nextChoiceValue;
   bool autoValidate = false;
   FocusNode focusNode;
+  ChoiceRow currentChoice;
 
   @override
   void dispose() {
@@ -66,117 +67,132 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("New Category"),
-          actions: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0)),
-                child: Text("Save"),
-                color: Colors.blue,
-                onPressed: () {
-                  saveCategory();
-                },
+    if (this.currentChoice != null) {
+      // this allows for the keyboard to be displayed when clicking new choice button
+      this.currentChoice.requestFocus(context);
+      this.currentChoice = null;
+    }
+    return GestureDetector(
+      onTap: () {
+        // allows for anywhere on the screen to be clicked to lose focus of a textfield
+        hideKeyboard(context);
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text("New Category"),
+            actions: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0)),
+                  child: Text("Save"),
+                  color: Colors.blue,
+                  onPressed: () {
+                    saveCategory();
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .008),
-            ),
-          ],
-        ),
-        body: Center(
-          child: Form(
-            key: formKey,
-            autovalidate: autoValidate,
-            child: Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    width: MediaQuery.of(context).size.width * .7,
-                    child: TextFormField(
-                      maxLength: 40,
-                      validator: validCategory,
-                      controller: this.categoryNameController,
-                      textCapitalization: TextCapitalization.sentences,
-                      style: TextStyle(fontSize: 20),
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Category Name",
-                          counterText: ""),
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .008),
+              ),
+            ],
+          ),
+          body: Center(
+            child: Form(
+              key: formKey,
+              autovalidate: autoValidate,
+              child: Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .008),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .008),
-                  ),
-                  Expanded(
-                    child: Scrollbar(
-                      child: CustomScrollView(
-                        shrinkWrap: false,
-                        controller: scrollController,
-                        slivers: <Widget>[
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                                (context, index) => this.choiceRows[index],
-                                childCount: this.choiceRows.length),
-                          )
-                        ],
+                    Container(
+                      width: MediaQuery.of(context).size.width * .7,
+                      child: TextFormField(
+                        maxLength: 40,
+                        validator: validCategory,
+                        controller: this.categoryNameController,
+                        textCapitalization: TextCapitalization.sentences,
+                        style: TextStyle(fontSize: 20),
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: "Category Name",
+                            counterText: ""),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .035),
-                  ),
-                ],
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .008),
+                    ),
+                    Expanded(
+                      child: Scrollbar(
+                        child: CustomScrollView(
+                          shrinkWrap: false,
+                          controller: scrollController,
+                          slivers: <Widget>[
+                            SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                  (context, index) => this.choiceRows[index],
+                                  childCount: this.choiceRows.length),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .035),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            setState(() {
-              focusNode = new FocusNode();
-              TextEditingController labelController =
-                  new TextEditingController();
-              labelControllers.putIfAbsent(
-                  this.nextChoiceValue.toString(), () => labelController);
-              TextEditingController rateController =
-                  new TextEditingController();
-              rateController.text = defaultRate.toString();
-              ratesControllers.putIfAbsent(
-                  this.nextChoiceValue.toString(), () => rateController);
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              setState(() {
+                focusNode = new FocusNode();
+                TextEditingController labelController =
+                    new TextEditingController();
+                labelControllers.putIfAbsent(
+                    this.nextChoiceValue.toString(), () => labelController);
+                TextEditingController rateController =
+                    new TextEditingController();
+                rateController.text = defaultRate.toString();
+                ratesControllers.putIfAbsent(
+                    this.nextChoiceValue.toString(), () => rateController);
 
-              ChoiceRow choice = new ChoiceRow(
-                this.nextChoiceValue.toString(),
-                null,
-                true,
-                labelController,
-                rateController,
-                deleteChoice: (choice) => deleteChoice(choice),
-                focusNode: focusNode,
-              );
-              this.choiceRows.add(choice);
-              this.nextChoiceValue++;
-              FocusScope.of(context).requestFocus(focusNode);
-              // allow the list to automatically scroll down as it grows
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                scrollController.animateTo(
-                  scrollController.position.maxScrollExtent,
-                  duration: const Duration(microseconds: 100),
-                  curve: Curves.easeOut,
+                ChoiceRow choice = new ChoiceRow(
+                  this.nextChoiceValue.toString(),
+                  null,
+                  true,
+                  labelController,
+                  rateController,
+                  deleteChoice: (choice) => deleteChoice(choice),
+                  focusNode: focusNode,
                 );
+                this.currentChoice = choice;
+                this.choiceRows.add(choice);
+                this.nextChoiceValue++;
+                // allow the list to automatically scroll down as it grows
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                  scrollController.animateTo(
+                    scrollController.position.maxScrollExtent,
+                    duration: const Duration(microseconds: 100),
+                    curve: Curves.easeOut,
+                  );
+                });
               });
-            });
-          },
-        ));
+            },
+          )),
+    );
   }
 
   void saveCategory() {
