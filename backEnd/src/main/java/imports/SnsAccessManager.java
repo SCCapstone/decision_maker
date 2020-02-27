@@ -7,7 +7,6 @@ import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
-import com.amazonaws.services.sns.model.SubscribeResult;
 
 public class SnsAccessManager {
 
@@ -29,8 +28,4 @@ public class SnsAccessManager {
         .withMessage(message);
     return this.client.publish(publishRequest);
   }
-
-//  public SubscribeResult subscribeDeviceToTopic(final String endpointArn) {
-//    return this.client.subscribe("asdf", "application", endpointArn);
-//  }
 }

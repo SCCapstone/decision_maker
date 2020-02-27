@@ -703,15 +703,15 @@ public class GroupsManager extends DatabaseAccessManager {
         Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
         Map<String, Object> userDataMapped = user.asMap();
 
-        //if (/*!*/username.equals(addedTo.getGroupCreator())) {
-        if (userDataMapped.containsKey(UsersManager.PUSH_ENDPOINT_ARN)) {
-          final String pushEndpointArn = (String) userDataMapped
-              .get(UsersManager.PUSH_ENDPOINT_ARN);
+        if (!username.equals(addedTo.getGroupCreator())) {
+          if (userDataMapped.containsKey(UsersManager.PUSH_ENDPOINT_ARN)) {
+            final String pushEndpointArn = (String) userDataMapped
+                .get(UsersManager.PUSH_ENDPOINT_ARN);
 
-          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(pushEndpointArn,
-              "You have been added to new group: " + addedTo.getGroupName());
+            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(pushEndpointArn,
+                "You have been added to new group: " + addedTo.getGroupName());
+          }
         }
-        //}
       } catch (Exception e) {
         success = false;
         lambdaLogger
