@@ -5,6 +5,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
+import com.amazonaws.services.sns.model.PublishResult;
 import utilities.Config;
 
 public class SnsAccessManager {
@@ -19,5 +20,9 @@ public class SnsAccessManager {
   public CreatePlatformEndpointResult registerPlatformEndpoint(
       final CreatePlatformEndpointRequest createPlatformEndpointRequest) {
     return client.createPlatformEndpoint(createPlatformEndpointRequest);
+  }
+
+  public PublishResult sendMessage(final String arn, final String message) {
+    return this.client.publish(arn, message);
   }
 }

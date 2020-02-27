@@ -144,9 +144,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> membersMapped = this
             .getMembersMapForInsertion(members, metrics, lambdaLogger);
 
-        //in case any usernames were removed, update the list for use in below methods to keep data consistent
-        members = new LinkedList<>(membersMapped.keySet());
-
         Item newGroup = new Item()
             .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
             .withString(GROUP_NAME, groupName)
@@ -694,7 +691,29 @@ public class GroupsManager extends DatabaseAccessManager {
     return hasPermission;
   }
 
-  //TODO update all of this to use a Groups Model
+  private void sendAddedToGroupNotifications(final List<String> usernames, final Group addedTo,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.sendAddedToGroupNotifications";
+    for (String username : usernames) {
+      try {
+        Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
+        Map<String, Object> userDataMapped = user.asMap();
+
+        if (userDataMapped.containsKey(UsersManager.PUSH_ENDPOINT_ARN)) {
+          final String pushEndpointArn = (String) userDataMapped
+              .get(UsersManager.PUSH_ENDPOINT_ARN);
+
+          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(pushEndpointArn,
+              "You have been added to new group: " + addedTo.getGroupName());
+        }
+      } catch (Exception e) {
+        lambdaLogger
+            .log(
+                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+      }
+    }
+  }
+
   private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.updateUsersTable";
@@ -717,6 +736,10 @@ public class GroupsManager extends DatabaseAccessManager {
     // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
     addedUsernames.removeAll(oldMembers);
     removedUsernames.removeAll(newMembers);
+
+    //blind send...
+    this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics,
+        lambdaLogger);
 
     if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
       usersToUpdate.addAll(newMembers);
