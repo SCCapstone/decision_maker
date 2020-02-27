@@ -26,8 +26,8 @@ class _CreateCategoryState extends State<CreateCategory> {
   final Map<String, TextEditingController> ratesControllers =
       new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
+  final ScrollController scrollController = new ScrollController();
 
-  ScrollController _scrollController = new ScrollController();
   int nextChoiceValue;
   bool autoValidate = false;
   FocusNode focusNode;
@@ -66,16 +66,28 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   Widget build(BuildContext context) {
-    // allow the list to automatically scroll down as it grows
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    });
     return Scaffold(
-        appBar: AppBar(title: Text("New Category")),
+        appBar: AppBar(
+          title: Text("New Category"),
+          actions: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: RaisedButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0)),
+                child: Text("Save"),
+                color: Colors.blue,
+                onPressed: () {
+                  saveCategory();
+                },
+              ),
+            ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .008),
+            ),
+          ],
+        ),
         body: Center(
           child: Form(
             key: formKey,
@@ -85,17 +97,29 @@ class _CreateCategoryState extends State<CreateCategory> {
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
               child: Column(
                 children: <Widget>[
-                  TextFormField(
-                    maxLength: 40,
-                    validator: validCategory,
-                    controller: this.categoryNameController,
-                    decoration: InputDecoration(
-                        labelText: "Category Name", counterText: ""),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .7,
+                    child: TextFormField(
+                      maxLength: 40,
+                      validator: validCategory,
+                      controller: this.categoryNameController,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: TextStyle(fontSize: 20),
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Category Name",
+                          counterText: ""),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .008),
                   ),
                   Expanded(
                     child: Scrollbar(
                       child: CustomScrollView(
-                        controller: _scrollController,
+                        shrinkWrap: false,
+                        controller: scrollController,
                         slivers: <Widget>[
                           SliverList(
                             delegate: SliverChildBuilderDelegate(
@@ -106,52 +130,10 @@ class _CreateCategoryState extends State<CreateCategory> {
                       ),
                     ),
                   ),
-                  RaisedButton.icon(
-                    icon: Icon(Icons.save),
-                    label: Text("Save"),
-                    onPressed: () {
-                      final form = this.formKey.currentState;
-                      if (this.choiceRows.length == 0) {
-                        showErrorMessage("Error!",
-                            "Must have at least one choice!", context);
-                      } else if (form.validate()) {
-                        Map<String, String> labelsToSave =
-                            new LinkedHashMap<String, String>();
-                        Map<String, String> ratesToSave =
-                            new LinkedHashMap<String, String>();
-                        bool duplicates = false;
-                        Set names = new Set();
-                        for (String i in this.labelControllers.keys) {
-                          labelsToSave.putIfAbsent(
-                              i, () => this.labelControllers[i].text);
-                          ratesToSave.putIfAbsent(
-                              i, () => this.ratesControllers[i].text);
-                          if (!names.add(this.labelControllers[i].text)) {
-                            duplicates = true;
-                          }
-                        }
-                        if (duplicates) {
-                          setState(() {
-                            showErrorMessage("Input Error!",
-                                "No duplicate choices allowed!", context);
-                            this.autoValidate = true;
-                          });
-                        } else {
-                          CategoriesManager.addOrEditCategory(
-                              this.categoryNameController.text,
-                              labelsToSave,
-                              ratesToSave,
-                              null,
-                              context);
-                        }
-                      } else {
-                        // error, don't allow user to save with empty choices/category name
-                        setState(() {
-                          this.autoValidate = true;
-                        });
-                      }
-                    },
-                  )
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .035),
+                  ),
                 ],
               ),
             ),
@@ -183,10 +165,52 @@ class _CreateCategoryState extends State<CreateCategory> {
               );
               this.choiceRows.add(choice);
               this.nextChoiceValue++;
+              FocusScope.of(context).requestFocus(focusNode);
+              // allow the list to automatically scroll down as it grows
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: const Duration(microseconds: 100),
+                  curve: Curves.easeOut,
+                );
+              });
             });
-            FocusScope.of(context).requestFocus(focusNode);
           },
         ));
+  }
+
+  void saveCategory() {
+    final form = this.formKey.currentState;
+    if (this.choiceRows.length == 0) {
+      showErrorMessage("Error!", "Must have at least one choice!", context);
+    } else if (form.validate()) {
+      Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
+      Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
+      bool duplicates = false;
+      Set names = new Set();
+      for (String i in this.labelControllers.keys) {
+        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text);
+        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text);
+        if (!names.add(this.labelControllers[i].text)) {
+          duplicates = true;
+        }
+      }
+      if (duplicates) {
+        setState(() {
+          showErrorMessage(
+              "Input Error!", "No duplicate choices allowed!", context);
+          this.autoValidate = true;
+        });
+      } else {
+        CategoriesManager.addOrEditCategory(this.categoryNameController.text,
+            labelsToSave, ratesToSave, null, context);
+      }
+    } else {
+      // error, don't allow user to save with empty choices/category name
+      setState(() {
+        this.autoValidate = true;
+      });
+    }
   }
 
   void deleteChoice(ChoiceRow choiceRow) {
@@ -194,6 +218,7 @@ class _CreateCategoryState extends State<CreateCategory> {
       this.choiceRows.remove(choiceRow);
       this.labelControllers.remove(choiceRow.choiceNumber);
       this.ratesControllers.remove(choiceRow.choiceNumber);
+      hideKeyboard(context);
     });
   }
 }
