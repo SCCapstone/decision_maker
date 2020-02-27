@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
@@ -9,6 +10,7 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/message.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -27,6 +29,9 @@ class _GroupsHomeState extends State<GroupsHome> {
   List<Group> totalGroups = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final List<Message> messages = [];
 
   @override
   void initState() {
@@ -54,7 +59,33 @@ class _GroupsHomeState extends State<GroupsHome> {
         });
       }
     });
+
+
+    Future<String> token = this.firebaseMessaging.getToken();
+    printAsync(token);
+
+    print("configuring");
+    this.firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+      print("onMessage: $message");
+      final notification = message['notification'];
+      messages.add(
+          Message(title: notification['title'], body: notification['body']));
+    }, onLaunch: (Map<String, dynamic> message) async {
+      print("onLaunch: $message");
+    }, onResume: (Map<String, dynamic> message) async {
+      print("onResume: $message");
+    });
+    this.firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+
     super.initState();
+  }
+
+  void printAsync(Future<dynamic> input) async {
+    var inputAfter = await input;
+    print("async print:");
+    print(inputAfter);
   }
 
   @override

@@ -174,4 +174,34 @@ class UsersManager {
 
     return null;
   }
+
+  static Future registerPushEndpoint(String token, BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "registerPushEndpoint";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.DEVICE_TOKEN, () => token);
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+
+//    if (response != "") {
+//      Map<String, dynamic> body = jsonDecode(response);
+//
+//      try {
+//        ResponseItem responseItem = new ResponseItem.fromJson(body);
+//
+//        if (responseItem.success) {
+//          return json.decode(responseItem.resultMessage);
+//        } else {
+//          showPopupMessage("Error registering push endpoint (1).", context);
+//        }
+//      } catch (e) {
+//        showPopupMessage("Error registering push endpoint (2).", context);
+//      }
+//    } else {
+//      showPopupMessage("Unable register push endpoint.", context);
+//    }
+
+    return null;
+  }
 }
