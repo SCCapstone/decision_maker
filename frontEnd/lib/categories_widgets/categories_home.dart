@@ -34,15 +34,15 @@ class _CategoriesHomeState extends State<CategoriesHome> {
               style: TextStyle(
                   fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
             ),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.sort),
-                onPressed: () {
-                  // can implement a variable that has the sort type, then setState here
-                  // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
-                },
-              )
-            ],
+//            actions: <Widget>[
+//              IconButton(
+//                icon: Icon(Icons.sort),
+//                onPressed: () {
+//                  // can implement a variable that has the sort type, then setState here
+//                  // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
+//                },
+//              )
+//            ],
           ),
           body: Center(
             child: Column(

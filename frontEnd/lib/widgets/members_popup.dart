@@ -24,26 +24,14 @@ class MembersPopup extends StatefulWidget {
 class _MembersPopupState extends State<MembersPopup> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
+  final TextEditingController favoriteController = new TextEditingController();
   List<UserRow> displayedUserRows = new List<UserRow>();
   List<UserRow> displayedFavoritesRows = new List<UserRow>();
   bool showFavorites = false;
 
   @override
   void initState() {
-    for (Favorite favorite in Globals.user.favorites) {
-      // can't ever add the owner of a group, so it's always false below
-      displayedFavoritesRows.add(new UserRow(
-        favorite.displayName,
-        favorite.username,
-        favorite.icon,
-        false,
-        true,
-        false,
-        addUser: () {
-          addMemberFromFavorites(favorite);
-        },
-      ));
-    }
+    getDisplayedFavorites();
     for (Member user in widget.displayedMembers) {
       // if you're creating a group, you can always remove members from the group
       bool displayDelete = true;
@@ -62,7 +50,6 @@ class _MembersPopupState extends State<MembersPopup> {
       displayedFavoritesRows
           .removeWhere((row) => row.username == user.username);
     }
-
     super.initState();
   }
 
@@ -70,43 +57,43 @@ class _MembersPopupState extends State<MembersPopup> {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      child: AlertDialog(
-        title: Text("Group Members"),
-        actions: <Widget>[
-          FlatButton(
-            child: Text("Back"),
-            onPressed: () {
-              userController.clear();
-              Navigator.of(context, rootNavigator: true).pop('dialog');
-              widget.handlePopupClosed();
-            },
-          ),
-          Visibility(
-            visible: !showFavorites,
-            child: FlatButton(
-              child: Text("Add User"),
+      child: WillPopScope(
+        onWillPop: handleBackPress,
+        child: AlertDialog(
+          title: Text("Group Members"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Back"),
               onPressed: () {
-                if (formKey.currentState.validate()) {
-                  addNewMember();
-                }
+                userController.clear();
+                Navigator.of(context, rootNavigator: true).pop('dialog');
+                widget.handlePopupClosed();
               },
             ),
-          ),
-        ],
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Container(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Visibility(
-                      visible: !showFavorites,
-                      child: Expanded(
-                        child: Container(
-                          height: MediaQuery.of(context).size.height * .08,
+            Visibility(
+              visible: !showFavorites,
+              child: FlatButton(
+                child: Text("Add User"),
+                onPressed: () {
+                  if (formKey.currentState.validate()) {
+                    addNewMember();
+                  }
+                },
+              ),
+            ),
+          ],
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Visibility(
+                        visible: !showFavorites,
+                        child: Expanded(
                           child: TextFormField(
                               maxLength: 100,
                               controller: userController,
@@ -127,72 +114,146 @@ class _MembersPopupState extends State<MembersPopup> {
                                   counterText: "")),
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: showFavorites,
-                      child: Expanded(
-                        child: Container(
-                            height: MediaQuery.of(context).size.height * .08,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Text(
-                                  "Add from Favorites List",
-                                )
-                              ],
-                            )),
+                      Visibility(
+                        visible: showFavorites,
+                        child: Expanded(
+                          child: TextFormField(
+                            maxLength: 100,
+                            controller: favoriteController,
+                            decoration: InputDecoration(
+                                labelText: "Add user from favorites",
+                                counterText: ""),
+                            onChanged: (value) {
+                              if (value.isEmpty) {
+                                setState(() {
+                                  displayedFavoritesRows.clear();
+                                  getDisplayedFavorites();
+                                });
+                              } else {
+                                List<UserRow> searchRows = new List<UserRow>();
+                                for (Favorite fav in Globals.user.favorites) {
+                                  // show suggestion if match to username or displayname of a favorite
+                                  if ((fav.username
+                                              .toLowerCase()
+                                              .contains(value.toLowerCase()) &&
+                                          !widget.displayedMembers.contains(
+                                              new Member.fromFavorite(fav))) ||
+                                      (fav.displayName
+                                              .toLowerCase()
+                                              .contains(value.toLowerCase()) &&
+                                          !widget.displayedMembers.contains(
+                                              new Member.fromFavorite(fav)))) {
+                                    // when searching, only show suggestions if the user hasn't already added the user to the group
+                                    searchRows.add(new UserRow(
+                                        fav.displayName,
+                                        fav.username,
+                                        fav.icon,
+                                        false,
+                                        true,
+                                        false,
+                                        addUser: () =>
+                                            addMemberFromFavorites(fav)));
+                                  }
+                                }
+                                setState(() {
+                                  displayedFavoritesRows = searchRows;
+                                });
+                              }
+                            },
+                          ),
+                        ),
                       ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (showFavorites)
-                              ? Theme.of(context).accentColor
-                              : Theme.of(context).dialogBackgroundColor),
-                      child: IconButton(
-                        icon: Icon(Icons.contacts),
-                        onPressed: () {
-                          setState(() {
-                            showFavorites = !showFavorites;
-                          });
-                        },
-                      ),
-                    )
-                  ],
-                ),
-                Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .005)),
-                Scrollbar(
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * .25,
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: (showFavorites)
-                            ? displayedFavoritesRows.length
-                            : displayedUserRows.length,
-                        itemBuilder: (context, index) {
-                          // sorting by alphabetical by displayname for now
-                          displayedUserRows.sort((a, b) => b.displayName
-                              .toLowerCase()
-                              .compareTo(a.displayName.toLowerCase()));
-                          displayedUserRows.sort((a, b) => a.displayName
-                              .toLowerCase()
-                              .compareTo(b.displayName.toLowerCase()));
-                          if (showFavorites) {
-                            return displayedFavoritesRows[index];
-                          } else {
-                            return displayedUserRows[index];
-                          }
-                        }),
+                      Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: (showFavorites)
+                                ? Theme.of(context).accentColor
+                                : Theme.of(context).dialogBackgroundColor),
+                        child: IconButton(
+                          icon: Icon(Icons.contacts),
+                          onPressed: () {
+                            setState(() {
+                              favoriteController.clear();
+                              userController.clear();
+
+                              // prevents bug of if user types name that doesn't exist and then hits back, list will be empty
+                              displayedFavoritesRows.clear();
+                              getDisplayedFavorites();
+                              showFavorites = !showFavorites;
+                            });
+                          },
+                        ),
+                      )
+                    ],
                   ),
-                ),
-              ],
+                  Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .005)),
+                  Scrollbar(
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * .25,
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: (showFavorites)
+                              ? displayedFavoritesRows.length
+                              : displayedUserRows.length,
+                          itemBuilder: (context, index) {
+                            // sorting by alphabetical by displayname for now
+                            displayedUserRows.sort((a, b) => a.displayName
+                                .toLowerCase()
+                                .compareTo(b.displayName.toLowerCase()));
+                            displayedFavoritesRows.sort((a, b) => a.displayName
+                                .toLowerCase()
+                                .compareTo(b.displayName.toLowerCase()));
+                            if (showFavorites) {
+                              return displayedFavoritesRows[index];
+                            } else {
+                              return displayedUserRows[index];
+                            }
+                          }),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<bool> handleBackPress() async {
+    // allows for user to exit the favorite section with the back button
+    if (showFavorites) {
+      setState(() {
+        showFavorites = false;
+      });
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void getDisplayedFavorites() {
+    for (Favorite favorite in Globals.user.favorites) {
+      // can't ever add the owner of a group, so it's always false below
+      displayedFavoritesRows.add(new UserRow(
+        favorite.displayName,
+        favorite.username,
+        favorite.icon,
+        false,
+        true,
+        false,
+        addUser: () {
+          addMemberFromFavorites(favorite);
+        },
+      ));
+    }
+    for (UserRow user in displayedUserRows) {
+      // if favorite is already in group, don't show in the favorites section
+      displayedFavoritesRows
+          .removeWhere((row) => row.username == user.username);
+    }
   }
 
   void addNewMember() async {
