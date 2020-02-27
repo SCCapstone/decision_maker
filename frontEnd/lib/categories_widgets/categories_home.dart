@@ -6,9 +6,7 @@ import 'package:frontEnd/models/category.dart';
 import 'categories_list.dart';
 
 class CategoriesHome extends StatefulWidget {
-  Future<List<Category>> categories;
-
-  CategoriesHome({Key key, this.categories}) : super(key: key);
+  CategoriesHome({Key key}) : super(key: key);
 
   @override
   _CategoriesHomeState createState() => new _CategoriesHomeState();
@@ -16,10 +14,11 @@ class CategoriesHome extends StatefulWidget {
 
 class _CategoriesHomeState extends State<CategoriesHome> {
   String _sortMethod;
+  Future<List<Category>> categories;
 
   @override
   void initState() {
-    widget.categories = CategoriesManager.getAllCategoriesList(context);
+    this.categories = CategoriesManager.getAllCategoriesList(context);
     super.initState();
   }
 
@@ -58,14 +57,14 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                   height: MediaQuery.of(context).size.height * .75,
                   child: Container(
                     child: FutureBuilder(
-                      future: widget.categories,
+                      future: this.categories,
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
                           List<Category> categories = snapshot.data;
                           return CategoryList(
                               categories: categories,
                               sortType: _sortMethod,
-                              refreshPage: this.refreshPage);
+                              refreshPage: this.refreshList);
                         } else if (snapshot.hasError) {
                           return Text("Error: ${snapshot.error}");
                         }
@@ -90,22 +89,16 @@ class _CategoriesHomeState extends State<CategoriesHome> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CreateCategory()),
-          ).then((_) => this.refreshPage());
+          ).then((_) => this.refreshList());
         },
       ),
     );
   }
 
   Future<Null> refreshList() async {
-    setState(() {
-      widget.categories = CategoriesManager.getAllCategoriesList(context);
-    });
-  }
-
-  void refreshPage() {
     //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
     setState(() {
-      widget.categories = CategoriesManager.getAllCategoriesList(context);
+      this.categories = CategoriesManager.getAllCategoriesList(context);
     });
   }
 }

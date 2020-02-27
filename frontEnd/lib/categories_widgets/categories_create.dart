@@ -42,13 +42,12 @@ class _CreateCategoryState extends State<CreateCategory> {
     for (TextEditingController tec in this.ratesControllers.values) {
       tec.dispose();
     }
+    scrollController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    focusNode = new FocusNode();
-
     this.nextChoiceValue = 2;
 
     TextEditingController initLabelController = new TextEditingController();
@@ -81,21 +80,11 @@ class _CreateCategoryState extends State<CreateCategory> {
           appBar: AppBar(
             title: Text("New Category"),
             actions: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: RaisedButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0)),
-                  child: Text("Save"),
-                  color: Colors.blue,
-                  onPressed: () {
-                    saveCategory();
-                  },
-                ),
-              ),
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .008),
+              RaisedButton.icon(
+                icon: Icon(Icons.save),
+                label: Text("Save"),
+                color: Colors.blue,
+                onPressed: saveCategory,
               ),
             ],
           ),
