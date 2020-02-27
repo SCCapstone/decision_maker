@@ -31,7 +31,7 @@ class _GroupsHomeState extends State<GroupsHome> {
   bool searching = false;
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-  final List<Message> messages = [];
+//  final List<Message> messages = [];
 
   @override
   void initState() {
@@ -67,10 +67,13 @@ class _GroupsHomeState extends State<GroupsHome> {
     print("configuring");
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
-      print("onMessage: $message");
-      final notification = message['notification'];
-      messages.add(
-          Message(title: notification['title'], body: notification['body']));
+//      print("onMessage: $message");
+//      final notification = message['notification'];
+//      messages.add(
+//          Message(title: notification['title'], body: notification['body']));
+
+      final data = message['data'];
+      showPopupMessage(data['default'], context);
     }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");
     }, onResume: (Map<String, dynamic> message) async {

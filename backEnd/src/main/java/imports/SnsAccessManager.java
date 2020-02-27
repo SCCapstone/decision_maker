@@ -5,8 +5,9 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
+import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
-import utilities.Config;
+import com.amazonaws.services.sns.model.SubscribeResult;
 
 public class SnsAccessManager {
 
@@ -23,6 +24,13 @@ public class SnsAccessManager {
   }
 
   public PublishResult sendMessage(final String arn, final String message) {
-    return this.client.publish(arn, message);
+    PublishRequest publishRequest = new PublishRequest()
+        .withTargetArn(arn)
+        .withMessage(message);
+    return this.client.publish(publishRequest);
   }
+
+//  public SubscribeResult subscribeDeviceToTopic(final String endpointArn) {
+//    return this.client.subscribe("asdf", "application", endpointArn);
+//  }
 }

@@ -694,6 +694,10 @@ public class GroupsManager extends DatabaseAccessManager {
   private void sendAddedToGroupNotifications(final List<String> usernames, final Group addedTo,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.sendAddedToGroupNotifications";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
     for (String username : usernames) {
       try {
         Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
@@ -709,11 +713,14 @@ public class GroupsManager extends DatabaseAccessManager {
         }
         //}
       } catch (Exception e) {
+        success = false;
         lambdaLogger
             .log(
                 new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
       }
     }
+
+    metrics.commonClose(success);
   }
 
   private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics,
