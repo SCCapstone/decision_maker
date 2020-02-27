@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/models/category.dart';
@@ -26,8 +27,10 @@ class _CreateCategoryState extends State<CreateCategory> {
       new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
 
+  ScrollController _scrollController = new ScrollController();
   int nextChoiceValue;
   bool autoValidate = false;
+  FocusNode focusNode;
 
   @override
   void dispose() {
@@ -43,6 +46,8 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   void initState() {
+    focusNode = new FocusNode();
+
     this.nextChoiceValue = 2;
 
     TextEditingController initLabelController = new TextEditingController();
@@ -61,6 +66,14 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   Widget build(BuildContext context) {
+    // allow the list to automatically scroll down as it grows
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    });
     return Scaffold(
         appBar: AppBar(title: Text("New Category")),
         body: Center(
@@ -81,12 +94,16 @@ class _CreateCategoryState extends State<CreateCategory> {
                   ),
                   Expanded(
                     child: Scrollbar(
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: this.choiceRows.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return this.choiceRows[index];
-                          }),
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        slivers: <Widget>[
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                                (context, index) => this.choiceRows[index],
+                                childCount: this.choiceRows.length),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                   RaisedButton.icon(
@@ -144,6 +161,7 @@ class _CreateCategoryState extends State<CreateCategory> {
           child: Icon(Icons.add),
           onPressed: () {
             setState(() {
+              focusNode = new FocusNode();
               TextEditingController labelController =
                   new TextEditingController();
               labelControllers.putIfAbsent(
@@ -154,12 +172,19 @@ class _CreateCategoryState extends State<CreateCategory> {
               ratesControllers.putIfAbsent(
                   this.nextChoiceValue.toString(), () => rateController);
 
-              ChoiceRow choice = new ChoiceRow(this.nextChoiceValue.toString(),
-                  null, true, labelController, rateController,
-                  deleteChoice: (choice) => deleteChoice(choice));
+              ChoiceRow choice = new ChoiceRow(
+                this.nextChoiceValue.toString(),
+                null,
+                true,
+                labelController,
+                rateController,
+                deleteChoice: (choice) => deleteChoice(choice),
+                focusNode: focusNode,
+              );
               this.choiceRows.add(choice);
               this.nextChoiceValue++;
             });
+            FocusScope.of(context).requestFocus(focusNode);
           },
         ));
   }
