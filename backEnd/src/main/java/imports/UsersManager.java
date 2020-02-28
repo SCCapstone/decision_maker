@@ -497,7 +497,7 @@ public class UsersManager extends DatabaseAccessManager {
         Item userDataRaw = this.getItem(getItemSpec);
 
         Map<String, Object> userCategories = (Map<String, Object>) userDataRaw.asMap()
-            .get(UsersManager.CATEGORIES);
+            .get(CATEGORIES);
 
         Map<String, Object> userRatings = (Map<String, Object>) userCategories.get(categoryId);
         if (userRatings != null) {
