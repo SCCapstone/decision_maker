@@ -561,7 +561,7 @@ public class UsersManager extends DatabaseAccessManager {
                 .withToken(deviceToken)
                 .withCustomUserData(activeUser);
         final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
-            .registerPlatformEndpoint(createPlatformEndpointRequest);
+            .registerPlatformEndpoint(createPlatformEndpointRequest, metrics, lambdaLogger);
 
         final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
 
@@ -620,6 +620,8 @@ public class UsersManager extends DatabaseAccessManager {
           //we've made it here without exception, now we try to actually delete the arn
           //If the following fails we're still safe as there's no reference to the arn in the db anymore
           DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
+
+          resultStatus = new ResultStatus(true, "endpoint unregistered");
         }
       } catch (Exception e) {
         lambdaLogger.log(
