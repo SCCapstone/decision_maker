@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
@@ -28,6 +29,8 @@ class _GroupsHomeState extends State<GroupsHome> {
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
 
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+
   @override
   void initState() {
     loadGroups();
@@ -54,6 +57,23 @@ class _GroupsHomeState extends State<GroupsHome> {
         });
       }
     });
+
+
+    Future<String> token = this.firebaseMessaging.getToken();
+    UsersManager.registerPushEndpoint(token, context);
+
+    this.firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+      final data = message['data'];
+      showPopupMessage(data['default'], context);
+    }, onLaunch: (Map<String, dynamic> message) async {
+      print("onLaunch: $message");
+    }, onResume: (Map<String, dynamic> message) async {
+      print("onResume: $message");
+    });
+    this.firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+
     super.initState();
   }
 

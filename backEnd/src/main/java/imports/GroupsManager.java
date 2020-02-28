@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import models.Group;
 import models.Member;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -143,9 +144,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Map<String, Object> membersMapped = this
             .getMembersMapForInsertion(members, metrics, lambdaLogger);
-
-        //in case any usernames were removed, update the list for use in below methods to keep data consistent
-        members = new LinkedList<>(membersMapped.keySet());
 
         Item newGroup = new Item()
             .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
@@ -694,7 +692,35 @@ public class GroupsManager extends DatabaseAccessManager {
     return hasPermission;
   }
 
-  //TODO update all of this to use a Groups Model
+  private void sendAddedToGroupNotifications(final List<String> usernames, final Group addedTo,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "GroupsManager.sendAddedToGroupNotifications";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
+    for (String username : usernames) {
+      try {
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+
+        if (!username.equals(addedTo.getGroupCreator())) {
+          if (user.pushEndpointArnIsSet() && user.getAppSettings().getMuted() == 0) {
+            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
+                "You have been added to new group: " + addedTo.getGroupName());
+          }
+        }
+      } catch (Exception e) {
+        success = false;
+        lambdaLogger
+            .log(
+                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+      }
+    }
+
+    metrics.commonClose(success);
+  }
+
   private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.updateUsersTable";
@@ -789,6 +815,18 @@ public class GroupsManager extends DatabaseAccessManager {
                   .toString());
         }
       }
+    }
+
+    try {
+      //blind send...
+      this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics,
+          lambdaLogger);
+    } catch (final Exception e) {
+      success = false;
+      lambdaLogger
+          .log(
+              new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod,
+                  metrics.getRequestId(), e).toString());
     }
 
     metrics.commonClose(success);

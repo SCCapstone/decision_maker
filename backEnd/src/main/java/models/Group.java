@@ -20,6 +20,7 @@ public class Group {
   private String groupId;
   private String groupName;
   private String icon;
+  private String groupCreator;
   private Integer defaultRsvpDuration;
   private Integer defaultVotingDuration;
   private Integer nextEventId;
@@ -36,6 +37,7 @@ public class Group {
     this.setGroupId((String) jsonMap.get(GroupsManager.GROUP_ID));
     this.setGroupName((String) jsonMap.get(GroupsManager.GROUP_NAME));
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
+    this.setGroupCreator((String) jsonMap.get(GroupsManager.GROUP_CREATOR));
     this.setDefaultRsvpDuration(
         this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
     this.setDefaultVotingDuration(
@@ -49,7 +51,7 @@ public class Group {
     this.setEvents((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
   }
 
-  public void setMembers(Map<String, Object> jsonMap) {
+  public void setMembers(final Map<String, Object> jsonMap) {
     this.members = null;
     if (jsonMap != null) {
       this.members = new HashMap<>();
@@ -59,7 +61,7 @@ public class Group {
     }
   }
 
-  public void setCategories(Map<String, Object> jsonMap) {
+  public void setCategories(final Map<String, Object> jsonMap) {
     this.categories = null;
     if (jsonMap != null) {
       this.categories = new HashMap<>();
@@ -69,7 +71,7 @@ public class Group {
     }
   }
 
-  public void setEvents(Map<String, Object> jsonMap) {
+  public void setEvents(final Map<String, Object> jsonMap) {
     this.events = null;
     if (jsonMap != null) {
       this.events = new HashMap<>();
@@ -96,6 +98,7 @@ public class Group {
         .groupId(this.groupId)
         .groupName(this.groupName)
         .icon(this.icon)
+        .groupCreator(this.groupCreator)
         .defaultRsvpDuration(this.defaultRsvpDuration)
         .defaultVotingDuration(this.defaultVotingDuration)
         .nextEventId(this.nextEventId)

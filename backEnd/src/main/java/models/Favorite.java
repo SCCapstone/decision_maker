@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Member {
+public class Favorite {
   private String displayName;
   private String icon;
 
-  public Member(final Map<String, Object> jsonMap) {
+  public Favorite(final Map<String, Object> jsonMap) {
     this.setDisplayName((String) jsonMap.get(UsersManager.DISPLAY_NAME));
     this.setIcon((String) jsonMap.get(UsersManager.ICON));
   }
