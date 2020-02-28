@@ -80,9 +80,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
-        ResultStatus updatedUsersTableResult =
-            DatabaseManagers.USERS_MANAGER.updateUserChoiceRatings(insertNewCatForOwner, metrics,
-                lambdaLogger);
+        ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
+            .updateUserChoiceRatings(insertNewCatForOwner, true, metrics, lambdaLogger);
 
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category created successfully!");
@@ -151,7 +150,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
 
         ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(insertNewCatForOwner, metrics, lambdaLogger);
+            .updateUserChoiceRatings(insertNewCatForOwner, false, metrics, lambdaLogger);
 
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category saved successfully!");

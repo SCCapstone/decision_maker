@@ -52,7 +52,8 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "validActiveUser",
       CategoriesManager.CATEGORY_ID, "CategoryId1",
-      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")
+      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5"),
+      CategoriesManager.CATEGORY_NAME, "TestName"
   );
 
   private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
@@ -315,7 +316,7 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, this.metrics,
+        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics,
             this.lambdaLogger);
 
     assertTrue(resultStatus.success);
@@ -327,17 +328,17 @@ public class UsersManagerTest {
   @Test
   public void updateUserChoiceRatings_missingKey_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     this.badInput.put(RequestFields.ACTIVE_USER, "activeUser");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     this.badInput.put(CategoriesManager.CATEGORY_ID, "categoryId");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -353,7 +354,7 @@ public class UsersManagerTest {
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
             RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
-            this.metrics, this.lambdaLogger);
+            false, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));

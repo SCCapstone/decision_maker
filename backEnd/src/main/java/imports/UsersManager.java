@@ -169,8 +169,8 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap,
+      final Boolean isNewCategory, final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -181,13 +181,20 @@ public class UsersManager extends DatabaseAccessManager {
             jsonMap.containsKey(RequestFields.USER_RATINGS)
     ) {
       try {
-        String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
+        final String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
+        final Map<String, Object> ratings = (Map<String, Object>) jsonMap
+            .get(RequestFields.USER_RATINGS);
 
         String updateExpression = "set " + CATEGORIES + ".#categoryId = :map";
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
+
+        if (isNewCategory && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+          final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
+          updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
+          valueMap.withString(":categoryName", categoryName);
+        }
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
             .withPrimaryKey(this.getPrimaryKeyIndex(), user)
