@@ -58,9 +58,9 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2, dynamoDB);
   }
 
-  public List<String> getAllCategoryIds(final String username, final Metrics metrics,
+  public List<String> getAllOwnedCategoryIds(final String username, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
-    final String classMethod = "UsersManager.getAllCategoryIds";
+    final String classMethod = "UsersManager.getAllOwnedCategoryIds";
     metrics.commonSetup(classMethod);
 
     List<String> categoryIds = new ArrayList<>();
@@ -71,7 +71,7 @@ public class UsersManager extends DatabaseAccessManager {
 
       if (user != null) {
         Map<String, Object> userMapped = user.asMap(); // specific user record as a map
-        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(CATEGORIES);
+        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(OWNED_CATEGORIES);
 
         categoryIds = new ArrayList<>(categoryMap.keySet());
         success = true;
@@ -512,9 +512,8 @@ public class UsersManager extends DatabaseAccessManager {
               true,
               JsonEncoders.convertObjectToJson(userRatings));
         } else {
-          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "CategoryId produced a null value returned from DB.").toString());
-          resultStatus.resultMessage = "Error with given categoryId: " + categoryId;
+          //this just means they haven't ever saved rating for this category
+          resultStatus = new ResultStatus(true, "{}");
         }
       } catch (Exception e) {
         lambdaLogger
@@ -582,6 +581,36 @@ public class UsersManager extends DatabaseAccessManager {
           .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
               "Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus removeOwnedCategory(final String username, final String categoryId,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String className = "UsersManager.removeOwnedCategory";
+    metrics.commonSetup(className);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String updateExpression = "remove " + OWNED_CATEGORIES + ".#categoryId";
+      final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
+
+      this.updateItem(updateItemSpec);
+      resultStatus = new ResultStatus(true, "Owned category removed successfully");
+    } catch (Exception e) {
+      lambdaLogger.log(
+          new ErrorDescriptor<>(String.format("Username: %s, categoryId: %s", username, categoryId),
+              className, metrics.getRequestId(), e)
+              .toString());
+      resultStatus.resultMessage = "Exception in manager";
     }
 
     metrics.commonClose(resultStatus.success);

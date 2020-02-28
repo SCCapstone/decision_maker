@@ -10,8 +10,10 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
@@ -79,6 +81,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
         insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
         insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+        insertNewCatForOwner.put(CATEGORY_NAME, categoryName);
 
         ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
             .updateUserChoiceRatings(insertNewCatForOwner, true, metrics, lambdaLogger);
@@ -118,46 +121,54 @@ public class CategoriesManager extends DatabaseAccessManager {
             jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       try {
-        String categoryId = (String) jsonMap.get(CATEGORY_ID);
-        String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
-        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String categoryId = (String) jsonMap.get(CATEGORY_ID);
+        final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
+        final Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
+        final Map<String, Object> ratings = (Map<String, Object>) jsonMap
+            .get(RequestFields.USER_RATINGS);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        //TODO check to see if the choices match what are there and if not, user needs to be owner (https://github.com/SCCapstone/decision_maker/issues/107)
+        final Map<String, Object> categoryDataMapped = this.getItemByPrimaryKey(categoryId).asMap();
+        final String owner = (String) categoryDataMapped.get(OWNER);
 
-        int nextChoiceNo = this.getNextChoiceNumber(choices);
+        if (activeUser.equals(owner)) {
+          int nextChoiceNo = this.getNextChoiceNumber(choices);
 
-        String updateExpression =
-            "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
-                + " = :next";
-        ValueMap valueMap = new ValueMap()
-            .withString(":name", categoryName)
-            .withMap(":map", choices)
-            .withInt(":next", nextChoiceNo);
+          String updateExpression =
+              "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
+                  + " = :next";
+          ValueMap valueMap = new ValueMap()
+              .withString(":name", categoryName)
+              .withMap(":map", choices)
+              .withInt(":next", nextChoiceNo);
 
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId)
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId)
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
 
-        this.updateItem(updateItemSpec);
+          this.updateItem(updateItemSpec);
 
-        //put the entered ratings in the users table
-        Map<String, Object> insertNewCatForOwner = new HashMap<>();
-        insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
-        insertNewCatForOwner.put(CATEGORY_ID, categoryId);
-        insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+          //put the entered ratings in the users table
+          Map<String, Object> insertNewCatForOwner = new HashMap<>();
+          insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
+          insertNewCatForOwner.put(CATEGORY_ID, categoryId);
+          insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
+          insertNewCatForOwner.put(CATEGORY_NAME,
+              categoryName); // we could potentially check to see if this has changed, but for now just blind update for simple code
 
-        ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(insertNewCatForOwner, false, metrics, lambdaLogger);
+          ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
+              .updateUserChoiceRatings(insertNewCatForOwner, true, metrics, lambdaLogger);
 
-        if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true, "Category saved successfully!");
+          if (updatedUsersTableResult.success) {
+            resultStatus = new ResultStatus(true, "Category saved successfully!");
+          } else {
+            resultStatus.resultMessage =
+                "Error: Unable to update this category's ratings in the users table. "
+                    + updatedUsersTableResult.resultMessage;
+          }
         } else {
-          resultStatus.resultMessage =
-              "Error: Unable to update this category's ratings in the users table. "
-                  + updatedUsersTableResult.resultMessage;
+          resultStatus.resultMessage = "Error: editing user does not own this category";
         }
       } catch (Exception e) {
         lambdaLogger
@@ -207,7 +218,15 @@ public class CategoriesManager extends DatabaseAccessManager {
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       categoryIds = DatabaseManagers.USERS_MANAGER
-          .getAllCategoryIds(username, metrics, lambdaLogger);
+          .getAllOwnedCategoryIds(username, metrics, lambdaLogger);
+      List<String> groupIds = DatabaseManagers.USERS_MANAGER
+          .getAllGroupIds(username, metrics, lambdaLogger);
+
+      for (String groupId : groupIds) {
+        List<String> groupCategoryIds = DatabaseManagers.GROUPS_MANAGER
+            .getAllCategoryIds(groupId, metrics, lambdaLogger);
+        categoryIds.addAll(groupCategoryIds);
+      }
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
@@ -216,8 +235,11 @@ public class CategoriesManager extends DatabaseAccessManager {
     }
 
     if (success) {
+      //remove duplicates from categoryIds
+      Set<String> uniqueCategoryIds = new LinkedHashSet<>(categoryIds);
+
       List<Map> categories = new ArrayList<>();
-      for (String id : categoryIds) {
+      for (String id : uniqueCategoryIds) {
         try {
           Item dbData = this.getItemByPrimaryKey(id);
           categories.add(dbData.asMap());
@@ -253,15 +275,20 @@ public class CategoriesManager extends DatabaseAccessManager {
         Item item = this.getItemByPrimaryKey(categoryId);
         if (username.equals(item.getString(OWNER))) {
           List<String> groupIds = new ArrayList<>(item.getMap(GROUPS).keySet());
-          DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
-
-          this.deleteItem(deleteItemSpec);
 
           if (!groupIds.isEmpty()) {
             DatabaseManagers.GROUPS_MANAGER
                 .removeCategoryFromGroups(groupIds, categoryId, metrics, lambdaLogger);
           }
+
+          //TODO These last two should probably be put into a ~transaction~
+          DatabaseManagers.USERS_MANAGER
+              .removeOwnedCategory(username, categoryId, metrics, lambdaLogger);
+
+          DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
+
+          this.deleteItem(deleteItemSpec);
 
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
         } else {
