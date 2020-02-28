@@ -11,6 +11,8 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
+import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import com.amazonaws.services.sns.model.DeleteEndpointResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import models.User;
 import utilities.Config;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
@@ -558,7 +561,7 @@ public class UsersManager extends DatabaseAccessManager {
                 .withToken(deviceToken)
                 .withCustomUserData(activeUser);
         final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
-            .registerPlatformEndpoint(createPlatformEndpointRequest);
+            .registerPlatformEndpoint(createPlatformEndpointRequest, metrics, lambdaLogger);
 
         final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
 
@@ -574,7 +577,56 @@ public class UsersManager extends DatabaseAccessManager {
       } catch (Exception e) {
         lambdaLogger.log(
             new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
-        resultStatus.resultMessage = "Error inside of manager.";
+        resultStatus.resultMessage = "Exception inside of manager.";
+      }
+    } else {
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found.").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus unregisterPushEndpoint(final Map<String, Object> jsonMap,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.unregisterPushEndpoint";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER);
+
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        final User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
+
+        if (user.pushEndpointArnIsSet()) {
+          final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
+              .withEndpointArn(user.getPushEndpointArn());
+
+          final String updateExpression = "remove " + PUSH_ENDPOINT_ARN;
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression(updateExpression);
+
+          this.updateItem(updateItemSpec);
+
+          //we've made it here without exception, now we try to actually delete the arn
+          //If the following fails we're still safe as there's no reference to the arn in the db anymore
+          DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
+
+          resultStatus = new ResultStatus(true, "endpoint unregistered");
+        }
+      } catch (Exception e) {
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Exception inside of manager.";
       }
     } else {
       lambdaLogger

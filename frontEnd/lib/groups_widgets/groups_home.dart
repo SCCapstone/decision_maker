@@ -139,7 +139,7 @@ class _GroupsHomeState extends State<GroupsHome> {
                 leading: Icon(Icons.exit_to_app),
                 title: Text('Log out', style: TextStyle(fontSize: 16)),
                 onTap: () {
-                  logOutUser();
+                  logOutUser(context);
                   Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(

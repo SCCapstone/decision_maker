@@ -54,6 +54,9 @@ public class UsersPostHandler implements
           } else if (action.equals("registerPushEndpoint")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .createPlatformEndpointAndStoreArn(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("unregisterPushEndpoint")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .unregisterPushEndpoint(payloadJsonMap, metrics, lambdaLogger);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new ResultStatus(true, "Warming users endpoint.");
           } else {
