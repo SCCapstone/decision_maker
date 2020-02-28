@@ -7,15 +7,9 @@ import 'categories_list_item.dart';
 class CategoryList extends StatefulWidget {
   final List<Category> categories;
   final String sortType;
-  final VoidCallback refreshPage;
-  final VoidCallback editCategory;
+  final Function refreshPage;
 
-  CategoryList(
-      {Key key,
-      this.categories,
-      this.sortType,
-      this.refreshPage,
-      this.editCategory})
+  CategoryList({Key key, this.categories, this.sortType, this.refreshPage})
       : super(key: key);
 
   @override

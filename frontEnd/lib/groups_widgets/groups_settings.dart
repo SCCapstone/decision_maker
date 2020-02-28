@@ -272,7 +272,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                               MediaQuery.of(context).size.height * .004),
                         ),
                         Visibility(
-                          visible: owner,
+                          visible: false,
                           child: RaisedButton(
                             child: Text("Delete Group"),
                             color: Colors.red,

@@ -336,6 +336,7 @@ class _UserSettingsState extends State<UserSettings> {
           .pop('dialog'); // dismiss the loading dialog
 
       setState(() {
+        hideKeyboard(context);
         // reset everything and reflect changes made
         originalFavorites.clear();
         originalFavorites.addAll(displayedFavorites);
