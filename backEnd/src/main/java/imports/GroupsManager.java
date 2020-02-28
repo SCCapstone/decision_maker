@@ -684,10 +684,12 @@ public class GroupsManager extends DatabaseAccessManager {
     //the group creator is not changed or it is changed and the active user is the current creator
     boolean hasPermission = true;
 
-    if (!dbGroupDataMap.get(GROUP_CREATOR).equals(groupCreator) && !dbGroupDataMap
-        .get(GROUP_CREATOR).equals(activeUser)) {
-      hasPermission = false;
-    }
+    //the below if is always false because of how groupCreator is getting set in edit group
+    //for testing lets let all users be able to edit the group and we can touch base on this after beta
+//    if (!dbGroupDataMap.get(GROUP_CREATOR).equals(groupCreator) && !dbGroupDataMap
+//        .get(GROUP_CREATOR).equals(activeUser)) {
+//      hasPermission = false;
+//    }
 
     return hasPermission;
   }
