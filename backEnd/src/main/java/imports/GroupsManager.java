@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import models.Group;
 import models.Member;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -700,15 +701,12 @@ public class GroupsManager extends DatabaseAccessManager {
 
     for (String username : usernames) {
       try {
-        Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
-        Map<String, Object> userDataMapped = user.asMap();
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
         if (!username.equals(addedTo.getGroupCreator())) {
-          if (userDataMapped.containsKey(UsersManager.PUSH_ENDPOINT_ARN)) {
-            final String pushEndpointArn = (String) userDataMapped
-                .get(UsersManager.PUSH_ENDPOINT_ARN);
-
-            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(pushEndpointArn,
+          if (user.pushEndpointArnIsSet() && user.getAppSettings().getMuted() == 0) {
+            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
                 "You have been added to new group: " + addedTo.getGroupName());
           }
         }
@@ -827,7 +825,7 @@ public class GroupsManager extends DatabaseAccessManager {
       success = false;
       lambdaLogger
           .log(
-              new ErrorDescriptor<>(new ArrayList<>(addedUsernames) , classMethod,
+              new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod,
                   metrics.getRequestId(), e).toString());
     }
 

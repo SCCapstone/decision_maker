@@ -10,7 +10,6 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/models/message.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -31,7 +30,6 @@ class _GroupsHomeState extends State<GroupsHome> {
   bool searching = false;
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-//  final List<Message> messages = [];
 
   @override
   void initState() {
@@ -64,14 +62,8 @@ class _GroupsHomeState extends State<GroupsHome> {
     Future<String> token = this.firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token, context);
 
-    print("configuring");
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
-//      print("onMessage: $message");
-//      final notification = message['notification'];
-//      messages.add(
-//          Message(title: notification['title'], body: notification['body']));
-
       final data = message['data'];
       showPopupMessage(data['default'], context);
     }, onLaunch: (Map<String, dynamic> message) async {
@@ -83,12 +75,6 @@ class _GroupsHomeState extends State<GroupsHome> {
         const IosNotificationSettings(sound: true, badge: true, alert: true));
 
     super.initState();
-  }
-
-  void printAsync(Future<dynamic> input) async {
-    var inputAfter = await input;
-    print("async print:");
-    print(inputAfter);
   }
 
   @override

@@ -51,7 +51,7 @@ public class Group {
     this.setEvents((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
   }
 
-  public void setMembers(Map<String, Object> jsonMap) {
+  public void setMembers(final Map<String, Object> jsonMap) {
     this.members = null;
     if (jsonMap != null) {
       this.members = new HashMap<>();
@@ -61,7 +61,7 @@ public class Group {
     }
   }
 
-  public void setCategories(Map<String, Object> jsonMap) {
+  public void setCategories(final Map<String, Object> jsonMap) {
     this.categories = null;
     if (jsonMap != null) {
       this.categories = new HashMap<>();
@@ -71,7 +71,7 @@ public class Group {
     }
   }
 
-  public void setEvents(Map<String, Object> jsonMap) {
+  public void setEvents(final Map<String, Object> jsonMap) {
     this.events = null;
     if (jsonMap != null) {
       this.events = new HashMap<>();
