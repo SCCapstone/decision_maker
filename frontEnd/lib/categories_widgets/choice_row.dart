@@ -9,10 +9,15 @@ class ChoiceRow extends StatefulWidget {
   final TextEditingController labelController;
   final TextEditingController rateController;
   final Function deleteChoice;
+  final FocusNode focusNode;
 
   ChoiceRow(this.choiceNumber, this.choiceName, this.isOwner,
       this.labelController, this.rateController,
-      {this.deleteChoice});
+      {this.deleteChoice, this.focusNode});
+
+  void requestFocus(BuildContext context) {
+    FocusScope.of(context).requestFocus(focusNode);
+  }
 
   @override
   _ChoiceRowState createState() => new _ChoiceRowState();
@@ -30,6 +35,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             child: TextFormField(
               validator: validChoice,
               maxLength: 40,
+              focusNode: widget.focusNode,
               controller: widget.labelController,
               decoration: InputDecoration(labelText: "Choice", counterText: ""),
             ),
