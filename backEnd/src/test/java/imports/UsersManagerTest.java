@@ -52,7 +52,8 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "validActiveUser",
       CategoriesManager.CATEGORY_ID, "CategoryId1",
-      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")
+      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5"),
+      CategoriesManager.CATEGORY_NAME, "TestName"
   );
 
   private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
@@ -135,18 +136,18 @@ public class UsersManagerTest {
   }
 
   /////////////////////////////
-  // getAllCategoryIds tests //
+  // getAllOwnedCategoryIds tests //
   /////////////////////////////region
 
   @Test
-  public void getAllCategoryIds_validInputActiveUser_successfulResult() {
+  public void getAllOwnedCategoryIds_validInputActiveUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(UsersManager.CATEGORIES, ImmutableMap
-        .of("CatId1", "choices mappings", "CatId2", "choices mappings")))
+    doReturn(new Item().withMap(UsersManager.OWNED_CATEGORIES, ImmutableMap
+        .of("CatId1", "cat name", "CatId2", "cat name")))
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 2);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -155,12 +156,12 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void getAllCategoryIds_badActiveUser_failureResult() {
+  public void getAllOwnedCategoryIds_badActiveUser_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllCategoryIds("BadTestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("BadTestUserName", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -169,11 +170,11 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void getAllCategoryIds_noDbConnection_failureResult() {
+  public void getAllOwnedCategoryIds_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -315,7 +316,7 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, this.metrics,
+        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics,
             this.lambdaLogger);
 
     assertTrue(resultStatus.success);
@@ -327,17 +328,17 @@ public class UsersManagerTest {
   @Test
   public void updateUserChoiceRatings_missingKey_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     this.badInput.put(RequestFields.ACTIVE_USER, "activeUser");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     this.badInput.put(CategoriesManager.CATEGORY_ID, "categoryId");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -353,7 +354,7 @@ public class UsersManagerTest {
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
             RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
-            this.metrics, this.lambdaLogger);
+            false, this.metrics, this.lambdaLogger);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -561,20 +562,20 @@ public class UsersManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  @Test
-  public void getUserRatings_badCategoryId_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(UsersManager.CATEGORIES, new HashMap())).when(this.table)
-        .getItem(any(GetItemSpec.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
+//  @Test
+//  public void getUserRatings_badCategoryId_failureResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    doReturn(new Item().withMap(UsersManager.CATEGORIES, new HashMap())).when(this.table)
+//        .getItem(any(GetItemSpec.class));
+//
+//    ResultStatus resultStatus = this.usersManager
+//        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+//
+//    assertFalse(resultStatus.success);
+//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
 
   @Test
   public void getUserRatings_noDbConnection_failureResult() {

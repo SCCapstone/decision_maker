@@ -58,9 +58,9 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2, dynamoDB);
   }
 
-  public List<String> getAllCategoryIds(final String username, final Metrics metrics,
+  public List<String> getAllOwnedCategoryIds(final String username, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
-    final String classMethod = "UsersManager.getAllCategoryIds";
+    final String classMethod = "UsersManager.getAllOwnedCategoryIds";
     metrics.commonSetup(classMethod);
 
     List<String> categoryIds = new ArrayList<>();
@@ -71,7 +71,7 @@ public class UsersManager extends DatabaseAccessManager {
 
       if (user != null) {
         Map<String, Object> userMapped = user.asMap(); // specific user record as a map
-        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(CATEGORIES);
+        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(OWNED_CATEGORIES);
 
         categoryIds = new ArrayList<>(categoryMap.keySet());
         success = true;
@@ -169,8 +169,8 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap,
+      final Boolean isNewCategory, final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -181,13 +181,20 @@ public class UsersManager extends DatabaseAccessManager {
             jsonMap.containsKey(RequestFields.USER_RATINGS)
     ) {
       try {
-        String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
+        final String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
+        final Map<String, Object> ratings = (Map<String, Object>) jsonMap
+            .get(RequestFields.USER_RATINGS);
 
         String updateExpression = "set " + CATEGORIES + ".#categoryId = :map";
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
+
+        if (isNewCategory && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+          final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
+          updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
+          valueMap.withString(":categoryName", categoryName);
+        }
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
             .withPrimaryKey(this.getPrimaryKeyIndex(), user)
@@ -497,7 +504,7 @@ public class UsersManager extends DatabaseAccessManager {
         Item userDataRaw = this.getItem(getItemSpec);
 
         Map<String, Object> userCategories = (Map<String, Object>) userDataRaw.asMap()
-            .get(UsersManager.CATEGORIES);
+            .get(CATEGORIES);
 
         Map<String, Object> userRatings = (Map<String, Object>) userCategories.get(categoryId);
         if (userRatings != null) {
@@ -505,9 +512,8 @@ public class UsersManager extends DatabaseAccessManager {
               true,
               JsonEncoders.convertObjectToJson(userRatings));
         } else {
-          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "CategoryId produced a null value returned from DB.").toString());
-          resultStatus.resultMessage = "Error with given categoryId: " + categoryId;
+          //this just means they haven't ever saved rating for this category
+          resultStatus = new ResultStatus(true, "{}");
         }
       } catch (Exception e) {
         lambdaLogger
@@ -575,6 +581,36 @@ public class UsersManager extends DatabaseAccessManager {
           .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
               "Required request keys not found.").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus removeOwnedCategory(final String username, final String categoryId,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String className = "UsersManager.removeOwnedCategory";
+    metrics.commonSetup(className);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String updateExpression = "remove " + OWNED_CATEGORIES + ".#categoryId";
+      final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
+
+      this.updateItem(updateItemSpec);
+      resultStatus = new ResultStatus(true, "Owned category removed successfully");
+    } catch (Exception e) {
+      lambdaLogger.log(
+          new ErrorDescriptor<>(String.format("Username: %s, categoryId: %s", username, categoryId),
+              className, metrics.getRequestId(), e)
+              .toString());
+      resultStatus.resultMessage = "Exception in manager";
     }
 
     metrics.commonClose(resultStatus.success);
