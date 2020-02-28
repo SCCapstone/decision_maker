@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "738236932202",
+    "firebase_url": "https://pocketpollmessaging.firebaseio.com",
+    "project_id": "pocketpollmessaging",
+    "storage_bucket": "pocketpollmessaging.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:738236932202:android:895a4366005df479d46a13",
+        "android_client_info": {
+          "package_name": "com.example.frontEnd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "738236932202-o3bbm771selt2shfo9jcm47cum0lcedb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX7jS3LOqZhYgcMmCHShgR-2GNxYVe1xE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "738236932202-o3bbm771selt2shfo9jcm47cum0lcedb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -9,7 +9,8 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.google.common.collect.ImmutableMap;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import utilities.Config;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -39,6 +41,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String OWNED_CATEGORIES = "OwnedCategories";
   public static final String FAVORITES = "Favorites";
   public static final String FAVORITE_OF = "FavoriteOf";
+  public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
   public static final int DEFAULT_DARK_THEME = 1;
@@ -527,5 +530,54 @@ public class UsersManager extends DatabaseAccessManager {
     retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
     retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
     return retMap;
+  }
+
+  public ResultStatus createPlatformEndpointAndStoreArn(final Map<String, Object> jsonMap,
+      final Metrics metrics, final LambdaLogger lambdaLogger) {
+    final String classMethod = "UsersManager.createPlatformEndpointAndStoreArn";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.DEVICE_TOKEN);
+
+    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String deviceToken = (String) jsonMap.get(RequestFields.DEVICE_TOKEN);
+        CreatePlatformEndpointRequest createPlatformEndpointRequest =
+            new CreatePlatformEndpointRequest()
+                .withPlatformApplicationArn(Config.PUSH_SNS_PLATFORM_ARN)
+                .withToken(deviceToken)
+                .withCustomUserData(activeUser);
+        final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
+            .registerPlatformEndpoint(createPlatformEndpointRequest);
+
+        final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
+
+        final String updateExpression = "set " + PUSH_ENDPOINT_ARN + " = :userEndpointArn";
+        final ValueMap valueMap = new ValueMap().withString(":userEndpointArn", userEndpointArn);
+        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
+        this.updateItem(updateItemSpec);
+        resultStatus = new ResultStatus(true, "user post arn set successfully");
+      } catch (Exception e) {
+        lambdaLogger.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        resultStatus.resultMessage = "Error inside of manager.";
+      }
+    } else {
+      lambdaLogger
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
+              "Required request keys not found.").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 }

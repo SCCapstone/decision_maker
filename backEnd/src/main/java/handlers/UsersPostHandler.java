@@ -51,6 +51,9 @@ public class UsersPostHandler implements
           } else if (action.equals("getUserData")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .getUserData(payloadJsonMap, metrics, lambdaLogger);
+          } else if (action.equals("registerPushEndpoint")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .createPlatformEndpointAndStoreArn(payloadJsonMap, metrics, lambdaLogger);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new ResultStatus(true, "Warming users endpoint.");
           } else {
@@ -74,7 +77,8 @@ public class UsersPostHandler implements
     } catch (Exception e) {
       resultStatus.resultMessage = "Error: Unable to handle request.";
       lambdaLogger.log(
-          new ErrorDescriptor<>(request.getBody(), classMethod, metrics.getRequestId(), e).toString());
+          new ErrorDescriptor<>(request.getBody(), classMethod, metrics.getRequestId(), e)
+              .toString());
     }
 
     metrics.commonClose(resultStatus.success);

@@ -174,4 +174,17 @@ class UsersManager {
 
     return null;
   }
+
+  static Future registerPushEndpoint(
+      Future<String> token, BuildContext context) async {
+    String tokenAfter = await token;
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "registerPushEndpoint";
+    jsonRequestBody["payload"]
+        .putIfAbsent(RequestFields.DEVICE_TOKEN, () => tokenAfter);
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody, context);
+  }
 }
