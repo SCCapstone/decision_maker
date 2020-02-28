@@ -66,7 +66,7 @@ public class SnsAccessManager {
             );
 
         if (oldEndpointUnregistered.success) {
-          //by the change the user that owned this had their mapping removed but the endpoint still existed, we do this for sanity
+          //by the chance the user that owned this had their mapping removed but the endpoint still existed, we do this for sanity
           this.unregisterPlatformEndpoint(new DeleteEndpointRequest().withEndpointArn(endpointArn));
 
           createPlatformEndpointResult = this.client
@@ -75,7 +75,6 @@ public class SnsAccessManager {
           //couldn't unregister the old user...
           throw ipe;
         }
-//        this.unregisterPlatformEndpoint(new DeleteEndpointRequest().withEndpointArn(endpointArn));
       } else {
         // Rethrow the exception, the input is actually bad.
         throw ipe;
