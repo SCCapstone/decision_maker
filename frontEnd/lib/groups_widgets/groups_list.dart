@@ -5,8 +5,10 @@ import 'group_row.dart';
 class GroupsList extends StatefulWidget {
   final List<Group> groups;
   final bool searching;
+  final Function refreshGroups;
 
-  GroupsList({Key key, this.groups, this.searching}) : super(key: key);
+  GroupsList({Key key, this.groups, this.searching, this.refreshGroups})
+      : super(key: key);
 
   @override
   _GroupsListState createState() => _GroupsListState();
@@ -34,7 +36,10 @@ class _GroupsListState extends State<GroupsList> {
           shrinkWrap: true,
           itemCount: widget.groups.length,
           itemBuilder: (context, index) {
-            return GroupRow(widget.groups[index]);
+            return GroupRow(
+              widget.groups[index],
+              refreshGroups: widget.refreshGroups,
+            );
           },
         ),
       );
