@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import 'package:frontEnd/models/user.dart';
@@ -18,7 +19,8 @@ Future<bool> internetCheck() async {
   return retVal;
 }
 
-void logOutUser() {
+void logOutUser(BuildContext context) {
+  UsersManager.unregisterPushEndpoint(context);
   Globals.clearGlobals();
   clearTokens();
 }

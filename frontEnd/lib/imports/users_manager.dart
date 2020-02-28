@@ -187,4 +187,12 @@ class UsersManager {
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody, context);
   }
+
+  static Future unregisterPushEndpoint(BuildContext context) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody["action"] = "unregisterPushEndpoint";
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody, context);
+  }
 }
