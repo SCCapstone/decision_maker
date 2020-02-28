@@ -6,8 +6,9 @@ import 'package:frontEnd/utilities/utilities.dart';
 
 class GroupRow extends StatelessWidget {
   final Group group;
+  final Function refreshGroups;
 
-  GroupRow(this.group);
+  GroupRow(this.group, {this.refreshGroups});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,10 @@ class GroupRow extends StatelessWidget {
                               groupId: group.groupId,
                               groupName: group.groupName,
                             )),
-                  ).then((_) => GroupsHome());
+                  ).then((val) {
+                    // TODO figure out a better way to refresh without making unnecessary API calls
+                    this.refreshGroups();
+                  });
                 },
                 child: Container(
                   height: MediaQuery.of(context).size.width * .20,
@@ -50,7 +54,10 @@ class GroupRow extends StatelessWidget {
                                 groupId: group.groupId,
                                 groupName: group.groupName,
                               )),
-                    ).then((_) => GroupsHome());
+                    ).then((val) {
+                      // TODO figure out a better way to refresh without making unnecessary API calls
+                      this.refreshGroups();
+                    });
                   },
                   child: Container(
                     color: Colors.blueGrey.withOpacity(0.25),

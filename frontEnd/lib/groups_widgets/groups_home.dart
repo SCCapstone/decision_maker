@@ -58,7 +58,6 @@ class _GroupsHomeState extends State<GroupsHome> {
       }
     });
 
-
     Future<String> token = this.firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token, context);
 
@@ -205,8 +204,10 @@ class _GroupsHomeState extends State<GroupsHome> {
                   child: RefreshIndicator(
                       onRefresh: refreshList,
                       child: GroupsList(
-                          groups: (searching) ? searchGroups : totalGroups,
-                          searching: searching))),
+                        groups: (searching) ? searchGroups : totalGroups,
+                        searching: searching,
+                        refreshGroups: refreshList,
+                      ))),
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
@@ -225,7 +226,10 @@ class _GroupsHomeState extends State<GroupsHome> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => CreateGroup()),
-            ).then((_) => GroupsHome());
+            ).then((val) {
+              // TODO figure out a better way to refresh without making unnecessary API calls
+              refreshList();
+            });
           },
         ),
       ),

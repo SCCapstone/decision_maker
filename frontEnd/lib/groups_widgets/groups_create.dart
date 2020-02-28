@@ -228,11 +228,7 @@ class _CreateGroupState extends State<CreateGroup> {
           .pop('dialog'); // dismiss the loading dialog
 
       if (success) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            new MaterialPageRoute(
-                builder: (BuildContext context) => GroupsHome()),
-            (Route<dynamic> route) => false);
+        Navigator.of(context).pop();
       }
     } else {
       setState(() => autoValidate = true);
