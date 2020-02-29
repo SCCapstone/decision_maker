@@ -19,6 +19,9 @@ public class User {
   @Setter(AccessLevel.NONE)
   private Map<String, Group> groups;
   //TODO add categories and owned categories once we add Categories model https://github.com/SCCapstone/decision_maker/issues/306
+  private Map<String, Object> categories;
+  @Setter(AccessLevel.NONE)
+  private Map<String, String> ownedCategories;
   @Setter(AccessLevel.NONE)
   private Map<String, Boolean> favoriteOf;
   @Setter(AccessLevel.NONE)
@@ -42,6 +45,16 @@ public class User {
       this.groups = new HashMap<>();
       for (String groupId: jsonMap.keySet()) {
         this.groups.putIfAbsent(groupId, new Group((Map<String, Object>) jsonMap.get(groupId)));
+      }
+    }
+  }
+
+  public void setOwnedCategories(final Map<String, Object> jsonMap) {
+    this.ownedCategories = null;
+    if (!jsonMap.isEmpty()) {
+      this.ownedCategories = new HashMap<>();
+      for (String categoryId: jsonMap.keySet()) {
+        this.ownedCategories.putIfAbsent(categoryId, (String) jsonMap.get(categoryId));
       }
     }
   }

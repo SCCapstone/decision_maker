@@ -17,8 +17,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import models.Event;
+import models.Group;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -98,33 +102,26 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          final Map<String, Object> groupDataMapped = groupData.asMap();
-          Map<String, Object> groupEventDataMapped = (Map<String, Object>) groupDataMapped
-              .get(GroupsManager.EVENTS);
-          Map<String, Object> eventDataMapped = (Map<String, Object>) groupEventDataMapped
-              .get(eventId);
+          final Group group = new Group(groupData.asMap());
+          final Event event = group.getEvents().get(eventId);
 
-          Map<String, Object> currentTentativeChoices = (Map<String, Object>) eventDataMapped
-              .get(GroupsManager.TENTATIVE_CHOICES);
-
-          if (currentTentativeChoices.isEmpty()) {
+          if (event.getTentativeAlgorithmChoices().isEmpty()) {
             //we need to:
             //  run the algorithm
             //  update the event object
             //  update the pending events table with the new data time for the end of voting
-            Integer votingDuration = ((BigDecimal) eventDataMapped
-                .get(GroupsManager.VOTING_DURATION)).intValue();
 
             final Map<String, Object> tentativeChoices = this
-                .getTentativeAlgorithmChoices(eventDataMapped, metrics, lambdaLogger);
+                .getTentativeAlgorithmChoices(group, event, metrics, lambdaLogger);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventTentativeChoices(groupId, eventId, tentativeChoices, groupDataMapped,
+                .setEventTentativeChoices(groupId, eventId, tentativeChoices, group,
                     metrics, lambdaLogger);
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
-                .addPendingEvent(groupId, eventId, votingDuration, metrics, lambdaLogger);
+                .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics,
+                    lambdaLogger);
             if (updatePendingEvent.success) {
               resultStatus = new ResultStatus(true, "Event updated successfully");
             } else {
@@ -133,10 +130,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
           } else {
             //we need to loop over the voting results and figure out the yes percentage of votes for the choices
             //set the selected choice as the one with the highest percent
-            String result = this.getSelectedChoice(eventDataMapped, metrics, lambdaLogger);
+            String result = this.getSelectedChoice(event, metrics, lambdaLogger);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventSelectedChoice(groupId, eventId, result, groupDataMapped,
+                .setEventSelectedChoice(groupId, eventId, result, group,
                     metrics, lambdaLogger);
 
             // now remove the entry from the pending events table since it has been fully processed now
@@ -173,50 +170,97 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   private Map<String, Object> getTentativeAlgorithmChoices(
-      final Map<String, Object> eventDataMapped,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Group group, final Event event, final Metrics metrics,
+      final LambdaLogger lambdaLogger) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
 
     boolean success = true;
-    Map<String, Object> tentativeChoice;
+    final Map<String, Object> returnValue = new HashMap<>();
 
     try {
-      String categoryId = (String) eventDataMapped.get(GroupsManager.CATEGORY_ID);
+      String categoryId = event.getCategoryId();
       Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
 
       Map<String, Object> categoryDataMapped = categoryData.asMap();
+      Map<String, Object> categoryChoices = (Map<String, Object>) categoryDataMapped
+          .get(CategoriesManager.CHOICES);
 
-      //with the category, we can now get the first choice in the category which is our result
-      tentativeChoice = (Map<String, Object>) categoryDataMapped.get(CategoriesManager.CHOICES);
+      //build an array of user choice rating sums, start will all the current choice ids in the category
+      final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
+      for (String choiceId : categoryChoices.keySet()) {
+        choiceRatingsToSums.putIfAbsent(choiceId, 0);
+      }
 
-      //limit to only three
-      while (tentativeChoice.size() > 3) {
-        tentativeChoice.remove(tentativeChoice.keySet().toArray(new String[0])[0]);
+      //sum all of the user ratings
+      for (String username : event.getOptedIn().keySet()) {
+        try {
+          final User user = new User(
+              DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+
+          final Map<String, Object> userCategoryRatings = user.getCategories();
+          final Map<String, Object> categoryRatings = (Map<String, Object>) userCategoryRatings
+              .get(categoryId);
+
+          for (String choiceId : choiceRatingsToSums.keySet()) {
+            if (categoryRatings.containsKey(choiceId)) {
+              choiceRatingsToSums.replace(choiceId,
+                  choiceRatingsToSums.get(choiceId) + ((Integer) categoryRatings.get(choiceId)));
+            } else {
+              choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
+            }
+          }
+        } catch (Exception e) {
+          lambdaLogger.log(
+              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+        }
+      }
+
+      //user ratings have been summed, get the top X now
+      while (returnValue.size() < 3 && choiceRatingsToSums.size() > 0) {
+        final String maxChoiceId = this.getKeyWithMapMapping(choiceRatingsToSums);
+
+        //we add to the return map and remove the max from the choice rating map
+        returnValue.putIfAbsent(maxChoiceId, categoryChoices.get(maxChoiceId));
+        choiceRatingsToSums.remove(maxChoiceId);
       }
     } catch (Exception e) {
       // we have an event pointing to a non existent category
-      tentativeChoice = ImmutableMap.of("1", "Error");
+      returnValue.putIfAbsent("1", "Error");
       success = false;
       lambdaLogger
-          .log(new ErrorDescriptor<>(eventDataMapped, classMethod, metrics.getRequestId(), e)
+          .log(new ErrorDescriptor<>(event, classMethod, metrics.getRequestId(), e)
               .toString());
     }
 
     metrics.commonClose(success);
-    return tentativeChoice;
+    return returnValue;
   }
 
-  public String getSelectedChoice(final Map<String, Object> eventDataMapped, final Metrics metrics,
+  private String getKeyWithMapMapping(final Map<String, Integer> input) {
+    if (input == null || input.isEmpty()) {
+      return ""; // maybe throw an exception idk
+    }
+
+    String maxKey = null;
+    for (final String key: input.keySet()) {
+      if (maxKey == null || input.get(key) > input.get(maxKey)) {
+        maxKey = key;
+      }
+    }
+
+    return maxKey;
+  }
+
+  public String getSelectedChoice(final Event event, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
     String selectedChoice;
 
     try {
-      Map<String, Object> tentativeChoice = (Map<String, Object>) eventDataMapped
-          .get(GroupsManager.TENTATIVE_CHOICES);
-      selectedChoice = (String) tentativeChoice.values().toArray()[0];
+      selectedChoice = (String) event.getTentativeAlgorithmChoices().values().toArray()[0];
     } catch (Exception e) {
       selectedChoice = "Error";
+      lambdaLogger.log(new ErrorDescriptor<>().toString());
     }
 
     return selectedChoice;
