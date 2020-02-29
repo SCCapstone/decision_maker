@@ -201,14 +201,14 @@ public class PendingEventsManager extends DatabaseAccessManager {
           final Map<String, Object> categoryRatings = (Map<String, Object>) userCategoryRatings
               .get(categoryId);
 
-          for (String choiceId : choiceRatingsToSums.keySet()) {
-            if (categoryRatings.containsKey(choiceId)) {
-              choiceRatingsToSums.replace(choiceId,
-                  choiceRatingsToSums.get(choiceId) + ((Integer) categoryRatings.get(choiceId)));
-            } else {
-              choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
+            for (String choiceId : choiceRatingsToSums.keySet()) {
+              if (categoryRatings != null && categoryRatings.containsKey(choiceId)) {
+                choiceRatingsToSums.replace(choiceId,
+                    choiceRatingsToSums.get(choiceId) + Integer.parseInt((String) categoryRatings.get(choiceId)));
+              } else {
+                choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
+              }
             }
-          }
         } catch (Exception e) {
           lambdaLogger.log(
               new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());

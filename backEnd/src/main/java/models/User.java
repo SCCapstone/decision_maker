@@ -35,6 +35,8 @@ public class User {
     this.setAppSettings(
         new AppSettings((Map<String, Object>) jsonMap.get(UsersManager.APP_SETTINGS)));
     this.setGroups((Map<String, Object>) jsonMap.get(UsersManager.GROUPS));
+    this.setCategories((Map<String, Object>) jsonMap.get(UsersManager.CATEGORIES));
+    this.setOwnedCategories((Map<String, Object>) jsonMap.get(UsersManager.OWNED_CATEGORIES));
     this.setFavoriteOf((Map<String, Object>) jsonMap.get(UsersManager.FAVORITE_OF));
     this.setFavorites((Map<String, Object>) jsonMap.get(UsersManager.FAVORITES));
   }
