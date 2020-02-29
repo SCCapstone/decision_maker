@@ -112,7 +112,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //  update the pending events table with the new data time for the end of voting
 
             final Map<String, Object> tentativeChoices = this
-                .getTentativeAlgorithmChoices(group, event, metrics, lambdaLogger);
+                .getTentativeAlgorithmChoices(event, metrics, lambdaLogger);
 
             DatabaseManagers.GROUPS_MANAGER
                 .setEventTentativeChoices(groupId, eventId, tentativeChoices, group,
@@ -170,8 +170,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   private Map<String, Object> getTentativeAlgorithmChoices(
-      final Group group, final Event event, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+      final Event event, final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
 
@@ -243,7 +242,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     }
 
     String maxKey = null;
-    for (final String key: input.keySet()) {
+    for (final String key : input.keySet()) {
       if (maxKey == null || input.get(key) > input.get(maxKey)) {
         maxKey = key;
       }
@@ -254,13 +253,30 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   public String getSelectedChoice(final Event event, final Metrics metrics,
       final LambdaLogger lambdaLogger) {
+    final String classMethod = "PendingEventsManager.getSelectedChoice";
     String selectedChoice;
 
     try {
-      selectedChoice = (String) event.getTentativeAlgorithmChoices().values().toArray()[0];
+      final Map<String, Integer> votingSums = new HashMap<>();
+      final Map<String, Map<String, Integer>> votingNumbers = event.getVotingNumbers();
+      for (final String choiceId: votingNumbers.keySet()) {
+        Integer sum = 0;
+        for (final Integer vote: votingNumbers.get(choiceId).values()) {
+          //I think this could technically just be sum += vote, but this is more safe
+          if (vote == 1) {
+            sum++;
+          }
+        }
+
+        votingSums.put(choiceId, sum);
+      }
+
+      String maxChoiceId = this.getKeyWithMapMapping(votingSums);
+      selectedChoice = event.getTentativeAlgorithmChoices().get(maxChoiceId);
     } catch (Exception e) {
       selectedChoice = "Error";
-      lambdaLogger.log(new ErrorDescriptor<>().toString());
+      lambdaLogger
+          .log(new ErrorDescriptor<>(event, classMethod, metrics.getRequestId(), e).toString());
     }
 
     return selectedChoice;
