@@ -217,7 +217,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       //user ratings have been summed, get the top X now
       while (returnValue.size() < 3 && choiceRatingsToSums.size() > 0) {
-        final String maxChoiceId = this.getKeyWithMapMapping(choiceRatingsToSums);
+        final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
 
         //we add to the return map and remove the max from the choice rating map
         returnValue.putIfAbsent(maxChoiceId, categoryChoices.get(maxChoiceId));
@@ -236,7 +236,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return returnValue;
   }
 
-  private String getKeyWithMapMapping(final Map<String, Integer> input) {
+  private String getKeyWithMaxMapping(final Map<String, Integer> input) {
     if (input == null || input.isEmpty()) {
       return ""; // maybe throw an exception idk
     }
@@ -271,7 +271,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         votingSums.put(choiceId, sum);
       }
 
-      String maxChoiceId = this.getKeyWithMapMapping(votingSums);
+      String maxChoiceId = this.getKeyWithMaxMapping(votingSums);
       selectedChoice = event.getTentativeAlgorithmChoices().get(maxChoiceId);
     } catch (Exception e) {
       selectedChoice = "Error";
