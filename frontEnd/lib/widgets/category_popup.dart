@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 
 import 'category_row.dart';
@@ -54,19 +55,30 @@ class _CategoryPopupState extends State<CategoryPopup> {
                         List<Category> categories = snapshot.data;
                         categories = snapshot.data;
                         for (Category category in categories) {
-                          this.categoryRows.add(CategoryRow(
-                              category,
-                              widget.selectedCategories.keys
-                                  .contains(category.categoryId),
-                              onSelect: () => selectCategory(category)));
+                          if (category.owner == Globals.username) {
+                            this.categoryRows.add(CategoryRow(
+                                category,
+                                widget.selectedCategories.keys
+                                    .contains(category.categoryId),
+                                onSelect: () => selectCategory(category)));
+                          }
                         }
-                        return Container(
-                          height: MediaQuery.of(context).size.height * .25,
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: categoryRows,
-                          ),
-                        );
+                        if (this.categoryRows.length > 0) {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * .25,
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: categoryRows,
+                            ),
+                          );
+                        } else {
+                          // TODO add a button to let them make categories from here
+                          return Container(
+                            height: MediaQuery.of(context).size.height * .25,
+                            child: Text(
+                                "No categories found to add. Navigate to the categories page to create some."),
+                          );
+                        }
                       } else if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       } else {

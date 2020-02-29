@@ -64,7 +64,8 @@ class _GroupsHomeState extends State<GroupsHome> {
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
       final data = message['data'];
-      showPopupMessage(data['default'], context);
+      showErrorMessage("Notice", data['default'], context);
+      refreshList();
     }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");
     }, onResume: (Map<String, dynamic> message) async {
@@ -134,6 +135,13 @@ class _GroupsHomeState extends State<GroupsHome> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => CategoriesHome()));
+                }),
+            ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Settings', style: TextStyle(fontSize: 16)),
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => UserSettings()));
                 }),
             ListTile(
                 leading: Icon(Icons.exit_to_app),

@@ -201,46 +201,49 @@ class _EditCategoryState extends State<EditCategory> {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {
-              if (this.doneLoading && this.isCategoryOwner) {
-                // don't let the user add new choices while data is being pulled from DB
-                setState(() {
-                  focusNode = new FocusNode();
-                  TextEditingController labelController =
-                      new TextEditingController();
-                  labelControllers.putIfAbsent(
-                      this.nextChoiceNum.toString(), () => labelController);
-                  TextEditingController rateController =
-                      new TextEditingController();
-                  rateController.text = defaultRate.toString();
-                  ratesControllers.putIfAbsent(
-                      this.nextChoiceNum.toString(), () => rateController);
+          floatingActionButton: Visibility(
+            visible: isCategoryOwner,
+            child: FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () {
+                if (this.doneLoading && this.isCategoryOwner) {
+                  // don't let the user add new choices while data is being pulled from DB
+                  setState(() {
+                    focusNode = new FocusNode();
+                    TextEditingController labelController =
+                        new TextEditingController();
+                    labelControllers.putIfAbsent(
+                        this.nextChoiceNum.toString(), () => labelController);
+                    TextEditingController rateController =
+                        new TextEditingController();
+                    rateController.text = defaultRate.toString();
+                    ratesControllers.putIfAbsent(
+                        this.nextChoiceNum.toString(), () => rateController);
 
-                  ChoiceRow choice = new ChoiceRow(
-                    this.nextChoiceNum.toString(),
-                    null,
-                    this.isCategoryOwner,
-                    labelController,
-                    rateController,
-                    deleteChoice: (choice) => deleteChoice(choice),
-                    focusNode: focusNode,
-                  );
-                  this.currentChoice = choice;
-                  this.choiceRows.add(choice);
-                  this.nextChoiceNum++;
-                  // allow the list to automatically scroll down as it grows
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    scrollController.animateTo(
-                      scrollController.position.maxScrollExtent,
-                      duration: const Duration(microseconds: 100),
-                      curve: Curves.easeOut,
+                    ChoiceRow choice = new ChoiceRow(
+                      this.nextChoiceNum.toString(),
+                      null,
+                      this.isCategoryOwner,
+                      labelController,
+                      rateController,
+                      deleteChoice: (choice) => deleteChoice(choice),
+                      focusNode: focusNode,
                     );
+                    this.currentChoice = choice;
+                    this.choiceRows.add(choice);
+                    this.nextChoiceNum++;
+                    // allow the list to automatically scroll down as it grows
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                      scrollController.animateTo(
+                        scrollController.position.maxScrollExtent,
+                        duration: const Duration(microseconds: 100),
+                        curve: Curves.easeOut,
+                      );
+                    });
                   });
-                });
-              }
-            },
+                }
+              },
+            ),
           )),
     );
   }

@@ -18,7 +18,14 @@ class UserRowEvents extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(MediaQuery.of(context).size.height * .015),
           ),
-          Image(image: getIconUrl(icon), fit: BoxFit.fitHeight),
+          Container(
+            // TODO allow user to click on image to get blown up pic
+            height: MediaQuery.of(context).size.height * .2,
+            width: MediaQuery.of(context).size.width * .15,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: getIconUrl(icon), fit: BoxFit.cover)),
+          ),
           Expanded(
             child: Center(
               child: Text(

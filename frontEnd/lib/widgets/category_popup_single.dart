@@ -9,7 +9,6 @@ class CategoryPopupSingle extends StatefulWidget {
   final List<Category> selectedCategory; // max of one element in this list
   final Function handlePopupClosed;
 
-
   CategoryPopupSingle(this.selectedCategory, {this.handlePopupClosed});
 
   @override
@@ -60,16 +59,24 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                               widget.selectedCategory.contains(category),
                               onSelect: () => selectCategory(category)));
                         }
-                        return Container(
-                          height: MediaQuery.of(context).size.height * .25,
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: this.categoryRows.length,
-                            itemBuilder: (context, index) {
-                              return this.categoryRows[index];
-                            },
-                          ),
-                        );
+                        if (this.categoryRows.length > 0) {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * .25,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: this.categoryRows.length,
+                              itemBuilder: (context, index) {
+                                return this.categoryRows[index];
+                              },
+                            ),
+                          );
+                        } else {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * .25,
+                            child: Text(
+                                "No categories found in this group. Navigate to the group settings page to add some."),
+                          );
+                        }
                       } else if (snapshot.hasError) {
                         return Text("Error: ${snapshot.error}");
                       } else {
