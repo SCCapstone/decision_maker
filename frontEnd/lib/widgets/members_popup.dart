@@ -63,7 +63,7 @@ class _MembersPopupState extends State<MembersPopup> {
           title: Text("Group Members"),
           actions: <Widget>[
             FlatButton(
-              child: Text("Back"),
+              child: Text("Close"),
               onPressed: () {
                 userController.clear();
                 Navigator.of(context, rootNavigator: true).pop('dialog');
