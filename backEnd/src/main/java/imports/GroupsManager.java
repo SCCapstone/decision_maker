@@ -890,7 +890,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus setEventTentativeChoices(final String groupId, final String eventId,
-      final Map<String, Object> tentativeChoices, final Map<String, Object> groupDataMapped,
+      final Map<String, Object> tentativeChoices, final Group oldGroup,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.setEventTentativeChoices";
     metrics.commonSetup(classMethod);
@@ -924,7 +924,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
       this.updateItem(updateItemSpec);
 
-      final Group oldGroup = new Group(groupDataMapped);
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
@@ -955,7 +954,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus setEventSelectedChoice(final String groupId, final String eventId,
-      final String result, final Map<String, Object> groupDataMapped,
+      final String result, final Group oldGroup,
       final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "GroupsManager.setEventSelectedChoice";
     metrics.commonSetup(classMethod);
@@ -984,7 +983,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
       this.updateItem(updateItemSpec);
 
-      final Group oldGroup = new Group(groupDataMapped);
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),

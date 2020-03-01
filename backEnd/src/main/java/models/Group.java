@@ -48,7 +48,7 @@ public class Group {
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
     this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
-    this.setEvents((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
+    this.setEvents((Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
   }
 
   public void setMembers(final Map<String, Object> jsonMap) {

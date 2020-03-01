@@ -22,7 +22,8 @@ import utilities.ResultStatus;
 
 public class SnsAccessManager {
 
-  private final Regions region = Regions.US_EAST_1;
+  private final Regions region = Regions.US_EAST_1; //TODO migrate everything to us east 1 and move this to config
+  private static final String USER_DATA_KEY = "CustomUserData";
 
   private AmazonSNSClient client = (AmazonSNSClient) AmazonSNSClient.builder()
       .withRegion(this.region)
@@ -55,7 +56,7 @@ public class SnsAccessManager {
             .getEndpointAttributes(getEndpointAttributesRequest);
 
         final String oldUsername = getEndpointAttributesResult.getAttributes()
-            .get("CustomUserData");
+            .get(USER_DATA_KEY);
 
         ResultStatus oldEndpointUnregistered = DatabaseManagers.USERS_MANAGER
             .unregisterPushEndpoint(
