@@ -17,7 +17,6 @@ Future<String> makeApiRequest(String apiEndpoint,
     {firstAttempt: true}) async {
   String retVal = "";
   SharedPreferences tokens = await Globals.getTokens();
-
   if (tokens.containsKey(idTokenKey)) {
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)

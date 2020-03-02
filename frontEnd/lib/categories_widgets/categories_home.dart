@@ -4,6 +4,7 @@ import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'categories_list.dart';
 
 class CategoriesHome extends StatefulWidget {
@@ -15,24 +16,34 @@ class CategoriesHome extends StatefulWidget {
 
 class _CategoriesHomeState extends State<CategoriesHome> {
   String _sortMethod;
-  Future<ResultStatus> categoryFuture;
+  List<Category> categories;
+  bool loading;
+  bool errorLoading;
+  Widget errorWidget; // global var to pass in error message from manager
 
   @override
   void initState() {
-    this.categoryFuture = CategoriesManager.getAllCategoriesListNew(context);
+    loading = true;
+    errorLoading = false;
+    getCategories();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          "Categories",
-          style: TextStyle(
-              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
-        ),
+    if (loading) {
+      return categoriesLoading();
+    } else if (errorLoading) {
+      return errorWidget;
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(
+            "Categories",
+            style: TextStyle(
+                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
+          ),
 //        actions: <Widget>[
 //          IconButton(
 //            icon: Icon(Icons.sort),
@@ -42,64 +53,110 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 //            },
 //          )
 //        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: refreshList,
-        child: Center(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-              ),
-              Expanded(
-                child: Container(
-                  width: MediaQuery.of(context).size.width * .80,
-                  height: MediaQuery.of(context).size.height * .75,
+        ),
+        body: RefreshIndicator(
+          onRefresh: refreshList,
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+                Expanded(
                   child: Container(
-                    child: FutureBuilder(
-                      future: this.categoryFuture,
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.hasData) {
-                          List<Category> categories = snapshot.data.data;
-                          return CategoryList(
-                              categories: categories,
-                              sortType: _sortMethod,
-                              refreshPage: this.refreshList);
-                        } else if (snapshot.hasError) {
-                          return Text("Error: ${snapshot.error}");
-                        }
-                        return Center(child: CircularProgressIndicator());
-                      },
+                    width: MediaQuery.of(context).size.width * .80,
+                    height: MediaQuery.of(context).size.height * .75,
+                    child: Container(
+                      child: CategoryList(
+                        categories: categories,
+                        sortType: _sortMethod,
+                        refreshPage: this.refreshList,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-              ),
-            ],
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          // Navigate to second route when tapped.
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateCategory()),
-          ).then((_) => this.refreshList());
-        },
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            // Navigate to second route when tapped.
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateCategory()),
+            ).then((_) => this.refreshList());
+          },
+        ),
+      );
+    }
+  }
+
+  void getCategories() async {
+    ResultStatus status =
+        await CategoriesManager.getAllCategoriesListNew(context);
+    if (status.success) {
+      errorLoading = false;
+      loading = false;
+      categories = status.data;
+    } else {
+      errorWidget = loadingError(status.errorMessage);
+      if (!status.networkError) {
+        // no need to show popup as they will be routed to network loss page
+        // could also just get rid of that network page and show the error in the popup
+        showErrorMessage("Error", status.errorMessage, context);
+      }
+      errorLoading = true;
+    }
+    setState(() {});
+  }
+
+  Widget categoriesLoading() {
+    return Scaffold(
+        appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              "Categories",
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            )),
+        body: Center(child: CircularProgressIndicator()));
+  }
+
+  Widget loadingError(String errorMsg) {
+    return Scaffold(
+        appBar: AppBar(
+            centerTitle: true,
+            title: Text(
+              "Categories",
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            )),
+        body: Container(
+          height: MediaQuery.of(context).size.height * .80,
+          child: RefreshIndicator(
+            onRefresh: refreshList,
+            child: ListView(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .15)),
+                Center(child: Text(errorMsg, style: TextStyle(fontSize: 30))),
+              ],
+            ),
+          ),
+        ));
   }
 
   Future<Null> refreshList() async {
+    getCategories();
     //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
-    setState(() {
-      this.categoryFuture = CategoriesManager.getAllCategoriesListNew(context);
-    });
+    setState(() {});
   }
 }

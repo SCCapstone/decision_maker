@@ -85,13 +85,8 @@ class CategoriesManager {
         Map<String, dynamic> fullResponseJson = jsonDecode(response);
         List<dynamic> responseJson =
             json.decode(fullResponseJson[RequestFields.RESULT_MESSAGE]);
-        retVal.data =
-            responseJson.map((m) => new Category.fromJson(m)).toList();
-        retVal.success = true;
         return responseJson.map((m) => new Category.fromJson(m)).toList();
       } catch (e) {
-        retVal.data = new List<Category>();
-        retVal.errorMessage = "Error when parsing categories";
         return new List<Category>(); // returns empty list
       }
     } else {
@@ -101,7 +96,7 @@ class CategoriesManager {
 
   static Future<ResultStatus> getAllCategoriesListNew(
       BuildContext context) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+    ResultStatus retVal = new ResultStatus(success: false, networkError: false);
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
 
@@ -110,19 +105,23 @@ class CategoriesManager {
 
     if (response != "") {
       try {
-        Map<String, dynamic> fullResponseJson = jsonDecode(response);
-        List<dynamic> responseJson =
-            json.decode(fullResponseJson[RequestFields.RESULT_MESSAGE]);
-        retVal.data =
-            responseJson.map((m) => new Category.fromJson(m)).toList();
-        retVal.success = true;
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
+          retVal.data =
+              responseJson.map((m) => new Category.fromJson(m)).toList();
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to load categories";
+        }
       } catch (e) {
-        retVal.data = new List<Category>();
-        retVal.errorMessage = "Error when parsing categories";
+        retVal.errorMessage = "Error when reading request";
       }
     } else {
       retVal.errorMessage = "Failed to load categories from the database.";
-      throw Exception("Failed to load categories from the database.");
+      retVal.networkError = true;
     }
     return retVal;
   }
