@@ -99,7 +99,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   }
 
   void getCategories() async {
-    ResultStatus status =
+    ResultStatus<List<Category>> status =
         await CategoriesManager.getAllCategoriesListNew(context);
     if (status.success) {
       errorLoading = false;

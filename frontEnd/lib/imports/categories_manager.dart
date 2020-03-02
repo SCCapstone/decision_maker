@@ -96,7 +96,8 @@ class CategoriesManager {
 
   static Future<ResultStatus> getAllCategoriesListNew(
       BuildContext context) async {
-    ResultStatus retVal = new ResultStatus(success: false, networkError: false);
+    ResultStatus<List<Category>> retVal =
+        new ResultStatus(success: false, networkError: false);
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
 

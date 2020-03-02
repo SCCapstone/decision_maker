@@ -1,8 +1,8 @@
-class ResultStatus {
+class ResultStatus<T> {
   bool success;
   bool networkError;
   String errorMessage;
-  dynamic data;
+  T data;
 
   ResultStatus({this.success, this.errorMessage, this.data, this.networkError});
 }
