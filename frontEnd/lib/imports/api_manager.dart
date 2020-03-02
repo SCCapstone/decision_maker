@@ -15,6 +15,7 @@ final String idTokenKey = "id";
 Future<String> makeApiRequest(String apiEndpoint,
     Map<String, dynamic> requestContent, BuildContext context,
     {firstAttempt: true}) async {
+  String retVal = "";
   SharedPreferences tokens = await Globals.getTokens();
 
   if (tokens.containsKey(idTokenKey)) {
@@ -28,11 +29,11 @@ Future<String> makeApiRequest(String apiEndpoint,
           headers: headers,
           body: json.encode(requestContent));
       if (response.statusCode == 200) {
-        return response.body;
+        retVal = response.body;
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
-          return makeApiRequest(apiEndpoint, requestContent, context,
+          retVal = await makeApiRequest(apiEndpoint, requestContent, context,
               firstAttempt: false);
         }
       }
@@ -48,7 +49,7 @@ Future<String> makeApiRequest(String apiEndpoint,
   } else {
     //clear navigation stack and head to the login page?
   }
-  return ""; // none of our apis should return this so this indicates error
+  return retVal; // none of our apis should return this so this indicates error
 }
 
 Map<String, dynamic> getEmptyApiRequest() {

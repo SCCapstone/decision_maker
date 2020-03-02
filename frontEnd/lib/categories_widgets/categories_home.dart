@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 import 'categories_list.dart';
 
@@ -14,11 +15,11 @@ class CategoriesHome extends StatefulWidget {
 
 class _CategoriesHomeState extends State<CategoriesHome> {
   String _sortMethod;
-  Future<List<Category>> categories;
+  Future<ResultStatus> categoryFuture;
 
   @override
   void initState() {
-    this.categories = CategoriesManager.getAllCategoriesList(context);
+    this.categoryFuture = CategoriesManager.getAllCategoriesListNew(context);
     super.initState();
   }
 
@@ -57,10 +58,10 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                   height: MediaQuery.of(context).size.height * .75,
                   child: Container(
                     child: FutureBuilder(
-                      future: this.categories,
+                      future: this.categoryFuture,
                       builder: (BuildContext context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
-                          List<Category> categories = snapshot.data;
+                          List<Category> categories = snapshot.data.data;
                           return CategoryList(
                               categories: categories,
                               sortType: _sortMethod,
@@ -98,7 +99,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   Future<Null> refreshList() async {
     //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
     setState(() {
-      this.categories = CategoriesManager.getAllCategoriesList(context);
+      this.categoryFuture = CategoriesManager.getAllCategoriesListNew(context);
     });
   }
 }
