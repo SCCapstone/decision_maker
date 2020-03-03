@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:frontEnd/imports/globals.dart';
@@ -312,39 +313,36 @@ class _UserSettingsState extends State<UserSettings> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      Globals.user.appSettings.groupSort = _groupSort;
-      Globals.user.appSettings.muted = _muted;
-      Globals.user.appSettings.darkTheme = _darkTheme;
-      Globals.user.displayName = _displayName;
-      Globals.user.favorites = displayedFavorites;
       List<String> userNames = new List<String>();
       for (Favorite favorite in displayedFavorites) {
         userNames.add(favorite.username);
       }
 
-      showLoadingDialog(
-          context, "Saving settings...", true); // show loading dialog
-      await UsersManager.updateUserSettings(
+      showLoadingDialog(context, "Saving settings...", true);
+      ResultStatus result = await UsersManager.updateUserSettings(
           _displayName,
           boolToInt(_darkTheme),
           boolToInt(_muted),
           _groupSort,
           userNames,
-          _icon,
-          context); // blind send for now?
-      Navigator.of(context, rootNavigator: true)
-          .pop('dialog'); // dismiss the loading dialog
+          _icon);
+      Navigator.of(context, rootNavigator: true).pop('dialog');
 
-      setState(() {
+      if (result.success) {
+        setState(() {
+          hideKeyboard(context);
+          // reset everything and reflect changes made
+          originalFavorites.clear();
+          originalFavorites.addAll(displayedFavorites);
+          editing = false;
+          newIcon = false;
+          autoValidate = false;
+          changeTheme(context);
+        });
+      } else {
         hideKeyboard(context);
-        // reset everything and reflect changes made
-        originalFavorites.clear();
-        originalFavorites.addAll(displayedFavorites);
-        editing = false;
-        newIcon = false;
-        autoValidate = false;
-        changeTheme(context);
-      });
+        showErrorMessage("Error", result.errorMessage, context);
+      }
     } else {
       setState(() => autoValidate = true);
     }

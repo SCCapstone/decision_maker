@@ -399,7 +399,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void tryLeave() async {
     showLoadingDialog(context, "Leaving group...", true);
     ResultStatus result =
-        await GroupsManager.leaveGroup(Globals.currentGroup.groupId, context);
+        await GroupsManager.leaveGroup(Globals.currentGroup.groupId);
     Navigator.of(context, rootNavigator: true).pop('dialog');
 
     if (result.success) {
@@ -416,7 +416,7 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void tryDelete(BuildContext context) async {
     ResultStatus status =
-        await GroupsManager.deleteGroup(Globals.currentGroup.groupId, context);
+        await GroupsManager.deleteGroup(Globals.currentGroup.groupId);
     if (status.success) {
       // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
     } else {
@@ -479,7 +479,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           nextEventId: Globals.currentGroup.nextEventId);
 
       showLoadingDialog(context, "Saving...", true);
-      ResultStatus result = await GroupsManager.editGroup(group, icon, context);
+      ResultStatus result = await GroupsManager.editGroup(group, icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (result.success) {

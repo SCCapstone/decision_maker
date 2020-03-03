@@ -124,7 +124,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   void tryVote(int voteVal) async {
     int previousVote = vote;
     ResultStatus result = await GroupsManager.voteForChoice(
-        widget.groupId, widget.eventId, widget.choiceId, vote, context);
+        widget.groupId, widget.eventId, widget.choiceId, vote);
     if (!result.success) {
       showErrorMessage("Error", result.errorMessage, context);
       setState(() {

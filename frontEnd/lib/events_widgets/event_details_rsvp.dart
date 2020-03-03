@@ -180,7 +180,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   void tryRsvp(bool going) async {
     // not sure if we want a loading dialog for this as that would be annoying for the user. Only show error for now
     ResultStatus result = await GroupsManager.optInOutOfEvent(
-        widget.groupId, widget.eventId, going, context);
+        widget.groupId, widget.eventId, going);
     if (!result.success) {
       showErrorMessage("Error", result.errorMessage, context);
     }
@@ -206,7 +206,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
     ResultStatus<List<Group>> result =
-        await GroupsManager.getGroups(context, groupIds: groupId);
+        await GroupsManager.getGroups(groupIds: groupId);
     if (result.success) {
       Globals.currentGroup = result.data.first;
       getEvent();

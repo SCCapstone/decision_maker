@@ -11,8 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final String idTokenKey = "id";
 
-Future<String> makeApiRequest(String apiEndpoint,
-    Map<String, dynamic> requestContent, BuildContext context,
+Future<String> makeApiRequest(
+    String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
   String retVal = "";
   SharedPreferences tokens = await Globals.getTokens();
@@ -31,7 +31,7 @@ Future<String> makeApiRequest(String apiEndpoint,
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
-          retVal = await makeApiRequest(apiEndpoint, requestContent, context,
+          retVal = await makeApiRequest(apiEndpoint, requestContent,
               firstAttempt: false);
         }
       }

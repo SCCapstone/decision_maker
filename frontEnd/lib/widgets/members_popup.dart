@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/models/member.dart';
@@ -257,9 +258,10 @@ class _MembersPopupState extends State<MembersPopup> {
   }
 
   void addNewMember() async {
-    User newMember = await UsersManager.getUserData(context, true,
-        username: userController.text.trim());
-    if (newMember != null) {
+    ResultStatus<User> result =
+        await UsersManager.getUserData(username: userController.text.trim());
+    if (result.success) {
+      User newMember = result.data;
       widget.displayedMembers.add(new Member(
           username: newMember.username,
           displayName: newMember.displayName,
@@ -274,8 +276,7 @@ class _MembersPopupState extends State<MembersPopup> {
         removeMember(newMember.username);
       }));
     } else {
-      showErrorMessage(
-          "Error", "User: ${userController.text} does not exist.", context);
+      showErrorMessage("Error", "Cannot add: ${userController.text}.", context);
       hideKeyboard(context);
     }
     setState(() {

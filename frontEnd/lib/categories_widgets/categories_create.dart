@@ -210,11 +210,7 @@ class _CreateCategoryState extends State<CreateCategory> {
       } else {
         showLoadingDialog(context, "Creating category...", true);
         ResultStatus status = await CategoriesManager.addOrEditCategory(
-            this.categoryNameController.text,
-            labelsToSave,
-            ratesToSave,
-            null,
-            context);
+            this.categoryNameController.text, labelsToSave, ratesToSave, null);
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (status.success) {
           // TODO grab the category returned and update global variable

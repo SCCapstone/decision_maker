@@ -197,7 +197,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
     ResultStatus<List<Group>> result =
-        await GroupsManager.getGroups(context, groupIds: groupId);
+        await GroupsManager.getGroups(groupIds: groupId);
     if (result.success) {
       Globals.currentGroup = result.data.first;
       getEvent();

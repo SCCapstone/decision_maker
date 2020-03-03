@@ -2,12 +2,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
-import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
 import 'globals.dart';
@@ -27,16 +26,22 @@ class UsersManager {
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
 
-  static Future<User> getUserData(BuildContext context, bool showPopup,
-      {String username}) async {
+  static final String getUserDataAction = "getUserData";
+  static final String updateSettingsAction = "updateUserSettings";
+  static final String updateRatingsAction = "updateUserChoiceRatings";
+  static final String getRatingsAction = "getUserRatings";
+
+  static Future<ResultStatus<User>> getUserData({String username}) async {
+    ResultStatus<User> retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "getUserData";
+    jsonRequestBody[RequestFields.ACTION] = getUserDataAction;
     if (username != null) {
-      jsonRequestBody["payload"].putIfAbsent(USERNAME, () => username);
+      jsonRequestBody[RequestFields.PAYLOAD]
+          .putIfAbsent(USERNAME, () => username);
     }
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
     User ret;
 
     if (response != "") {
@@ -47,48 +52,50 @@ class UsersManager {
 
         ret = User.fromJson(json.decode(responseItem.resultMessage));
 
-        if (!responseItem.success && showPopup) {
-          showPopupMessage("Error getting the user (1).", context);
+        if (responseItem.success) {
+          retVal.success = true;
+          retVal.data = ret;
+        } else {
+          retVal.errorMessage = "Error getting the user (1).";
         }
       } catch (e) {
-        if (showPopup) {
-          showPopupMessage("Error getting the user (2).", context);
-        }
+        retVal.errorMessage = "Error getting the user (2).";
       }
     } else {
-      if (showPopup) {
-        showPopupMessage("Unable to get the user.", context);
-      }
+      retVal.errorMessage =
+          "Network error. Unable to get user data. Check internet connection.";
     }
-
-    return ret;
+    return retVal;
   }
 
-  static Future updateUserSettings(
+  static Future<ResultStatus> updateUserSettings(
       String displayName,
       int darkTheme,
       int muted,
       int groupSort,
       List<String> favorites,
-      File image,
-      BuildContext context) async {
+      File image) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> settings = new Map<String, dynamic>();
     settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
     settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
     settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "updateUserSettings";
-    jsonRequestBody["payload"].putIfAbsent(DISPLAY_NAME, () => displayName);
-    jsonRequestBody["payload"].putIfAbsent(FAVORITES, () => favorites);
-    jsonRequestBody["payload"].putIfAbsent(APP_SETTINGS, () => settings);
+    jsonRequestBody[RequestFields.ACTION] = updateSettingsAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(DISPLAY_NAME, () => displayName);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(FAVORITES, () => favorites);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(APP_SETTINGS, () => settings);
     if (image != null) {
-      jsonRequestBody["payload"]
+      jsonRequestBody[RequestFields.PAYLOAD]
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -97,29 +104,33 @@ class UsersManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
+          retVal.success = true;
           Globals.user = User.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          showPopupMessage("Error updating user settings (1).", context);
+          retVal.errorMessage = "Error updating user settings (1).";
         }
       } catch (e) {
-        showPopupMessage("Error updating user settings (2).", context);
+        retVal.errorMessage = "Error updating user settings (2).";
       }
     } else {
-      showPopupMessage("Unable to update user settings.", context);
+      retVal.errorMessage =
+          "Network error. Unable to update user settings. Check internet connection.";
     }
+    return retVal;
   }
 
-  static void updateUserChoiceRatings(String categoryId,
-      Map<String, String> choiceRatings, BuildContext context) async {
+  static Future<ResultStatus> updateUserChoiceRatings(
+      String categoryId, Map<String, String> choiceRatings) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "updateUserChoiceRatings";
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.ACTION] = updateRatingsAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -128,31 +139,31 @@ class UsersManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
+          retVal.success = true;
         } else {
-          showPopupMessage("Error updating user ratings (1).", context);
+          retVal.errorMessage = "Error updating user ratings (1).";
         }
       } catch (e) {
-        showPopupMessage("Error updating user ratings (2).", context);
+        retVal.errorMessage = "Error updating user ratings (2).";
       }
     } else {
-      showPopupMessage("Unable to update user ratings.", context);
+      retVal.errorMessage =
+          "Network error. Unable to update user rating. Check internet connection.";
     }
+    return retVal;
   }
 
-  static Future<Map<String, dynamic>> getUserRatings(
-      String categoryId, BuildContext context) async {
-    if (categoryId == null) {
-      return new Map<String, dynamic>();
-    }
+  static Future<ResultStatus<Map<String, dynamic>>> getUserRatings(
+      String categoryId) async {
+    ResultStatus<Map<String, dynamic>> retVal =
+        new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "getUserRatings";
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.ACTION] = getRatingsAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       Map<String, dynamic> body = jsonDecode(response);
@@ -161,38 +172,38 @@ class UsersManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          return json.decode(responseItem.resultMessage);
+          retVal.success = true;
+          retVal.data = json.decode(responseItem.resultMessage);
         } else {
-          showPopupMessage("Error getting user ratings (1).", context);
+          retVal.errorMessage = "Error getting user ratings (1).";
         }
       } catch (e) {
-        showPopupMessage("Error getting user ratings (2).", context);
+        retVal.errorMessage = "Error getting user ratings (2).";
       }
     } else {
-      showPopupMessage("Unable to get user ratings.", context);
+      retVal.errorMessage =
+          "Network error. Unable to get user ratings. Check internet connection.";
     }
-
-    return null;
+    return retVal;
   }
 
-  static Future registerPushEndpoint(
-      Future<String> token, BuildContext context) async {
+  static Future registerPushEndpoint(Future<String> token) async {
     String tokenAfter = await token;
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "registerPushEndpoint";
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.ACTION] = "registerPushEndpoint";
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.DEVICE_TOKEN, () => tokenAfter);
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    makeApiRequest(apiEndpoint, jsonRequestBody);
   }
 
-  static Future unregisterPushEndpoint(BuildContext context) async {
+  static Future unregisterPushEndpoint() async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "unregisterPushEndpoint";
+    jsonRequestBody[RequestFields.ACTION] = "unregisterPushEndpoint";
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    makeApiRequest(apiEndpoint, jsonRequestBody);
   }
 }

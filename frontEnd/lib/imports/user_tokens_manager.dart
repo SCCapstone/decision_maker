@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:http/http.dart';
@@ -30,11 +31,11 @@ final String idTokenKey = "id";
 bool gotTokens = false;
 
 Future<bool> hasValidTokensSet(BuildContext context) async {
-  User user = await UsersManager.getUserData(context, false);
+  ResultStatus<User> result = await UsersManager.getUserData();
 
-  if (user != null) {
-    Globals.user = user;
-    Globals.username = user.username; //Store the username
+  if (result.success) {
+    Globals.user = result.data;
+    Globals.username = result.data.username; //Store the username
   } else {
     return false;
   }

@@ -223,8 +223,7 @@ class _CreateGroupState extends State<CreateGroup> {
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
-      ResultStatus result =
-          await GroupsManager.createNewGroup(group, icon, context);
+      ResultStatus result = await GroupsManager.createNewGroup(group, icon);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 

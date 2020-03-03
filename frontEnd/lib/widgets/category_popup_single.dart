@@ -23,7 +23,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   @override
   void initState() {
     resultFuture = CategoriesManager.getAllCategoriesFromGroup(
-        Globals.currentGroup.groupId, context);
+        Globals.currentGroup.groupId);
     super.initState();
   }
 

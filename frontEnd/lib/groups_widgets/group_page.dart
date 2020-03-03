@@ -102,7 +102,7 @@ class _GroupPageState extends State<GroupPage> {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
     ResultStatus<List<Group>> status =
-        await GroupsManager.getGroups(context, groupIds: groupId);
+        await GroupsManager.getGroups(groupIds: groupId);
     initialLoad = false;
     if (status.success) {
       errorLoading = false;

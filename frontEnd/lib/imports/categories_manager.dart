@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
@@ -29,8 +28,7 @@ class CategoriesManager {
       String categoryName,
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
-      Category category,
-      BuildContext context) async {
+      Category category) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -50,8 +48,7 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -74,15 +71,13 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
-      BuildContext context) async {
+  static Future<ResultStatus<List<Category>>> getAllCategoriesList() async {
     ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -108,7 +103,7 @@ class CategoriesManager {
   }
 
   static Future<ResultStatus<List<Category>>> getAllCategoriesFromGroup(
-      String groupId, BuildContext context) async {
+      String groupId) async {
     ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -116,8 +111,7 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -143,8 +137,7 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus> deleteCategory(
-      String categoryId, BuildContext context) async {
+  static Future<ResultStatus> deleteCategory(String categoryId) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -152,8 +145,7 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {

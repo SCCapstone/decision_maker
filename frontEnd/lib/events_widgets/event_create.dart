@@ -263,8 +263,8 @@ class _CreateEventState extends State<CreateEvent> {
           rsvpDuration: int.parse(this.rsvpDuration));
 
       showLoadingDialog(context, "Creating event...", true);
-      ResultStatus result = await GroupsManager.newEvent(
-          Globals.currentGroup.groupId, event, context);
+      ResultStatus result =
+          await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (result.success) {

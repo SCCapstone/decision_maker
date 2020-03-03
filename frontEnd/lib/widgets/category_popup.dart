@@ -23,7 +23,7 @@ class _CategoryPopupState extends State<CategoryPopup> {
 
   @override
   void initState() {
-    resultFuture = CategoriesManager.getAllCategoriesList(context);
+    resultFuture = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 

@@ -31,7 +31,7 @@ class _EditCategoryState extends State<EditCategory> {
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
-  Future<Map<String, dynamic>> ratingsFromDb;
+  Future<ResultStatus<Map<String, dynamic>>> resultFuture;
   FocusNode focusNode;
   bool initialPageLoad = true;
   bool doneLoading = false;
@@ -59,8 +59,7 @@ class _EditCategoryState extends State<EditCategory> {
     this.categoryNameController.text = widget.category.categoryName;
     this.nextChoiceNum = widget.category.nextChoiceNum;
 
-    this.ratingsFromDb =
-        UsersManager.getUserRatings(widget.category.categoryId, context);
+    this.resultFuture = UsersManager.getUserRatings(widget.category.categoryId);
 
     for (String choiceId in widget.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
@@ -155,26 +154,40 @@ class _EditCategoryState extends State<EditCategory> {
                     Expanded(
                       child: Scrollbar(
                         child: FutureBuilder(
-                            future: this.ratingsFromDb,
+                            future: this.resultFuture,
                             builder:
                                 (BuildContext context, AsyncSnapshot snapshot) {
+                              bool error = false;
+                              String errorMsg;
                               if (snapshot.hasData) {
                                 if (this.initialPageLoad) {
-                                  Map<String, dynamic> userRatings =
+                                  ResultStatus<Map<String, dynamic>> result =
                                       snapshot.data;
-                                  //if the mapping exists in the user's table, override the default
-                                  for (String choiceId
-                                      in this.labelControllers.keys) {
-                                    if (userRatings
-                                        .containsKey(choiceId.toString())) {
-                                      this.ratesControllers[choiceId].text =
-                                          userRatings[choiceId.toString()]
-                                              .toString();
+                                  if (result.success) {
+                                    Map<String, dynamic> userRatings =
+                                        result.data;
+                                    //if the mapping exists in the user's table, override the default
+                                    for (String choiceId
+                                        in this.labelControllers.keys) {
+                                      if (userRatings
+                                          .containsKey(choiceId.toString())) {
+                                        this.ratesControllers[choiceId].text =
+                                            userRatings[choiceId.toString()]
+                                                .toString();
+                                      }
                                     }
+                                    this.initialPageLoad = false;
+                                  } else {
+                                    error = true;
+                                    errorMsg = result.errorMessage;
                                   }
-                                  this.initialPageLoad = false;
                                 }
                                 this.doneLoading = true;
+                                if (error) {
+                                  return Center(
+                                      child: Text(errorMsg,
+                                          style: TextStyle(fontSize: 30)));
+                                }
                                 return CustomScrollView(
                                   controller: scrollController,
                                   slivers: <Widget>[
@@ -187,6 +200,7 @@ class _EditCategoryState extends State<EditCategory> {
                                   ],
                                 );
                               } else if (snapshot.hasError) {
+                                // this should never happen, but keep just in case
                                 return Text("Error: ${snapshot.error}");
                               }
                               return Center(child: CircularProgressIndicator());
@@ -277,15 +291,21 @@ class _EditCategoryState extends State<EditCategory> {
             this.categoryNameController.text,
             labelsToSave,
             ratesToSave,
-            widget.category,
-            context);
+            widget.category);
         Navigator.of(context, rootNavigator: true).pop('dialog');
+
         if (!status.success) {
           showErrorMessage("Error", status.errorMessage, context);
         }
       } else {
-        UsersManager.updateUserChoiceRatings(
-            widget.category.categoryId, ratesToSave, context);
+        showLoadingDialog(context, "Saving changes...", true);
+        ResultStatus status = await UsersManager.updateUserChoiceRatings(
+            widget.category.categoryId, ratesToSave);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+
+        if (!status.success) {
+          showErrorMessage("Error", status.errorMessage, context);
+        }
       }
     } else {
       setState(() {

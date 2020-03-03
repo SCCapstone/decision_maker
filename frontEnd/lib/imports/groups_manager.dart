@@ -2,8 +2,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
@@ -37,7 +35,7 @@ class GroupsManager {
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
-  static Future<ResultStatus<List<Group>>> getGroups(BuildContext context,
+  static Future<ResultStatus<List<Group>>> getGroups(
       {List<String> groupIds}) async {
     ResultStatus<List<Group>> retVal = new ResultStatus(success: false);
 
@@ -48,8 +46,7 @@ class GroupsManager {
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -73,16 +70,14 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> deleteGroup(
-      String groupId, BuildContext context) async {
+  static Future<ResultStatus> deleteGroup(String groupId) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = deleteGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -105,8 +100,7 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> createNewGroup(
-      Group group, File iconFile, BuildContext context) async {
+  static Future<ResultStatus> createNewGroup(Group group, File iconFile) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -121,8 +115,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -144,8 +137,7 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> editGroup(
-      Group group, File iconFile, BuildContext context) async {
+  static Future<ResultStatus> editGroup(Group group, File iconFile) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -161,8 +153,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -184,8 +175,7 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> newEvent(
-      String groupId, Event event, BuildContext context) async {
+  static Future<ResultStatus> newEvent(String groupId, Event event) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -193,8 +183,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -216,16 +205,14 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> leaveGroup(
-      String groupId, BuildContext context) async {
+  static Future<ResultStatus> leaveGroup(String groupId) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = leaveGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -248,8 +235,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> optInOutOfEvent(String groupId, String eventId,
-      bool participating, BuildContext context) async {
+  static Future<ResultStatus> optInOutOfEvent(
+      String groupId, String eventId, bool participating) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -263,8 +250,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
@@ -286,8 +272,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> voteForChoice(String groupId, String eventId,
-      String choiceId, int voteVal, BuildContext context) async {
+  static Future<ResultStatus> voteForChoice(
+      String groupId, String eventId, String choiceId, int voteVal) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -301,8 +287,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response != "") {
       try {
