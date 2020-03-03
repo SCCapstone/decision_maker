@@ -13,5 +13,4 @@ class RequestFields {
   static final String DEVICE_TOKEN = "DeviceToken";
   static final String ACTION = "action";
   static final String PAYLOAD = "payload";
-  static final String RESULT_MESSAGE = "resultMessage";
 }

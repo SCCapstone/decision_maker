@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
@@ -222,13 +223,15 @@ class _CreateGroupState extends State<CreateGroup> {
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
-      bool success = await GroupsManager.createNewGroup(group, icon, context);
-
+      ResultStatus result =
+          await GroupsManager.createNewGroup(group, icon, context);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
-      if (success) {
+      if (result.success) {
         Navigator.of(context).pop();
+      } else {
+        showErrorMessage("Error", result.errorMessage, context);
       }
     } else {
       setState(() => autoValidate = true);

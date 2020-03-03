@@ -5,7 +5,6 @@ import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
-import 'package:frontEnd/utilities/utilities.dart';
 
 import 'api_manager.dart';
 import 'groups_manager.dart';

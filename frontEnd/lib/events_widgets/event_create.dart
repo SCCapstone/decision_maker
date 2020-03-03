@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
@@ -261,15 +262,15 @@ class _CreateEventState extends State<CreateEvent> {
           votingDuration: int.parse(this.votingDuration),
           rsvpDuration: int.parse(this.rsvpDuration));
 
-      showLoadingDialog(
-          context, "Creating event...", true); // show loading dialog
-      bool success = await GroupsManager.newEvent(
+      showLoadingDialog(context, "Creating event...", true);
+      ResultStatus result = await GroupsManager.newEvent(
           Globals.currentGroup.groupId, event, context);
-      Navigator.of(context, rootNavigator: true)
-          .pop('dialog'); // dismiss the loading dialog
+      Navigator.of(context, rootNavigator: true).pop('dialog');
 
-      if (success) {
+      if (result.success) {
         Navigator.of(context).pop();
+      } else {
+        showErrorMessage("Error", result.errorMessage, context);
       }
     } else {
       setState(() => autoValidate = true);

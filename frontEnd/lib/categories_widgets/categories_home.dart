@@ -107,7 +107,6 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     } else {
       errorLoading = true;
       errorWidget = loadingError(status.errorMessage);
-      showErrorMessage("Error", status.errorMessage, context);
     }
     setState(() {
       loading = false;

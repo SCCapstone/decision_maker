@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
-import 'package:frontEnd/widgets/internet_loss.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,15 +36,6 @@ Future<String> makeApiRequest(String apiEndpoint,
         }
       }
     } catch (e) {}
-//    on SocketException catch (_) {
-//      Navigator.push(
-//        context,
-//        MaterialPageRoute(
-//            builder: (context) => InternetLoss(
-//                  initialCheck: false,
-//                )),
-//      );
-//    }
   } else {
     //clear navigation stack and head to the login page?
   }

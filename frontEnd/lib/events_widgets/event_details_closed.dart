@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsClosed extends StatefulWidget {
@@ -154,9 +157,14 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
-    getEvent();
+    ResultStatus<List<Group>> result =
+        await GroupsManager.getGroups(context, groupIds: groupId);
+    if (result.success) {
+      Globals.currentGroup = result.data.first;
+      getEvent();
+    } else {
+      showErrorMessage("Error", result.errorMessage, context);
+    }
     setState(() {});
   }
 }

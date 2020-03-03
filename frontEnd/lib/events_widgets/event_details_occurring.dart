@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsOccurring extends StatefulWidget {
@@ -157,12 +160,17 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
-    getEvent();
-    if (EventsManager.getEventMode(event) != widget.mode) {
-      // if while the user was here and the mode changed, take them back to the group page
-      Navigator.of(context).pop();
+    ResultStatus<List<Group>> result =
+        await GroupsManager.getGroups(context, groupIds: groupId);
+    if (result.success) {
+      Globals.currentGroup = result.data.first;
+      getEvent();
+      if (EventsManager.getEventMode(event) != widget.mode) {
+        // if while the user was here and the mode changed, take them back to the group page
+        Navigator.of(context).pop();
+      }
+    } else {
+      showErrorMessage("Error", result.errorMessage, context);
     }
     setState(() {});
   }

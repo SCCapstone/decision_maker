@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
@@ -397,10 +398,11 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void tryLeave() async {
     showLoadingDialog(context, "Leaving group...", true);
-    bool success =
+    ResultStatus result =
         await GroupsManager.leaveGroup(Globals.currentGroup.groupId, context);
     Navigator.of(context, rootNavigator: true).pop('dialog');
-    if (success) {
+
+    if (result.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
       Navigator.pushAndRemoveUntil(
           context,
@@ -408,16 +410,18 @@ class _GroupSettingsState extends State<GroupSettings> {
               builder: (BuildContext context) => GroupsHome()),
           (Route<dynamic> route) => false);
     } else {
-      Navigator.of(context, rootNavigator: true).pop(
-          'dialog'); // this is hacky, but until we implement returning resultStatuses we have to do it this way
-      showErrorMessage("Error", "Error leaving the group.", context);
+      showErrorMessage("Error", result.errorMessage, context);
     }
   }
 
   void tryDelete(BuildContext context) async {
-    // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
-    bool success =
+    ResultStatus status =
         await GroupsManager.deleteGroup(Globals.currentGroup.groupId, context);
+    if (status.success) {
+      // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
+    } else {
+      showErrorMessage("Error", status.errorMessage, context);
+    }
   }
 
   void enableAutoValidation() {
@@ -448,7 +452,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
   }
 
-  void validateInput() {
+  void validateInput() async {
     final form = formKey.currentState;
     if (form.validate() && validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
@@ -474,23 +478,29 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultRsvpDuration: rsvpDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
-      Globals.currentGroup = group;
-      GroupsManager.editGroup(group, icon, context);
+      showLoadingDialog(context, "Saving...", true);
+      ResultStatus result = await GroupsManager.editGroup(group, icon, context);
+      Navigator.of(context, rootNavigator: true).pop('dialog');
 
-      setState(() {
-        // reset everything and reflect changes made
-        originalMembers.clear();
-        originalMembers.addAll(displayedMembers);
-        originalCategories.clear();
-        originalCategories.addAll(selectedCategories);
-        groupNameController.text = groupName;
-        votingDurationController.text = votingDuration.toString();
-        rsvpDurationController.text = rsvpDuration.toString();
-        editing = false;
-        autoValidate = false;
-        newIcon = false;
-        hideKeyboard(context);
-      });
+      if (result.success) {
+        Globals.currentGroup = group; // TODO grab the group from the result
+        setState(() {
+          // reset everything and reflect changes made
+          originalMembers.clear();
+          originalMembers.addAll(displayedMembers);
+          originalCategories.clear();
+          originalCategories.addAll(selectedCategories);
+          groupNameController.text = groupName;
+          votingDurationController.text = votingDuration.toString();
+          rsvpDurationController.text = rsvpDuration.toString();
+          editing = false;
+          autoValidate = false;
+          newIcon = false;
+          hideKeyboard(context);
+        });
+      } else {
+        showErrorMessage("Error", result.errorMessage, context);
+      }
     } else {
       setState(() => autoValidate = true);
     }

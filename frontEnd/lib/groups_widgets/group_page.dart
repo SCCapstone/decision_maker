@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/group.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -20,6 +21,7 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage> {
   bool initialLoad = true;
   bool errorLoading = false;
+  Widget errorWidget;
 
   @override
   void initState() {
@@ -32,7 +34,7 @@ class _GroupPageState extends State<GroupPage> {
     if (initialLoad) {
       return groupLoading();
     } else if (errorLoading) {
-      return groupError();
+      return errorWidget;
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -99,15 +101,16 @@ class _GroupPageState extends State<GroupPage> {
   void getGroup() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    List<Group> tempList =
+    ResultStatus<List<Group>> status =
         await GroupsManager.getGroups(context, groupIds: groupId);
-    if (tempList.length != 0) {
-      initialLoad = false;
-      Globals.currentGroup = tempList.first;
+    initialLoad = false;
+    if (status.success) {
+      errorLoading = false;
+      Globals.currentGroup = status.data.first;
       setState(() {});
     } else {
-      initialLoad = false;
       errorLoading = true;
+      errorWidget = groupError(status.errorMessage);
       setState(() {});
     }
   }
@@ -124,7 +127,7 @@ class _GroupPageState extends State<GroupPage> {
         body: Center(child: CircularProgressIndicator()));
   }
 
-  Widget groupError() {
+  Widget groupError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
             centerTitle: true,
@@ -142,9 +145,7 @@ class _GroupPageState extends State<GroupPage> {
                 Padding(
                     padding: EdgeInsets.all(
                         MediaQuery.of(context).size.height * .15)),
-                Center(
-                    child: Text("Error loading the group.",
-                        style: TextStyle(fontSize: 30))),
+                Center(child: Text(errorMsg, style: TextStyle(fontSize: 30))),
               ],
             ),
           ),

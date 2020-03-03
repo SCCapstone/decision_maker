@@ -4,11 +4,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/imports/response_item.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
-import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/models/group.dart';
 import 'api_manager.dart';
 import 'globals.dart';
@@ -29,12 +28,23 @@ class GroupsManager {
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 
-  static Future<List<Group>> getGroups(BuildContext context,
+  static final String getGroupsAction = "getGroups";
+  static final String deleteGroupAction = "deleteGroup";
+  static final String createGroupAction = "createNewGroup";
+  static final String editGroupAction = "editGroup";
+  static final String newEventAction = "newEvent";
+  static final String leaveGroupAction = "leaveGroup";
+  static final String optInAction = "optUserInOut";
+  static final String voteAction = "voteForChoice";
+
+  static Future<ResultStatus<List<Group>>> getGroups(BuildContext context,
       {List<String> groupIds}) async {
+    ResultStatus<List<Group>> retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "getGroups";
+    jsonRequestBody[RequestFields.ACTION] = getGroupsAction;
     if (groupIds != null) {
-      jsonRequestBody["payload"]
+      jsonRequestBody[RequestFields.PAYLOAD]
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
 
@@ -48,105 +58,28 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          return responseJson.map((m) => new Group.fromJson(m)).toList();
+          retVal.success = true;
+          retVal.data = responseJson.map((m) => new Group.fromJson(m)).toList();
         } else {
-          //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
+          retVal.errorMessage = "Failed to load groups";
         }
       } catch (e) {
-        //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
-      }
-
-      return List<Group>(); // return empty list
-    } else {
-      //TODO add logging (https://github.com/SCCapstone/decision_maker/issues/79)
-      throw Exception("Failed to load groups from the database.");
-    }
-  }
-
-  static Future<bool> deleteGroup(String groupId, BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "deleteGroup";
-    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
-
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
-        } else {
-          showPopupMessage("Error deleting the group (1).", context);
-        }
-
-        return responseItem.success;
-      } catch (e) {
-        showPopupMessage("Error deleting the group (2).", context);
+        retVal.errorMessage = "Failed to load groups $e";
       }
     } else {
-      showPopupMessage("Unable to delete group.", context);
-    }
-
-    return false;
-  }
-
-  static Future<bool> createNewGroup(
-      Group group, File iconFile, BuildContext context) async {
-    bool retVal = false;
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "createNewGroup";
-    jsonRequestBody["payload"] = group.asMap();
-
-    jsonRequestBody["payload"].remove(ICON);
-    if (iconFile != null) {
-      jsonRequestBody["payload"]
-          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
-    }
-
-    //update this to just be the list of usernames
-    //since that is all we need to pass to the backend
-    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
-
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          retVal = true;
-        } else {
-          showPopupMessage("Error creating group (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error creating group (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to create group.", context);
+      retVal.errorMessage =
+          "Network error. Failed to load groups from the database. Check internet connection.";
     }
     return retVal;
   }
 
-  static void editGroup(
-      Group group, File iconFile, BuildContext context) async {
+  static Future<ResultStatus> deleteGroup(
+      String groupId, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "editGroup";
-    jsonRequestBody["payload"] = group.asMap();
-
-    jsonRequestBody["payload"].remove(ICON);
-    if (iconFile != null) {
-      jsonRequestBody["payload"]
-          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
-    }
-
-    //update this to just be the list of usernames
-    //since that is all we need to pass to the backend
-    jsonRequestBody["payload"][MEMBERS] = group.members.keys.toList();
+    jsonRequestBody[RequestFields.ACTION] = deleteGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     String response =
         await makeApiRequest(apiEndpoint, jsonRequestBody, context);
@@ -156,24 +89,109 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        if (!responseItem.success) {
-          showPopupMessage("Error saving group data (1).", context);
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error deleting the group (1).";
         }
       } catch (e) {
-        showPopupMessage("Error saving group data (2).", context);
+        retVal.errorMessage = "Error deleting the group (2).";
       }
     } else {
-      showPopupMessage("Unable to save group.", context);
+      retVal.errorMessage =
+          "Network error. Failed to delete group. Check internet connection.";
     }
+
+    return retVal;
   }
 
-  static Future<bool> newEvent(
+  static Future<ResultStatus> createNewGroup(
+      Group group, File iconFile, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = createGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD] = group.asMap();
+
+    jsonRequestBody[RequestFields.PAYLOAD].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody[RequestFields.PAYLOAD]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
+    jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
+        group.members.keys.toList();
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error creating group (1).";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Error creating group (2).";
+      }
+    } else {
+      retVal.errorMessage =
+          "Network error. Failed to create group. Check internet connection.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus> editGroup(
+      Group group, File iconFile, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = editGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD] = group.asMap();
+
+    jsonRequestBody[RequestFields.PAYLOAD].remove(ICON);
+    if (iconFile != null) {
+      jsonRequestBody[RequestFields.PAYLOAD]
+          .putIfAbsent(ICON, () => iconFile.readAsBytesSync());
+    }
+
+    jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
+        group.members.keys.toList();
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+        if (responseItem.success) {
+          // TODO return the group from the backend in the resultStatus
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error saving group data (1).";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Error saving group data (2).";
+      }
+    } else {
+      retVal.errorMessage =
+          "Network error. Failed to edit group. Check internet connection.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus> newEvent(
       String groupId, Event event, BuildContext context) async {
-    bool retVal = false;
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "newEvent";
-    jsonRequestBody["payload"] = event.asMap();
-    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.ACTION] = newEventAction;
+    jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     String response =
         await makeApiRequest(apiEndpoint, jsonRequestBody, context);
@@ -183,26 +201,31 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
-          retVal = true;
+          // TODO get the group from the response and put it in the result status
+          retVal.success = true;
         } else {
-          showPopupMessage("Error creating event (1).", context);
+          retVal.errorMessage = "Error creating event (1).";
         }
       } catch (e) {
-        showPopupMessage("Error creating event (2).", context);
+        retVal.errorMessage = "Error creating event (2).";
       }
     } else {
-      showPopupMessage("Unable to create event.", context);
+      retVal.errorMessage =
+          "Network error. Failed to create event. Check internet connection.";
     }
     return retVal;
   }
 
-  static Future<bool> leaveGroup(String groupId, BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    bool retVal = false;
-    jsonRequestBody["action"] = "leaveGroup";
-    jsonRequestBody["payload"].putIfAbsent(GROUP_ID, () => groupId);
+  static Future<ResultStatus> leaveGroup(
+      String groupId, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = leaveGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
 
     if (response != "") {
       try {
@@ -210,17 +233,94 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          retVal = true;
+          retVal.success = true;
         } else {
-          showPopupMessage("Error leaving the group (1).", context);
+          retVal.errorMessage = "Error leaving the group (1).";
         }
       } catch (e) {
-        showPopupMessage("Error leaving the group (2).", context);
+        retVal.errorMessage = "Error leaving the group (2).";
       }
     } else {
-      showPopupMessage("Unable to leave the group.", context);
+      retVal.errorMessage =
+          "Network error. Failed to leave group. Check internet connection.";
     }
 
+    return retVal;
+  }
+
+  static Future<ResultStatus> optInOutOfEvent(String groupId, String eventId,
+      bool participating, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = optInAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error RSVPing (1).";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Error RSVPing (2).";
+      }
+    } else {
+      retVal.errorMessage =
+          "Network error. Failed to RSVP. Check internet connection.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus> voteForChoice(String groupId, String eventId,
+      String choiceId, int voteVal, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = voteAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.CHOICE_ID, () => choiceId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
+
+    String response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
+
+    if (response != "") {
+      try {
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error voting yes/no (1).";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Error voting yes/no (2).";
+      }
+    } else {
+      retVal.errorMessage =
+          "Network error. Failed to cast vote. Check internet connection.";
+    }
     return retVal;
   }
 
@@ -237,71 +337,6 @@ class GroupsManager {
     LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
         key: (k) => k, value: (k) => events[k]);
     return sortedMap.cast();
-  }
-
-  static void optInOutOfEvent(String groupId, String eventId,
-      bool participating, BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "optUserInOut";
-    jsonRequestBody["payload"]
-        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
-    //TODO get display name globally and maybe allow for it to be editable somewhere (https://github.com/SCCapstone/decision_maker/issues/148)
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
-
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (!responseItem.success) {
-          showPopupMessage("Error opting in/out (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error opting in/out (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to opt in/out.", context);
-    }
-  }
-
-  static void voteForChoice(String groupId, String eventId, String choiceId,
-      int voteVal, BuildContext context) async {
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody["action"] = "voteForChoice";
-    jsonRequestBody["payload"]
-        .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.CHOICE_ID, () => choiceId);
-    jsonRequestBody["payload"]
-        .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
-
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> body = jsonDecode(response);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (!responseItem.success) {
-          showPopupMessage("Error voting yes/no (1).", context);
-        }
-      } catch (e) {
-        showPopupMessage("Error voting yes/no (2).", context);
-      }
-    } else {
-      showPopupMessage("Unable to vote yes/no.", context);
-    }
   }
 
   static void sortByDate(List<Group> groups) {
