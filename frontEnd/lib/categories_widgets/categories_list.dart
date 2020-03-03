@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'categories_list_item.dart';
 
 class CategoryList extends StatefulWidget {
@@ -43,12 +45,21 @@ class _CategoryListState extends State<CategoryList> {
     }
   }
 
-  void removeItem(int index) {
+  void removeItem(int index) async {
     // removes an item from the local list of categories used in the CategoryList state
-    setState(() {
-      Category category = widget.categories[index];
-      CategoriesManager.deleteCategory(category.categoryId, context);
-      widget.categories.remove(widget.categories[index]);
-    });
+    Category category = widget.categories[index];
+
+    showLoadingDialog(context, "Deleting category...", true);
+    ResultStatus status =
+        await CategoriesManager.deleteCategory(category.categoryId, context);
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+
+    if (status.success) {
+      setState(() {
+        widget.categories.remove(widget.categories[index]);
+      });
+    } else {
+      showErrorMessage("Error", status.errorMessage, context);
+    }
   }
 }

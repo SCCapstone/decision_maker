@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 
 import 'category_row.dart';
@@ -18,11 +19,11 @@ class CategoryPopup extends StatefulWidget {
 
 class _CategoryPopupState extends State<CategoryPopup> {
   List<Widget> categoryRows = new List<Widget>();
-  Future<List<Category>> categoriesTotalFuture;
+  Future<ResultStatus> resultFuture;
 
   @override
   void initState() {
-    categoriesTotalFuture = CategoriesManager.getAllCategoriesList(context);
+    resultFuture = CategoriesManager.getAllCategoriesList(context);
     super.initState();
   }
 
@@ -49,11 +50,11 @@ class _CategoryPopupState extends State<CategoryPopup> {
             children: <Widget>[
               Scrollbar(
                 child: FutureBuilder(
-                    future: categoriesTotalFuture,
+                    future: resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        List<Category> categories = snapshot.data;
-                        categories = snapshot.data;
+                        ResultStatus<List<Category>> result = snapshot.data;
+                        List<Category> categories = result.data;
                         for (Category category in categories) {
                           if (category.owner == Globals.username) {
                             this.categoryRows.add(CategoryRow(

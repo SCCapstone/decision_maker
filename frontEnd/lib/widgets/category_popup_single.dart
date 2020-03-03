@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 
 import 'category_row.dart';
@@ -17,11 +18,11 @@ class CategoryPopupSingle extends StatefulWidget {
 
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   List<Widget> categoryRows = new List<Widget>();
-  Future<List<Category>> categoriesTotalFuture;
+  Future<ResultStatus<List<Category>>> resultFuture;
 
   @override
   void initState() {
-    categoriesTotalFuture = CategoriesManager.getAllCategoriesFromGroup(
+    resultFuture = CategoriesManager.getAllCategoriesFromGroup(
         Globals.currentGroup.groupId, context);
     super.initState();
   }
@@ -49,35 +50,40 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
             children: <Widget>[
               Scrollbar(
                 child: FutureBuilder(
-                    future: categoriesTotalFuture,
+                    future: resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        List<Category> categories = snapshot.data;
-                        categories = snapshot.data;
-                        for (Category category in categories) {
-                          this.categoryRows.add(CategoryRow(category,
-                              widget.selectedCategory.contains(category),
-                              onSelect: () => selectCategory(category)));
-                        }
-                        if (this.categoryRows.length > 0) {
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: this.categoryRows.length,
-                              itemBuilder: (context, index) {
-                                return this.categoryRows[index];
-                              },
-                            ),
-                          );
+                        ResultStatus<List<Category>> result = snapshot.data;
+                        if (result.success) {
+                          List<Category> categories = result.data;
+                          for (Category category in categories) {
+                            this.categoryRows.add(CategoryRow(category,
+                                widget.selectedCategory.contains(category),
+                                onSelect: () => selectCategory(category)));
+                          }
+                          if (this.categoryRows.length > 0) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: this.categoryRows.length,
+                                itemBuilder: (context, index) {
+                                  return this.categoryRows[index];
+                                },
+                              ),
+                            );
+                          } else {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: Text(
+                                  "No categories found in this group. Navigate to the group settings page to add some."),
+                            );
+                          }
                         } else {
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: Text(
-                                "No categories found in this group. Navigate to the group settings page to add some."),
-                          );
+                          return Text(result.errorMessage);
                         }
                       } else if (snapshot.hasError) {
+                        // this shouldn't ever be reached, but put it here to be safe
                         return Text("Error: ${snapshot.error}");
                       } else {
                         return Center(child: CircularProgressIndicator());

@@ -100,21 +100,18 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   void getCategories() async {
     ResultStatus<List<Category>> status =
-        await CategoriesManager.getAllCategoriesListNew(context);
+        await CategoriesManager.getAllCategoriesList(context);
     if (status.success) {
       errorLoading = false;
-      loading = false;
       categories = status.data;
     } else {
-      errorWidget = loadingError(status.errorMessage);
-      if (!status.networkError) {
-        // no need to show popup as they will be routed to network loss page
-        // could also just get rid of that network page and show the error in the popup
-        showErrorMessage("Error", status.errorMessage, context);
-      }
       errorLoading = true;
+      errorWidget = loadingError(status.errorMessage);
+      showErrorMessage("Error", status.errorMessage, context);
     }
-    setState(() {});
+    setState(() {
+      loading = false;
+    });
   }
 
   Widget categoriesLoading() {
@@ -124,7 +121,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             title: Text(
               "Categories",
               style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
             )),
         body: Center(child: CircularProgressIndicator()));
   }
@@ -136,7 +133,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             title: Text(
               "Categories",
               style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
             )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,

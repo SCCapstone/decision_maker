@@ -20,29 +20,35 @@ class CategoriesManager {
   static final String GROUPS = "Groups";
   static final String NEXT_CHOICE_NO = "NextChoiceNo";
   static final String OWNER = "Owner";
+
   static final String editAction = "editCategory";
   static final String createAction = "newCategory";
   static final String getAction = "getCategories";
+  static final String deleteAction = "deleteCategory";
 
-  static void addOrEditCategory(
+  static Future<ResultStatus> addOrEditCategory(
       String categoryName,
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
       Category category,
       BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
 
     if (category != null) {
       jsonRequestBody[RequestFields.ACTION] = editAction;
-      jsonRequestBody["payload"]
+      jsonRequestBody[RequestFields.PAYLOAD]
           .putIfAbsent(CATEGORY_ID, () => category.categoryId);
     } else {
       jsonRequestBody[RequestFields.ACTION] = createAction;
     }
 
-    jsonRequestBody["payload"].putIfAbsent(CATEGORY_NAME, () => categoryName);
-    jsonRequestBody["payload"].putIfAbsent(CHOICES, () => choiceLabels);
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(CATEGORY_NAME, () => categoryName);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(CHOICES, () => choiceLabels);
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
     String response =
@@ -54,50 +60,25 @@ class CategoriesManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          if (category != null) {
-            showPopupMessage(responseItem.resultMessage, context);
-          } else {
-            showPopupMessage(responseItem.resultMessage, context,
-                callback: (_) => Navigator.pop(context));
-          }
+          retVal.success = true;
+          // TODO get the category from the backend and put it in the resultStatus
         } else {
-          showPopupMessage("Error saving the category (1).", context);
+          retVal.errorMessage = "Error saving the category (1).";
         }
       } catch (e) {
-        showPopupMessage("Error saving the category (2).", context);
+        retVal.errorMessage = "Error saving the category (2).";
       }
     } else {
-      showPopupMessage("Unable to edit/create category.", context);
+      retVal.errorMessage =
+          "Network error. Failed to update category. Check internet connection.";
     }
+    return retVal;
   }
 
-  static Future<List<Category>> getAllCategoriesList(
+  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
       BuildContext context) async {
-    ResultStatus retVal = new ResultStatus(success: false);
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = getAction;
+    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
 
-    String response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody, context);
-
-    if (response != "") {
-      try {
-        Map<String, dynamic> fullResponseJson = jsonDecode(response);
-        List<dynamic> responseJson =
-            json.decode(fullResponseJson[RequestFields.RESULT_MESSAGE]);
-        return responseJson.map((m) => new Category.fromJson(m)).toList();
-      } catch (e) {
-        return new List<Category>(); // returns empty list
-      }
-    } else {
-      throw Exception("Failed to load categories from the database.");
-    }
-  }
-
-  static Future<ResultStatus> getAllCategoriesListNew(
-      BuildContext context) async {
-    ResultStatus<List<Category>> retVal =
-        new ResultStatus(success: false, networkError: false);
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
 
@@ -121,17 +102,19 @@ class CategoriesManager {
         retVal.errorMessage = "Error when reading request";
       }
     } else {
-      retVal.errorMessage = "Failed to load categories from the database.";
-      retVal.networkError = true;
+      retVal.errorMessage =
+          "Network error. Failed to load categories from the database. Check internet connection.";
     }
     return retVal;
   }
 
-  static Future<List<Category>> getAllCategoriesFromGroup(
+  static Future<ResultStatus<List<Category>>> getAllCategoriesFromGroup(
       String groupId, BuildContext context) async {
+    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
-    jsonRequestBody["payload"]
+    jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
     String response =
@@ -139,22 +122,34 @@ class CategoriesManager {
 
     if (response != "") {
       try {
-        Map<String, dynamic> fullResponseJson = jsonDecode(response);
-        List<dynamic> responseJson =
-            json.decode(fullResponseJson['resultMessage']);
+        Map<String, dynamic> body = jsonDecode(response);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
 
-        return responseJson.map((m) => new Category.fromJson(m)).toList();
+        if (responseItem.success) {
+          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
+          retVal.success = true;
+          retVal.data =
+              responseJson.map((m) => new Category.fromJson(m)).toList();
+        } else {
+          // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
+          retVal.errorMessage = "Error, bad request";
+        }
       } catch (e) {
-        return new List<Category>(); // returns empty list
+        retVal.errorMessage = "Error reading request";
       }
     } else {
-      throw Exception("Failed to load categories from the database.");
+      retVal.errorMessage =
+          "Network error. Failed to load categories from the database. Check internet connection.";
     }
+    return retVal;
   }
 
-  static void deleteCategory(String categoryId, BuildContext context) async {
+  static Future<ResultStatus> deleteCategory(
+      String categoryId, BuildContext context) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "deleteCategory";
+    jsonRequestBody[RequestFields.ACTION] = deleteAction;
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
@@ -167,15 +162,17 @@ class CategoriesManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          showPopupMessage(responseItem.resultMessage, context);
+          retVal.success = true;
         } else {
-          showPopupMessage("Error deleting the category (1).", context);
+          retVal.errorMessage = "Error deleting the category (1).";
         }
       } catch (e) {
-        showPopupMessage("Error deleting the category (2).", context);
+        retVal.errorMessage = "Error deleting the category (2).";
       }
     } else {
-      showPopupMessage("Unable to delete category.", context);
+      retVal.errorMessage =
+          "Network error. Failed to delete category. Check internet connection.";
     }
+    return retVal;
   }
 }

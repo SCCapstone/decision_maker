@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
@@ -184,7 +185,7 @@ class _CreateCategoryState extends State<CreateCategory> {
     );
   }
 
-  void saveCategory() {
+  void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.length == 0) {
       showErrorMessage("Error!", "Must have at least one choice!", context);
@@ -207,8 +208,20 @@ class _CreateCategoryState extends State<CreateCategory> {
           this.autoValidate = true;
         });
       } else {
-        CategoriesManager.addOrEditCategory(this.categoryNameController.text,
-            labelsToSave, ratesToSave, null, context);
+        showLoadingDialog(context, "Creating category...", true);
+        ResultStatus status = await CategoriesManager.addOrEditCategory(
+            this.categoryNameController.text,
+            labelsToSave,
+            ratesToSave,
+            null,
+            context);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+        if (status.success) {
+          // TODO grab the category returned and update global variable
+          Navigator.of(context).pop();
+        } else {
+          showErrorMessage("Error", status.errorMessage, context);
+        }
       }
     } else {
       // error, don't allow user to save with empty choices/category name

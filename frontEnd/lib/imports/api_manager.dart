@@ -36,15 +36,16 @@ Future<String> makeApiRequest(String apiEndpoint,
               firstAttempt: false);
         }
       }
-    } on SocketException catch (_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => InternetLoss(
-                  initialCheck: false,
-                )),
-      );
-    }
+    } catch (e) {}
+//    on SocketException catch (_) {
+//      Navigator.push(
+//        context,
+//        MaterialPageRoute(
+//            builder: (context) => InternetLoss(
+//                  initialCheck: false,
+//                )),
+//      );
+//    }
   } else {
     //clear navigation stack and head to the login page?
   }

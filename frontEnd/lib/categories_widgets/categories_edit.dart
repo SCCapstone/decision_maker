@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -248,7 +249,7 @@ class _EditCategoryState extends State<EditCategory> {
     );
   }
 
-  void saveCategory() {
+  void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.length == 0) {
       showErrorMessage("Error!", "Must have at least one choice!", context);
@@ -271,8 +272,17 @@ class _EditCategoryState extends State<EditCategory> {
           this.autoValidate = true;
         });
       } else if (this.isCategoryOwner) {
-        CategoriesManager.addOrEditCategory(this.categoryNameController.text,
-            labelsToSave, ratesToSave, widget.category, context);
+        showLoadingDialog(context, "Saving changes...", true);
+        ResultStatus status = await CategoriesManager.addOrEditCategory(
+            this.categoryNameController.text,
+            labelsToSave,
+            ratesToSave,
+            widget.category,
+            context);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+        if (!status.success) {
+          showErrorMessage("Error", status.errorMessage, context);
+        }
       } else {
         UsersManager.updateUserChoiceRatings(
             widget.category.categoryId, ratesToSave, context);

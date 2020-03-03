@@ -24,10 +24,10 @@ class _CreateEventState extends State<CreateEvent> {
   String votingDuration;
   String rsvpDuration;
   final TextEditingController eventNameController = TextEditingController();
-  final TextEditingController votingDurationController = TextEditingController();
+  final TextEditingController votingDurationController =
+      TextEditingController();
   final TextEditingController rsvpDurationController = TextEditingController();
 
-  Future<List<Category>> categoriesInGroup;
   bool autoValidate = false;
   final formKey = GlobalKey<FormState>();
   final List<Category> categorySelected = new List<Category>();
@@ -49,8 +49,6 @@ class _CreateEventState extends State<CreateEvent> {
 
   @override
   void initState() {
-    categoriesInGroup = CategoriesManager.getAllCategoriesFromGroup(
-        Globals.currentGroup.groupId, context);
     eventStartDate = convertDateToString(currentDate);
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
     if ((currentTime.hour + 1) < 10) {
@@ -253,16 +251,15 @@ class _CreateEventState extends State<CreateEvent> {
       form.save();
 
       Event event = new Event(
-        eventName: this.eventName,
-        categoryId: this.categorySelected.first.categoryId,
-        categoryName: this.categorySelected.first.categoryName,
-        createdDateTime:
-            DateTime.parse(currentDate.toString().substring(0, 19)),
-        eventStartDateTime: DateTime.parse(
-            this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-        votingDuration: int.parse(this.votingDuration),
-        rsvpDuration: int.parse(this.rsvpDuration)
-      );
+          eventName: this.eventName,
+          categoryId: this.categorySelected.first.categoryId,
+          categoryName: this.categorySelected.first.categoryName,
+          createdDateTime:
+              DateTime.parse(currentDate.toString().substring(0, 19)),
+          eventStartDateTime: DateTime.parse(
+              this.eventStartDate + ' ' + this.eventStartTime + ':00'),
+          votingDuration: int.parse(this.votingDuration),
+          rsvpDuration: int.parse(this.rsvpDuration));
 
       showLoadingDialog(
           context, "Creating event...", true); // show loading dialog
