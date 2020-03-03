@@ -246,14 +246,14 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Future<Null> refreshList() async {
-    ResultStatus<User> result = await UsersManager.getUserData();
-    if (result.success) {
-      Globals.user = result.data;
+    ResultStatus<User> resultStatus = await UsersManager.getUserData();
+    if (resultStatus.success) {
+      Globals.user = resultStatus.data;
       setState(() {
         loadGroups();
       });
     } else {
-      showErrorMessage("Error", result.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 

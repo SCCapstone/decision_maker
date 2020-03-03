@@ -319,7 +319,7 @@ class _UserSettingsState extends State<UserSettings> {
       }
 
       showLoadingDialog(context, "Saving settings...", true);
-      ResultStatus result = await UsersManager.updateUserSettings(
+      ResultStatus resultStatus = await UsersManager.updateUserSettings(
           _displayName,
           boolToInt(_darkTheme),
           boolToInt(_muted),
@@ -328,7 +328,7 @@ class _UserSettingsState extends State<UserSettings> {
           _icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
-      if (result.success) {
+      if (resultStatus.success) {
         setState(() {
           hideKeyboard(context);
           // reset everything and reflect changes made
@@ -341,7 +341,7 @@ class _UserSettingsState extends State<UserSettings> {
         });
       } else {
         hideKeyboard(context);
-        showErrorMessage("Error", result.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, context);
       }
     } else {
       setState(() => autoValidate = true);

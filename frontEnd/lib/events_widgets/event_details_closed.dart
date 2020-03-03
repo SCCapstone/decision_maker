@@ -157,13 +157,13 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    ResultStatus<List<Group>> result =
+    ResultStatus<List<Group>> resultStatus =
         await GroupsManager.getGroups(groupIds: groupId);
-    if (result.success) {
-      Globals.currentGroup = result.data.first;
+    if (resultStatus.success) {
+      Globals.currentGroup = resultStatus.data.first;
       getEvent();
     } else {
-      showErrorMessage("Error", result.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
     setState(() {});
   }

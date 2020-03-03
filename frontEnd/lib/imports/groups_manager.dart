@@ -46,11 +46,12 @@ class GroupsManager {
           .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -63,9 +64,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Failed to load groups $e";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to load groups from the database. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to load groups from the database.";
     }
     return retVal;
   }
@@ -77,11 +80,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = deleteGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -92,9 +96,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error deleting the group (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to delete group. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to delete group.";
     }
 
     return retVal;
@@ -115,11 +121,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -130,9 +137,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error creating group (2).";
       }
-    } else {
+    } else if (retVal.networkError) {
       retVal.errorMessage =
           "Network error. Failed to create group. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to create group.";
     }
     return retVal;
   }
@@ -153,11 +162,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
           // TODO return the group from the backend in the resultStatus
@@ -168,9 +178,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error saving group data (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to edit group. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to edit group.";
     }
     return retVal;
   }
@@ -183,11 +195,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
           // TODO get the group from the response and put it in the result status
@@ -198,9 +211,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error creating event (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to create event. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to create event.";
     }
     return retVal;
   }
@@ -212,11 +227,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = leaveGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -227,9 +243,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error leaving the group (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to leave group. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to leave group.";
     }
 
     return retVal;
@@ -250,11 +268,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -265,9 +284,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error RSVPing (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to RSVP. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to RSVP.";
     }
     return retVal;
   }
@@ -287,11 +308,12 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -302,9 +324,11 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Error voting yes/no (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to cast vote. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to cast vote.";
     }
     return retVal;
   }

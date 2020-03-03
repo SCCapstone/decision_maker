@@ -53,9 +53,9 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                     future: resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        ResultStatus<List<Category>> result = snapshot.data;
-                        if (result.success) {
-                          List<Category> categories = result.data;
+                        ResultStatus<List<Category>> resultStatus = snapshot.data;
+                        if (resultStatus.success) {
+                          List<Category> categories = resultStatus.data;
                           for (Category category in categories) {
                             this.categoryRows.add(CategoryRow(category,
                                 widget.selectedCategory.contains(category),
@@ -80,7 +80,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                             );
                           }
                         } else {
-                          return Text(result.errorMessage);
+                          return Text(resultStatus.errorMessage);
                         }
                       } else if (snapshot.hasError) {
                         // this shouldn't ever be reached, but put it here to be safe

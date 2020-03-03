@@ -258,10 +258,10 @@ class _MembersPopupState extends State<MembersPopup> {
   }
 
   void addNewMember() async {
-    ResultStatus<User> result =
+    ResultStatus<User> resultStatus =
         await UsersManager.getUserData(username: userController.text.trim());
-    if (result.success) {
-      User newMember = result.data;
+    if (resultStatus.success) {
+      User newMember = resultStatus.data;
       widget.displayedMembers.add(new Member(
           username: newMember.username,
           displayName: newMember.displayName,

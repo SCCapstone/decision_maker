@@ -179,10 +179,10 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
 
   void tryRsvp(bool going) async {
     // not sure if we want a loading dialog for this as that would be annoying for the user. Only show error for now
-    ResultStatus result = await GroupsManager.optInOutOfEvent(
+    ResultStatus resultStatus = await GroupsManager.optInOutOfEvent(
         widget.groupId, widget.eventId, going);
-    if (!result.success) {
-      showErrorMessage("Error", result.errorMessage, context);
+    if (!resultStatus.success) {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 
@@ -205,17 +205,17 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    ResultStatus<List<Group>> result =
+    ResultStatus<List<Group>> resultStatus =
         await GroupsManager.getGroups(groupIds: groupId);
-    if (result.success) {
-      Globals.currentGroup = result.data.first;
+    if (resultStatus.success) {
+      Globals.currentGroup = resultStatus.data.first;
       getEvent();
       if (EventsManager.getEventMode(event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
         Navigator.of(context).pop();
       }
     } else {
-      showErrorMessage("Error", result.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
     setState(() {});
   }

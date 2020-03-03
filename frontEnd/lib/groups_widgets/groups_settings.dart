@@ -398,11 +398,11 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void tryLeave() async {
     showLoadingDialog(context, "Leaving group...", true);
-    ResultStatus result =
+    ResultStatus resultStatus =
         await GroupsManager.leaveGroup(Globals.currentGroup.groupId);
     Navigator.of(context, rootNavigator: true).pop('dialog');
 
-    if (result.success) {
+    if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
       Navigator.pushAndRemoveUntil(
           context,
@@ -410,7 +410,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               builder: (BuildContext context) => GroupsHome()),
           (Route<dynamic> route) => false);
     } else {
-      showErrorMessage("Error", result.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 
@@ -479,10 +479,10 @@ class _GroupSettingsState extends State<GroupSettings> {
           nextEventId: Globals.currentGroup.nextEventId);
 
       showLoadingDialog(context, "Saving...", true);
-      ResultStatus result = await GroupsManager.editGroup(group, icon);
+      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
-      if (result.success) {
+      if (resultStatus.success) {
         Globals.currentGroup = group; // TODO grab the group from the result
         setState(() {
           // reset everything and reflect changes made
@@ -499,7 +499,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           hideKeyboard(context);
         });
       } else {
-        showErrorMessage("Error", result.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, context);
       }
     } else {
       setState(() => autoValidate = true);

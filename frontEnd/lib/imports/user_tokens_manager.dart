@@ -31,11 +31,11 @@ final String idTokenKey = "id";
 bool gotTokens = false;
 
 Future<bool> hasValidTokensSet(BuildContext context) async {
-  ResultStatus<User> result = await UsersManager.getUserData();
+  ResultStatus<User> resultStatus = await UsersManager.getUserData();
 
-  if (result.success) {
-    Globals.user = result.data;
-    Globals.username = result.data.username; //Store the username
+  if (resultStatus.success) {
+    Globals.user = resultStatus.data;
+    Globals.username = resultStatus.data.username; //Store the username
   } else {
     return false;
   }

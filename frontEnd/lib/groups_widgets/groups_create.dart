@@ -223,14 +223,14 @@ class _CreateGroupState extends State<CreateGroup> {
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
-      ResultStatus result = await GroupsManager.createNewGroup(group, icon);
+      ResultStatus resultStatus = await GroupsManager.createNewGroup(group, icon);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
-      if (result.success) {
+      if (resultStatus.success) {
         Navigator.of(context).pop();
       } else {
-        showErrorMessage("Error", result.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, context);
       }
     } else {
       setState(() => autoValidate = true);

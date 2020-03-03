@@ -48,11 +48,12 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -64,9 +65,11 @@ class CategoriesManager {
       } catch (e) {
         retVal.errorMessage = "Error saving the category (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to update category. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to update category.";
     }
     return retVal;
   }
@@ -77,11 +80,12 @@ class CategoriesManager {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -95,9 +99,11 @@ class CategoriesManager {
       } catch (e) {
         retVal.errorMessage = "Error when reading request";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to load categories from the database. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to load categories from the database.";
     }
     return retVal;
   }
@@ -111,11 +117,12 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -130,9 +137,11 @@ class CategoriesManager {
       } catch (e) {
         retVal.errorMessage = "Error reading request";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to load categories from the database. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to load categories from the database.";
     }
     return retVal;
   }
@@ -145,11 +154,12 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -160,9 +170,11 @@ class CategoriesManager {
       } catch (e) {
         retVal.errorMessage = "Error deleting the category (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Failed to delete category. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to delete category.";
     }
     return retVal;
   }

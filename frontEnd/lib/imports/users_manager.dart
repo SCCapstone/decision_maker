@@ -41,12 +41,13 @@ class UsersManager {
           .putIfAbsent(USERNAME, () => username);
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
     User ret;
 
-    if (response != "") {
+    if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response);
+        Map<String, dynamic> body = jsonDecode(response.data);
 
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
@@ -61,9 +62,11 @@ class UsersManager {
       } catch (e) {
         retVal.errorMessage = "Error getting the user (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Unable to get user data. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to get user data.";
     }
     return retVal;
   }
@@ -95,10 +98,11 @@ class UsersManager {
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
-      Map<String, dynamic> body = jsonDecode(response);
+    if (response.success) {
+      Map<String, dynamic> body = jsonDecode(response.data);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -112,9 +116,11 @@ class UsersManager {
       } catch (e) {
         retVal.errorMessage = "Error updating user settings (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Unable to update user settings. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to update user settings.";
     }
     return retVal;
   }
@@ -130,10 +136,11 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
-      Map<String, dynamic> body = jsonDecode(response);
+    if (response.success) {
+      Map<String, dynamic> body = jsonDecode(response.data);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -146,9 +153,11 @@ class UsersManager {
       } catch (e) {
         retVal.errorMessage = "Error updating user ratings (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Unable to update user rating. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to update user rating.";
     }
     return retVal;
   }
@@ -163,10 +172,11 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
 
-    String response = await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    if (response != "") {
-      Map<String, dynamic> body = jsonDecode(response);
+    if (response.success) {
+      Map<String, dynamic> body = jsonDecode(response.data);
 
       try {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
@@ -180,9 +190,11 @@ class UsersManager {
       } catch (e) {
         retVal.errorMessage = "Error getting user ratings (2).";
       }
-    } else {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Unable to get user ratings. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to get user ratings.";
     }
     return retVal;
   }

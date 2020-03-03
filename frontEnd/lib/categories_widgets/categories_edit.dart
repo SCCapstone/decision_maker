@@ -161,11 +161,11 @@ class _EditCategoryState extends State<EditCategory> {
                               String errorMsg;
                               if (snapshot.hasData) {
                                 if (this.initialPageLoad) {
-                                  ResultStatus<Map<String, dynamic>> result =
+                                  ResultStatus<Map<String, dynamic>> resultStatus =
                                       snapshot.data;
-                                  if (result.success) {
+                                  if (resultStatus.success) {
                                     Map<String, dynamic> userRatings =
-                                        result.data;
+                                        resultStatus.data;
                                     //if the mapping exists in the user's table, override the default
                                     for (String choiceId
                                         in this.labelControllers.keys) {
@@ -179,7 +179,7 @@ class _EditCategoryState extends State<EditCategory> {
                                     this.initialPageLoad = false;
                                   } else {
                                     error = true;
-                                    errorMsg = result.errorMessage;
+                                    errorMsg = resultStatus.errorMessage;
                                   }
                                 }
                                 this.doneLoading = true;

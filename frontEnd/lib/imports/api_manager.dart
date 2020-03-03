@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
 import 'package:http/http.dart' as http;
@@ -11,10 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final String idTokenKey = "id";
 
-Future<String> makeApiRequest(
+Future<ResultStatus<String>> makeApiRequest(
     String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
-  String retVal = "";
+  ResultStatus<String> retVal = new ResultStatus(success: false);
+
   SharedPreferences tokens = await Globals.getTokens();
   if (tokens.containsKey(idTokenKey)) {
     Map<String, String> headers = {
@@ -27,7 +27,8 @@ Future<String> makeApiRequest(
           headers: headers,
           body: json.encode(requestContent));
       if (response.statusCode == 200) {
-        retVal = response.body;
+        retVal.success = true;
+        retVal.data = response.body;
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
@@ -35,11 +36,13 @@ Future<String> makeApiRequest(
               firstAttempt: false);
         }
       }
-    } catch (e) {}
+    } on SocketException catch (_) {
+      retVal.networkError = true;
+    }
   } else {
     //clear navigation stack and head to the login page?
   }
-  return retVal; // none of our apis should return this so this indicates error
+  return retVal;
 }
 
 Map<String, dynamic> getEmptyApiRequest() {
