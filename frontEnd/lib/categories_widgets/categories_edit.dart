@@ -187,18 +187,19 @@ class _EditCategoryState extends State<EditCategory> {
                                   return Center(
                                       child: Text(errorMsg,
                                           style: TextStyle(fontSize: 30)));
+                                } else {
+                                  return CustomScrollView(
+                                    controller: scrollController,
+                                    slivers: <Widget>[
+                                      SliverList(
+                                        delegate: SliverChildBuilderDelegate(
+                                            (context, index) =>
+                                                this.choiceRows[index],
+                                            childCount: this.choiceRows.length),
+                                      )
+                                    ],
+                                  );
                                 }
-                                return CustomScrollView(
-                                  controller: scrollController,
-                                  slivers: <Widget>[
-                                    SliverList(
-                                      delegate: SliverChildBuilderDelegate(
-                                          (context, index) =>
-                                              this.choiceRows[index],
-                                          childCount: this.choiceRows.length),
-                                    )
-                                  ],
-                                );
                               } else if (snapshot.hasError) {
                                 // this should never happen, but keep just in case
                                 return Text("Error: ${snapshot.error}");

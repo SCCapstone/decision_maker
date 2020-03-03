@@ -54,33 +54,38 @@ class _CategoryPopupState extends State<CategoryPopup> {
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
                         ResultStatus<List<Category>> result = snapshot.data;
-                        List<Category> categories = result.data;
-                        for (Category category in categories) {
-                          if (category.owner == Globals.username) {
-                            this.categoryRows.add(CategoryRow(
-                                category,
-                                widget.selectedCategories.keys
-                                    .contains(category.categoryId),
-                                onSelect: () => selectCategory(category)));
+                        if (result.success) {
+                          List<Category> categories = result.data;
+                          for (Category category in categories) {
+                            if (category.owner == Globals.username) {
+                              this.categoryRows.add(CategoryRow(
+                                  category,
+                                  widget.selectedCategories.keys
+                                      .contains(category.categoryId),
+                                  onSelect: () => selectCategory(category)));
+                            }
                           }
-                        }
-                        if (this.categoryRows.length > 0) {
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: categoryRows,
-                            ),
-                          );
+                          if (this.categoryRows.length > 0) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: categoryRows,
+                              ),
+                            );
+                          } else {
+                            // TODO add a button to let them make categories from here
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: Text(
+                                  "No categories found to add. Navigate to the categories page to create some."),
+                            );
+                          }
                         } else {
-                          // TODO add a button to let them make categories from here
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: Text(
-                                "No categories found to add. Navigate to the categories page to create some."),
-                          );
+                          return Text(result.errorMessage);
                         }
                       } else if (snapshot.hasError) {
+                        // this shouldn't ever be reached, but put it here to be safe
                         return Text("Error: ${snapshot.error}");
                       } else {
                         return Center(child: CircularProgressIndicator());
