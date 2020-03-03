@@ -100,10 +100,6 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   void tryVote(int voteVal) async {
     int previousVote = currentVote;
     // update changes locally so user doesn't have to fetch from DB to see new vote reflected
-    Event event = Event.fromJson(Globals.currentGroup.events[widget.eventId]);
-    event.votingNumbers[widget.choiceId].update(
-        Globals.username, (existing) => voteVal.toString(),
-        ifAbsent: () => voteVal.toString());
     widget.event.votingNumbers[widget.choiceId].update(
         Globals.username, (existing) => voteVal.toString(),
         ifAbsent: () => voteVal.toString());
@@ -120,11 +116,6 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
         // if error, put vote back to what it was
         currentVote = previousVote;
         // update changes locally so user doesn't have to fetch from DB to see new vote
-        Event event =
-            Event.fromJson(Globals.currentGroup.events[widget.eventId]);
-        event.votingNumbers[widget.choiceId].update(
-            Globals.username, (existing) => currentVote.toString(),
-            ifAbsent: () => currentVote.toString());
         widget.event.votingNumbers[widget.choiceId].update(
             Globals.username, (existing) => currentVote.toString(),
             ifAbsent: () => currentVote.toString());
