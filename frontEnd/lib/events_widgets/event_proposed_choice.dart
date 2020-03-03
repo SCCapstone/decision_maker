@@ -26,7 +26,7 @@ class EventProposedChoice extends StatefulWidget {
 }
 
 class _EventProposedChoiceState extends State<EventProposedChoice> {
-  int vote;
+  int currentVote;
   Map<String, dynamic> voteMap = new Map<String, dynamic>();
   static final int voteYes = 1;
   static final int voteNo = 0;
@@ -34,10 +34,10 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
 
   @override
   void initState() {
-    vote = voteEmpty;
+    currentVote = voteEmpty;
     voteMap = widget.event.votingNumbers[widget.choiceId];
     if (voteMap.containsKey(Globals.username)) {
-      vote = int.parse(voteMap[Globals.username]);
+      currentVote = int.parse(voteMap[Globals.username]);
     }
     super.initState();
   }
@@ -58,14 +58,14 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
               Container(
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (vote == voteNo)
+                    color: (currentVote == voteNo)
                         ? Colors.orangeAccent
                         : Theme.of(context).scaffoldBackgroundColor),
                 child: IconButton(
                   icon: Icon(Icons.thumb_down),
                   color: Colors.red,
                   onPressed: () {
-                    if (vote != voteNo) {
+                    if (currentVote != voteNo) {
                       // prevents wasteful API calls
                       tryVote(voteNo);
                       setState(() {
@@ -78,7 +78,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                         widget.event.votingNumbers[widget.choiceId].update(
                             Globals.username, (existing) => voteNo.toString(),
                             ifAbsent: () => voteNo.toString());
-                        vote = voteNo;
+                        currentVote = voteNo;
                       });
                     }
                   },
@@ -87,7 +87,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (vote == voteYes)
+                  color: (currentVote == voteYes)
                       ? Colors.greenAccent
                       : Theme.of(context).scaffoldBackgroundColor,
                 ),
@@ -95,7 +95,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   icon: Icon(Icons.thumb_up),
                   color: Colors.green,
                   onPressed: () {
-                    if (vote != voteYes) {
+                    if (currentVote != voteYes) {
                       // prevents wasteful API calls
                       tryVote(voteYes);
                       setState(() {
@@ -108,7 +108,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                         widget.event.votingNumbers[widget.choiceId].update(
                             Globals.username, (existing) => voteYes.toString(),
                             ifAbsent: () => voteYes.toString());
-                        vote = voteYes;
+                        currentVote = voteYes;
                       });
                     }
                   },
@@ -122,14 +122,23 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   }
 
   void tryVote(int voteVal) async {
-    int previousVote = vote;
+    int previousVote = currentVote;
     ResultStatus result = await GroupsManager.voteForChoice(
-        widget.groupId, widget.eventId, widget.choiceId, vote);
+        widget.groupId, widget.eventId, widget.choiceId, voteVal);
     if (!result.success) {
       showErrorMessage("Error", result.errorMessage, context);
       setState(() {
         // if error, put vote back to what it was
-        vote = previousVote;
+        currentVote = previousVote;
+        // update changes locally so user doesn't have to fetch from DB to see new vote
+        Event event =
+            Event.fromJson(Globals.currentGroup.events[widget.eventId]);
+        event.votingNumbers[widget.choiceId].update(
+            Globals.username, (existing) => currentVote.toString(),
+            ifAbsent: () => currentVote.toString());
+        widget.event.votingNumbers[widget.choiceId].update(
+            Globals.username, (existing) => currentVote.toString(),
+            ifAbsent: () => currentVote.toString());
       });
     }
   }
