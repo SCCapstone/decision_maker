@@ -39,6 +39,10 @@ class _CreateEventState extends State<CreateEvent> {
   // make the API request for making the event
   String eventStartDate;
   String eventStartTime;
+  DateTime votingStart;
+  DateTime votingEnd;
+
+  final int textFieldLength = 5;
 
   @override
   void dispose() {
@@ -63,6 +67,8 @@ class _CreateEventState extends State<CreateEvent> {
         Globals.currentGroup.defaultVotingDuration.toString();
     rsvpDurationController.text =
         Globals.currentGroup.defaultRsvpDuration.toString();
+    rsvpDuration = rsvpDurationController.text;
+    votingDuration = votingDurationController.text;
     super.initState();
   }
 
@@ -134,8 +140,14 @@ class _CreateEventState extends State<CreateEvent> {
                       controller: rsvpDurationController,
                       keyboardType: TextInputType.number,
                       validator: validRsvpDuration,
-                      onSaved: (String arg) {
-                        rsvpDuration = arg;
+                      maxLength: textFieldLength,
+                      onChanged: (String arg) {
+                        // if already at max length and you keep typing, setState won't get called again
+                        if (!(arg.length == textFieldLength && rsvpDuration.length == textFieldLength)) {
+                          setState(() {
+                            rsvpDuration = arg;
+                          });
+                        }
                       },
                       decoration: InputDecoration(
                           labelText: "RSVP duration (in minutes)"),
@@ -144,11 +156,26 @@ class _CreateEventState extends State<CreateEvent> {
                       controller: votingDurationController,
                       keyboardType: TextInputType.number,
                       validator: validVotingDuration,
-                      onSaved: (String arg) {
-                        votingDuration = arg;
+                      maxLength: textFieldLength,
+                      onChanged: (String arg) {
+                        if (!(arg.length == textFieldLength && votingDuration.length == textFieldLength)) {
+                          setState(() {
+                            votingDuration = arg;
+                          });
+                        }
                       },
                       decoration: InputDecoration(
                           labelText: "Voting duration (in minutes)"),
+                    ),
+                    Text(
+                      calculateVotingStartDateTime(),
+                      style: TextStyle(
+                          fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
+                    ),
+                    Text(
+                      calculateVotingEndDateTime(),
+                      style: TextStyle(
+                          fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
                     ),
                   ],
                 )
@@ -246,31 +273,66 @@ class _CreateEventState extends State<CreateEvent> {
                 startTime.minute < currentTime.minute));
   }
 
+  String calculateVotingStartDateTime() {
+    if (rsvpDuration == "0") {
+      return "Voting will start on " + eventStartDate + " at " + eventStartTime;
+    } else {
+      if (validRsvpDuration(rsvpDuration) != null) {
+        return "RSVP duration invalid: " + validRsvpDuration(rsvpDuration);
+      }
+      votingStart = DateTime.now();
+      votingStart = votingStart.add(Duration(minutes: int.parse(rsvpDuration)));
+      return "Voting will start at: " + convertDateTimeToString(votingStart);
+    }
+  }
+
+  String calculateVotingEndDateTime() {
+    if (validVotingDuration(votingDuration) != null) {
+      return "Voting duration invalid: " + validVotingDuration(votingDuration);
+    }
+    if (votingStart != null) {
+      votingEnd = votingStart.add(Duration(minutes: int.parse(votingDuration)));
+      return "Voting will end at: " + convertDateTimeToString(votingEnd);
+    } else {
+      return "";
+    }
+  }
+
   void validateInput() async {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-
-      Event event = new Event(
-          eventName: this.eventName,
-          categoryId: this.categorySelected.first.categoryId,
-          categoryName: this.categorySelected.first.categoryName,
-          createdDateTime:
-              DateTime.parse(currentDate.toString().substring(0, 19)),
-          eventStartDateTime: DateTime.parse(
-              this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-          votingDuration: int.parse(this.votingDuration),
-          rsvpDuration: int.parse(this.rsvpDuration));
-
-      showLoadingDialog(context, "Creating event...", true);
-      ResultStatus resultStatus =
-          await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
-      Navigator.of(context, rootNavigator: true).pop('dialog');
-
-      if (resultStatus.success) {
-        Navigator.of(context).pop();
+      String errorMessage = "";
+      if (this.votingStart.isAfter(DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
+        errorMessage += "RSVP duration invalid: RSVP will end after the event starts\n";
+      }
+      if (this.votingEnd.isAfter(DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
+        errorMessage += "Voting duration invalid: voting will end after the event starts";
+      }
+      if (errorMessage != "") {
+        showErrorMessage("Error", errorMessage, context);
       } else {
-        showErrorMessage("Error", resultStatus.errorMessage, context);
+        Event event = new Event(
+            eventName: this.eventName,
+            categoryId: this.categorySelected.first.categoryId,
+            categoryName: this.categorySelected.first.categoryName,
+            createdDateTime:
+            DateTime.parse(currentDate.toString().substring(0, 19)),
+            eventStartDateTime: DateTime.parse(
+                this.eventStartDate + ' ' + this.eventStartTime + ':00'),
+            votingDuration: int.parse(this.votingDuration),
+            rsvpDuration: int.parse(this.rsvpDuration));
+
+        showLoadingDialog(context, "Creating event...", true);
+        ResultStatus result =
+        await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+
+        if (result.success) {
+          Navigator.of(context).pop();
+        } else {
+          showErrorMessage("Error", result.errorMessage, context);
+        }
       }
     } else {
       setState(() => autoValidate = true);

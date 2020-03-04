@@ -57,6 +57,10 @@ String convertTimeToString(TimeOfDay time) {
   return time.toString().substring(10, 15);
 }
 
+String convertDateTimeToString(DateTime dateTime) {
+  return dateTime.toString().substring(0, 16);
+}
+
 int getHour(String time) {
   return int.parse(time.substring(0, 2));
 }

@@ -26,8 +26,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   @override
   void initState() {
     getEvent();
-    for (String username in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[username];
+    for (String displayname in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[displayname];
     }
     super.initState();
   }
