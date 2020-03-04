@@ -174,7 +174,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .004),
                         ),
-                        Column(
+                        Wrap(
+                          runSpacing: 7,
                           children: <Widget>[
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
