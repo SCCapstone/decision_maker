@@ -27,6 +27,11 @@ class Category {
         owner: json["Owner"]);
   }
 
+  factory Category.fromJsonUser(Map<String, dynamic> json) {
+    return Category(
+        categoryId: json['CategoryId'], categoryName: json['CategoryName']);
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {

@@ -39,8 +39,10 @@ class CategoriesListItem extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            EditCategory(category: this.category)),
+                        builder: (context) => EditCategory(
+                              category: this.category,
+                              editName: true,
+                            )),
                   ).then((_) => this.afterEditCallback());
                 },
               ),

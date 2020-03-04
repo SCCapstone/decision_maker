@@ -4,7 +4,6 @@ import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
-import 'package:frontEnd/utilities/utilities.dart';
 import 'categories_list.dart';
 
 class CategoriesHome extends StatefulWidget {

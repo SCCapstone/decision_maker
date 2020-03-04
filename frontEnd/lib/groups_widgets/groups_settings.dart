@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/group_categories.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -106,6 +107,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               Visibility(
                 visible: editing,
                 child: RaisedButton.icon(
+                    // TODO don't show if private and user is not owner
                     color: Colors.blue,
                     onPressed: validateInput,
                     icon: Icon(Icons.save),
@@ -120,7 +122,8 @@ class _GroupSettingsState extends State<GroupSettings> {
               child: Expanded(
                 child: ListView(
                   shrinkWrap: true,
-                  padding: EdgeInsets.all(10.0),
+                  padding:
+                      EdgeInsets.only(left: 12.0, right: 12.0, bottom: 5.0),
                   children: <Widget>[
                     Column(
                       children: [
@@ -137,12 +140,12 @@ class _GroupSettingsState extends State<GroupSettings> {
                           style: TextStyle(
                               fontSize:
                                   DefaultTextStyle.of(context).style.fontSize *
-                                      0.8),
+                                      0.72),
                           decoration: InputDecoration(labelText: "Group Name"),
                         ),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .01),
+                              MediaQuery.of(context).size.height * .004),
                         ),
                         Container(
                           width: MediaQuery.of(context).size.width * .6,
@@ -171,109 +174,192 @@ class _GroupSettingsState extends State<GroupSettings> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .004),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        Column(
                           children: <Widget>[
-                            Text(
-                              "Default RSVP duration (mins)",
-                              style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
-                                      0.4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Default RSVP duration (mins)",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * .20,
+                                  child: TextFormField(
+                                    maxLength: 6,
+                                    keyboardType: TextInputType.number,
+                                    validator: validRsvpDuration,
+                                    controller: rsvpDurationController,
+                                    onChanged: (String arg) {
+                                      try {
+                                        rsvpDuration = int.parse(arg);
+                                        enableAutoValidation();
+                                      } catch (e) {
+                                        autoValidate = true;
+                                      }
+                                    },
+                                    onSaved: (String arg) {
+                                      rsvpDuration = int.parse(arg);
+                                    },
+                                    decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        counterText: ""),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: TextFormField(
-                                maxLength: 6,
-                                keyboardType: TextInputType.number,
-                                validator: validRsvpDuration,
-                                controller: rsvpDurationController,
-                                onChanged: (String arg) {
-                                  try {
-                                    rsvpDuration = int.parse(arg);
-                                    enableAutoValidation();
-                                  } catch (e) {
-                                    autoValidate = true;
-                                  }
-                                },
-                                onSaved: (String arg) {
-                                  rsvpDuration = int.parse(arg);
-                                },
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    counterText: ""),
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Default voting duration (mins)",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * .20,
+                                  child: TextFormField(
+                                    maxLength: 6,
+                                    keyboardType: TextInputType.number,
+                                    validator: validVotingDuration,
+                                    controller: votingDurationController,
+                                    onChanged: (String arg) {
+                                      try {
+                                        votingDuration = int.parse(arg);
+                                        enableAutoValidation();
+                                      } catch (e) {
+                                        autoValidate = true;
+                                      }
+                                    },
+                                    onSaved: (String arg) {
+                                      votingDuration = int.parse(arg);
+                                    },
+                                    decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        counterText: ""),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Select categories for group",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * .20,
+                                    child: IconButton(
+                                      icon: Icon(Icons.keyboard_arrow_right),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    GroupCategories(
+                                                      selectedCategories:
+                                                          selectedCategories,
+                                                    ))).then((_) {
+                                          enableAutoValidation();
+                                        });
+                                      },
+                                    )),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    "Add/Remove members",
+                                    style: TextStyle(
+                                        fontSize: DefaultTextStyle.of(context)
+                                                .style
+                                                .fontSize *
+                                            0.4),
+                                  ),
+                                ),
+                                Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * .20,
+                                    child: IconButton(
+                                      icon: Icon(Icons.add),
+                                      onPressed: () {
+                                        showMembersPopup();
+                                      },
+                                    )),
+                              ],
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        Column(
                           children: <Widget>[
-                            Text(
-                              "Default voting duration (mins)",
-                              style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
-                                      0.4),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: TextFormField(
-                                maxLength: 6,
-                                keyboardType: TextInputType.number,
-                                validator: validVotingDuration,
-                                controller: votingDurationController,
-                                onChanged: (String arg) {
-                                  try {
-                                    votingDuration = int.parse(arg);
-                                    enableAutoValidation();
-                                  } catch (e) {
-                                    autoValidate = true;
-                                  }
-                                },
-                                onSaved: (String arg) {
-                                  votingDuration = int.parse(arg);
-                                },
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    counterText: ""),
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Column(
+                                  children: <Widget>[
+                                    Text(
+                                      "Mute Group",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                    Switch(
+                                      value: true,
+                                      onChanged: (bool val) {
+                                        // TODO mute notifications for user
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children: <Widget>[
+                                    Text(
+                                      "Private",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                    Switch(
+                                      value: true,
+                                      onChanged: (bool val) {
+                                        // TODO lock group or open it if owner
+                                      },
+                                    ),
+                                  ],
+                                )
+                              ],
                             ),
                           ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            RaisedButton(
-                              child: Text("Members"),
-                              onPressed: () {
-                                showMembersPopup();
-                              },
-                            ),
-                            RaisedButton(
-                              child: Text("Categories"),
-                              onPressed: () {
-                                showCategoriesPopup();
-                              },
-                            )
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
                         ),
                         Visibility(
-                          visible: false,
+                          visible: owner,
                           child: RaisedButton(
                             child: Text("Delete Group"),
                             color: Colors.red,
@@ -327,17 +413,6 @@ class _GroupSettingsState extends State<GroupSettings> {
     });
   }
 
-  void showCategoriesPopup() {
-    showDialog(
-            context: context,
-            child: CategoryPopup(selectedCategories,
-                handlePopupClosed: popupClosed))
-        .then((val) {
-      // this is called whenever the user clicks outside the alert dialog or hits the back button
-      popupClosed();
-    });
-  }
-
   void popupClosed() {
     enableAutoValidation();
     hideKeyboard(context);
@@ -381,7 +456,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 child: Text("Yes"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
-                  tryDelete(context);
+                  tryDelete();
                 },
               ),
               FlatButton(
@@ -414,7 +489,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
   }
 
-  void tryDelete(BuildContext context) async {
+  void tryDelete() async {
     ResultStatus status =
         await GroupsManager.deleteGroup(Globals.currentGroup.groupId);
     if (status.success) {
