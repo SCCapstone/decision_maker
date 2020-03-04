@@ -20,7 +20,7 @@ Future<bool> internetCheck() async {
 }
 
 void logOutUser(BuildContext context) {
-  UsersManager.unregisterPushEndpoint(context);
+  UsersManager.unregisterPushEndpoint();
   Globals.clearGlobals();
   clearTokens();
 }

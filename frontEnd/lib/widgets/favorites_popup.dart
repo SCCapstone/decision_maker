@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/models/user.dart';
@@ -99,16 +100,16 @@ class _FavoritesPopupState extends State<FavoritesPopup> {
   }
 
   void addNewFavorite() async {
-    User newFavorite = await UsersManager.getUserData(context, true,
-        username: userController.text.trim());
-    if (newFavorite != null) {
+    ResultStatus<User> resultStatus =
+        await UsersManager.getUserData(username: userController.text.trim());
+    if (resultStatus.success) {
+      User newFavorite = resultStatus.data;
       widget.displayedFavorites.add(new Favorite(
           username: newFavorite.username,
           displayName: newFavorite.displayName,
           icon: newFavorite.icon));
     } else {
-      showErrorMessage(
-          "Error", "User: ${userController.text} does not exist.", context);
+      showErrorMessage("Error", "Cannot add: ${userController.text}", context);
       hideKeyboard(context);
     }
     setState(() {

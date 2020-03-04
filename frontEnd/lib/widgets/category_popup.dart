@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 
 import 'category_row.dart';
@@ -18,11 +19,11 @@ class CategoryPopup extends StatefulWidget {
 
 class _CategoryPopupState extends State<CategoryPopup> {
   List<Widget> categoryRows = new List<Widget>();
-  Future<List<Category>> categoriesTotalFuture;
+  Future<ResultStatus> resultFuture;
 
   @override
   void initState() {
-    categoriesTotalFuture = CategoriesManager.getAllCategoriesList(context);
+    resultFuture = CategoriesManager.getAllCategoriesList();
     super.initState();
   }
 
@@ -49,37 +50,42 @@ class _CategoryPopupState extends State<CategoryPopup> {
             children: <Widget>[
               Scrollbar(
                 child: FutureBuilder(
-                    future: categoriesTotalFuture,
+                    future: resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        List<Category> categories = snapshot.data;
-                        categories = snapshot.data;
-                        for (Category category in categories) {
-                          if (category.owner == Globals.username) {
-                            this.categoryRows.add(CategoryRow(
-                                category,
-                                widget.selectedCategories.keys
-                                    .contains(category.categoryId),
-                                onSelect: () => selectCategory(category)));
+                        ResultStatus<List<Category>> resultStatus = snapshot.data;
+                        if (resultStatus.success) {
+                          List<Category> categories = resultStatus.data;
+                          for (Category category in categories) {
+                            if (category.owner == Globals.username) {
+                              this.categoryRows.add(CategoryRow(
+                                  category,
+                                  widget.selectedCategories.keys
+                                      .contains(category.categoryId),
+                                  onSelect: () => selectCategory(category)));
+                            }
                           }
-                        }
-                        if (this.categoryRows.length > 0) {
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: categoryRows,
-                            ),
-                          );
+                          if (this.categoryRows.length > 0) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: categoryRows,
+                              ),
+                            );
+                          } else {
+                            // TODO add a button to let them make categories from here
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .25,
+                              child: Text(
+                                  "No categories found to add. Navigate to the categories page to create some."),
+                            );
+                          }
                         } else {
-                          // TODO add a button to let them make categories from here
-                          return Container(
-                            height: MediaQuery.of(context).size.height * .25,
-                            child: Text(
-                                "No categories found to add. Navigate to the categories page to create some."),
-                          );
+                          return Text(resultStatus.errorMessage);
                         }
                       } else if (snapshot.hasError) {
+                        // this shouldn't ever be reached, but put it here to be safe
                         return Text("Error: ${snapshot.error}");
                       } else {
                         return Center(child: CircularProgressIndicator());

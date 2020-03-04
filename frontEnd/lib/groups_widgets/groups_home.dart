@@ -7,6 +7,7 @@ import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
@@ -59,7 +60,7 @@ class _GroupsHomeState extends State<GroupsHome> {
     });
 
     Future<String> token = this.firebaseMessaging.getToken();
-    UsersManager.registerPushEndpoint(token, context);
+    UsersManager.registerPushEndpoint(token);
 
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
@@ -245,12 +246,14 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   Future<Null> refreshList() async {
-    User temp = await UsersManager.getUserData(context, true);
-    if (temp != null) {
-      Globals.user = temp;
+    ResultStatus<User> resultStatus = await UsersManager.getUserData();
+    if (resultStatus.success) {
+      Globals.user = resultStatus.data;
       setState(() {
         loadGroups();
       });
+    } else {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 

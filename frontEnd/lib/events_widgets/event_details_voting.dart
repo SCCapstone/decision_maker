@@ -3,8 +3,11 @@ import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -13,7 +16,8 @@ class EventDetailsVoting extends StatefulWidget {
   final String eventId;
   final String mode;
 
-  EventDetailsVoting({Key key, this.groupId, this.eventId, this.mode}) : super(key: key);
+  EventDetailsVoting({Key key, this.groupId, this.eventId, this.mode})
+      : super(key: key);
 
   @override
   _EventDetailsVotingState createState() => new _EventDetailsVotingState();
@@ -192,12 +196,17 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
-    getEvent();
-    if(EventsManager.getEventMode(event)!=widget.mode){
-      // if while the user was here and the mode changed, take them back to the group page
-      Navigator.of(context).pop();
+    ResultStatus<List<Group>> resultStatus =
+        await GroupsManager.getGroups(groupIds: groupId);
+    if (resultStatus.success) {
+      Globals.currentGroup = resultStatus.data.first;
+      getEvent();
+      if (EventsManager.getEventMode(event) != widget.mode) {
+        // if while the user was here and the mode changed, take them back to the group page
+        Navigator.of(context).pop();
+      }
+    } else {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
     setState(() {});
   }

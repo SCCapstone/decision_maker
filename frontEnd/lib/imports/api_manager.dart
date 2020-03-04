@@ -1,22 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
-import 'package:frontEnd/widgets/internet_loss.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 final String idTokenKey = "id";
 
-Future<String> makeApiRequest(String apiEndpoint,
-    Map<String, dynamic> requestContent, BuildContext context,
+Future<ResultStatus<String>> makeApiRequest(
+    String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
-  SharedPreferences tokens = await Globals.getTokens();
+  ResultStatus<String> retVal = new ResultStatus(success: false);
 
+  SharedPreferences tokens = await Globals.getTokens();
   if (tokens.containsKey(idTokenKey)) {
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)
@@ -28,27 +27,22 @@ Future<String> makeApiRequest(String apiEndpoint,
           headers: headers,
           body: json.encode(requestContent));
       if (response.statusCode == 200) {
-        return response.body;
+        retVal.success = true;
+        retVal.data = response.body;
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
-          return makeApiRequest(apiEndpoint, requestContent, context,
+          retVal = await makeApiRequest(apiEndpoint, requestContent,
               firstAttempt: false);
         }
       }
     } on SocketException catch (_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => InternetLoss(
-                  initialCheck: false,
-                )),
-      );
+      retVal.networkError = true;
     }
   } else {
     //clear navigation stack and head to the login page?
   }
-  return ""; // none of our apis should return this so this indicates error
+  return retVal;
 }
 
 Map<String, dynamic> getEmptyApiRequest() {

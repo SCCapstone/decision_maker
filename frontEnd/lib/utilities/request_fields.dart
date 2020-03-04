@@ -11,4 +11,6 @@ class RequestFields {
   static final String CHOICE_ID = "ChoiceId";
   static final String VOTE_VALUE = "VoteValue";
   static final String DEVICE_TOKEN = "DeviceToken";
+  static final String ACTION = "action";
+  static final String PAYLOAD = "payload";
 }

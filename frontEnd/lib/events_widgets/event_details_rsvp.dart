@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
 class EventDetailsRsvp extends StatefulWidget {
@@ -11,7 +14,8 @@ class EventDetailsRsvp extends StatefulWidget {
   final String eventId;
   final String mode;
 
-  EventDetailsRsvp({Key key, this.groupId, this.eventId, this.mode}) : super(key: key);
+  EventDetailsRsvp({Key key, this.groupId, this.eventId, this.mode})
+      : super(key: key);
 
   @override
   _EventDetailsRsvpState createState() => new _EventDetailsRsvpState();
@@ -144,8 +148,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           child: Text("Not going"),
                           color: Colors.red,
                           onPressed: () {
-                            GroupsManager.optInOutOfEvent(
-                                widget.groupId, widget.eventId, false, context);
+                            tryRsvp(false);
                             userRows.remove(Globals.username);
                             setState(() {});
                           },
@@ -154,8 +157,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                           child: Text("Going"),
                           color: Colors.green,
                           onPressed: () {
-                            GroupsManager.optInOutOfEvent(
-                                widget.groupId, widget.eventId, true, context);
+                            tryRsvp(true);
                             userRows.putIfAbsent(
                                 Globals.username,
                                 () => UserRowEvents(Globals.user.displayName,
@@ -173,6 +175,15 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
         ),
       ),
     );
+  }
+
+  void tryRsvp(bool going) async {
+    // not sure if we want a loading dialog for this as that would be annoying for the user. Only show error for now
+    ResultStatus resultStatus = await GroupsManager.optInOutOfEvent(
+        widget.groupId, widget.eventId, going);
+    if (!resultStatus.success) {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
+    }
   }
 
   void getEvent() {
@@ -194,12 +205,18 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   Future<Null> refreshList() async {
     List<String> groupId = new List<String>();
     groupId.add(widget.groupId);
-    Globals.currentGroup =
-        (await GroupsManager.getGroups(context, groupIds: groupId)).first;
-    getEvent();
-    if(EventsManager.getEventMode(event)!=widget.mode){
-      // if while the user was here and the mode changed, take them back to the group page
-      Navigator.of(context).pop();
-    }    setState(() {});
+    ResultStatus<List<Group>> resultStatus =
+        await GroupsManager.getGroups(groupIds: groupId);
+    if (resultStatus.success) {
+      Globals.currentGroup = resultStatus.data.first;
+      getEvent();
+      if (EventsManager.getEventMode(event) != widget.mode) {
+        // if while the user was here and the mode changed, take them back to the group page
+        Navigator.of(context).pop();
+      }
+    } else {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
+    }
+    setState(() {});
   }
 }
