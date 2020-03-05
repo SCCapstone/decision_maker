@@ -94,299 +94,321 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // allows for anywhere on the screen to be clicked to lose focus of a textfield
-        hideKeyboard(context);
-      },
-      child: Scaffold(
-          resizeToAvoidBottomInset: true,
-          appBar: AppBar(
-            title: Text("${Globals.currentGroup.groupName} Settings"),
-            actions: <Widget>[
-              Visibility(
-                visible: editing,
-                child: RaisedButton.icon(
-                    // TODO don't show if private and user is not owner
-                    color: Colors.blue,
-                    onPressed: validateInput,
-                    icon: Icon(Icons.save),
-                    label: Text("Save")),
-              )
-            ],
-          ),
-          body: Column(children: <Widget>[
-            Form(
-              key: formKey,
-              autovalidate: autoValidate,
-              child: Expanded(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding:
-                      EdgeInsets.only(left: 12.0, right: 12.0, bottom: 5.0),
-                  children: <Widget>[
-                    Column(
-                      children: [
-                        TextFormField(
-                          controller: groupNameController,
-                          validator: validGroupName,
-                          onChanged: (String arg) {
-                            groupName = arg.trim();
-                            enableAutoValidation();
-                          },
-                          onSaved: (String arg) {
-                            groupName = arg.trim();
-                          },
-                          style: TextStyle(
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.72),
-                          decoration: InputDecoration(labelText: "Group Name"),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
-                        ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          height: MediaQuery.of(context).size.height * .3,
-                          alignment: Alignment.topRight,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: this.icon == null
-                                      ? getIconUrl(currentGroupIcon)
-                                      : FileImage(this.icon))),
-                          child: Container(
+    return WillPopScope(
+      onWillPop: handleBackPress,
+      child: GestureDetector(
+        onTap: () {
+          // allows for anywhere on the screen to be clicked to lose focus of a textfield
+          hideKeyboard(context);
+        },
+        child: Scaffold(
+            resizeToAvoidBottomInset: true,
+            appBar: AppBar(
+              title: Text("${Globals.currentGroup.groupName} Settings"),
+              actions: <Widget>[
+                Visibility(
+                  visible: editing,
+                  child: RaisedButton.icon(
+                      // TODO don't show if private and user is not owner
+                      color: Colors.blue,
+                      onPressed: validateInput,
+                      icon: Icon(Icons.save),
+                      label: Text("Save")),
+                )
+              ],
+            ),
+            body: Column(children: <Widget>[
+              Form(
+                key: formKey,
+                autovalidate: autoValidate,
+                child: Expanded(
+                  child: ListView(
+                    shrinkWrap: true,
+                    padding:
+                        EdgeInsets.only(left: 12.0, right: 12.0, bottom: 5.0),
+                    children: <Widget>[
+                      Column(
+                        children: [
+                          TextFormField(
+                            controller: groupNameController,
+                            validator: validGroupName,
+                            onChanged: (String arg) {
+                              groupName = arg.trim();
+                              enableAutoValidation();
+                            },
+                            onSaved: (String arg) {
+                              groupName = arg.trim();
+                            },
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.72),
+                            decoration:
+                                InputDecoration(labelText: "Group Name"),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .004),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * .6,
+                            height: MediaQuery.of(context).size.height * .3,
+                            alignment: Alignment.topRight,
                             decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.7),
-                                shape: BoxShape.circle),
-                            child: IconButton(
-                              icon: Icon(Icons.edit),
-                              color: Colors.blueAccent,
+                                image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: this.icon == null
+                                        ? getIconUrl(currentGroupIcon)
+                                        : FileImage(this.icon))),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  shape: BoxShape.circle),
+                              child: IconButton(
+                                icon: Icon(Icons.edit),
+                                color: Colors.blueAccent,
+                                onPressed: () {
+                                  getImage();
+                                },
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .004),
+                          ),
+                          Wrap(
+                            runSpacing: 7,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      "Default RSVP duration (mins)",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                  ),
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * .20,
+                                    child: TextFormField(
+                                      maxLength: 6,
+                                      keyboardType: TextInputType.number,
+                                      validator: validRsvpDuration,
+                                      controller: rsvpDurationController,
+                                      onChanged: (String arg) {
+                                        try {
+                                          rsvpDuration = int.parse(arg);
+                                          enableAutoValidation();
+                                        } catch (e) {
+                                          autoValidate = true;
+                                        }
+                                      },
+                                      onSaved: (String arg) {
+                                        rsvpDuration = int.parse(arg);
+                                      },
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          counterText: ""),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      "Default voting duration (mins)",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                  ),
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * .20,
+                                    child: TextFormField(
+                                      maxLength: 6,
+                                      keyboardType: TextInputType.number,
+                                      validator: validVotingDuration,
+                                      controller: votingDurationController,
+                                      onChanged: (String arg) {
+                                        try {
+                                          votingDuration = int.parse(arg);
+                                          enableAutoValidation();
+                                        } catch (e) {
+                                          autoValidate = true;
+                                        }
+                                      },
+                                      onSaved: (String arg) {
+                                        votingDuration = int.parse(arg);
+                                      },
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          counterText: ""),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      "Select categories for group",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                  ),
+                                  Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          .20,
+                                      child: IconButton(
+                                        icon: Icon(Icons.keyboard_arrow_right),
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      GroupCategories(
+                                                        selectedCategories:
+                                                            selectedCategories,
+                                                      ))).then((_) {
+                                            enableAutoValidation();
+                                          });
+                                        },
+                                      )),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text(
+                                      "Add/Remove members",
+                                      style: TextStyle(
+                                          fontSize: DefaultTextStyle.of(context)
+                                                  .style
+                                                  .fontSize *
+                                              0.4),
+                                    ),
+                                  ),
+                                  Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          .20,
+                                      child: IconButton(
+                                        icon: Icon(Icons.add),
+                                        onPressed: () {
+                                          showMembersPopup();
+                                        },
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Column(
+                                    children: <Widget>[
+                                      Text(
+                                        "Mute Group",
+                                        style: TextStyle(
+                                            fontSize:
+                                                DefaultTextStyle.of(context)
+                                                        .style
+                                                        .fontSize *
+                                                    0.4),
+                                      ),
+                                      Switch(
+                                        value: true,
+                                        onChanged: (bool val) {
+                                          // TODO mute notifications for user
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: <Widget>[
+                                      Text(
+                                        "Private",
+                                        style: TextStyle(
+                                            fontSize:
+                                                DefaultTextStyle.of(context)
+                                                        .style
+                                                        .fontSize *
+                                                    0.4),
+                                      ),
+                                      Switch(
+                                        value: true,
+                                        onChanged: (bool val) {
+                                          // TODO lock group or open it if owner
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          Visibility(
+                            visible: owner,
+                            child: RaisedButton(
+                              child: Text("Delete Group"),
+                              color: Colors.red,
                               onPressed: () {
-                                getImage();
+                                confirmDeleteGroup(context);
                               },
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
-                        ),
-                        Wrap(
-                          runSpacing: 7,
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Default RSVP duration (mins)",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * .20,
-                                  child: TextFormField(
-                                    maxLength: 6,
-                                    keyboardType: TextInputType.number,
-                                    validator: validRsvpDuration,
-                                    controller: rsvpDurationController,
-                                    onChanged: (String arg) {
-                                      try {
-                                        rsvpDuration = int.parse(arg);
-                                        enableAutoValidation();
-                                      } catch (e) {
-                                        autoValidate = true;
-                                      }
-                                    },
-                                    onSaved: (String arg) {
-                                      rsvpDuration = int.parse(arg);
-                                    },
-                                    decoration: InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        counterText: ""),
-                                  ),
-                                ),
-                              ],
+                          Visibility(
+                            visible: !owner,
+                            child: RaisedButton(
+                              child: Text("Leave Group"),
+                              color: Colors.red,
+                              onPressed: () {
+                                confirmLeaveGroup(context);
+                              },
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Default voting duration (mins)",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * .20,
-                                  child: TextFormField(
-                                    maxLength: 6,
-                                    keyboardType: TextInputType.number,
-                                    validator: validVotingDuration,
-                                    controller: votingDurationController,
-                                    onChanged: (String arg) {
-                                      try {
-                                        votingDuration = int.parse(arg);
-                                        enableAutoValidation();
-                                      } catch (e) {
-                                        autoValidate = true;
-                                      }
-                                    },
-                                    onSaved: (String arg) {
-                                      votingDuration = int.parse(arg);
-                                    },
-                                    decoration: InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        counterText: ""),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Select categories for group",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * .20,
-                                    child: IconButton(
-                                      icon: Icon(Icons.keyboard_arrow_right),
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    GroupCategories(
-                                                      selectedCategories:
-                                                          selectedCategories,
-                                                    ))).then((_) {
-                                          enableAutoValidation();
-                                        });
-                                      },
-                                    )),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    "Add/Remove members",
-                                    style: TextStyle(
-                                        fontSize: DefaultTextStyle.of(context)
-                                                .style
-                                                .fontSize *
-                                            0.4),
-                                  ),
-                                ),
-                                Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * .20,
-                                    child: IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        showMembersPopup();
-                                      },
-                                    )),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: <Widget>[
-                                Column(
-                                  children: <Widget>[
-                                    Text(
-                                      "Mute Group",
-                                      style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
-                                              0.4),
-                                    ),
-                                    Switch(
-                                      value: true,
-                                      onChanged: (bool val) {
-                                        // TODO mute notifications for user
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: <Widget>[
-                                    Text(
-                                      "Private",
-                                      style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
-                                              0.4),
-                                    ),
-                                    Switch(
-                                      value: true,
-                                      onChanged: (bool val) {
-                                        // TODO lock group or open it if owner
-                                      },
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          ],
-                        ),
-                        Visibility(
-                          visible: owner,
-                          child: RaisedButton(
-                            child: Text("Delete Group"),
-                            color: Colors.red,
-                            onPressed: () {
-                              confirmDeleteGroup(context);
-                            },
-                          ),
-                        ),
-                        Visibility(
-                          visible: !owner,
-                          child: RaisedButton(
-                            child: Text("Leave Group"),
-                            color: Colors.red,
-                            onPressed: () {
-                              confirmLeaveGroup(context);
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                  ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ])),
+            ])),
+      ),
     );
+  }
+
+  Future<bool> handleBackPress() async {
+    // if editing, ensure the user really wants to leave to lose their changes
+    if (editing) {
+      confirmLeavePage();
+      return false;
+    } else {
+      return true;
+    }
   }
 
   Future getImage() async {
@@ -417,6 +439,35 @@ class _GroupSettingsState extends State<GroupSettings> {
   void popupClosed() {
     enableAutoValidation();
     hideKeyboard(context);
+  }
+
+  void confirmLeavePage() {
+    hideKeyboard(context);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Unsaved changes"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text(
+                "You have unsaved changes to this group. To save them click the \"Save\" button in "
+                "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
+          );
+        });
   }
 
   void confirmLeaveGroup(BuildContext context) {
