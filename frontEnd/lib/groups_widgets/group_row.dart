@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
-import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-class GroupRow extends StatelessWidget {
+class GroupRow extends StatefulWidget {
   final Group group;
   final Function refreshGroups;
 
   GroupRow(this.group, {this.refreshGroups});
+
+  @override
+  _GroupRowState createState() => _GroupRowState();
+}
+
+class _GroupRowState extends State<GroupRow> {
+  bool notificationsMuted;
+
+  @override
+  void initState() {
+    // TODO fetch whether group is muted from the user global object
+    this.notificationsMuted = false;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +38,12 @@ class GroupRow extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) => GroupPage(
-                              groupId: group.groupId,
-                              groupName: group.groupName,
+                              groupId: widget.group.groupId,
+                              groupName: widget.group.groupName,
                             )),
                   ).then((val) {
                     // TODO figure out a better way to refresh without making unnecessary API calls
-                    this.refreshGroups();
+                    this.widget.refreshGroups();
                   });
                 },
                 child: Container(
@@ -38,7 +51,8 @@ class GroupRow extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * .20,
                   decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: getIconUrl(group.icon), fit: BoxFit.cover)),
+                          image: getIconUrl(widget.group.icon),
+                          fit: BoxFit.cover)),
                 ),
               ),
               Padding(
@@ -51,12 +65,12 @@ class GroupRow extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (context) => GroupPage(
-                                groupId: group.groupId,
-                                groupName: group.groupName,
+                                groupId: widget.group.groupId,
+                                groupName: widget.group.groupName,
                               )),
                     ).then((val) {
                       // TODO figure out a better way to refresh without making unnecessary API calls
-                      this.refreshGroups();
+                      this.widget.refreshGroups();
                     });
                   },
                   child: Container(
@@ -64,14 +78,44 @@ class GroupRow extends StatelessWidget {
                     height: MediaQuery.of(context).size.width * .20,
                     child: Center(
                       child: Text(
-                        group.groupName,
+                        widget.group.groupName,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 25),
                       ),
                     ),
                   ),
                 ),
-              )
+              ),
+              Container(
+                height: MediaQuery.of(context).size.width * .20,
+                child: Center(
+                  child: Wrap(
+                      spacing: -25,
+                      direction: Axis.vertical,
+                      children: <Widget>[
+                        IconButton(
+                          icon: (this.notificationsMuted)
+                              ? Icon(Icons.notifications_off)
+                              : Icon(Icons.notifications),
+                          color: Colors.blueAccent,
+                          onPressed: () {
+                            setState(() {
+                              // TODO mute the group
+                              notificationsMuted = !notificationsMuted;
+                            });
+                          },
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Padding(
+                                padding: EdgeInsets.all(
+                                    MediaQuery.of(context).size.height * .02)),
+                            Text("(79)")
+                          ],
+                        )
+                      ]),
+                ),
+              ),
             ],
           ),
         ),

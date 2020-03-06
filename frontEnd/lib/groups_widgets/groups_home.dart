@@ -208,7 +208,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Expanded(
               child: Container(
-                  width: MediaQuery.of(context).size.width * .90,
+                  width: MediaQuery.of(context).size.width * .95,
                   height: MediaQuery.of(context).size.height * .60,
                   child: RefreshIndicator(
                       onRefresh: refreshList,
