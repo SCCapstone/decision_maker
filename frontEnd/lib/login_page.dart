@@ -69,7 +69,7 @@ class _SignInState extends State<SignInPage> {
                     controller: emailController,
                     validator: validEmail,
                     onSaved: (String arg) {
-                      email = arg;
+                      email = arg.trim();
                     },
                     style: TextStyle(
                         fontSize:
@@ -82,7 +82,7 @@ class _SignInState extends State<SignInPage> {
                 controller: usernameController,
                 validator: validUsername,
                 onSaved: (String arg) {
-                  username = arg;
+                  username = arg.trim();
                 },
                 style: TextStyle(
                     fontSize:
@@ -98,7 +98,7 @@ class _SignInState extends State<SignInPage> {
                 controller: passwordController,
                 validator: (signUp) ? validNewPassword : validPassword,
                 onSaved: (String arg) {
-                  password = arg;
+                  password = arg.trim();
                 },
                 style: TextStyle(
                     fontSize:

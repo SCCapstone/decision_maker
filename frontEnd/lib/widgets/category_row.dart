@@ -21,12 +21,6 @@ class _CategoryRow extends State<CategoryRow> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Expanded(
-            child: Text(
-              widget.category.categoryName,
-              style: TextStyle(fontSize: 20),
-            ),
-          ),
           Checkbox(
             value: widget.selected,
             onChanged: (bool value) {
@@ -36,10 +30,16 @@ class _CategoryRow extends State<CategoryRow> {
               });
             },
           ),
+          Expanded(
+            child: Text(
+              widget.category.categoryName,
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
         ],
       ),
-      decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: getBorderColor()))),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 }

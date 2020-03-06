@@ -10,8 +10,7 @@ import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-import 'package:frontEnd/widgets/category_popup.dart';
-import 'package:frontEnd/widgets/members_popup.dart';
+import 'package:frontEnd/widgets/members_page.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'groups_home.dart';
@@ -289,7 +288,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                         selectedCategories:
                                                             selectedCategories,
                                                       ))).then((_) {
-                                            enableAutoValidation();
+                                            saveCategories();
                                           });
                                         },
                                       )),
@@ -315,23 +314,30 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       child: IconButton(
                                         icon: Icon(Icons.add),
                                         onPressed: () {
-                                          showMembersPopup();
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      MembersPage(
+                                                        displayedMembers,
+                                                        originalMembers,
+                                                        false,
+                                                      ))).then((_) {
+                                            saveMembers();
+                                          });
                                         },
                                       )),
                                 ],
                               ),
-                            ],
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Column(
-                                    children: <Widget>[
-                                      Text(
-                                        "Mute Group",
+                              Visibility(
+                                visible: owner,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(
+                                        "Make group open/private",
                                         style: TextStyle(
                                             fontSize:
                                                 DefaultTextStyle.of(context)
@@ -339,34 +345,19 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                         .fontSize *
                                                     0.4),
                                       ),
-                                      Switch(
-                                        value: true,
-                                        onChanged: (bool val) {
-                                          // TODO mute notifications for user
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: <Widget>[
-                                      Text(
-                                        "Private",
-                                        style: TextStyle(
-                                            fontSize:
-                                                DefaultTextStyle.of(context)
-                                                        .style
-                                                        .fontSize *
-                                                    0.4),
-                                      ),
-                                      Switch(
-                                        value: true,
-                                        onChanged: (bool val) {
-                                          // TODO lock group or open it if owner
-                                        },
-                                      ),
-                                    ],
-                                  )
-                                ],
+                                    ),
+                                    Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                .20,
+                                        child: IconButton(
+                                          icon: Icon(Icons.lock),
+                                          onPressed: () {
+                                            // TODO lock group if owner
+                                          },
+                                        )),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -411,6 +402,76 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
   }
 
+  void saveMembers() async {
+    Set oldMembers = originalMembers.toSet();
+    Set newMembers = displayedMembers.toSet();
+    bool newMembersAdded = !(oldMembers.containsAll(newMembers) &&
+        oldMembers.length == newMembers.length);
+    if (newMembersAdded) {
+      Map<String, Map<String, String>> membersMap =
+          new Map<String, Map<String, String>>();
+      for (Member member in displayedMembers) {
+        Map<String, String> memberInfo = new Map<String, String>();
+        memberInfo.putIfAbsent(
+            UsersManager.DISPLAY_NAME, () => member.displayName);
+        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
+        membersMap.putIfAbsent(member.username, () => memberInfo);
+      }
+
+      Group group = new Group(
+          groupId: Globals.currentGroup.groupId,
+          groupName: Globals.currentGroup.groupName,
+          groupCreator: Globals.currentGroup.groupCreator,
+          categories: Globals.currentGroup.categories,
+          members: membersMap,
+          events: Globals.currentGroup.events,
+          defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
+          defaultRsvpDuration: Globals.currentGroup.defaultRsvpDuration,
+          nextEventId: Globals.currentGroup.nextEventId);
+
+      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
+
+      if (resultStatus.success) {
+        originalMembers.clear();
+        originalMembers.addAll(displayedMembers);
+      } else {
+        displayedMembers.clear();
+        displayedMembers.addAll(originalMembers);
+        showErrorMessage("Error", "Error saving members", context);
+      }
+    }
+  }
+
+  void saveCategories() async {
+    Set oldCategories = originalCategories.keys.toSet();
+    Set newCategories = selectedCategories.keys.toSet();
+    bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
+        oldCategories.length == newCategories.length);
+    if (newCategoriesAdded) {
+      Group group = new Group(
+          groupId: Globals.currentGroup.groupId,
+          groupName: Globals.currentGroup.groupName,
+          groupCreator: Globals.currentGroup.groupCreator,
+          categories: selectedCategories,
+          members: Globals.currentGroup.members,
+          events: Globals.currentGroup.events,
+          defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
+          defaultRsvpDuration: Globals.currentGroup.defaultRsvpDuration,
+          nextEventId: Globals.currentGroup.nextEventId);
+
+      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
+
+      if (resultStatus.success) {
+        originalCategories.clear();
+        originalCategories.addAll(selectedCategories);
+      } else {
+        selectedCategories.clear();
+        selectedCategories.addAll(originalCategories);
+        showErrorMessage("Error", "Error saving categories", context);
+      }
+    }
+  }
+
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
@@ -423,22 +484,6 @@ class _GroupSettingsState extends State<GroupSettings> {
       this.icon = newIconFile;
       enableAutoValidation();
     }
-  }
-
-  void showMembersPopup() {
-    showDialog(
-            context: context,
-            child: MembersPopup(displayedMembers, originalMembers, false,
-                handlePopupClosed: popupClosed))
-        .then((val) {
-      // this is called whenever the user clicks outside the alert dialog or hits the back button
-      popupClosed();
-    });
-  }
-
-  void popupClosed() {
-    enableAutoValidation();
-    hideKeyboard(context);
   }
 
   void confirmLeavePage() {
@@ -553,21 +598,9 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    Set oldUsers = originalMembers.toSet();
-    Set newUsers = displayedMembers.toSet();
-    bool newUsersAdded =
-        !(oldUsers.containsAll(newUsers) && oldUsers.length == newUsers.length);
-
-    Set oldCategories = originalCategories.keys.toSet();
-    Set newCategories = selectedCategories.keys.toSet();
-    bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
-        oldCategories.length == newCategories.length);
-
     if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
         rsvpDuration != Globals.currentGroup.defaultRsvpDuration ||
         groupName != Globals.currentGroup.groupName ||
-        newUsersAdded ||
-        newCategoriesAdded ||
         newIcon) {
       setState(() {
         editing = true;
