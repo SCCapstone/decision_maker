@@ -15,11 +15,14 @@ class GroupRow extends StatefulWidget {
 
 class _GroupRowState extends State<GroupRow> {
   bool notificationsMuted;
+  int notificationNum;
 
   @override
   void initState() {
     // TODO fetch whether group is muted from the user global object
     this.notificationsMuted = false;
+    // TODO fetch notification num from group mapping (list of event ids)
+    this.notificationNum = 69;
     super.initState();
   }
 
@@ -88,9 +91,10 @@ class _GroupRowState extends State<GroupRow> {
               ),
               Container(
                 height: MediaQuery.of(context).size.width * .20,
+                width: MediaQuery.of(context).size.width * .15,
                 child: Center(
                   child: Wrap(
-                      spacing: -25,
+                      spacing: (this.notificationNum > 0) ? -25 : 0,
                       direction: Axis.vertical,
                       children: <Widget>[
                         IconButton(
@@ -101,17 +105,27 @@ class _GroupRowState extends State<GroupRow> {
                           onPressed: () {
                             setState(() {
                               // TODO mute the group
-                              notificationsMuted = !notificationsMuted;
+                              this.notificationsMuted =
+                                  !this.notificationsMuted;
+                              if (this.notificationNum > 0) {
+                                notificationNum = 0;
+                              } else {
+                                notificationNum = 69;
+                              }
                             });
                           },
                         ),
-                        Row(
-                          children: <Widget>[
-                            Padding(
-                                padding: EdgeInsets.all(
-                                    MediaQuery.of(context).size.height * .02)),
-                            Text("(79)")
-                          ],
+                        Visibility(
+                          visible: (this.notificationNum > 0),
+                          child: Row(
+                            children: <Widget>[
+                              Padding(
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.height *
+                                          .02)),
+                              Text("(79)")
+                            ],
+                          ),
                         )
                       ]),
                 ),

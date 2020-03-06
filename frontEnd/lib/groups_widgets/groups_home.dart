@@ -209,7 +209,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             Expanded(
               child: Container(
                   width: MediaQuery.of(context).size.width * .95,
-                  height: MediaQuery.of(context).size.height * .60,
+//                  height: MediaQuery.of(context).size.height * .55,
                   child: RefreshIndicator(
                       onRefresh: refreshList,
                       child: GroupsList(
@@ -220,8 +220,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
             ),
           ],
         ),
