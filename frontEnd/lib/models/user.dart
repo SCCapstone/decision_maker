@@ -1,4 +1,5 @@
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
 
 import 'app_settings.dart';
@@ -10,6 +11,7 @@ class User {
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> categories;
+  final List<Category> ownedCategories;
   List<Favorite> favorites;
 
   User(
@@ -18,11 +20,12 @@ class User {
       this.appSettings,
       this.groups,
       this.categories,
+      this.ownedCategories,
       this.favorites,
       this.icon});
 
   User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.categories, this.favorites, this.icon);
+      this.categories, this.ownedCategories, this.favorites, this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
@@ -31,12 +34,20 @@ class User {
       favoriteList.add(Favorite.fromJson(favoritesRaw[username], username));
     }
 
+    List<Category> categoryList = new List<Category>();
+    Map<String, dynamic> categoriesRaw = json[UsersManager.OWNED_CATEGORIES];
+    for (String catId in categoriesRaw.keys) {
+      categoryList.add(Category.debug(
+          catId, categoriesRaw[catId].toString(), null, null, null, null));
+    }
+
     return User(
         username: json[UsersManager.USERNAME],
         displayName: json[UsersManager.DISPLAY_NAME],
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
         categories: json[UsersManager.CATEGORIES],
+        ownedCategories: categoryList,
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
   }
@@ -44,6 +55,6 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "Categories: $categories Favorites: $favorites Icon: $icon";
+        "Categories: $categories OwnedCategories: $ownedCategories Favorites: $favorites Icon: $icon";
   }
 }
