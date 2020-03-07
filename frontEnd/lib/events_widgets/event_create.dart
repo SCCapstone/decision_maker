@@ -61,7 +61,7 @@ class _CreateEventState extends State<CreateEvent> {
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
     if ((currentTime.hour + 1) < 10) {
       eventStartTime = "0" + eventStartTime;
-    } else if ((currentTime.hourOfPeriod + 1) > 23) {
+    } else if ((currentTime.hour + 1) > 23) {
       eventStartTime = "00:00";
       eventStartDate =
           convertDateToString(DateTime.now().add(Duration(days: 1)));
@@ -213,14 +213,14 @@ class _CreateEventState extends State<CreateEvent> {
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
-                                  0.4),
+                                  0.35),
                     ),
                     Text(
                       calculateVotingEndDateTime(),
                       style: TextStyle(
                           fontSize:
                               DefaultTextStyle.of(context).style.fontSize *
-                                  0.4),
+                                  0.35),
                     ),
                   ],
                 )
