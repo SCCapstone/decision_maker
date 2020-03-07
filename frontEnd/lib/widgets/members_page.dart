@@ -9,26 +9,25 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/widgets/user_row.dart';
 
-class MembersPopup extends StatefulWidget {
+class MembersPage extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<Member> originalMembers;
-  final Function handlePopupClosed;
   final bool isCreating; // if creating don't have to bother with group creator
 
-  MembersPopup(this.displayedMembers, this.originalMembers, this.isCreating,
-      {this.handlePopupClosed});
+  MembersPage(this.displayedMembers, this.originalMembers, this.isCreating);
 
   @override
-  _MembersPopupState createState() => _MembersPopupState();
+  _MembersPageState createState() => _MembersPageState();
 }
 
-class _MembersPopupState extends State<MembersPopup> {
+class _MembersPageState extends State<MembersPage> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
   final TextEditingController favoriteController = new TextEditingController();
   List<UserRow> displayedUserRows = new List<UserRow>();
   List<UserRow> displayedFavoritesRows = new List<UserRow>();
   bool showFavorites = false;
+  UserRow creator;
 
   @override
   void initState() {
@@ -43,10 +42,14 @@ class _MembersPopupState extends State<MembersPopup> {
             user.username != Globals.username;
         displayOwner = user.username == Globals.currentGroup.groupCreator;
       }
-      displayedUserRows.add(new UserRow(user.displayName, user.username,
-          user.icon, displayDelete, false, displayOwner, deleteUser: () {
+      UserRow userRow = new UserRow(user.displayName, user.username, user.icon,
+          displayDelete, false, displayOwner, deleteUser: () {
         removeMember(user.username);
-      }));
+      });
+      if (displayOwner) {
+        creator = userRow;
+      }
+      displayedUserRows.add(userRow);
       // if favorite is already in group, don't show in the favorites section
       displayedFavoritesRows
           .removeWhere((row) => row.username == user.username);
@@ -59,34 +62,18 @@ class _MembersPopupState extends State<MembersPopup> {
     return Form(
       key: formKey,
       child: WillPopScope(
-        onWillPop: handleBackPress,
-        child: AlertDialog(
-          title: Text("Group Members"),
-          actions: <Widget>[
-            FlatButton(
-              child: Text("Close"),
-              onPressed: () {
-                userController.clear();
-                Navigator.of(context, rootNavigator: true).pop('dialog');
-                widget.handlePopupClosed();
-              },
+          onWillPop: handleBackPress,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text("Add/Remove Members"),
+              leading: IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                  }),
             ),
-            Visibility(
-              visible: !showFavorites,
-              child: FlatButton(
-                child: Text("Add User"),
-                onPressed: () {
-                  if (formKey.currentState.validate()) {
-                    addNewMember();
-                  }
-                },
-              ),
-            ),
-          ],
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              width: double.maxFinite,
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -113,6 +100,17 @@ class _MembersPopupState extends State<MembersPopup> {
                               decoration: InputDecoration(
                                   labelText: "Enter a username to add",
                                   counterText: "")),
+                        ),
+                      ),
+                      Visibility(
+                        visible: !showFavorites,
+                        child: FlatButton(
+                          child: Text("Add User"),
+                          onPressed: () {
+                            if (formKey.currentState.validate()) {
+                              addNewMember();
+                            }
+                          },
                         ),
                       ),
                       Visibility(
@@ -169,7 +167,7 @@ class _MembersPopupState extends State<MembersPopup> {
                             shape: BoxShape.circle,
                             color: (showFavorites)
                                 ? Theme.of(context).accentColor
-                                : Theme.of(context).dialogBackgroundColor),
+                                : Theme.of(context).scaffoldBackgroundColor),
                         child: IconButton(
                           icon: Icon(Icons.contacts),
                           onPressed: () {
@@ -190,9 +188,8 @@ class _MembersPopupState extends State<MembersPopup> {
                   Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .005)),
-                  Scrollbar(
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * .25,
+                  Expanded(
+                    child: Scrollbar(
                       child: ListView.builder(
                           shrinkWrap: true,
                           itemCount: (showFavorites)
@@ -203,6 +200,11 @@ class _MembersPopupState extends State<MembersPopup> {
                             displayedUserRows.sort((a, b) => a.displayName
                                 .toLowerCase()
                                 .compareTo(b.displayName.toLowerCase()));
+                            if (!widget.isCreating) {
+                              // place the owner at the top
+                              displayedUserRows.remove(creator);
+                              displayedUserRows.insert(0, creator);
+                            }
                             displayedFavoritesRows.sort((a, b) => a.displayName
                                 .toLowerCase()
                                 .compareTo(b.displayName.toLowerCase()));
@@ -217,9 +219,7 @@ class _MembersPopupState extends State<MembersPopup> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
+          )),
     );
   }
 

@@ -12,8 +12,9 @@ import 'package:frontEnd/utilities/validator.dart';
 
 class EditCategory extends StatefulWidget {
   final Category category;
+  final bool editName;
 
-  EditCategory({Key key, this.category}) : super(key: key);
+  EditCategory({Key key, this.category, this.editName}) : super(key: key);
 
   @override
   _EditCategoryState createState() => _EditCategoryState();
@@ -124,6 +125,7 @@ class _EditCategoryState extends State<EditCategory> {
                       child: Visibility(
                         visible: this.isCategoryOwner,
                         child: TextFormField(
+                          enabled: widget.editName,
                           maxLength: 40,
                           controller: this.categoryNameController,
                           validator: validCategory,
@@ -161,8 +163,8 @@ class _EditCategoryState extends State<EditCategory> {
                               String errorMsg;
                               if (snapshot.hasData) {
                                 if (this.initialPageLoad) {
-                                  ResultStatus<Map<String, dynamic>> resultStatus =
-                                      snapshot.data;
+                                  ResultStatus<Map<String, dynamic>>
+                                      resultStatus = snapshot.data;
                                   if (resultStatus.success) {
                                     Map<String, dynamic> userRatings =
                                         resultStatus.data;
@@ -280,6 +282,7 @@ class _EditCategoryState extends State<EditCategory> {
           duplicates = true;
         }
       }
+      hideKeyboard(context);
       if (duplicates) {
         setState(() {
           showErrorMessage(
@@ -294,6 +297,7 @@ class _EditCategoryState extends State<EditCategory> {
             ratesToSave,
             widget.category);
         Navigator.of(context, rootNavigator: true).pop('dialog');
+        // TODO if success, change category name in global user
 
         if (!status.success) {
           showErrorMessage("Error", status.errorMessage, context);
