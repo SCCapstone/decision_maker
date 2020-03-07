@@ -58,7 +58,12 @@ String convertTimeToString(TimeOfDay time) {
 }
 
 String convertTimeToStringFormatted(TimeOfDay time) {
-  String retVal = time.hourOfPeriod.toString() + ":";
+  String retVal = "";
+  if (time.hourOfPeriod == 0) { // midnight and noon are given a value of zero
+    retVal += "12:";
+  } else {
+    retVal += time.hourOfPeriod.toString() + ":";
+  }
   if (time.minute < 10) {
     retVal += "0" + time.minute.toString();
   } else {

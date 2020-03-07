@@ -128,17 +128,20 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
-                    ExpansionTile(
-                      title: Text("Attendees (${event.optedIn.length})"),
-                      children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * .2,
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: userRows,
+                    Visibility(
+                      visible: event.optedIn.length > 0,
+                      child:  ExpansionTile(
+                        title: Text("Attendees (${event.optedIn.length})"),
+                        children: <Widget>[
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .2,
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: userRows,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
