@@ -161,9 +161,8 @@ class _CreateEventState extends State<CreateEvent> {
                               // if already at max length and you keep typing, setState won't get called again
                               if (!(arg.length == textFieldLength &&
                                   rsvpDuration.length == textFieldLength)) {
-                                setState(() {
-                                  rsvpDuration = arg;
-                                });
+                                rsvpDuration = arg;
+                                setState(() {});
                               }
                             },
                             decoration:
@@ -173,22 +172,21 @@ class _CreateEventState extends State<CreateEvent> {
                         RaisedButton(
                             child: Text(skipButtonText),
                             onPressed: () {
-                              setState(() {
-                                willRsvp = !willRsvp;
-                                if (willRsvp == false) {
-                                  rsvpDurationController.text = "0";
-                                  rsvpDuration = rsvpDurationController.text;
-                                  skipButtonText = "RSVP";
-                                  rsvpLabelText = "Skipping RSVP phase";
-                                } else {
-                                  rsvpDurationController.text = Globals
-                                      .currentGroup.defaultRsvpDuration
-                                      .toString();
-                                  rsvpDuration = rsvpDurationController.text;
-                                  skipButtonText = "Skip RSVP";
-                                  rsvpLabelText = "RSVP Duration (in minutes)";
-                                }
-                              });
+                              willRsvp = !willRsvp;
+                              if (willRsvp == false) {
+                                rsvpDurationController.text = "0";
+                                rsvpDuration = rsvpDurationController.text;
+                                skipButtonText = "RSVP";
+                                rsvpLabelText = "Skipping RSVP phase";
+                              } else {
+                                rsvpDurationController.text = Globals
+                                    .currentGroup.defaultRsvpDuration
+                                    .toString();
+                                rsvpDuration = rsvpDurationController.text;
+                                skipButtonText = "Skip RSVP";
+                                rsvpLabelText = "RSVP Duration (in minutes)";
+                              }
+                              setState(() {});
                             })
                       ],
                     ),
@@ -200,9 +198,8 @@ class _CreateEventState extends State<CreateEvent> {
                       onChanged: (String arg) {
                         if (!(arg.length == textFieldLength &&
                             votingDuration.length == textFieldLength)) {
-                          setState(() {
-                            votingDuration = arg;
-                          });
+                          votingDuration = arg;
+                          setState(() {});
                         }
                       },
                       decoration: InputDecoration(
@@ -283,11 +280,10 @@ class _CreateEventState extends State<CreateEvent> {
     DateTime currentDateMinusOneDay =
         currentDate.subtract(new Duration(days: 1));
     if ((selectedDate.isAfter(currentDateMinusOneDay))) {
-      setState(() {
-        eventStartDate = convertDateToString(selectedDate);
-        eventStartDateFormatted =
-            Globals.formatter.format(selectedDate).substring(0, 10);
-      });
+      eventStartDate = convertDateToString(selectedDate);
+      eventStartDateFormatted =
+          Globals.formatter.format(selectedDate).substring(0, 10);
+      setState(() {});
     } else {
       showPopupMessage("Start date cannot be before today's date.", context);
     }
@@ -302,10 +298,9 @@ class _CreateEventState extends State<CreateEvent> {
     if (startTimeIsInvalid(parsedStartDate, selectedTime)) {
       showPopupMessage("Start time must be after current time.", context);
     } else {
-      setState(() {
-        eventStartTime = convertTimeToString(selectedTime);
-        eventStartTimeFormatted = convertTimeToStringFormatted(selectedTime);
-      });
+      eventStartTime = convertTimeToString(selectedTime);
+      eventStartTimeFormatted = convertTimeToStringFormatted(selectedTime);
+      setState(() {});
     }
   }
 
