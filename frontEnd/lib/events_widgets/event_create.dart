@@ -325,6 +325,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   String calculateVotingStartDateTime() {
     if (rsvpDuration == "0") {
+      votingStart = DateTime.now();
       return "Voting will start immediately.";
     } else {
       if (validRsvpDuration(rsvpDuration) != null) {
