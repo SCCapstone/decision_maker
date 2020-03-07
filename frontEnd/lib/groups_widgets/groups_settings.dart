@@ -405,9 +405,9 @@ class _GroupSettingsState extends State<GroupSettings> {
   void saveMembers() async {
     Set oldMembers = originalMembers.toSet();
     Set newMembers = displayedMembers.toSet();
-    bool newMembersAdded = !(oldMembers.containsAll(newMembers) &&
+    bool changedMembers = !(oldMembers.containsAll(newMembers) &&
         oldMembers.length == newMembers.length);
-    if (newMembersAdded) {
+    if (changedMembers) {
       Map<String, Map<String, String>> membersMap =
           new Map<String, Map<String, String>>();
       for (Member member in displayedMembers) {
@@ -445,9 +445,9 @@ class _GroupSettingsState extends State<GroupSettings> {
   void saveCategories() async {
     Set oldCategories = originalCategories.keys.toSet();
     Set newCategories = selectedCategories.keys.toSet();
-    bool newCategoriesAdded = !(oldCategories.containsAll(newCategories) &&
+    bool changedCategories = !(oldCategories.containsAll(newCategories) &&
         oldCategories.length == newCategories.length);
-    if (newCategoriesAdded) {
+    if (changedCategories) {
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
           groupName: Globals.currentGroup.groupName,
