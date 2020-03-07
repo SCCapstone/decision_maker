@@ -48,7 +48,7 @@ String validVotingDuration(String input) {
     int num = int.parse(input);
     if (num <= 0) {
       retVal = "Too small.";
-    } else if (num > 10000) {
+    } else if (num >= 10000) {
       retVal = "Too big.";
     }
   } catch (e) {
@@ -63,7 +63,7 @@ String validRsvpDuration(String input) {
     int num = int.parse(input);
     if (num < 0) {
       retVal = "Too small.";
-    } else if (num > 10000) {
+    } else if (num >= 10000) {
       retVal = "Too big.";
     }
   } catch (e) {

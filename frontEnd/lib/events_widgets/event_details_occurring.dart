@@ -62,7 +62,8 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Event Time",
+                        (DateTime.now().isBefore(event.eventStartDateTime))
+                            ? "Event Starts" : "Event Started",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
