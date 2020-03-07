@@ -166,7 +166,10 @@ class _CreateEventState extends State<CreateEvent> {
                               }
                             },
                             decoration:
-                                InputDecoration(labelText: rsvpLabelText),
+                                InputDecoration(
+                                    labelText: rsvpLabelText,
+                                    counterText: ""
+                                ),
                           ),
                         ),
                         RaisedButton(
@@ -176,7 +179,7 @@ class _CreateEventState extends State<CreateEvent> {
                               if (willRsvp == false) {
                                 rsvpDurationController.text = "0";
                                 rsvpDuration = rsvpDurationController.text;
-                                skipButtonText = "RSVP";
+                                skipButtonText = "Enable RSVP";
                                 rsvpLabelText = "Skipping RSVP phase";
                               } else {
                                 rsvpDurationController.text = Globals
@@ -203,7 +206,9 @@ class _CreateEventState extends State<CreateEvent> {
                         }
                       },
                       decoration: InputDecoration(
-                          labelText: "Voting duration (in minutes)"),
+                          labelText: "Voting duration (in minutes)",
+                          counterText: ""
+                      ),
                     ),
                     Text(
                       calculateVotingStartDateTime(),
