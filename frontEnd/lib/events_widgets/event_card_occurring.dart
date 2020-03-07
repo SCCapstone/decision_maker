@@ -16,8 +16,6 @@ class EventCardOccurring extends StatefulWidget {
 }
 
 class _EventCardOccurringState extends State<EventCardOccurring> {
-  final DateTime currentDateTime = DateTime.now();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -33,13 +31,13 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
             ),
           ),
           Visibility(
-            visible: currentDateTime.isBefore(widget.event.eventStartDateTime),
+            visible: DateTime.now().isBefore(widget.event.eventStartDateTime),
             child: Text("Event starts: ${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20)
             )
           ),
           Visibility(
-            visible: !currentDateTime.isBefore(widget.event.eventStartDateTime),
+            visible: !DateTime.now().isBefore(widget.event.eventStartDateTime),
             child: Text("Started at: ${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20)
             )

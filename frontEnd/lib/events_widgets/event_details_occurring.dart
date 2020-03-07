@@ -26,12 +26,18 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   String eventCreator = "";
   List<Widget> userRows = new List<Widget>();
   Event event;
+  String eventStatus = "";
 
   @override
   void initState() {
     getEvent();
     for (String username in event.eventCreator.keys) {
       eventCreator = event.eventCreator[username];
+    }
+    if (DateTime.now().isBefore(event.eventStartDateTime)) {
+      eventStatus = "Event Starts";
+    } else {
+      eventStatus = "Event Started";
     }
     super.initState();
   }
@@ -62,7 +68,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
-                        "Event Time",
+                        eventStatus,
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
