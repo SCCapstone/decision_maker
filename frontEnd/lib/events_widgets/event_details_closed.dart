@@ -118,20 +118,17 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
-                    Visibility(
-                      visible: event.optedIn.length > 0,
-                      child:  ExpansionTile(
-                        title: Text("Attendees (${event.optedIn.length})"),
-                        children: <Widget>[
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * .2,
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: userRows,
-                            ),
+                    ExpansionTile(
+                      title: Text("Attendees (${event.optedIn.length})"),
+                      children: <Widget>[
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * .2,
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: userRows,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

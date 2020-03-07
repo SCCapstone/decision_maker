@@ -179,7 +179,7 @@ class _CreateEventState extends State<CreateEvent> {
                               if (willRsvp == false) {
                                 rsvpDurationController.text = "0";
                                 rsvpDuration = rsvpDurationController.text;
-                                skipButtonText = "Enable RSVP";
+                                skipButtonText = "Set RSVP";
                                 rsvpLabelText = "Skipping RSVP phase";
                               } else {
                                 rsvpDurationController.text = Globals
