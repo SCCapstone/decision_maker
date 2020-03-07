@@ -50,7 +50,10 @@ class UserRow extends StatelessWidget {
           Visibility(
             visible: isGroupOwner,
             // show a special icon if user is the owner of the group. Used a button to make it centered
-            child: IconButton(icon: Icon(Icons.star, color: Colors.yellow)),
+            child: IconButton(
+              icon: Icon(Icons.star, color: Colors.yellow),
+              tooltip: "Owner",
+            ),
           ),
           Visibility(
             visible: adding,

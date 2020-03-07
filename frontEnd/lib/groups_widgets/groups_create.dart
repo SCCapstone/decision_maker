@@ -10,11 +10,9 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
 import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/widgets/category_popup.dart';
-import 'package:frontEnd/widgets/members_popup.dart';
+import 'package:frontEnd/widgets/category_pick.dart';
+import 'package:frontEnd/widgets/members_page.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'groups_home.dart';
 
 class CreateGroup extends StatefulWidget {
   @override
@@ -47,11 +45,6 @@ class _CreateGroupState extends State<CreateGroup> {
     votingDurationController.dispose();
     rsvpDurationController.dispose();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -134,20 +127,58 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
-                      RaisedButton(
-                        child: Text("Members"),
-                        onPressed: () {
-                          showMembersPopup();
-                        },
+                      Expanded(
+                        child: Text(
+                          "Select categories for group",
+                          style: TextStyle(
+                              fontSize:
+                                  DefaultTextStyle.of(context).style.fontSize *
+                                      0.4),
+                        ),
                       ),
-                      RaisedButton(
-                        child: Text("Categories"),
-                        onPressed: () {
-                          showCategoriesPopup();
-                        },
-                      )
+                      Container(
+                          width: MediaQuery.of(context).size.width * .20,
+                          child: IconButton(
+                            icon: Icon(Icons.keyboard_arrow_right),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CategoryPick(selectedCategories)));
+                            },
+                          )),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          "Add/Remove members",
+                          style: TextStyle(
+                              fontSize:
+                                  DefaultTextStyle.of(context).style.fontSize *
+                                      0.4),
+                        ),
+                      ),
+                      Container(
+                          width: MediaQuery.of(context).size.width * .20,
+                          child: IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => MembersPage(
+                                            displayedMembers,
+                                            displayedMembers,
+                                            true,
+                                          )));
+                            },
+                          )),
                     ],
                   ),
                   RaisedButton.icon(
@@ -172,25 +203,6 @@ class _CreateGroupState extends State<CreateGroup> {
 
     setState(() {
       this.icon = newIcon;
-    });
-  }
-
-  void showMembersPopup() {
-    showDialog(
-            context: context,
-            child: MembersPopup(displayedMembers, displayedMembers, true,
-                handlePopupClosed: () {}))
-        .then((value) {
-      hideKeyboard(context);
-    });
-  }
-
-  void showCategoriesPopup() {
-    showDialog(
-            context: context,
-            child: CategoryPopup(selectedCategories, handlePopupClosed: () {}))
-        .then((value) {
-      hideKeyboard(context);
     });
   }
 
@@ -223,7 +235,8 @@ class _CreateGroupState extends State<CreateGroup> {
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
-      ResultStatus resultStatus = await GroupsManager.createNewGroup(group, icon);
+      ResultStatus resultStatus =
+          await GroupsManager.createNewGroup(group, icon);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
