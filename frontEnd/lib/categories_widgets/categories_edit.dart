@@ -29,19 +29,23 @@ class _EditCategoryState extends State<EditCategory> {
       new LinkedHashMap<String, TextEditingController>();
   final Map<String, TextEditingController> ratesControllers =
       new LinkedHashMap<String, TextEditingController>();
+  final Map<String, String> originalChoices =
+      new LinkedHashMap<String, String>();
+
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
   FocusNode focusNode;
-  bool initialPageLoad = true;
   bool autoValidate = false;
   bool isCategoryOwner;
   bool loading;
   bool errorLoading;
+  bool categoryChanged;
   int nextChoiceNum;
   ChoiceRow currentChoice;
   Widget errorWidget;
   Category category;
+  String categoryName;
 
   @override
   void dispose() {
@@ -58,14 +62,12 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   void initState() {
+    categoryChanged = false;
     loading = true;
     errorLoading = false;
     for (Category cat in Globals.activeUserCategories) {
-//      print(cat);
-//      print(widget.category.categoryId);
       // if category is cached, get it
       if (cat.categoryId == widget.category.categoryId) {
-        print("fuck");
         category = cat;
         loading = false;
       }
@@ -73,6 +75,7 @@ class _EditCategoryState extends State<EditCategory> {
     if (loading) {
       getCategory();
     } else {
+      categoryName = widget.category.categoryName;
       getRatings();
     }
     super.initState();
@@ -97,13 +100,16 @@ class _EditCategoryState extends State<EditCategory> {
         },
         child: Scaffold(
             appBar: AppBar(
-              title: Text("Edit ${widget.category.categoryName}"),
+              title: Text("Edit Category"),
               actions: <Widget>[
-                RaisedButton.icon(
-                  icon: Icon(Icons.save),
-                  label: Text("Save"),
-                  color: Colors.blue,
-                  onPressed: saveCategory,
+                Visibility(
+                  visible: categoryChanged,
+                  child: RaisedButton.icon(
+                    icon: Icon(Icons.save),
+                    label: Text("Save"),
+                    color: Colors.blue,
+                    onPressed: saveCategory,
+                  ),
                 ),
               ],
             ),
@@ -122,31 +128,36 @@ class _EditCategoryState extends State<EditCategory> {
                       ),
                       Container(
                         width: MediaQuery.of(context).size.width * .7,
-                        child: Visibility(
-                          visible: this.isCategoryOwner,
-                          child: TextFormField(
-                            enabled: widget.editName,
-                            maxLength: 40,
-                            controller: this.categoryNameController,
-                            validator: validCategory,
-                            textCapitalization: TextCapitalization.sentences,
-                            style: TextStyle(fontSize: 20),
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Category Name",
-                                counterText: ""),
-                          ),
+                        child: TextFormField(
+                          enabled: widget.editName,
+                          onChanged: (val) => checkForChanges(),
+                          maxLength: 40,
+                          controller: this.categoryNameController,
+                          validator: validCategory,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: TextStyle(fontSize: 20),
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Category Name",
+                              counterText: ""),
+                        ),
+                      ),
+                      Visibility(
+                        visible: !this.isCategoryOwner,
+                        child: Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .008),
                         ),
                       ),
                       Visibility(
                         visible: !this.isCategoryOwner,
                         child: Text(
-                          "Category: ${widget.category.categoryName}\nBy: ${widget.category.owner}",
+                          "Category Owner: ${widget.category.owner}",
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize:
                                   DefaultTextStyle.of(context).style.fontSize *
-                                      0.5),
+                                      0.4),
                         ),
                       ),
                       Padding(
@@ -195,14 +206,14 @@ class _EditCategoryState extends State<EditCategory> {
                           this.nextChoiceNum.toString(), () => rateController);
 
                       ChoiceRow choice = new ChoiceRow(
-                        this.nextChoiceNum.toString(),
-                        null,
-                        this.isCategoryOwner,
-                        labelController,
-                        rateController,
-                        deleteChoice: (choice) => deleteChoice(choice),
-                        focusNode: focusNode,
-                      );
+                          this.nextChoiceNum.toString(),
+                          null,
+                          this.isCategoryOwner,
+                          labelController,
+                          rateController,
+                          deleteChoice: (choice) => deleteChoice(choice),
+                          focusNode: focusNode,
+                          checkForChange: checkForChanges);
                       this.currentChoice = choice;
                       this.choiceRows.add(choice);
                       this.nextChoiceNum++;
@@ -214,6 +225,7 @@ class _EditCategoryState extends State<EditCategory> {
                           curve: Curves.easeOut,
                         );
                       });
+                      checkForChanges();
                     });
                   }
                 },
@@ -221,6 +233,37 @@ class _EditCategoryState extends State<EditCategory> {
             )),
       );
     }
+  }
+
+  void checkForChanges() {
+    // if lengths differ, then automatically something has changed.
+    bool changed = (originalChoices.length != this.labelControllers.length);
+    Map<String, String> newChoicesMap = new Map<String, String>();
+    for (String choiceId in this.labelControllers.keys) {
+      newChoicesMap.putIfAbsent(this.labelControllers[choiceId].text,
+          () => this.defaultRate.toString());
+    }
+    for (String choiceId in this.ratesControllers.keys) {
+      newChoicesMap.update(this.labelControllers[choiceId].text,
+          (existing) => this.ratesControllers[choiceId].text);
+    }
+    // check to see if the rating for the given choice changed. Or if the name is in the new map at all
+    for (String choiceName in newChoicesMap.keys) {
+      if (originalChoices.containsKey(choiceName)) {
+        if (originalChoices[choiceName] != newChoicesMap[choiceName]) {
+          changed = true;
+        }
+      } else {
+        changed = true;
+      }
+    }
+    // also check for category name change
+    if (categoryName != categoryNameController.text.trim()) {
+      changed = true;
+    }
+    setState(() {
+      categoryChanged = changed;
+    });
   }
 
   Widget categoriesLoading() {
@@ -261,6 +304,7 @@ class _EditCategoryState extends State<EditCategory> {
     if (resultStatus.success) {
       errorLoading = false;
       category = resultStatus.data.first;
+      categoryName = category.categoryName;
       if (category.owner == Globals.username) {
         // cache groups that the user owns
         Globals.activeUserCategories.insert(0, category);
@@ -287,10 +331,19 @@ class _EditCategoryState extends State<EditCategory> {
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
       ratesControllers.putIfAbsent(choiceId, () => rateController);
+      // preserve original choices
+      this.originalChoices.putIfAbsent(
+          category.choices[choiceId], () => this.defaultRate.toString());
 
-      ChoiceRow choice = new ChoiceRow(choiceId, category.choices[choiceId],
-          this.isCategoryOwner, labelController, rateController,
-          deleteChoice: (choice) => deleteChoice(choice));
+      ChoiceRow choice = new ChoiceRow(
+        choiceId,
+        category.choices[choiceId],
+        this.isCategoryOwner,
+        labelController,
+        rateController,
+        deleteChoice: (choice) => deleteChoice(choice),
+        checkForChange: checkForChanges,
+      );
       this.choiceRows.add(choice);
     }
     // populate the choices with the ratings
@@ -301,6 +354,10 @@ class _EditCategoryState extends State<EditCategory> {
         if (userRatings.containsKey(choiceId.toString())) {
           this.ratesControllers[choiceId].text =
               userRatings[choiceId.toString()].toString();
+          // preserve original rating for each choice
+          this.originalChoices.update(category.choices[choiceId],
+              (existing) => userRatings[choiceId.toString()].toString(),
+              ifAbsent: () => this.defaultRate.toString());
         }
       }
     }
@@ -331,29 +388,32 @@ class _EditCategoryState extends State<EditCategory> {
         });
       } else if (this.isCategoryOwner) {
         showLoadingDialog(context, "Saving changes...", true);
+        category.categoryName = this.categoryNameController.text.trim();
         ResultStatus status = await CategoriesManager.addOrEditCategory(
             this.categoryNameController.text.trim(),
             labelsToSave,
             ratesToSave,
             category);
         Navigator.of(context, rootNavigator: true).pop('dialog');
-        if(status.success){
+        if (status.success) {
           // TODO grab category and replace global list with it
-          if (this.categoryNameController.text.trim() !=
-              widget.category.categoryName) {
-            print("here");
+          // TODO update user ratings
+          if (this.categoryNameController.text.trim() != categoryName) {
             // new name, so update in the user object locally
             Globals.user.ownedCategories.remove(widget.category);
             Globals.user.ownedCategories.add(new Category.debug(
                 widget.category.categoryId,
-                widget.category.categoryName,
+                this.categoryNameController.text.trim(),
                 null,
                 null,
-                nextChoiceNum,
+                null,
                 null));
           }
-        }
-        else {
+          setState(() {
+            categoryChanged = false;
+            categoryName = this.categoryNameController.text.trim();
+          });
+        } else {
           showErrorMessage("Error", status.errorMessage, context);
         }
       } else {
@@ -379,6 +439,7 @@ class _EditCategoryState extends State<EditCategory> {
       this.labelControllers.remove(choiceRow.choiceNumber);
       this.ratesControllers.remove(choiceRow.choiceNumber);
       hideKeyboard(context);
+      checkForChanges();
     });
   }
 }

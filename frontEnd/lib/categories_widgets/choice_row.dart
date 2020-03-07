@@ -9,11 +9,12 @@ class ChoiceRow extends StatefulWidget {
   final TextEditingController labelController;
   final TextEditingController rateController;
   final Function deleteChoice;
+  final VoidCallback checkForChange;
   final FocusNode focusNode;
 
   ChoiceRow(this.choiceNumber, this.choiceName, this.isOwner,
       this.labelController, this.rateController,
-      {this.deleteChoice, this.focusNode});
+      {this.deleteChoice, this.focusNode, this.checkForChange});
 
   void requestFocus(BuildContext context) {
     FocusScope.of(context).requestFocus(focusNode);
@@ -30,21 +31,17 @@ class _ChoiceRowState extends State<ChoiceRow> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
         Flexible(
-          child: Visibility(
-            visible: widget.isOwner,
-            child: TextFormField(
-              validator: validChoice,
-              maxLength: 40,
-              focusNode: widget.focusNode,
-              controller: widget.labelController,
-              decoration: InputDecoration(labelText: "Choice", counterText: ""),
-            ),
+          child: TextFormField(
+            onChanged: (val) {
+              widget.checkForChange();
+            },
+            validator: validChoice,
+            maxLength: 40,
+            enabled: widget.isOwner,
+            focusNode: widget.focusNode,
+            controller: widget.labelController,
+            decoration: InputDecoration(labelText: "Choice", counterText: ""),
           ),
-        ),
-        Visibility(
-          // if the user is not the category owner, they cannot edit the choice names, only ratings
-          visible: !widget.isOwner,
-          child: Expanded(child: Text("Choice:\n${widget.choiceName}")),
         ),
         RaisedButton.icon(
           icon: Icon(Icons.edit),
@@ -81,6 +78,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
         }).then((int value) {
       if (value != null) {
         setState(() => widget.rateController.text = value.toString());
+        widget.checkForChange();
       }
     });
   }

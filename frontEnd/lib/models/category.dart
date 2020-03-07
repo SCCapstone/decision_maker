@@ -1,5 +1,5 @@
 class Category {
-  final String categoryName;
+  String categoryName;
   final String categoryId;
   final Map<String, dynamic> choices;
   final Map<String, dynamic> groups;
