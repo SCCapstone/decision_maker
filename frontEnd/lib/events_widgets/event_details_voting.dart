@@ -33,8 +33,8 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   @override
   void initState() {
     getEvent();
-    for (String displayname in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[displayname];
+    for (String username in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[username];
     }
     for (String choiceId in event.tentativeAlgorithmChoices.keys) {
       choices.putIfAbsent(

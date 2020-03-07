@@ -57,6 +57,21 @@ String convertTimeToString(TimeOfDay time) {
   return time.toString().substring(10, 15);
 }
 
+String convertTimeToStringFormatted(TimeOfDay time) {
+  String retVal = time.hourOfPeriod.toString() + ":";
+  if (time.minute < 10) {
+    retVal += "0" + time.minute.toString();
+  } else {
+    retVal += time.minute.toString();
+  }
+  if (time.period == DayPeriod.am) {
+    retVal += " AM";
+  } else {
+    retVal += " PM";
+  }
+  return retVal;
+}
+
 String convertDateTimeToString(DateTime dateTime) {
   return dateTime.toString().substring(0, 16);
 }

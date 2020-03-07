@@ -29,8 +29,8 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
   @override
   void initState() {
     getEvent();
-    for (String displayname in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[displayname];
+    for (String username in event.eventCreator.keys) {
+      eventCreator = event.eventCreator[username];
     }
     super.initState();
   }

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/groups_widgets/group_page.dart';
-import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
-import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
@@ -32,17 +29,23 @@ class _CreateEventState extends State<CreateEvent> {
   bool autoValidate = false;
   final formKey = GlobalKey<FormState>();
   final List<Category> categorySelected = new List<Category>();
-  final DateTime currentDate = DateTime.now();
-  final TimeOfDay currentTime = TimeOfDay.now();
+  DateTime currentDate = DateTime.now();
+  TimeOfDay currentTime = TimeOfDay.now();
 
   // Using these strings both to display on the page and to eventually
   // make the API request for making the event
   String eventStartDate;
   String eventStartTime;
+  String eventStartDateFormatted;
+  String eventStartTimeFormatted;
+
   DateTime votingStart;
   DateTime votingEnd;
 
   final int textFieldLength = 5;
+  bool willRsvp = true;
+  String rsvpLabelText;
+  String skipButtonText;
 
   @override
   void dispose() {
@@ -58,17 +61,23 @@ class _CreateEventState extends State<CreateEvent> {
     eventStartTime = (currentTime.hour + 1).toString() + ":00";
     if ((currentTime.hour + 1) < 10) {
       eventStartTime = "0" + eventStartTime;
-    } else if ((currentTime.hour + 1) > 23) {
+    } else if ((currentTime.hourOfPeriod + 1) > 23) {
       eventStartTime = "00:00";
       eventStartDate =
           convertDateToString(DateTime.now().add(Duration(days: 1)));
     }
+    eventStartDateFormatted =
+        Globals.formatter.format(currentDate).substring(0, 10);
+    eventStartTimeFormatted = convertTimeToStringFormatted(
+        new TimeOfDay(hour: getHour(eventStartTime), minute: 0));
     votingDurationController.text =
         Globals.currentGroup.defaultVotingDuration.toString();
     rsvpDurationController.text =
         Globals.currentGroup.defaultRsvpDuration.toString();
     rsvpDuration = rsvpDurationController.text;
     votingDuration = votingDurationController.text;
+    rsvpLabelText = "RSVP Duration (in minutes)";
+    skipButtonText = "Skip RSVP";
     super.initState();
   }
 
@@ -93,6 +102,7 @@ class _CreateEventState extends State<CreateEvent> {
                     TextFormField(
                       controller: eventNameController,
                       validator: validEventName,
+                      textCapitalization: TextCapitalization.sentences,
                       onSaved: (String arg) {
                         eventName = arg;
                       },
@@ -118,7 +128,7 @@ class _CreateEventState extends State<CreateEvent> {
                                   onPressed: () {
                                     selectStartDate(context);
                                   },
-                                  child: Text(eventStartDate))),
+                                  child: Text(eventStartDateFormatted))),
                           Container(
                               width: 110,
                               height: 40,
@@ -126,7 +136,7 @@ class _CreateEventState extends State<CreateEvent> {
                                   onPressed: () {
                                     selectStartTime(context);
                                   },
-                                  child: Text(eventStartTime))),
+                                  child: Text(eventStartTimeFormatted))),
                         ]),
                     Container(height: 20),
                     RaisedButton(
@@ -136,21 +146,51 @@ class _CreateEventState extends State<CreateEvent> {
                       },
                     ),
                     Container(height: 10),
-                    TextFormField(
-                      controller: rsvpDurationController,
-                      keyboardType: TextInputType.number,
-                      validator: validRsvpDuration,
-                      maxLength: textFieldLength,
-                      onChanged: (String arg) {
-                        // if already at max length and you keep typing, setState won't get called again
-                        if (!(arg.length == textFieldLength && rsvpDuration.length == textFieldLength)) {
-                          setState(() {
-                            rsvpDuration = arg;
-                          });
-                        }
-                      },
-                      decoration: InputDecoration(
-                          labelText: "RSVP duration (in minutes)"),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Container(
+                          width: MediaQuery.of(context).size.width * .6,
+                          child: TextFormField(
+                            controller: rsvpDurationController,
+                            keyboardType: TextInputType.number,
+                            enabled: willRsvp,
+                            validator: validRsvpDuration,
+                            maxLength: textFieldLength,
+                            onChanged: (String arg) {
+                              // if already at max length and you keep typing, setState won't get called again
+                              if (!(arg.length == textFieldLength &&
+                                  rsvpDuration.length == textFieldLength)) {
+                                setState(() {
+                                  rsvpDuration = arg;
+                                });
+                              }
+                            },
+                            decoration:
+                                InputDecoration(labelText: rsvpLabelText),
+                          ),
+                        ),
+                        RaisedButton(
+                            child: Text(skipButtonText),
+                            onPressed: () {
+                              setState(() {
+                                willRsvp = !willRsvp;
+                                if (willRsvp == false) {
+                                  rsvpDurationController.text = "0";
+                                  rsvpDuration = rsvpDurationController.text;
+                                  skipButtonText = "RSVP";
+                                  rsvpLabelText = "Skipping RSVP phase";
+                                } else {
+                                  rsvpDurationController.text = Globals
+                                      .currentGroup.defaultRsvpDuration
+                                      .toString();
+                                  rsvpDuration = rsvpDurationController.text;
+                                  skipButtonText = "Skip RSVP";
+                                  rsvpLabelText = "RSVP Duration (in minutes)";
+                                }
+                              });
+                            })
+                      ],
                     ),
                     TextFormField(
                       controller: votingDurationController,
@@ -158,7 +198,8 @@ class _CreateEventState extends State<CreateEvent> {
                       validator: validVotingDuration,
                       maxLength: textFieldLength,
                       onChanged: (String arg) {
-                        if (!(arg.length == textFieldLength && votingDuration.length == textFieldLength)) {
+                        if (!(arg.length == textFieldLength &&
+                            votingDuration.length == textFieldLength)) {
                           setState(() {
                             votingDuration = arg;
                           });
@@ -170,12 +211,16 @@ class _CreateEventState extends State<CreateEvent> {
                     Text(
                       calculateVotingStartDateTime(),
                       style: TextStyle(
-                          fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.4),
                     ),
                     Text(
                       calculateVotingEndDateTime(),
                       style: TextStyle(
-                          fontSize: DefaultTextStyle.of(context).style.fontSize * 0.4),
+                          fontSize:
+                              DefaultTextStyle.of(context).style.fontSize *
+                                  0.4),
                     ),
                   ],
                 )
@@ -240,6 +285,8 @@ class _CreateEventState extends State<CreateEvent> {
     if ((selectedDate.isAfter(currentDateMinusOneDay))) {
       setState(() {
         eventStartDate = convertDateToString(selectedDate);
+        eventStartDateFormatted =
+            Globals.formatter.format(selectedDate).substring(0, 10);
       });
     } else {
       showPopupMessage("Start date cannot be before today's date.", context);
@@ -257,6 +304,7 @@ class _CreateEventState extends State<CreateEvent> {
     } else {
       setState(() {
         eventStartTime = convertTimeToString(selectedTime);
+        eventStartTimeFormatted = convertTimeToStringFormatted(selectedTime);
       });
     }
   }
@@ -265,6 +313,8 @@ class _CreateEventState extends State<CreateEvent> {
     // Check if the start time is on the earlier in the day than the current
     // time (in other words, same date as current day && earlier time means
     // the start time is invalid)
+    currentDate = DateTime.now();
+    currentTime = TimeOfDay.now();
     return ((startDate.year == currentDate.year &&
             startDate.month == currentDate.month &&
             startDate.day == currentDate.day)) &&
@@ -275,14 +325,14 @@ class _CreateEventState extends State<CreateEvent> {
 
   String calculateVotingStartDateTime() {
     if (rsvpDuration == "0") {
-      return "Voting will start on " + eventStartDate + " at " + eventStartTime;
+      return "Voting will start immediately.";
     } else {
       if (validRsvpDuration(rsvpDuration) != null) {
         return "RSVP duration invalid: " + validRsvpDuration(rsvpDuration);
       }
       votingStart = DateTime.now();
       votingStart = votingStart.add(Duration(minutes: int.parse(rsvpDuration)));
-      return "Voting will start at: " + convertDateTimeToString(votingStart);
+      return "Voting will start " + Globals.formatter.format(votingStart);
     }
   }
 
@@ -292,7 +342,7 @@ class _CreateEventState extends State<CreateEvent> {
     }
     if (votingStart != null) {
       votingEnd = votingStart.add(Duration(minutes: int.parse(votingDuration)));
-      return "Voting will end at: " + convertDateTimeToString(votingEnd);
+      return "Voting will end " + Globals.formatter.format(votingEnd);
     } else {
       return "";
     }
@@ -303,11 +353,15 @@ class _CreateEventState extends State<CreateEvent> {
     if (form.validate()) {
       form.save();
       String errorMessage = "";
-      if (this.votingStart.isAfter(DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
-        errorMessage += "RSVP duration invalid: RSVP will end after the event starts\n";
+      if (this.votingStart.isAfter(
+          DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
+        errorMessage +=
+            "RSVP duration invalid: RSVP will end after the event starts\n";
       }
-      if (this.votingEnd.isAfter(DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
-        errorMessage += "Voting duration invalid: voting will end after the event starts";
+      if (this.votingEnd.isAfter(
+          DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
+        errorMessage +=
+            "Voting duration invalid: voting will end after the event starts";
       }
       if (errorMessage != "") {
         showErrorMessage("Error", errorMessage, context);
@@ -317,7 +371,7 @@ class _CreateEventState extends State<CreateEvent> {
             categoryId: this.categorySelected.first.categoryId,
             categoryName: this.categorySelected.first.categoryName,
             createdDateTime:
-            DateTime.parse(currentDate.toString().substring(0, 19)),
+                DateTime.parse(DateTime.now().toString().substring(0, 19)),
             eventStartDateTime: DateTime.parse(
                 this.eventStartDate + ' ' + this.eventStartTime + ':00'),
             votingDuration: int.parse(this.votingDuration),
@@ -325,7 +379,7 @@ class _CreateEventState extends State<CreateEvent> {
 
         showLoadingDialog(context, "Creating event...", true);
         ResultStatus result =
-        await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
+            await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
         Navigator.of(context, rootNavigator: true).pop('dialog');
 
         if (result.success) {

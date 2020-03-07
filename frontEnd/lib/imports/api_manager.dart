@@ -13,7 +13,8 @@ final String idTokenKey = "id";
 Future<ResultStatus<String>> makeApiRequest(
     String apiEndpoint, Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
-  ResultStatus<String> retVal = new ResultStatus(success: false);
+  ResultStatus<String> retVal =
+      new ResultStatus(success: false, networkError: false);
 
   SharedPreferences tokens = await Globals.getTokens();
   if (tokens.containsKey(idTokenKey)) {
