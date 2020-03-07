@@ -33,12 +33,7 @@ class _CategoryListState extends State<CategoryList> {
               shrinkWrap: true,
               itemCount: widget.categories.length,
               itemBuilder: (BuildContext context, int index) {
-                bool isOwner = false;
-                if (widget.categories[index].owner == Globals.username) {
-                  isOwner = true;
-                }
-                return CategoriesListItem(
-                    widget.categories[index], index, isOwner,
+                return CategoriesListItem(widget.categories[index], index, true,
                     onDelete: () => removeItem(index),
                     afterEditCallback: widget.refreshPage);
               }));

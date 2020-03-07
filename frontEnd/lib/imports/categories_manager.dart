@@ -13,6 +13,7 @@ class CategoriesManager {
 
   //breaking style guide for consistency with backend vars
   static final String CATEGORY_ID = "CategoryId";
+  static final String CATEGORY_IDS = "CategoryIds";
   static final String CATEGORY_NAME = "CategoryName";
   static final String CHOICES = "Choices";
   static final String GROUPS = "Groups";
@@ -74,11 +75,17 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList() async {
+  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+      {String categoryId}) async {
     ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
+    if (categoryId != null) {
+      List<String> categoryIdList = new List<String>.from([categoryId]);
+      jsonRequestBody[RequestFields.PAYLOAD]
+          .putIfAbsent(CATEGORY_IDS, () => categoryIdList);
+    }
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);

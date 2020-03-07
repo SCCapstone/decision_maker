@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ class Globals {
   static bool android;
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
   static Group currentGroup;
+  static List<Category> activeUserCategories = new List<Category>();
   static SharedPreferences tokens;
   static int dateSort = 0;
   static int alphabeticalSort = 1;
