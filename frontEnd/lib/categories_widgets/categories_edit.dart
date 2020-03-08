@@ -62,11 +62,11 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   void initState() {
-    categoryChanged = false;
-    loading = true;
-    errorLoading = false;
+    this.categoryChanged = false;
+    this.loading = true;
+    this.errorLoading = false;
     for (Category cat in Globals.activeUserCategories) {
-      // if category is cached, get it
+      // if category is cached get it and don't bother querying DB
       if (cat.categoryId == widget.category.categoryId) {
         category = cat;
         loading = false;
@@ -75,7 +75,7 @@ class _EditCategoryState extends State<EditCategory> {
     if (loading) {
       getCategory();
     } else {
-      categoryName = widget.category.categoryName;
+      this.categoryName = widget.category.categoryName;
       getRatings();
     }
     super.initState();
