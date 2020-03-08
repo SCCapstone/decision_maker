@@ -29,8 +29,8 @@ class _EditCategoryState extends State<EditCategory> {
       new LinkedHashMap<String, TextEditingController>();
   final Map<String, TextEditingController> ratesControllers =
       new LinkedHashMap<String, TextEditingController>();
-  final Map<String, String> originalChoices =
-      new LinkedHashMap<String, String>();
+  Map<String, String> originalLabels = new LinkedHashMap<String, String>();
+  Map<String, String> originalRatings = new LinkedHashMap<String, String>();
 
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
@@ -207,7 +207,6 @@ class _EditCategoryState extends State<EditCategory> {
 
                       ChoiceRow choice = new ChoiceRow(
                           this.nextChoiceNum.toString(),
-                          null,
                           this.isCategoryOwner,
                           labelController,
                           rateController,
@@ -235,42 +234,11 @@ class _EditCategoryState extends State<EditCategory> {
     }
   }
 
-  void checkForChanges() {
-    // if lengths differ, then automatically something has changed.
-    bool changed = (originalChoices.length != this.labelControllers.length);
-    Map<String, String> newChoicesMap = new Map<String, String>();
-    for (String choiceId in this.labelControllers.keys) {
-      newChoicesMap.putIfAbsent(this.labelControllers[choiceId].text,
-          () => this.defaultRate.toString());
-    }
-    for (String choiceId in this.ratesControllers.keys) {
-      newChoicesMap.update(this.labelControllers[choiceId].text,
-          (existing) => this.ratesControllers[choiceId].text);
-    }
-    // check to see if the rating for the given choice changed. Or if the name is in the new map at all
-    for (String choiceName in newChoicesMap.keys) {
-      if (originalChoices.containsKey(choiceName)) {
-        if (originalChoices[choiceName] != newChoicesMap[choiceName]) {
-          changed = true;
-        }
-      } else {
-        changed = true;
-      }
-    }
-    // also check for category name change
-    if (categoryName != categoryNameController.text.trim()) {
-      changed = true;
-    }
-    setState(() {
-      categoryChanged = changed;
-    });
-  }
-
   Widget categoriesLoading() {
     return Scaffold(
         appBar: AppBar(
             title: Text(
-          "Edit ${widget.category.categoryName}",
+          "Edit Category",
         )),
         body: Center(child: CircularProgressIndicator()));
   }
@@ -279,7 +247,7 @@ class _EditCategoryState extends State<EditCategory> {
     return Scaffold(
         appBar: AppBar(
             title: Text(
-          "Edit ${widget.category.categoryName}",
+          "Edit Category",
         )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
@@ -297,24 +265,50 @@ class _EditCategoryState extends State<EditCategory> {
         ));
   }
 
+  void checkForChanges() {
+    // if lengths differ, then automatically something has changed.
+    bool changed = (this.originalLabels.length != this.labelControllers.length);
+    bool labelChanged = false;
+    for (String choiceId in this.labelControllers.keys) {
+      if (this.originalLabels[choiceId] !=
+          this.labelControllers[choiceId].text) {
+        labelChanged = labelChanged || true;
+      }
+    }
+    bool ratingsChanged = false;
+    for (String choiceId in this.ratesControllers.keys) {
+      if (this.originalRatings[choiceId] !=
+          this.ratesControllers[choiceId].text) {
+        ratingsChanged = ratingsChanged || true;
+      }
+    }
+    // also check for category name change
+    if (this.categoryName != this.categoryNameController.text.trim()) {
+      changed = true;
+    }
+    setState(() {
+      this.categoryChanged = changed || ratingsChanged || labelChanged;
+    });
+  }
+
   Future<Null> getCategory() async {
     ResultStatus<List<Category>> resultStatus =
         await CategoriesManager.getAllCategoriesList(
             categoryId: widget.category.categoryId);
     if (resultStatus.success) {
-      errorLoading = false;
-      category = resultStatus.data.first;
-      categoryName = category.categoryName;
+      this.errorLoading = false;
+      this.category = resultStatus.data.first;
+      this.categoryName = category.categoryName;
       if (category.owner == Globals.username) {
         // cache groups that the user owns
         Globals.activeUserCategories.insert(0, category);
       }
       getRatings();
     } else {
-      errorWidget = categoriesError(resultStatus.errorMessage);
+      this.errorWidget = categoriesError(resultStatus.errorMessage);
     }
     setState(() {
-      loading = false;
+      this.loading = false;
     });
   }
 
@@ -326,18 +320,14 @@ class _EditCategoryState extends State<EditCategory> {
     for (String choiceId in category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = category.choices[choiceId];
-      labelControllers.putIfAbsent(choiceId, () => labelController);
+      this.labelControllers.putIfAbsent(choiceId, () => labelController);
 
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
-      ratesControllers.putIfAbsent(choiceId, () => rateController);
-      // preserve original choices
-      this.originalChoices.putIfAbsent(
-          category.choices[choiceId], () => this.defaultRate.toString());
+      this.ratesControllers.putIfAbsent(choiceId, () => rateController);
 
       ChoiceRow choice = new ChoiceRow(
         choiceId,
-        category.choices[choiceId],
         this.isCategoryOwner,
         labelController,
         rateController,
@@ -348,34 +338,45 @@ class _EditCategoryState extends State<EditCategory> {
     }
     // populate the choices with the ratings
     Map<String, dynamic> userRatings =
-        Globals.user.categories[widget.category.categoryId];
+        Globals.user.userRatings[widget.category.categoryId];
     if (userRatings != null) {
       for (String choiceId in this.labelControllers.keys) {
         if (userRatings.containsKey(choiceId.toString())) {
           this.ratesControllers[choiceId].text =
               userRatings[choiceId.toString()].toString();
-          // preserve original rating for each choice
-          this.originalChoices.update(category.choices[choiceId],
-              (existing) => userRatings[choiceId.toString()].toString(),
-              ifAbsent: () => this.defaultRate.toString());
         }
       }
+    }
+    setOriginalValues();
+  }
+
+  void setOriginalValues() {
+    // preserve original values to determine if save button is to be shown or not
+    this.originalRatings.clear();
+    this.originalLabels.clear();
+    for (String choiceId in this.labelControllers.keys) {
+      this.originalLabels.putIfAbsent(
+          choiceId, () => this.labelControllers[choiceId].text.toString());
+    }
+    for (String choiceId in this.ratesControllers.keys) {
+      this.originalRatings.putIfAbsent(
+          choiceId, () => this.ratesControllers[choiceId].text.toString());
     }
   }
 
   void saveCategory() async {
     final form = this.formKey.currentState;
-    if (this.choiceRows.length == 0) {
-      showErrorMessage("Error!", "Must have at least one choice!", context);
+    if (this.choiceRows.isEmpty) {
+      showErrorMessage("Error.", "Must have at least one choice!", context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
       bool duplicates = false;
       Set names = new Set();
       for (String i in this.labelControllers.keys) {
-        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text);
-        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text);
-        if (!names.add(this.labelControllers[i].text)) {
+        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text.trim());
+        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text.trim());
+        if (!names.add(this.labelControllers[i].text.trim())) {
           duplicates = true;
         }
       }
@@ -383,21 +384,20 @@ class _EditCategoryState extends State<EditCategory> {
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error!", "No duplicate choices allowed!", context);
+              "Input Error.", "No duplicate choices allowed!", context);
           this.autoValidate = true;
         });
       } else if (this.isCategoryOwner) {
         showLoadingDialog(context, "Saving changes...", true);
-        category.categoryName = this.categoryNameController.text.trim();
+        this.category.categoryName = this.categoryNameController.text.trim();
         ResultStatus status = await CategoriesManager.addOrEditCategory(
             this.categoryNameController.text.trim(),
             labelsToSave,
             ratesToSave,
-            category);
+            this.category);
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (status.success) {
-          // TODO grab category and replace global list with it
-          // TODO update user ratings
+          // TODO grab category from result and replace global list with it
           if (this.categoryNameController.text.trim() != categoryName) {
             // new name, so update in the user object locally
             Globals.user.ownedCategories.remove(widget.category);
@@ -409,9 +409,15 @@ class _EditCategoryState extends State<EditCategory> {
                 null,
                 null));
           }
+          // update local ratings
+          Globals.user.userRatings.update(
+              widget.category.categoryId, (existing) => ratesToSave,
+              ifAbsent: () => ratesToSave);
+
           setState(() {
-            categoryChanged = false;
-            categoryName = this.categoryNameController.text.trim();
+            setOriginalValues();
+            this.categoryChanged = false;
+            this.categoryName = this.categoryNameController.text.trim();
           });
         } else {
           showErrorMessage("Error", status.errorMessage, context);
@@ -419,10 +425,19 @@ class _EditCategoryState extends State<EditCategory> {
       } else {
         showLoadingDialog(context, "Saving changes...", true);
         ResultStatus status = await UsersManager.updateUserChoiceRatings(
-            category.categoryId, ratesToSave);
+            this.category.categoryId, ratesToSave);
         Navigator.of(context, rootNavigator: true).pop('dialog');
 
-        if (!status.success) {
+        if (status.success) {
+          // update local ratings
+          Globals.user.userRatings.update(
+              widget.category.categoryId, (existing) => ratesToSave,
+              ifAbsent: () => ratesToSave);
+          setState(() {
+            setOriginalValues();
+            this.categoryChanged = false;
+          });
+        } else {
           showErrorMessage("Error", status.errorMessage, context);
         }
       }

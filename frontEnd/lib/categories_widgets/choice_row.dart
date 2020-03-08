@@ -4,7 +4,6 @@ import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
   final String choiceNumber;
-  final String choiceName;
   final bool isOwner;
   final TextEditingController labelController;
   final TextEditingController rateController;
@@ -12,8 +11,8 @@ class ChoiceRow extends StatefulWidget {
   final VoidCallback checkForChange;
   final FocusNode focusNode;
 
-  ChoiceRow(this.choiceNumber, this.choiceName, this.isOwner,
-      this.labelController, this.rateController,
+  ChoiceRow(this.choiceNumber, this.isOwner, this.labelController,
+      this.rateController,
       {this.deleteChoice, this.focusNode, this.checkForChange});
 
   void requestFocus(BuildContext context) {
@@ -38,6 +37,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             validator: validChoice,
             maxLength: 40,
             enabled: widget.isOwner,
+            textCapitalization: TextCapitalization.sentences,
             focusNode: widget.focusNode,
             controller: widget.labelController,
             decoration: InputDecoration(labelText: "Choice", counterText: ""),

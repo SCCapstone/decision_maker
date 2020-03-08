@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -59,7 +60,7 @@ class _CreateCategoryState extends State<CreateCategory> {
     this.ratesControllers.putIfAbsent("1", () => initRatingController);
 
     ChoiceRow choice = new ChoiceRow(
-        "1", null, true, initLabelController, initRatingController,
+        "1", true, initLabelController, initRatingController,
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -91,8 +92,8 @@ class _CreateCategoryState extends State<CreateCategory> {
           ),
           body: Center(
             child: Form(
-              key: formKey,
-              autovalidate: autoValidate,
+              key: this.formKey,
+              autovalidate: this.autoValidate,
               child: Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .015),
@@ -124,7 +125,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                       child: Scrollbar(
                         child: CustomScrollView(
                           shrinkWrap: false,
-                          controller: scrollController,
+                          controller: this.scrollController,
                           slivers: <Widget>[
                             SliverList(
                               delegate: SliverChildBuilderDelegate(
@@ -148,20 +149,19 @@ class _CreateCategoryState extends State<CreateCategory> {
             child: Icon(Icons.add),
             onPressed: () {
               setState(() {
-                focusNode = new FocusNode();
+                this.focusNode = new FocusNode();
                 TextEditingController labelController =
                     new TextEditingController();
-                labelControllers.putIfAbsent(
+                this.labelControllers.putIfAbsent(
                     this.nextChoiceValue.toString(), () => labelController);
                 TextEditingController rateController =
                     new TextEditingController();
                 rateController.text = defaultRate.toString();
-                ratesControllers.putIfAbsent(
+                this.ratesControllers.putIfAbsent(
                     this.nextChoiceValue.toString(), () => rateController);
 
                 ChoiceRow choice = new ChoiceRow(
                   this.nextChoiceValue.toString(),
-                  null,
                   true,
                   labelController,
                   rateController,
@@ -173,11 +173,11 @@ class _CreateCategoryState extends State<CreateCategory> {
                 this.nextChoiceValue++;
                 // allow the list to automatically scroll down as it grows
                 SchedulerBinding.instance.addPostFrameCallback((_) {
-                  scrollController.animateTo(
-                    scrollController.position.maxScrollExtent,
-                    duration: const Duration(microseconds: 100),
-                    curve: Curves.easeOut,
-                  );
+                  this.scrollController.animateTo(
+                        this.scrollController.position.maxScrollExtent,
+                        duration: const Duration(microseconds: 100),
+                        curve: Curves.easeOut,
+                      );
                 });
               });
             },
@@ -187,33 +187,41 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   void saveCategory() async {
     final form = this.formKey.currentState;
-    if (this.choiceRows.length == 0) {
-      showErrorMessage("Error!", "Must have at least one choice!", context);
+    if (this.choiceRows.isEmpty) {
+      showErrorMessage("Error.", "Must have at least one choice!", context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
       bool duplicates = false;
       Set names = new Set();
       for (String i in this.labelControllers.keys) {
-        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text);
-        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text);
-        if (!names.add(this.labelControllers[i].text)) {
+        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text.trim());
+        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text.trim());
+        if (!names.add(this.labelControllers[i].text.trim())) {
           duplicates = true;
         }
       }
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error!", "No duplicate choices allowed!", context);
+              "Input Error.", "No duplicate choices allowed!", context);
           this.autoValidate = true;
         });
       } else {
         showLoadingDialog(context, "Creating category...", true);
         ResultStatus status = await CategoriesManager.addOrEditCategory(
-            this.categoryNameController.text, labelsToSave, ratesToSave, null);
+            this.categoryNameController.text.trim(),
+            labelsToSave,
+            ratesToSave,
+            null);
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (status.success) {
           // TODO grab the category returned and update global variable
+//          Globals.user.ownedCategories.putIfAbsent(category.categoryId, ()=>category);
+          // update local ratings
+          Globals.user.userRatings.update(
+              widget.category.categoryId, (existing) => ratesToSave,
+              ifAbsent: () => ratesToSave);
           Navigator.of(context).pop();
         } else {
           showErrorMessage("Error", status.errorMessage, context);

@@ -52,6 +52,7 @@ class _CategoryListState extends State<CategoryList> {
     if (status.success) {
       setState(() {
         Globals.activeUserCategories.remove(widget.categories[index]);
+        Globals.user.ownedCategories.remove(widget.categories[index]);
         widget.categories.remove(widget.categories[index]);
       });
     } else {

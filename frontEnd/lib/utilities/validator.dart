@@ -12,7 +12,7 @@ String validGroupIcon(String input) {
 String validGroupName(String input) {
   if (input.length == 0) {
     return "Group name cannot be empty.";
-  } else if (input.length > 200) {
+  } else if (input.length > 50) {
     return "Group name is too large.";
   } else {
     return null;
@@ -22,7 +22,7 @@ String validGroupName(String input) {
 String validEventName(String input) {
   if (input.length == 0) {
     return "Event name cannot be empty.";
-  } else if (input.length > 200) {
+  } else if (input.length > 50) {
     return "Event name is too large.";
   } else {
     return null;
@@ -75,9 +75,9 @@ String validRsvpDuration(String input) {
 String validUser(String user, List<String> users) {
   if (user.isEmpty) {
     return "Username cannot be empty.";
-  } else if (user == Globals.username) {
+  } else if (user.trim() == Globals.username) {
     return "Can't add yourself.";
-  } else if (users.contains(user)) {
+  } else if (users.contains(user.trim())) {
     return "Username already added.";
   } else {
     return null;
@@ -166,7 +166,7 @@ String validNewFavorite(String input, List<Favorite> favorites) {
   String retVal;
   bool duplicates = false;
   for (Favorite favorite in favorites) {
-    if (favorite.username == input) {
+    if (favorite.username == input.trim()) {
       duplicates = true;
     }
   }
@@ -174,7 +174,7 @@ String validNewFavorite(String input, List<Favorite> favorites) {
     retVal = "Username cannot be empty.";
   } else if (duplicates) {
     retVal = "You already have this username saved.";
-  } else if (input == Globals.username) {
+  } else if (input.trim() == Globals.username) {
     retVal = "Cannot add yourself.";
   }
   return retVal;

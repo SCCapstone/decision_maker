@@ -104,6 +104,8 @@ class _GroupsHomeState extends State<GroupsHome> {
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
                     leading: GestureDetector(
                       onTap: () {
+                        // close the drawer menu when clicked
+                        Navigator.of(context).pop();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -119,6 +121,8 @@ class _GroupsHomeState extends State<GroupsHome> {
                           color: Theme.of(context).primaryColorDark),
                     ),
                     onTap: () {
+                      // close the drawer menu when clicked
+                      Navigator.of(context).pop();
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -130,8 +134,10 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             ListTile(
                 leading: Icon(Icons.format_list_bulleted),
-                title: Text('Categories', style: TextStyle(fontSize: 16)),
+                title: Text('My Categories', style: TextStyle(fontSize: 16)),
                 onTap: () {
+                  // close the drawer menu when clicked
+                  Navigator.of(context).pop();
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -141,12 +147,17 @@ class _GroupsHomeState extends State<GroupsHome> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings', style: TextStyle(fontSize: 16)),
                 onTap: () {
+                  // close the drawer menu when clicked
+                  Navigator.of(context).pop();
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => UserSettings()));
                 }),
+            Padding(
+              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .31),
+            ),
             ListTile(
                 leading: Icon(Icons.exit_to_app),
-                title: Text('Log out', style: TextStyle(fontSize: 16)),
+                title: Text('Log Out', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   logOutUser(context);
                   Navigator.pushAndRemoveUntil(
