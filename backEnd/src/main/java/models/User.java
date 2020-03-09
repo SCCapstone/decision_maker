@@ -18,8 +18,8 @@ public class User {
 
   @Setter(AccessLevel.NONE)
   private Map<String, Group> groups;
-  //TODO add categories and owned categories once we add Categories model https://github.com/SCCapstone/decision_maker/issues/306
-  private Map<String, Object> categories;
+  @Setter(AccessLevel.NONE)
+  private Map<String, Map<String, Integer>> categoryRatings;
   @Setter(AccessLevel.NONE)
   private Map<String, String> ownedCategories;
   @Setter(AccessLevel.NONE)
@@ -43,19 +43,34 @@ public class User {
 
   public void setGroups(final Map<String, Object> jsonMap) {
     this.groups = null;
-    if (!jsonMap.isEmpty()) {
+    if (jsonMap != null) {
       this.groups = new HashMap<>();
-      for (String groupId: jsonMap.keySet()) {
+      for (String groupId : jsonMap.keySet()) {
         this.groups.putIfAbsent(groupId, new Group((Map<String, Object>) jsonMap.get(groupId)));
+      }
+    }
+  }
+
+  public void setCategories(final Map<String, Object> jsonMap) {
+    this.categoryRatings = null;
+    if (jsonMap != null) {
+      this.categoryRatings = new HashMap<>();
+      for (String categoryId : jsonMap.keySet()) {
+        final Map<String, Object> choiceRatings = (Map<String, Object>) jsonMap.get(categoryId);
+        final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
+        for (String choiceId : choiceRatings.keySet()) {
+          choiceRatingsConverted.putIfAbsent(choiceId, (Integer) choiceRatings.get(choiceId));
+        }
+        this.categoryRatings.putIfAbsent(categoryId, choiceRatingsConverted);
       }
     }
   }
 
   public void setOwnedCategories(final Map<String, Object> jsonMap) {
     this.ownedCategories = null;
-    if (!jsonMap.isEmpty()) {
+    if (jsonMap != null) {
       this.ownedCategories = new HashMap<>();
-      for (String categoryId: jsonMap.keySet()) {
+      for (String categoryId : jsonMap.keySet()) {
         this.ownedCategories.putIfAbsent(categoryId, (String) jsonMap.get(categoryId));
       }
     }
@@ -76,7 +91,8 @@ public class User {
     if (jsonMap != null) {
       this.favorites = new HashMap<>();
       for (String username : jsonMap.keySet()) {
-        this.favorites.putIfAbsent(username, new Favorite((Map<String, Object>) jsonMap.get(username)));
+        this.favorites
+            .putIfAbsent(username, new Favorite((Map<String, Object>) jsonMap.get(username)));
       }
     }
   }
