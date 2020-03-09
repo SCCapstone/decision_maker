@@ -64,10 +64,10 @@ class _GroupsHomeState extends State<GroupsHome> {
 
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
-      final data = message['data'];
-      showErrorMessage("Notice", data['default'], context);
-      refreshList();
-    }, onLaunch: (Map<String, dynamic> message) async {
+          final data = message['data'];
+          showErrorMessage("Notice", data['default'], context);
+          refreshList();
+        }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");
     }, onResume: (Map<String, dynamic> message) async {
       print("onResume: $message");
@@ -98,14 +98,12 @@ class _GroupsHomeState extends State<GroupsHome> {
                 child: Container(
                   height: 80.0,
                   decoration:
-                      BoxDecoration(color: Theme.of(context).accentColor),
+                  BoxDecoration(color: Theme.of(context).accentColor),
                   margin: EdgeInsets.zero,
                   child: ListTile(
                     contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
                     leading: GestureDetector(
                       onTap: () {
-                        // close the drawer menu when clicked
-                        Navigator.of(context).pop();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -121,8 +119,6 @@ class _GroupsHomeState extends State<GroupsHome> {
                           color: Theme.of(context).primaryColorDark),
                     ),
                     onTap: () {
-                      // close the drawer menu when clicked
-                      Navigator.of(context).pop();
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -134,10 +130,8 @@ class _GroupsHomeState extends State<GroupsHome> {
             ),
             ListTile(
                 leading: Icon(Icons.format_list_bulleted),
-                title: Text('My Categories', style: TextStyle(fontSize: 16)),
+                title: Text('Categories', style: TextStyle(fontSize: 16)),
                 onTap: () {
-                  // close the drawer menu when clicked
-                  Navigator.of(context).pop();
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -147,17 +141,12 @@ class _GroupsHomeState extends State<GroupsHome> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings', style: TextStyle(fontSize: 16)),
                 onTap: () {
-                  // close the drawer menu when clicked
-                  Navigator.of(context).pop();
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => UserSettings()));
                 }),
-            Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .31),
-            ),
             ListTile(
                 leading: Icon(Icons.exit_to_app),
-                title: Text('Log Out', style: TextStyle(fontSize: 16)),
+                title: Text('Log out', style: TextStyle(fontSize: 16)),
                 onTap: () {
                   logOutUser(context);
                   Navigator.pushAndRemoveUntil(
@@ -215,7 +204,7 @@ class _GroupsHomeState extends State<GroupsHome> {
           children: <Widget>[
             Padding(
               padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
             Expanded(
               child: Container(
@@ -232,7 +221,7 @@ class _GroupsHomeState extends State<GroupsHome> {
             Padding(
               // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
               padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
           ],
         ),
@@ -276,7 +265,7 @@ class _GroupsHomeState extends State<GroupsHome> {
           groupName: Globals.user.groups[groupId][GroupsManager.GROUP_NAME],
           icon: Globals.user.groups[groupId][GroupsManager.ICON],
           lastActivity: Globals.user.groups[groupId]
-              [GroupsManager.LAST_ACTIVITY]);
+          [GroupsManager.LAST_ACTIVITY]);
       totalGroups.add(group);
     }
 
