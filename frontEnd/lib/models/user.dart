@@ -9,6 +9,7 @@ class User {
   String icon;
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
+  final Map<String, dynamic> groupsLeft;
   final Map<String, dynamic> categories;
   List<Favorite> favorites;
 
@@ -17,12 +18,13 @@ class User {
       this.displayName,
       this.appSettings,
       this.groups,
+      this.groupsLeft,
       this.categories,
       this.favorites,
       this.icon});
 
   User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.categories, this.favorites, this.icon);
+      this.groupsLeft, this.categories, this.favorites, this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
@@ -36,6 +38,7 @@ class User {
         displayName: json[UsersManager.DISPLAY_NAME],
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
+        groupsLeft: json[UsersManager.GROUPS_LEFT],
         categories: json[UsersManager.CATEGORIES],
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
@@ -44,6 +47,6 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "Categories: $categories Favorites: $favorites Icon: $icon";
+        "GroupsLeft: $groupsLeft Categories: $categories Favorites: $favorites Icon: $icon";
   }
 }

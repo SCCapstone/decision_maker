@@ -12,8 +12,15 @@ class Globals {
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
   static Group currentGroup;
   static SharedPreferences tokens;
-  static int dateSort = 0;
+  static int dateNewestSort = 0;
   static int alphabeticalSort = 1;
+  static int alphabeticalReverseSort = 2;
+  static int dateOldestSort = 3;
+  static String alphabeticalSortString = "A-Z";
+  static String alphabeticalReverseSortString = "Z-A";
+  static String dateNewestSortString = "Newest";
+  static String dateOldestSortString = "Oldest";
+
   static String resetUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://www.shiftadmin.com";
   static String imageUrl =

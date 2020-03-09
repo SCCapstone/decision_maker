@@ -230,7 +230,7 @@ class _UserSettingsState extends State<UserSettings> {
                                     Row(
                                       children: <Widget>[
                                         Radio(
-                                          value: Globals.dateSort,
+                                          value: Globals.dateNewestSort,
                                           groupValue: _groupSort,
                                           onChanged: selectGroupSort,
                                         ),

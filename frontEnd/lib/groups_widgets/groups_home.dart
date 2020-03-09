@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
+import 'package:frontEnd/groups_widgets/groups_left_list.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -23,42 +24,79 @@ class GroupsHome extends StatefulWidget {
   _GroupsHomeState createState() => new _GroupsHomeState();
 }
 
-class _GroupsHomeState extends State<GroupsHome> {
-  final TextEditingController searchBar = new TextEditingController();
+class _GroupsHomeState extends State<GroupsHome>
+    with SingleTickerProviderStateMixin {
+  final TextEditingController searchBarController = new TextEditingController();
+  TabController tabController;
   List<Group> searchGroups = new List<Group>();
   List<Group> totalGroups = new List<Group>();
+  List<Group> groupsLeft = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
+  String selectedSort;
+  int currentTab, sortVal;
+  final int totalTabs = 2;
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   @override
   void initState() {
+    this.currentTab = 0;
+    this.tabController = new TabController(length: this.totalTabs, vsync: this);
+    this.tabController.addListener(handleTabChange);
     loadGroups();
-    searchBar.addListener(() {
-      if (searchBar.text.isEmpty) {
-        setState(() {
-          searchGroups.clear();
-          searchGroups.addAll(totalGroups);
-        });
-      } else {
-        setState(() {
-          String searchInput = searchBar.text;
-          List<Group> temp = new List<Group>();
-          for (int i = 0; i < totalGroups.length; i++) {
-            if (totalGroups[i]
-                .groupName
-                .toLowerCase()
-                .contains(searchInput.toLowerCase())) {
-              temp.add(totalGroups[i]);
+    this.searchBarController.addListener(() {
+      if (this.currentTab == 0) {
+        // in the group home tab
+        if (this.searchBarController.text.isEmpty) {
+          setState(() {
+            this.searchGroups.clear();
+            this.searchGroups.addAll(this.totalGroups);
+          });
+        } else {
+          setState(() {
+            String searchInput = this.searchBarController.text;
+            List<Group> temp = new List<Group>();
+            for (int i = 0; i < this.totalGroups.length; i++) {
+              if (this
+                  .totalGroups[i]
+                  .groupName
+                  .toLowerCase()
+                  .contains(searchInput.toLowerCase())) {
+                temp.add(this.totalGroups[i]);
+              }
             }
-          }
-          searchGroups = temp;
-          GroupsManager.sortByAlpha(searchGroups);
-        });
+            this.searchGroups = temp;
+            GroupsManager.sortByAlphaAscending(this.searchGroups);
+          });
+        }
+      } else {
+        // in the groups left tab
+        if (this.searchBarController.text.isEmpty) {
+          setState(() {
+            this.searchGroups.clear();
+            this.searchGroups.addAll(this.groupsLeft);
+          });
+        } else {
+          setState(() {
+            String searchInput = this.searchBarController.text;
+            List<Group> temp = new List<Group>();
+            for (int i = 0; i < this.groupsLeft.length; i++) {
+              if (this
+                  .groupsLeft[i]
+                  .groupName
+                  .toLowerCase()
+                  .contains(searchInput.toLowerCase())) {
+                temp.add(this.groupsLeft[i]);
+              }
+            }
+            this.searchGroups = temp;
+            GroupsManager.sortByAlphaAscending(this.searchGroups);
+          });
+        }
       }
     });
-
+    // set up notification listeners
     Future<String> token = this.firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token);
 
@@ -80,168 +118,324 @@ class _GroupsHomeState extends State<GroupsHome> {
 
   @override
   void dispose() {
-    searchBar.dispose();
+    tabController.dispose();
+    searchBarController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            Container(
-              decoration: BoxDecoration(color: Theme.of(context).accentColor),
-              child: SafeArea(
-                // for phones that have a notch, use a safe area so content isn't obstructed
-                child: Container(
-                  height: 80.0,
-                  decoration:
-                      BoxDecoration(color: Theme.of(context).accentColor),
-                  margin: EdgeInsets.zero,
-                  child: ListTile(
-                    contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
-                    leading: GestureDetector(
+    return DefaultTabController(
+      length: this.totalTabs,
+      child: Scaffold(
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              Container(
+                decoration: BoxDecoration(color: Theme.of(context).accentColor),
+                child: SafeArea(
+                  // for phones that have a notch, use a safe area so content isn't obstructed
+                  child: Container(
+                    height: 80.0,
+                    decoration:
+                        BoxDecoration(color: Theme.of(context).accentColor),
+                    margin: EdgeInsets.zero,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.fromLTRB(10, 25, 0, 0),
+                      leading: GestureDetector(
+                        onTap: () {
+                          // close the drawer menu when clicked
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => UserSettings()));
+                        },
+                        child: CircleAvatar(
+                            backgroundImage: getUserIconUrl(Globals.user)),
+                      ),
+                      title: Text(
+                        Globals.username,
+                        style: TextStyle(
+                            fontSize: 24,
+                            color: Theme.of(context).primaryColorDark),
+                      ),
                       onTap: () {
+                        // close the drawer menu when clicked
+                        Navigator.of(context).pop();
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => UserSettings()));
                       },
-                      child: CircleAvatar(
-                          backgroundImage: getUserIconUrl(Globals.user)),
                     ),
-                    title: Text(
-                      Globals.username,
-                      style: TextStyle(
-                          fontSize: 24,
-                          color: Theme.of(context).primaryColorDark),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => UserSettings()));
-                    },
+                  ),
+                ),
+              ),
+              ListTile(
+                  leading: Icon(Icons.format_list_bulleted),
+                  title: Text('Categories', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    // close the drawer menu when clicked
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CategoriesHome()));
+                  }),
+              ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    // close the drawer menu when clicked
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserSettings()));
+                  }),
+              Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .31),
+              ),
+              ListTile(
+                  leading: Icon(Icons.exit_to_app),
+                  title: Text('Log Out', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    logOutUser(context);
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => SignInPage(),
+                        ),
+                        ModalRoute.withName('/'));
+                  })
+            ],
+          ),
+        ),
+        appBar: AppBar(
+          centerTitle: true,
+          title: Visibility(
+            visible: !(searching),
+            child: Text(
+              "Pocket Poll",
+              style: TextStyle(
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            ),
+          ),
+          actions: <Widget>[
+            WillPopScope(
+              onWillPop: handleBackPress,
+              child: Visibility(
+                visible: this.searching,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * .70,
+                  child: TextField(
+                    autofocus: true,
+                    controller: this.searchBarController,
+                    style: TextStyle(color: Colors.white, fontSize: 30),
+                    decoration: InputDecoration(
+                        hintText: "Search Group",
+                        hintStyle: TextStyle(
+                            color: Colors.white, fontStyle: FontStyle.italic)),
                   ),
                 ),
               ),
             ),
-            ListTile(
-                leading: Icon(Icons.format_list_bulleted),
-                title: Text('Categories', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CategoriesHome()));
-                }),
-            ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Settings', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => UserSettings()));
-                }),
-            ListTile(
-                leading: Icon(Icons.exit_to_app),
-                title: Text('Log out', style: TextStyle(fontSize: 16)),
-                onTap: () {
-                  logOutUser(context);
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) => SignInPage(),
-                      ),
-                      ModalRoute.withName('/'));
-                })
+            IconButton(
+              icon: this.searchIcon,
+              iconSize: 40,
+              onPressed: () {
+                // prevents quick flash of rows that appears when clicking search icon
+                this.searchGroups.clear();
+                if (this.tabController.index == 0) {
+                  this.searchGroups.addAll(this.totalGroups);
+                } else {
+                  this.searchGroups.addAll(this.groupsLeft);
+                }
+                toggleSearch();
+              },
+            )
           ],
-        ),
-      ),
-      appBar: AppBar(
-        centerTitle: true,
-        title: Visibility(
-          visible: !(searching),
-          child: Text(
-            "Pocket Poll",
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
-          ),
-        ),
-        actions: <Widget>[
-          WillPopScope(
-            onWillPop: handleBackPress,
+          bottom: PreferredSize(
+            preferredSize: Size(MediaQuery.of(context).size.width,
+                MediaQuery.of(context).size.height * .038),
             child: Visibility(
-              visible: searching,
-              child: Container(
-                width: MediaQuery.of(context).size.width * .70,
-                child: TextField(
-                  autofocus: true,
-                  controller: searchBar,
-                  style: TextStyle(color: Colors.white, fontSize: 30),
-                  decoration: InputDecoration(
-                      hintText: "Search Group",
-                      hintStyle: TextStyle(
-                          color: Colors.white, fontStyle: FontStyle.italic)),
-                ),
+              visible: !this.searching,
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: MediaQuery.of(context).size.width * .65,
+                    child: TabBar(
+                      controller: this.tabController,
+                      isScrollable: true,
+                      indicatorWeight: 3,
+                      indicatorColor: Colors.blueAccent,
+                      tabs: <Widget>[
+                        Text(
+                          "Groups Home",
+                          style: TextStyle(fontSize: 17),
+                        ),
+                        Text(
+                          "Groups Left",
+                          style: TextStyle(fontSize: 17),
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: MediaQuery.of(context).size.height * .038,
+                    child: Row(
+                      children: <Widget>[
+                        Text(
+                          "Sort:",
+                          style: TextStyle(fontSize: 16, color: Colors.black),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .009),
+                        ),
+                        Theme(
+                          data: Theme.of(context)
+                              .copyWith(canvasColor: Colors.white),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: this.selectedSort,
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black),
+                              onChanged: (String newValue) {
+                                setSort(sortString: newValue, sendUpdate: true);
+                                setState(() {
+                                  this.selectedSort = newValue;
+                                });
+                              },
+                              items: <String>[
+                                Globals.alphabeticalSortString,
+                                Globals.alphabeticalReverseSortString,
+                                Globals.dateNewestSortString,
+                                Globals.dateOldestSortString,
+                              ].map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
               ),
             ),
           ),
-          IconButton(
-            icon: searchIcon,
-            iconSize: 40,
-            onPressed: () {
-              searchGroups.clear();
-              searchGroups.addAll(totalGroups);
-              toggleSearch();
-            },
-          )
-        ],
-      ),
-      body: Center(
-        child: Column(
+        ),
+        body: TabBarView(
+          controller: this.tabController,
           children: <Widget>[
-            Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+            // tab for groups home
+            Center(
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .015),
+                  ),
+                  Expanded(
+                    child: Container(
+                        width: MediaQuery.of(context).size.width * .95,
+                        child: RefreshIndicator(
+                            onRefresh: refreshList,
+                            child: GroupsList(
+                              groups: (this.searching)
+                                  ? this.searchGroups
+                                  : this.totalGroups,
+                              searching: this.searching,
+                              refreshGroups: refreshList,
+                            ))),
+                  ),
+                  Padding(
+                    // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .02),
+                  ),
+                ],
+              ),
             ),
-            Expanded(
-              child: Container(
-                  width: MediaQuery.of(context).size.width * .95,
-//                  height: MediaQuery.of(context).size.height * .55,
-                  child: RefreshIndicator(
-                      onRefresh: refreshList,
-                      child: GroupsList(
-                        groups: (searching) ? searchGroups : totalGroups,
-                        searching: searching,
-                        refreshGroups: refreshList,
-                      ))),
-            ),
-            Padding(
-              // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
-              padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
+            // tab for groups left
+            Center(
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .015),
+                  ),
+                  Expanded(
+                    child: Container(
+                        width: MediaQuery.of(context).size.width * .95,
+                        child: RefreshIndicator(
+                            onRefresh: refreshList,
+                            child: GroupsLeftList(
+                              groupsLeft: (this.searching)
+                                  ? this.searchGroups
+                                  : this.groupsLeft,
+                              searching: this.searching,
+                              refreshGroups: refreshList,
+                            ))),
+                  ),
+                  Padding(
+                    // used to make sure the group list doesn't go too far down, expanded widget stops when reaching this
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .02),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: Visibility(
-        visible: !searching,
-        child: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            // Navigate to second route when tapped.
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CreateGroup()),
-            ).then((val) {
-              // TODO figure out a better way to refresh without making unnecessary API calls
-              refreshList();
-            });
-          },
+        floatingActionButton: Visibility(
+          visible: (!this.searching && this.currentTab == 0),
+          child: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              // Navigate to second route when tapped.
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateGroup()),
+              ).then((val) {
+                // TODO figure out a better way to refresh without making unnecessary API calls
+                refreshList();
+              });
+            },
+          ),
         ),
       ),
     );
+  }
+
+  void handleTabChange() {
+    setState(() {
+      this.currentTab = this.tabController.index;
+    });
+  }
+
+  void setSort({String sortString, int sortVal, bool sendUpdate}) {
+    sortVal = getSortMethod(sortString);
+    if (sortVal == Globals.dateNewestSort) {
+      GroupsManager.sortByDateNewest(totalGroups);
+    } else if (sortVal == Globals.dateOldestSort) {
+      GroupsManager.sortByDateOldest(totalGroups);
+    } else if (sortVal == Globals.alphabeticalReverseSort) {
+      GroupsManager.sortByAlphaDescending(totalGroups);
+    } else if (sortVal == Globals.alphabeticalSort) {
+      GroupsManager.sortByAlphaAscending(totalGroups);
+    }
+    if (sendUpdate) {
+      // blind send, don't care if it doesn't work since its just a sort value
+      // TODO make a backend method to accept specific settings since it is very verbose using current one
+    }
   }
 
   Future<Null> refreshList() async {
@@ -257,7 +451,8 @@ class _GroupsHomeState extends State<GroupsHome> {
   }
 
   void loadGroups() {
-    totalGroups.clear();
+    this.totalGroups.clear();
+    this.groupsLeft.clear();
     for (String groupId in Globals.user.groups.keys) {
       Group group = new Group(
           groupId: groupId,
@@ -265,35 +460,39 @@ class _GroupsHomeState extends State<GroupsHome> {
           icon: Globals.user.groups[groupId][GroupsManager.ICON],
           lastActivity: Globals.user.groups[groupId]
               [GroupsManager.LAST_ACTIVITY]);
-      totalGroups.add(group);
+      this.totalGroups.add(group);
     }
-
-    if (Globals.user.appSettings.groupSort == Globals.dateSort) {
-      GroupsManager.sortByDate(totalGroups);
-    } else if (Globals.user.appSettings.groupSort == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlpha(totalGroups);
+    // get the groups left from the user object
+    for (String groupId in Globals.user.groupsLeft.keys) {
+      Group group = new Group(
+          groupId: groupId,
+          groupName: Globals.user.groupsLeft[groupId][GroupsManager.GROUP_NAME],
+          icon: Globals.user.groupsLeft[groupId][GroupsManager.ICON]);
+      this.groupsLeft.add(group);
     }
+    this.selectedSort = getSortMethodString(Globals.user.appSettings.groupSort);
+    setSort(sortVal: Globals.user.appSettings.groupSort, sendUpdate: false);
   }
 
   void toggleSearch() {
-    if (searching) {
+    if (this.searching) {
       // already searching, so user has clicked the stop button
       setState(() {
-        searching = false;
-        searchBar.clear();
-        searchIcon = new Icon(Icons.search);
+        this.searching = false;
+        this.searchBarController.clear();
+        this.searchIcon = new Icon(Icons.search);
       });
     } else {
       setState(() {
-        searching = true;
-        searchIcon = new Icon(Icons.close);
+        this.searching = true;
+        this.searchIcon = new Icon(Icons.close);
       });
     }
   }
 
   Future<bool> handleBackPress() async {
     // this allows for android users to press the back button when done searching and it will remove the search bar
-    if (searching) {
+    if (this.searching) {
       toggleSearch();
       return false;
     } else {

@@ -22,7 +22,7 @@ class _GroupRowState extends State<GroupRow> {
     // TODO fetch whether group is muted from the user global object
     this.notificationsMuted = false;
     // TODO fetch notification num from group mapping (list of event ids)
-    this.notificationNum = 69;
+    this.notificationNum = 67;
     super.initState();
   }
 
@@ -107,11 +107,6 @@ class _GroupRowState extends State<GroupRow> {
                               // TODO mute the group
                               this.notificationsMuted =
                                   !this.notificationsMuted;
-                              if (this.notificationNum > 0) {
-                                notificationNum = 0;
-                              } else {
-                                notificationNum = 69;
-                              }
                             });
                           },
                         ),
@@ -123,7 +118,9 @@ class _GroupRowState extends State<GroupRow> {
                                   padding: EdgeInsets.all(
                                       MediaQuery.of(context).size.height *
                                           .02)),
-                              Text("(79)")
+                              Text((this.notificationNum < 100)
+                                  ? this.notificationNum.toString()
+                                  : "99+")
                             ],
                           ),
                         )

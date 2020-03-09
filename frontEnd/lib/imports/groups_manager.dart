@@ -348,12 +348,21 @@ class GroupsManager {
     return sortedMap.cast();
   }
 
-  static void sortByDate(List<Group> groups) {
+  static void sortByDateNewest(List<Group> groups) {
     groups.sort((a, b) => DateTime.parse(b.lastActivity)
         .compareTo(DateTime.parse(a.lastActivity)));
   }
 
-  static void sortByAlpha(List<Group> groups) {
+  static void sortByDateOldest(List<Group> groups) {
+    groups.sort((a, b) => DateTime.parse(a.lastActivity)
+        .compareTo(DateTime.parse(b.lastActivity)));
+  }
+
+  static void sortByAlphaAscending(List<Group> groups) {
     groups.sort((a, b) => a.groupName.compareTo(b.groupName));
+  }
+
+  static void sortByAlphaDescending(List<Group> groups) {
+    groups.sort((a, b) => b.groupName.compareTo(a.groupName));
   }
 }
