@@ -1,4 +1,5 @@
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
 
 import 'app_settings.dart';
@@ -11,6 +12,7 @@ class User {
   final Map<String, dynamic> groups;
   final Map<String, dynamic> groupsLeft;
   final Map<String, dynamic> categories;
+  final List<Category> ownedCategories;
   List<Favorite> favorites;
 
   User(
@@ -20,17 +22,33 @@ class User {
       this.groups,
       this.groupsLeft,
       this.categories,
+      this.ownedCategories,
       this.favorites,
       this.icon});
 
-  User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.groupsLeft, this.categories, this.favorites, this.icon);
+  User.debug(
+      this.username,
+      this.displayName,
+      this.appSettings,
+      this.groups,
+      this.groupsLeft,
+      this.categories,
+      this.ownedCategories,
+      this.favorites,
+      this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
     Map<String, dynamic> favoritesRaw = json[UsersManager.FAVORITES];
     for (String username in favoritesRaw.keys) {
       favoriteList.add(Favorite.fromJson(favoritesRaw[username], username));
+    }
+
+    List<Category> categoryList = new List<Category>();
+    Map<String, dynamic> categoriesRaw = json[UsersManager.OWNED_CATEGORIES];
+    for (String catId in categoriesRaw.keys) {
+      categoryList.add(Category.debug(
+          catId, categoriesRaw[catId].toString(), null, null, null, null));
     }
 
     return User(
@@ -40,6 +58,7 @@ class User {
         groups: json[UsersManager.GROUPS],
         groupsLeft: json[UsersManager.GROUPS_LEFT],
         categories: json[UsersManager.CATEGORIES],
+        ownedCategories: categoryList,
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
   }
@@ -47,6 +66,6 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "GroupsLeft: $groupsLeft Categories: $categories Favorites: $favorites Icon: $icon";
+        "GroupsLeft: $groupsLeft OwnedCategories: $ownedCategories Categories: $categories Favorites: $favorites Icon: $icon";
   }
 }
