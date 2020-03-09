@@ -175,7 +175,7 @@ class _GroupsHomeState extends State<GroupsHome>
               ),
               ListTile(
                   leading: Icon(Icons.format_list_bulleted),
-                  title: Text('Categories', style: TextStyle(fontSize: 16)),
+                  title: Text('My Categories', style: TextStyle(fontSize: 16)),
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
@@ -286,45 +286,49 @@ class _GroupsHomeState extends State<GroupsHome>
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * .038,
-                    child: Row(
-                      children: <Widget>[
-                        Text(
-                          "Sort:",
-                          style: TextStyle(fontSize: 16, color: Colors.black),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .009),
-                        ),
-                        Theme(
-                          data: Theme.of(context)
-                              .copyWith(canvasColor: Colors.white),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: this.selectedSort,
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.black),
-                              onChanged: (String newValue) {
-                                setSort(sortString: newValue, sendUpdate: true);
-                                setState(() {
-                                  this.selectedSort = newValue;
-                                });
-                              },
-                              items: <String>[
-                                Globals.alphabeticalSortString,
-                                Globals.alphabeticalReverseSortString,
-                                Globals.dateNewestSortString,
-                                Globals.dateOldestSortString,
-                              ].map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
+                    child: Visibility(
+                      visible: this.currentTab == 0,
+                      child: Row(
+                        children: <Widget>[
+                          Text(
+                            "Sort:",
+                            style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
-                        )
-                      ],
+                          Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .009),
+                          ),
+                          Theme(
+                            data: Theme.of(context)
+                                .copyWith(canvasColor: Colors.white),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: this.selectedSort,
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
+                                onChanged: (String newValue) {
+                                  setSort(
+                                      sortString: newValue, sendUpdate: true);
+                                  setState(() {
+                                    this.selectedSort = newValue;
+                                  });
+                                },
+                                items: <String>[
+                                  Globals.alphabeticalSortString,
+                                  Globals.alphabeticalReverseSortString,
+                                  Globals.dateNewestSortString,
+                                  Globals.dateOldestSortString,
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   )
                 ],
