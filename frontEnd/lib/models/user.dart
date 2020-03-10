@@ -11,6 +11,8 @@ class User {
   final AppSettings appSettings;
   final Map<String, dynamic> groups;
   final Map<String, dynamic> userRatings;
+  final Map<String, dynamic> groupsLeft;
+  final Map<String, dynamic> categories;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
 
@@ -20,12 +22,23 @@ class User {
       this.appSettings,
       this.groups,
       this.userRatings,
+      this.groupsLeft,
+      this.categories,
       this.ownedCategories,
       this.favorites,
       this.icon});
 
-  User.debug(this.username, this.displayName, this.appSettings, this.groups,
-      this.userRatings, this.ownedCategories, this.favorites, this.icon);
+  User.debug(
+      this.username,
+      this.displayName,
+      this.appSettings,
+      this.groups,
+      this.userRatings,
+      this.groupsLeft,
+      this.categories,
+      this.ownedCategories,
+      this.favorites,
+      this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
     List<Favorite> favoriteList = new List<Favorite>();
@@ -47,6 +60,8 @@ class User {
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: json[UsersManager.GROUPS],
         userRatings: json[UsersManager.CATEGORIES],
+        groupsLeft: json[UsersManager.GROUPS_LEFT],
+        categories: json[UsersManager.CATEGORIES],
         ownedCategories: categoryList,
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
@@ -55,6 +70,6 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        "UserRatings: $userRatings OwnedCategories: $ownedCategories Favorites: $favorites Icon: $icon";
+        " GroupsLeft: $groupsLeft UserRatings: $userRatings OwnedCategories: $ownedCategories Favorites: $favorites Icon: $icon";
   }
 }
