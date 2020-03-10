@@ -16,7 +16,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.model.Get;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -115,7 +114,7 @@ public class GroupsManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
     doReturn(ImmutableList.of("id", "id2")).when(this.usersManager)
-        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+        .getAllGroupIds(any(String.class), any(Metrics.class));
 
     ResultStatus result = this.groupsManager
         .getGroups(ImmutableMap.of(RequestFields.GROUP_IDS, ImmutableList.of("id", "id2")),
@@ -127,7 +126,7 @@ public class GroupsManagerTest {
     assertTrue(result.success);
 
     verify(this.usersManager, times(1))
-        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+        .getAllGroupIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.table, times(4)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(2)).commonClose(true);
@@ -147,7 +146,7 @@ public class GroupsManagerTest {
     assertTrue(result.success);
 
     verify(this.usersManager, times(0))
-        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+        .getAllGroupIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(3)).getTable(any(String.class));
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
@@ -160,7 +159,7 @@ public class GroupsManagerTest {
     assertFalse(result.success);
 
     verify(this.usersManager, times(0))
-        .getAllGroupIds(any(String.class), any(Metrics.class), any(LambdaLogger.class));
+        .getAllGroupIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);

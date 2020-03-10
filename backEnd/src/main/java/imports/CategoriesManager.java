@@ -7,7 +7,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,7 +65,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //put the entered ratings in the users table
         ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(jsonMap, true, metrics, null);
+            .updateUserChoiceRatings(jsonMap, true, metrics);
 
         //todo wrap this operation into a transaction
         if (updatedUsersTableResult.success) {
@@ -76,7 +75,6 @@ public class CategoriesManager extends DatabaseAccessManager {
               + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        System.out.println(new ErrorDescriptor<>(jsonMap, classMethod, e).toString());
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
@@ -131,7 +129,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
           //put the entered ratings in the users table
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, true, metrics, null);
+              .updateUserChoiceRatings(jsonMap, true, metrics);
 
           if (updatedUsersTableResult.success) {
             resultStatus = new ResultStatus(true, "Category saved successfully!");
@@ -170,18 +168,15 @@ public class CategoriesManager extends DatabaseAccessManager {
       categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
     } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
       String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
-      categoryIds = DatabaseManagers.GROUPS_MANAGER
-          .getAllCategoryIds(groupId, metrics, null);
+      categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId, metrics);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      categoryIds = DatabaseManagers.USERS_MANAGER
-          .getAllOwnedCategoryIds(username, metrics, null);
-      List<String> groupIds = DatabaseManagers.USERS_MANAGER
-          .getAllGroupIds(username, metrics, null);
+      categoryIds = DatabaseManagers.USERS_MANAGER.getAllOwnedCategoryIds(username, metrics);
+      List<String> groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics);
 
       for (String groupId : groupIds) {
         List<String> groupCategoryIds = DatabaseManagers.GROUPS_MANAGER
-            .getAllCategoryIds(groupId, metrics, null);
+            .getAllCategoryIds(groupId, metrics);
         categoryIds.addAll(groupCategoryIds);
       }
     } else {
@@ -201,8 +196,7 @@ public class CategoriesManager extends DatabaseAccessManager {
           Item dbData = this.getItemByPrimaryKey(id);
           categories.add(dbData.asMap());
         } catch (Exception e) {
-          metrics.log(
-              new ErrorDescriptor<>(jsonMap, classMethod, e));
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         }
       }
 
@@ -234,13 +228,11 @@ public class CategoriesManager extends DatabaseAccessManager {
           List<String> groupIds = new ArrayList<>(item.getMap(GROUPS).keySet());
 
           if (!groupIds.isEmpty()) {
-            DatabaseManagers.GROUPS_MANAGER
-                .removeCategoryFromGroups(groupIds, categoryId, metrics, null);
+            DatabaseManagers.GROUPS_MANAGER.removeCategoryFromGroups(groupIds, categoryId, metrics);
           }
 
           //TODO These last two should probably be put into a ~transaction~
-          DatabaseManagers.USERS_MANAGER
-              .removeOwnedCategory(username, categoryId, metrics, null);
+          DatabaseManagers.USERS_MANAGER.removeOwnedCategory(username, categoryId, metrics);
 
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);

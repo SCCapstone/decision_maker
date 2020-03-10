@@ -1,7 +1,6 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.DatabaseManagers;
 import java.io.IOException;
@@ -19,7 +18,6 @@ public class PendingEventResolutionHandler implements RequestStreamHandler {
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
     Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
-    LambdaLogger lambdaLogger = context.getLogger();
 
     final String classMethod = "PendingEventResolutionHandler.handleRequest";
     metrics.commonSetup(classMethod);
@@ -28,12 +26,10 @@ public class PendingEventResolutionHandler implements RequestStreamHandler {
 
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
-      resultStatus = DatabaseManagers.PENDING_EVENTS_MANAGER
-          .processPendingEvent(jsonMap, metrics, lambdaLogger);
+      resultStatus = DatabaseManagers.PENDING_EVENTS_MANAGER.processPendingEvent(jsonMap, metrics);
     } catch (Exception e) {
       resultStatus.resultMessage = "Exception occurred in handler.";
-      lambdaLogger
-          .log(new ErrorDescriptor<>(null, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(null, classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);
