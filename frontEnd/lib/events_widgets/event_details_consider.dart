@@ -9,19 +9,19 @@ import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
-class EventDetailsRsvp extends StatefulWidget {
+class EventDetailsConsider extends StatefulWidget {
   final String groupId;
   final String eventId;
   final String mode;
 
-  EventDetailsRsvp({Key key, this.groupId, this.eventId, this.mode})
+  EventDetailsConsider({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);
 
   @override
-  _EventDetailsRsvpState createState() => new _EventDetailsRsvpState();
+  _EventDetailsConsiderState createState() => new _EventDetailsConsiderState();
 }
 
-class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
+class _EventDetailsConsiderState extends State<EventDetailsConsider> {
   Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
   String eventCreator = "";
   Event event;
@@ -79,7 +79,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
-                      child: Text("RSVP Time Ends",
+                      child: Text("Consider Time Ends",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -121,7 +121,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${userRows.length})"),
+                      title: Text("Members considered (${userRows.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
@@ -136,7 +136,7 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Text("RSVP",
+                    Text("Consider Me?",
                         style: TextStyle(
                             fontSize:
                                 DefaultTextStyle.of(context).style.fontSize *
@@ -145,19 +145,19 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         RaisedButton(
-                          child: Text("Not going"),
+                          child: Text("No"),
                           color: Colors.red,
                           onPressed: () {
-                            tryRsvp(false);
+                            tryConsider(false);
                             userRows.remove(Globals.username);
                             setState(() {});
                           },
                         ),
                         RaisedButton(
-                          child: Text("Going"),
+                          child: Text("Yes"),
                           color: Colors.green,
                           onPressed: () {
-                            tryRsvp(true);
+                            tryConsider(true);
                             userRows.putIfAbsent(
                                 Globals.username,
                                 () => UserRowEvents(Globals.user.displayName,
@@ -177,10 +177,10 @@ class _EventDetailsRsvpState extends State<EventDetailsRsvp> {
     );
   }
 
-  void tryRsvp(bool going) async {
+  void tryConsider(bool considerVal) async {
     // not sure if we want a loading dialog for this as that would be annoying for the user. Only show error for now
     ResultStatus resultStatus = await GroupsManager.optInOutOfEvent(
-        widget.groupId, widget.eventId, going);
+        widget.groupId, widget.eventId, considerVal);
     if (!resultStatus.success) {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }

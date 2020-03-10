@@ -10,7 +10,7 @@ class Event {
   final DateTime pollBegin;
   final DateTime pollEnd;
   final int votingDuration;
-  final int rsvpDuration;
+  final int considerDuration;
   final Map<String, dynamic> optedIn;
   final Map<String, dynamic> tentativeAlgorithmChoices;
   final Map<String, dynamic> votingNumbers;
@@ -27,7 +27,7 @@ class Event {
       this.createdDateTime,
       this.eventStartDateTime,
       this.votingDuration,
-      this.rsvpDuration,
+      this.considerDuration,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -46,7 +46,7 @@ class Event {
       this.createdDateTime,
       this.eventStartDateTime,
       this.votingDuration,
-      this.rsvpDuration,
+      this.considerDuration,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -63,7 +63,8 @@ class Event {
     DateTime pollBeginTemp =
         DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).toLocal().add(
             new Duration(
-                minutes: (int.parse(json[EventsManager.RSVP_DURATION]) + 1)));
+                minutes:
+                    (int.parse(json[EventsManager.CONSIDER_DURATION]) + 1)));
     /*
       Time in DB is in UTC, but dart parses by default as a local time. 
       So convert this local to UTC, then back to local to get the real local time.
@@ -97,7 +98,7 @@ class Event {
         pollEnd: pollEndUTC.toLocal(),
         pollBegin: pollBeginUTC.toLocal(),
         votingDuration: int.parse(json[EventsManager.VOTING_DURATION]),
-        rsvpDuration: int.parse(json[EventsManager.RSVP_DURATION]),
+        considerDuration: int.parse(json[EventsManager.CONSIDER_DURATION]),
         optedIn: json[EventsManager.OPTED_IN],
         tentativeAlgorithmChoices:
             json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
@@ -122,7 +123,7 @@ class Event {
       EventsManager.EVENT_START_DATE_TIME:
           this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.VOTING_DURATION: this.votingDuration,
-      EventsManager.RSVP_DURATION: this.rsvpDuration,
+      EventsManager.CONSIDER_DURATION: this.considerDuration,
       EventsManager.OPTED_IN: this.optedIn,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
       EventsManager.SELECTED_CHOICE: this.selectedChoice,
@@ -135,7 +136,7 @@ class Event {
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
         "$createdDateTime EventStartDateTime: $eventStartDateTime PollDuration: $votingDuration "
-        "RsvpDuration: $rsvpDuration OptedIn: $optedIn SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
+        "ConsiderDuration: $considerDuration OptedIn: $optedIn SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
         "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator";
   }
 }

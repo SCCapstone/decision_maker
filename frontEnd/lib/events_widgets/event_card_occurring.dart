@@ -30,21 +30,14 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Visibility(
-            visible: DateTime.now().isBefore(widget.event.eventStartDateTime),
-            child: Text("Event starts: ${widget.event.eventStartDateTimeFormatted}",
-              style: TextStyle(fontSize: 20)
-            )
-          ),
-          Visibility(
-            visible: !DateTime.now().isBefore(widget.event.eventStartDateTime),
-            child: Text("Started at: ${widget.event.eventStartDateTimeFormatted}",
-              style: TextStyle(fontSize: 20)
-            )
-          ),
+          Text(
+              (DateTime.now().isBefore(widget.event.eventStartDateTime))
+                  ? "Event starts: ${widget.event.eventStartDateTimeFormatted}"
+                  : "Started at: ${widget.event.eventStartDateTimeFormatted}",
+              style: TextStyle(fontSize: 20)),
           Text("Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20)),
-          Text("Total attendees: ${widget.event.optedIn.length}",
+          Text("Total considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("View Results"),

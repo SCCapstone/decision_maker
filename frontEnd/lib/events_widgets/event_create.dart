@@ -22,11 +22,12 @@ class CreateEvent extends StatefulWidget {
 class _CreateEventState extends State<CreateEvent> {
   String eventName;
   String votingDuration;
-  String rsvpDuration;
+  String considerDuration;
   final TextEditingController eventNameController = TextEditingController();
   final TextEditingController votingDurationController =
       TextEditingController();
-  final TextEditingController rsvpDurationController = TextEditingController();
+  final TextEditingController considerDurationController =
+      TextEditingController();
 
   bool autoValidate = false;
   final formKey = GlobalKey<FormState>();
@@ -45,16 +46,17 @@ class _CreateEventState extends State<CreateEvent> {
   DateTime votingEnd;
 
   final int textFieldLength = 4;
-  bool willRsvp = true;
-  String rsvpLabelText;
-  String skipButtonText;
+  bool willConsider = true;
+  bool willVote = true;
+  String considerButtonText;
+  String voteButtonText;
   Timer timer;
 
   @override
   void dispose() {
     eventNameController.dispose();
     votingDurationController.dispose();
-    rsvpDurationController.dispose();
+    considerDurationController.dispose();
     timer?.cancel();
     super.dispose();
   }
@@ -78,12 +80,12 @@ class _CreateEventState extends State<CreateEvent> {
         new TimeOfDay(hour: getHour(eventStartTime), minute: 0));
     votingDurationController.text =
         Globals.currentGroup.defaultVotingDuration.toString();
-    rsvpDurationController.text =
-        Globals.currentGroup.defaultRsvpDuration.toString();
-    rsvpDuration = rsvpDurationController.text;
+    considerDurationController.text =
+        Globals.currentGroup.defaultConsiderDuration.toString();
+    considerDuration = considerDurationController.text;
     votingDuration = votingDurationController.text;
-    rsvpLabelText = "RSVP Duration (in minutes)";
-    skipButtonText = "Skip RSVP";
+    considerButtonText = "Skip Consider";
+    voteButtonText = "Skip Voting";
     super.initState();
   }
 
@@ -161,47 +163,53 @@ class _CreateEventState extends State<CreateEvent> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Visibility(
-                          visible: willRsvp,
+                          visible: willConsider,
                           child: Expanded(
                             child: Container(
                               child: TextFormField(
-                                controller: rsvpDurationController,
+                                controller: considerDurationController,
                                 keyboardType: TextInputType.number,
-                                enabled: willRsvp,
-                                validator: validRsvpDuration,
+                                enabled: willConsider,
+                                validator: validConsiderDuration,
                                 maxLength: textFieldLength,
                                 onChanged: (String arg) {
                                   // if already at max length and you keep typing, setState won't get called again
                                   if (!(arg.length == textFieldLength &&
-                                      rsvpDuration.length == textFieldLength)) {
-                                    rsvpDuration = arg;
+                                      considerDuration.length ==
+                                          textFieldLength)) {
+                                    considerDuration = arg;
                                     setState(() {});
                                   }
                                 },
                                 decoration: InputDecoration(
-                                    labelText: rsvpLabelText, counterText: ""),
+                                    labelText: "Consider Duration (in minutes)",
+                                    counterText: ""),
                               ),
                             ),
                           ),
                         ),
-                        RaisedButton(
-                            child: Text(skipButtonText),
-                            onPressed: () {
-                              willRsvp = !willRsvp;
-                              if (willRsvp == false) {
-                                rsvpDurationController.text = "0";
-                                rsvpDuration = rsvpDurationController.text;
-                                skipButtonText = "Set RSVP";
-                              } else {
-                                rsvpDurationController.text = Globals
-                                    .currentGroup.defaultRsvpDuration
-                                    .toString();
-                                rsvpDuration = rsvpDurationController.text;
-                                skipButtonText = "Skip RSVP";
-                                rsvpLabelText = "RSVP Duration (in minutes)";
-                              }
-                              setState(() {});
-                            }),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .3,
+                          child: RaisedButton(
+                              child: Text(considerButtonText),
+                              onPressed: () {
+                                willConsider = !willConsider;
+                                if (willConsider == false) {
+                                  considerDurationController.text = "0";
+                                  considerDuration =
+                                      considerDurationController.text;
+                                  considerButtonText = "Set Consider";
+                                } else {
+                                  considerDurationController.text = Globals
+                                      .currentGroup.defaultConsiderDuration
+                                      .toString();
+                                  considerDuration =
+                                      considerDurationController.text;
+                                  considerButtonText = "Skip Consider";
+                                }
+                                setState(() {});
+                              }),
+                        ),
                         Padding(
                           // this is hacky af, but otherwise when textfield is hidden the button jumps to the right
                           padding: EdgeInsets.all(
@@ -221,28 +229,63 @@ class _CreateEventState extends State<CreateEvent> {
                               DefaultTextStyle.of(context).style.fontSize *
                                   0.35),
                     ),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .01),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            child: TextFormField(
-                              controller: votingDurationController,
-                              keyboardType: TextInputType.number,
-                              validator: validVotingDuration,
-                              maxLength: textFieldLength,
-                              onChanged: (String arg) {
-                                if (!(arg.length == textFieldLength &&
-                                    votingDuration.length == textFieldLength)) {
-                                  votingDuration = arg;
-                                  setState(() {});
-                                }
-                              },
-                              decoration: InputDecoration(
-                                  labelText: "Voting Duration (in minutes)",
-                                  counterText: ""),
+                        Visibility(
+                          visible: willVote,
+                          child: Expanded(
+                            child: Container(
+                              child: TextFormField(
+                                controller: votingDurationController,
+                                keyboardType: TextInputType.number,
+                                validator: validVotingDuration,
+                                maxLength: textFieldLength,
+                                onChanged: (String arg) {
+                                  if (!(arg.length == textFieldLength &&
+                                      votingDuration.length ==
+                                          textFieldLength)) {
+                                    votingDuration = arg;
+                                    setState(() {});
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                    labelText: "Voting Duration (in minutes)",
+                                    counterText: ""),
+                              ),
                             ),
                           ),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .3,
+                          child: RaisedButton(
+                              child: Text(voteButtonText),
+                              onPressed: () {
+                                willVote = !willVote;
+                                if (willVote == false) {
+                                  votingDurationController.text = "0";
+                                  votingDuration =
+                                      votingDurationController.text;
+                                  voteButtonText = "Set Voting";
+                                } else {
+                                  votingDurationController.text = Globals
+                                      .currentGroup.defaultVotingDuration
+                                      .toString();
+                                  votingDuration =
+                                      votingDurationController.text;
+                                  voteButtonText = "Skip Voting";
+                                }
+                                setState(() {});
+                              }),
+                        ),
+                        Padding(
+                          // this is hacky af, but otherwise when textfield is hidden the button jumps to the right
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .000),
                         ),
                       ],
                     ),
@@ -362,26 +405,29 @@ class _CreateEventState extends State<CreateEvent> {
   String calculateVotingStartDateTime() {
     String displayVal;
 
-    if (rsvpDuration == "0") {
+    if (considerDuration == "0") {
       votingStart = DateTime.now();
       displayVal = Globals.formatter.format(votingStart);
     } else {
-      if (validRsvpDuration(rsvpDuration) != null) {
+      if (validConsiderDuration(considerDuration) != null) {
         displayVal = Globals.formatter.format(votingStart);
       } else {
         votingStart = DateTime.now();
         votingStart =
-            votingStart.add(Duration(minutes: int.parse(rsvpDuration)));
+            votingStart.add(Duration(minutes: int.parse(considerDuration)));
         displayVal = Globals.formatter.format(votingStart);
       }
     }
-    return "Voting will start: $displayVal";
+    return "Consider will end: $displayVal";
   }
 
   String calculateVotingEndDateTime() {
     String displayVal;
 
     if (validVotingDuration(votingDuration) != null) {
+      displayVal = Globals.formatter.format(votingEnd);
+    } else if (votingDuration == "0") {
+      votingEnd = votingStart;
       displayVal = Globals.formatter.format(votingEnd);
     } else if (votingStart != null) {
       votingEnd = votingStart.add(Duration(minutes: int.parse(votingDuration)));
@@ -400,7 +446,7 @@ class _CreateEventState extends State<CreateEvent> {
       if (this.votingStart.isAfter(
           DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
         errorMessage +=
-            "RSVP duration invalid: RSVP will end after the event starts\n\n";
+            "Consider duration invalid: Consider time will end after the event starts\n\n";
       }
       if (this.votingEnd.isAfter(
           DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
@@ -411,7 +457,7 @@ class _CreateEventState extends State<CreateEvent> {
         showErrorMessage("Error", errorMessage, context);
       } else {
         Event event = new Event(
-            eventName: this.eventName,
+            eventName: this.eventName.trim(),
             categoryId: this.categorySelected.first.categoryId,
             categoryName: this.categorySelected.first.categoryName,
             createdDateTime:
@@ -419,7 +465,7 @@ class _CreateEventState extends State<CreateEvent> {
             eventStartDateTime: DateTime.parse(
                 this.eventStartDate + ' ' + this.eventStartTime + ':00'),
             votingDuration: int.parse(this.votingDuration),
-            rsvpDuration: int.parse(this.rsvpDuration));
+            considerDuration: int.parse(this.considerDuration));
 
         showLoadingDialog(context, "Creating event...", true);
         ResultStatus result =

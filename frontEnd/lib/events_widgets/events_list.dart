@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_card_closed.dart';
 import 'package:frontEnd/events_widgets/event_card_occurring.dart';
-import 'package:frontEnd/events_widgets/event_card_rsvp.dart';
+import 'package:frontEnd/events_widgets/event_card_consider.dart';
 import 'package:frontEnd/events_widgets/event_card_voting.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/models/event.dart';
@@ -38,8 +38,8 @@ class _EventsListState extends State<EventsList> {
       for (String eventId in widget.events.keys) {
         Widget eventCard;
         String eventMode = EventsManager.getEventMode(widget.events[eventId]);
-        if (eventMode == EventsManager.rsvpMode) {
-          eventCard = new EventCardRsvp(
+        if (eventMode == EventsManager.considerMode) {
+          eventCard = new EventCardConsider(
               widget.group.groupId, widget.events[eventId], eventId);
         } else if (eventMode == EventsManager.votingMode) {
           eventCard = new EventCardVoting(

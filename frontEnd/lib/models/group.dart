@@ -10,7 +10,7 @@ class Group {
   final Map<String, dynamic> categories;
   final Map<String, dynamic> events;
   final int defaultVotingDuration;
-  final int defaultRsvpDuration;
+  final int defaultConsiderDuration;
   final int nextEventId;
 
   Group(
@@ -23,7 +23,7 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultRsvpDuration,
+      this.defaultConsiderDuration,
       this.nextEventId});
 
   Group.debug(
@@ -36,7 +36,7 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultRsvpDuration,
+      this.defaultConsiderDuration,
       this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
@@ -51,8 +51,8 @@ class Group {
         events: json[GroupsManager.EVENTS],
         defaultVotingDuration:
             int.parse(json[GroupsManager.DEFAULT_VOTING_DURATION]),
-        defaultRsvpDuration:
-            int.parse(json[GroupsManager.DEFAULT_RSVP_DURATION]),
+        defaultConsiderDuration:
+            int.parse(json[GroupsManager.DEFAULT_CONSIDER_DURATION]),
         nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
   }
 
@@ -73,7 +73,7 @@ class Group {
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"
-        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultRsvpDuration NextEventId: $nextEventId";
+        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultConsiderDuration NextEventId: $nextEventId";
   }
 
   Map asMap() {
@@ -87,7 +87,7 @@ class Group {
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: this.events,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
-      GroupsManager.DEFAULT_RSVP_DURATION: this.defaultRsvpDuration,
+      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
       GroupsManager.NEXT_EVENT_ID: this.nextEventId
     };
   }

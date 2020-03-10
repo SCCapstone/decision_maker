@@ -63,7 +63,8 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                           MediaQuery.of(context).size.height * .01),
                       child: Text(
                         (DateTime.now().isBefore(event.eventStartDateTime))
-                            ? "Event Starts" : "Event Started",
+                            ? "Event Starts"
+                            : "Event Started",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize:
@@ -123,7 +124,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${event.optedIn.length})"),
+                      title: Text("Considered (${event.optedIn.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
