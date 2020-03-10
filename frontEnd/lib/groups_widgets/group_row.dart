@@ -89,42 +89,60 @@ class _GroupRowState extends State<GroupRow> {
                   ),
                 ),
               ),
-              Container(
-                height: MediaQuery.of(context).size.width * .20,
-                width: MediaQuery.of(context).size.width * .15,
-                child: Center(
-                  child: Wrap(
-                      spacing: (this.notificationNum > 0) ? -25 : 0,
-                      direction: Axis.vertical,
-                      children: <Widget>[
-                        IconButton(
-                          icon: (this.notificationsMuted)
-                              ? Icon(Icons.notifications_off)
-                              : Icon(Icons.notifications),
-                          color: Colors.blueAccent,
-                          onPressed: () {
-                            setState(() {
-                              // TODO mute the group
-                              this.notificationsMuted =
-                                  !this.notificationsMuted;
-                            });
-                          },
-                        ),
-                        Visibility(
-                          visible: (this.notificationNum > 0),
-                          child: Row(
-                            children: <Widget>[
-                              Padding(
-                                  padding: EdgeInsets.all(
-                                      MediaQuery.of(context).size.height *
-                                          .02)),
-                              Text((this.notificationNum < 100)
-                                  ? this.notificationNum.toString()
-                                  : "99+")
-                            ],
+              GestureDetector(
+                onTap: () {
+                  // doing this to try and help users who have a hard time clicking the icon
+                  setState(() {
+                    // TODO mute the group
+                    this.notificationsMuted = !this.notificationsMuted;
+                  });
+                },
+                child: Container(
+                  height: MediaQuery.of(context).size.width * .20,
+                  width: MediaQuery.of(context).size.width * .15,
+                  child: Center(
+                    child: Wrap(
+                        spacing: (this.notificationNum > 0) ? -25 : 0,
+                        direction: Axis.vertical,
+                        children: <Widget>[
+                          IconButton(
+                            icon: (this.notificationsMuted)
+                                ? Icon(Icons.notifications_off)
+                                : Icon(Icons.notifications),
+                            color: Colors.blueAccent,
+                            onPressed: () {
+                              setState(() {
+                                // TODO mute the group
+                                this.notificationsMuted =
+                                    !this.notificationsMuted;
+                              });
+                            },
                           ),
-                        )
-                      ]),
+                          Visibility(
+                            visible: (this.notificationNum > 0),
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  // TODO mute the group
+                                  this.notificationsMuted =
+                                      !this.notificationsMuted;
+                                });
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Padding(
+                                      padding: EdgeInsets.all(
+                                          MediaQuery.of(context).size.height *
+                                              .02)),
+                                  Text((this.notificationNum < 100)
+                                      ? this.notificationNum.toString()
+                                      : "99+")
+                                ],
+                              ),
+                            ),
+                          )
+                        ]),
+                  ),
                 ),
               ),
             ],

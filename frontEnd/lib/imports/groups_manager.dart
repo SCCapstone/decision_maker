@@ -359,10 +359,12 @@ class GroupsManager {
   }
 
   static void sortByAlphaAscending(List<Group> groups) {
-    groups.sort((a, b) => a.groupName.compareTo(b.groupName));
+    groups.sort((a, b) =>
+        a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
   }
 
   static void sortByAlphaDescending(List<Group> groups) {
-    groups.sort((a, b) => b.groupName.compareTo(a.groupName));
+    groups.sort((a, b) =>
+        b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
   }
 }

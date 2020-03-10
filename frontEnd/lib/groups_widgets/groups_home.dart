@@ -33,7 +33,6 @@ class _GroupsHomeState extends State<GroupsHome>
   List<Group> groupsLeft = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
-  String selectedSort;
   int currentTab, sortVal;
   final int totalTabs = 2;
 
@@ -260,13 +259,13 @@ class _GroupsHomeState extends State<GroupsHome>
           ],
           bottom: PreferredSize(
             preferredSize: Size(MediaQuery.of(context).size.width,
-                MediaQuery.of(context).size.height * .038),
+                MediaQuery.of(context).size.height * .045),
             child: Visibility(
               visible: !this.searching,
               child: Row(
                 children: <Widget>[
                   Container(
-                    width: MediaQuery.of(context).size.width * .67,
+                    width: MediaQuery.of(context).size.width * .70,
                     child: TabBar(
                       controller: this.tabController,
                       isScrollable: false,
@@ -284,58 +283,51 @@ class _GroupsHomeState extends State<GroupsHome>
                       ],
                     ),
                   ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * .095,
+                        0,
+                        MediaQuery.of(context).size.width * .095,
+                        0),
+                  ),
                   Container(
-                    height: MediaQuery.of(context).size.height * .038,
+                    height: MediaQuery.of(context).size.height * .04,
                     child: Visibility(
                       visible: this.currentTab == 0,
-                      child: Row(
-                        children: <Widget>[
-                          Text(
-                            "Sort:",
-                            style: TextStyle(
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.35,
-                                color: Colors.black),
+                      child: PopupMenuButton<int>(
+                        child: Icon(
+                          Icons.sort,
+                          size: 35,
+                          color: Colors.black,
+                        ),
+                        tooltip: "Sort Groups",
+                        onSelected: (int result) {
+                          if (this.sortVal != result) {
+                            // prevents useless updates if sort didn't change
+                            this.sortVal = result;
+                            setState(() {
+                              setSort(true);
+                            });
+                          }
+                        },
+                        itemBuilder: (BuildContext context) =>
+                            <PopupMenuEntry<int>>[
+                          PopupMenuItem<int>(
+                            value: Globals.dateNewestSort,
+                            child: Text(Globals.dateNewestSortString),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(
-                                MediaQuery.of(context).size.height * .009),
+                          PopupMenuItem<int>(
+                            value: Globals.dateOldestSort,
+                            child: Text(Globals.dateOldestSortString),
                           ),
-                          Theme(
-                            data: Theme.of(context)
-                                .copyWith(canvasColor: Colors.white),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: this.selectedSort,
-                                style: TextStyle(
-                                    fontSize: DefaultTextStyle.of(context)
-                                            .style
-                                            .fontSize *
-                                        0.35,
-                                    color: Colors.black),
-                                onChanged: (String newValue) {
-                                  setSort(
-                                      sortString: newValue, sendUpdate: true);
-                                  setState(() {
-                                    this.selectedSort = newValue;
-                                  });
-                                },
-                                items: <String>[
-                                  Globals.alphabeticalSortString,
-                                  Globals.alphabeticalReverseSortString,
-                                  Globals.dateNewestSortString,
-                                  Globals.dateOldestSortString,
-                                ].map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          )
+                          PopupMenuItem<int>(
+                            value: Globals.alphabeticalSort,
+                            child: Text(Globals.alphabeticalSortString),
+                          ),
+                          PopupMenuItem<int>(
+                            value: Globals.alphabeticalReverseSort,
+                            child: Text(Globals.alphabeticalReverseSortString),
+                          ),
                         ],
                       ),
                     ),
@@ -434,8 +426,7 @@ class _GroupsHomeState extends State<GroupsHome>
     });
   }
 
-  void setSort({String sortString, int sortVal, bool sendUpdate}) {
-    sortVal = getSortMethod(sortString);
+  void setSort(bool sendUpdate) {
     if (sortVal == Globals.dateNewestSort) {
       GroupsManager.sortByDateNewest(totalGroups);
     } else if (sortVal == Globals.dateOldestSort) {
@@ -483,8 +474,8 @@ class _GroupsHomeState extends State<GroupsHome>
           icon: Globals.user.groupsLeft[groupId][GroupsManager.ICON]);
       this.groupsLeft.add(group);
     }
-    this.selectedSort = getSortMethodString(Globals.user.appSettings.groupSort);
-    setSort(sortVal: Globals.user.appSettings.groupSort, sendUpdate: false);
+    this.sortVal = Globals.user.appSettings.groupSort;
+    setSort(false);
   }
 
   void toggleSearch() {
