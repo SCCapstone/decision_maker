@@ -94,9 +94,6 @@ public class GroupsManagerTest {
   private PendingEventsManager pendingEventsManager;
 
   @Mock
-  private LambdaLogger lambdaLogger;
-
-  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -122,12 +119,11 @@ public class GroupsManagerTest {
 
     ResultStatus result = this.groupsManager
         .getGroups(ImmutableMap.of(RequestFields.GROUP_IDS, ImmutableList.of("id", "id2")),
-            this.metrics, this.lambdaLogger);
+            this.metrics);
     assertTrue(result.success);
 
     result = this.groupsManager
-        .getGroups(ImmutableMap.of(RequestFields.ACTIVE_USER, "username"), this.metrics,
-            this.lambdaLogger);
+        .getGroups(ImmutableMap.of(RequestFields.ACTIVE_USER, "username"), this.metrics);
     assertTrue(result.success);
 
     verify(this.usersManager, times(1))
@@ -135,7 +131,6 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.table, times(4)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(2)).commonClose(true);
-    verify(this.lambdaLogger, times(0)).log(any(String.class));
   }
 
   @Test
@@ -148,7 +143,7 @@ public class GroupsManagerTest {
     //getting third id returns null from db
     ResultStatus result = this.groupsManager
         .getGroups(ImmutableMap.of(RequestFields.GROUP_IDS, ImmutableList.of("id", "id2", "id3")),
-            this.metrics, this.lambdaLogger);
+            this.metrics);
     assertTrue(result.success);
 
     verify(this.usersManager, times(0))
@@ -156,13 +151,12 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(3)).getTable(any(String.class));
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
-    verify(this.lambdaLogger, times(2)).log(any(String.class));
   }
 
   @Test
   public void getGroups_missingRequestKey_failureResult() {
     ResultStatus result = this.groupsManager
-        .getGroups(ImmutableMap.of("badKey", "blah"), this.metrics, this.lambdaLogger);
+        .getGroups(ImmutableMap.of("badKey", "blah"), this.metrics);
     assertFalse(result.success);
 
     verify(this.usersManager, times(0))
@@ -170,7 +164,6 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
-    verify(this.lambdaLogger, times(1)).log(any(String.class)); // missing key
   }
 
   //////////////////////////endregion
@@ -192,7 +185,7 @@ public class GroupsManagerTest {
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//        .newEvent(this.newEventGoodInput, this.metrics);
 //
 //    assertTrue(result.success);
 //    verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -205,7 +198,7 @@ public class GroupsManagerTest {
     this.newEventBadInput.remove(GroupsManager.GROUP_ID);
 
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventBadInput, this.metrics);
 
     assertFalse(result.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -218,7 +211,7 @@ public class GroupsManagerTest {
     this.newEventBadInput.put(GroupsManager.VOTING_DURATION, "General Kenobi!");
 
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventBadInput, this.metrics);
 
     assertFalse(result.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -232,7 +225,7 @@ public class GroupsManagerTest {
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventGoodInput, this.metrics);
 
     assertFalse(result.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -248,7 +241,7 @@ public class GroupsManagerTest {
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//        .newEvent(this.newEventGoodInput, this.metrics);
 //
 //    assertFalse(result.success);
 //    verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -261,7 +254,7 @@ public class GroupsManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventGoodInput, this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -290,7 +283,7 @@ public class GroupsManagerTest {
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics, this.lambdaLogger);
+//        .newEvent(this.newEventGoodInput, this.metrics);
 //    assertTrue(result.success);
 //  }
 
@@ -304,12 +297,12 @@ public class GroupsManagerTest {
     this.newEventBadInput.put(GroupsManager.GROUP_ID, "");
     this.newEventBadInput.put(GroupsManager.CATEGORY_ID, "");
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
 
     this.newEventBadInput.put(GroupsManager.GROUP_ID, "GroupId");
     this.newEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
   }
 
@@ -322,11 +315,11 @@ public class GroupsManagerTest {
 
     this.newEventBadInput.put(GroupsManager.VOTING_DURATION, -1);
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
 
     this.newEventBadInput.put(GroupsManager.VOTING_DURATION, 1000000);
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
   }
 
@@ -339,11 +332,11 @@ public class GroupsManagerTest {
 
     this.newEventBadInput.put(GroupsManager.RSVP_DURATION, -1);
     ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+        .newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
 
     this.newEventBadInput.put(GroupsManager.RSVP_DURATION, 1000000);
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics, this.lambdaLogger);
+    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
   }
 
@@ -370,7 +363,7 @@ public class GroupsManagerTest {
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.groupsManager
-        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+        .getAllCategoryIds("groupId", this.metrics);
 
     assertEquals(categoryIds.size(), 2);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -383,7 +376,7 @@ public class GroupsManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     List<String> categoryIds = this.groupsManager
-        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+        .getAllCategoryIds("groupId", this.metrics);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -397,7 +390,7 @@ public class GroupsManagerTest {
     doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.groupsManager
-        .getAllCategoryIds("groupId", this.metrics, this.lambdaLogger);
+        .getAllCategoryIds("groupId", this.metrics);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -412,8 +405,7 @@ public class GroupsManagerTest {
   public void removeCategoryFromGroups_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics,
-            this.lambdaLogger);
+        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
 
     assertTrue(result.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -423,8 +415,7 @@ public class GroupsManagerTest {
   public void removeCategoryFromGroups_emptyGroupList_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(new ArrayList<>(), this.goodCategoryId, this.metrics,
-            this.lambdaLogger);
+        .removeCategoryFromGroups(new ArrayList<>(), this.goodCategoryId, this.metrics);
 
     assertTrue(result.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -434,7 +425,7 @@ public class GroupsManagerTest {
   public void removeCategoryFromGroups_emptyCategoryId_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics, this.lambdaLogger);
+        .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics);
 
     assertFalse(result.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -445,8 +436,7 @@ public class GroupsManagerTest {
   public void removeCategoryFromGroups_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus resultStatus = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics,
-            this.lambdaLogger);
+        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -459,12 +449,12 @@ public class GroupsManagerTest {
   @Test
   public void leaveGroup_missingKeys_failureResult() {
     ResultStatus resultStatus = this.groupsManager
-        .leaveGroup(this.badInput, metrics, lambdaLogger);
+        .leaveGroup(this.badInput, metrics);
     assertFalse(resultStatus.success);
 
     this.badInput.put(RequestFields.ACTIVE_USER, "testId");
 
-    resultStatus = this.groupsManager.leaveGroup(this.badInput, metrics, lambdaLogger);
+    resultStatus = this.groupsManager.leaveGroup(this.badInput, metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));

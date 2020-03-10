@@ -7,12 +7,10 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.common.collect.ImmutableMap;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -55,8 +53,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
     this.client = awsStepFunctions;
   }
 
-  private boolean startStepMachineExecution(String groupId, String eventId, String scannerId,
-      Metrics metrics, LambdaLogger lambdaLogger) {
+  private boolean startStepMachineExecution(final String groupId, final String eventId,
+      final String scannerId, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.startStepMachineExecution";
     metrics.commonSetup(classMethod);
 
@@ -77,16 +75,15 @@ public class PendingEventsManager extends DatabaseAccessManager {
           .withInput(escapedInput.toString()));
     } catch (Exception e) {
       success = false;
-      lambdaLogger
-          .log(new ErrorDescriptor<>(input, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(input, classMethod, e));
     }
 
     metrics.commonClose(success);
     return success;
   }
 
-  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus processPendingEvent(final Map<String, Object> jsonMap,
+      final Metrics metrics) {
     final String classMethod = "PendingEventsManager.processPendingEvent";
     metrics.commonSetup(classMethod);
 
@@ -113,16 +110,14 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //  update the pending events table with the new data time for the end of voting
 
             final Map<String, Object> tentativeChoices = this
-                .getTentativeAlgorithmChoices(event, metrics, lambdaLogger);
+                .getTentativeAlgorithmChoices(event, metrics);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventTentativeChoices(groupId, eventId, tentativeChoices, group,
-                    metrics, lambdaLogger);
+                .setEventTentativeChoices(groupId, eventId, tentativeChoices, group, metrics);
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
-                .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics,
-                    lambdaLogger);
+                .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics);
             if (updatePendingEvent.success) {
               resultStatus = new ResultStatus(true, "Event updated successfully");
             } else {
@@ -131,11 +126,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
           } else {
             //we need to loop over the voting results and figure out the yes percentage of votes for the choices
             //set the selected choice as the one with the highest percent
-            String result = this.getSelectedChoice(event, metrics, lambdaLogger);
+            String result = this.getSelectedChoice(event, metrics);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventSelectedChoice(groupId, eventId, result, group,
-                    metrics, lambdaLogger);
+                .setEventSelectedChoice(groupId, eventId, result, group, metrics);
 
             // now remove the entry from the pending events table since it has been fully processed now
             String updateExpression = "remove #groupEventKey";
@@ -152,26 +146,23 @@ public class PendingEventsManager extends DatabaseAccessManager {
           }
         } else {
           resultStatus.resultMessage = "Error: Group data not found.";
-          lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Group data not found.").toString());
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Group data not found."));
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
-        lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-            e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
     } else {
       resultStatus.resultMessage = "Error: Required request keys not found.";
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found.").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
     }
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  private Map<String, Object> getTentativeAlgorithmChoices(
-      final Event event, final Metrics metrics, final LambdaLogger lambdaLogger) {
+  private Map<String, Object> getTentativeAlgorithmChoices(final Event event,
+      final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
 
@@ -207,8 +198,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             }
           }
         } catch (Exception e) {
-          lambdaLogger.log(
-              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
 
@@ -224,9 +214,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
       // we have an event pointing to a non existent category
       returnValue.putIfAbsent("1", "Error");
       success = false;
-      lambdaLogger
-          .log(new ErrorDescriptor<>(event, classMethod, metrics.getRequestId(), e)
-              .toString());
+      metrics.log(new ErrorDescriptor<>(event, classMethod, e));
     }
 
     metrics.commonClose(success);
@@ -248,8 +236,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return maxKey;
   }
 
-  public String getSelectedChoice(final Event event, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public String getSelectedChoice(final Event event, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getSelectedChoice";
     String selectedChoice;
 
@@ -272,15 +259,14 @@ public class PendingEventsManager extends DatabaseAccessManager {
       selectedChoice = event.getTentativeAlgorithmChoices().get(maxChoiceId);
     } catch (Exception e) {
       selectedChoice = "Error";
-      lambdaLogger
-          .log(new ErrorDescriptor<>(event, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(event, classMethod, e));
     }
 
     return selectedChoice;
   }
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
-      final Integer pollDuration, final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Integer pollDuration, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.addPendingEvent";
     metrics.commonSetup(classMethod);
 
@@ -309,16 +295,16 @@ public class PendingEventsManager extends DatabaseAccessManager {
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
       resultStatus.resultMessage = "Error adding pending event.";
-      lambdaLogger.log(new ErrorDescriptor<>(String
+      metrics.log(new ErrorDescriptor<>(String
           .format("Group: %s, Event: %s, duration: %s", groupId, eventId, pollDuration.toString()),
-          classMethod, metrics.getRequestId(), e).toString());
+          classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public void scanPendingEvents(String scannerId, Metrics metrics, LambdaLogger lambdaLogger) {
+  public void scanPendingEvents(final String scannerId, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.scanPendingEvents";
     metrics.commonSetup(classMethod);
 
@@ -346,27 +332,23 @@ public class PendingEventsManager extends DatabaseAccessManager {
                 eventId = keyPair.get(1);
 
                 success = (success && this
-                    .startStepMachineExecution(groupId, eventId, scannerId, metrics, lambdaLogger));
+                    .startStepMachineExecution(groupId, eventId, scannerId, metrics));
               } else {
-                lambdaLogger.log(
-                    new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key,
-                        classMethod, metrics.getRequestId(),
-                        "bad format for key in pending events table").toString());
+                metrics.log(new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key,
+                    classMethod, "bad format for key in pending events table"));
                 success = false;
               }
             }
           } catch (Exception e) {
-            lambdaLogger.log(
+            metrics.log(
                 new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key, classMethod,
-                    metrics.getRequestId(), e).toString());
+                    e));
             success = false;
           }
         }
       }
     } catch (Exception e) {
-      lambdaLogger.log(
-          new ErrorDescriptor<>("scanner id: " + scannerId, classMethod, metrics.getRequestId(), e)
-              .toString());
+      metrics.log(new ErrorDescriptor<>("scanner id: " + scannerId, classMethod, e));
       success = false;
     }
 

@@ -2,7 +2,6 @@ package imports;
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
@@ -31,8 +30,7 @@ public class SnsAccessManager {
       .build();
 
   public CreatePlatformEndpointResult registerPlatformEndpoint(
-      final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+      final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics) {
     CreatePlatformEndpointResult createPlatformEndpointResult = null;
 
     //The error handling here is obtained from aws doc: https://docs.aws.amazon.com/sns/latest/dg/mobile-platform-endpoint.html#mobile-platform-endpoint-sdk-examples
@@ -63,7 +61,7 @@ public class SnsAccessManager {
                 ImmutableMap.of(
                     RequestFields.ACTIVE_USER, oldUsername,
                     RequestFields.DEVICE_TOKEN, createPlatformEndpointRequest.getToken()
-                ), metrics, lambdaLogger
+                ), metrics
             );
 
         if (oldEndpointUnregistered.success) {

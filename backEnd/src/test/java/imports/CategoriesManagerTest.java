@@ -107,7 +107,7 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -116,7 +116,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).putItem(any(PutItemSpec.class));
@@ -127,14 +127,14 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInputBadUsers_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested\
@@ -151,7 +151,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -177,7 +177,7 @@ public class CategoriesManagerTest {
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(4)).commonClose(false);
@@ -194,14 +194,14 @@ public class CategoriesManagerTest {
         .when(this.table)
         .getItem(any(GetItemSpec.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class), eq(null));
+        eq(true), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
@@ -216,14 +216,14 @@ public class CategoriesManagerTest {
         .when(this.table)
         .getItem(any(GetItemSpec.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class), eq(null));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class), eq(null));
+        eq(true), any(Metrics.class));
     //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested\
@@ -240,7 +240,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        any(Boolean.class), any(Metrics.class), eq(null));
+        any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -265,7 +265,7 @@ public class CategoriesManagerTest {
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        any(Boolean.class), any(Metrics.class), eq(null));
+        any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(5)).commonClose(false);
@@ -279,14 +279,14 @@ public class CategoriesManagerTest {
   public void getCategories_validInputActiveUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(ImmutableList.of("catId1", "catId2")).when(this.usersManager)
-        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager
         .getCategories(this.getCategoriesGoodInputActiveUser, this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -304,9 +304,9 @@ public class CategoriesManagerTest {
     assertTrue(resultStatus.success);
     assertEquals(resultStatus.resultMessage, "[{}]");
     verify(this.usersManager, times(0))
-        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class));
     verify(this.groupsManager, times(0))
-        .getAllCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllCategoryIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -318,14 +318,14 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(GroupsManager.GROUP_ID).when(this.groupsManager).getPrimaryKeyIndex();
     doReturn(ImmutableList.of("catId1", "catId2")).when(this.groupsManager)
-        .getAllCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllCategoryIds(any(String.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager
         .getCategories(this.getCategoriesGoodInputGroupId, this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(1))
-        .getAllCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllCategoryIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(
         any(String.class)); // the db is hit thrice, but only twice by the dependency being tested
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -354,9 +354,9 @@ public class CategoriesManagerTest {
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0))
-        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllOwnedCategoryIds(any(String.class), any(Metrics.class));
     verify(this.groupsManager, times(0))
-        .getAllCategoryIds(any(String.class), any(Metrics.class), eq(null));
+        .getAllCategoryIds(any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -378,7 +378,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(1))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class), eq(null));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -396,7 +396,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class), eq(null));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -413,7 +413,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class), eq(null));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -428,7 +428,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class), eq(null));
+        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
   }
