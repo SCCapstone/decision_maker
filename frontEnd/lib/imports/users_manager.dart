@@ -26,6 +26,7 @@ class UsersManager {
   static final String OWNED_CATEGORIES = "OwnedCategories";
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
+  static final String GROUPS_LEFT = "GroupsLeft";
 
   static final String getUserDataAction = "getUserData";
   static final String updateSettingsAction = "updateUserSettings";

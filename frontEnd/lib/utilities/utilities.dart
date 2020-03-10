@@ -7,7 +7,6 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import 'package:frontEnd/models/user.dart';
-import 'validator.dart';
 
 Future<bool> internetCheck() async {
   bool retVal = true;
@@ -35,6 +34,40 @@ ImageProvider getIconUrl(String icon) {
   return icon == null
       ? AssetImage('assets/images/placeholder.jpg')
       : NetworkImage(Globals.imageUrl + icon);
+}
+
+String getSortMethodString(int sortVal) {
+  String retVal;
+  if (sortVal == Globals.alphabeticalSort) {
+    retVal = Globals.alphabeticalSortString;
+  } else if (sortVal == Globals.alphabeticalReverseSort) {
+    retVal = Globals.alphabeticalReverseSortString;
+  } else if (sortVal == Globals.dateNewestSort) {
+    retVal = Globals.dateNewestSortString;
+  } else if (sortVal == Globals.dateOldestSort) {
+    retVal = Globals.dateOldestSortString;
+  } else {
+    // shouldn't ever happen but if so just sort by newest first
+    retVal = Globals.dateNewestSortString;
+  }
+  return retVal;
+}
+
+int getSortMethod(String sortString) {
+  int retVal;
+  if (sortString == Globals.alphabeticalSortString) {
+    retVal = Globals.alphabeticalSort;
+  } else if (sortString == Globals.alphabeticalReverseSortString) {
+    retVal = Globals.alphabeticalReverseSort;
+  } else if (sortString == Globals.dateNewestSortString) {
+    retVal = Globals.dateNewestSort;
+  } else if (sortString == Globals.dateOldestSortString) {
+    retVal = Globals.dateOldestSort;
+  } else {
+    // shouldn't ever happen but if so just sort by newest first
+    retVal = Globals.dateNewestSort;
+  }
+  return retVal;
 }
 
 int boolToInt(bool val) {
@@ -111,53 +144,6 @@ void showPopupMessage(String message, BuildContext context,
           content: Text(message),
         );
       }).then(callback);
-}
-
-void groupIconPopup(BuildContext context, bool validate,
-    TextEditingController controller, Function function) {
-  // displays a popup for editing the group icon's url
-
-  final formKey = GlobalKey<FormState>();
-  showDialog(
-      context: context,
-      builder: (context) {
-        return Form(
-          autovalidate: validate,
-          key: formKey,
-          child: AlertDialog(
-            title: Text("Edit Icon url"),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Cancel"),
-                onPressed: () {
-                  controller.clear();
-                  Navigator.of(context).pop();
-                },
-              ),
-              FlatButton(
-                child: Text("Submit"),
-                onPressed: () {
-                  if (formKey.currentState.validate()) {
-                    function(controller.text);
-                  }
-                },
-              ),
-            ],
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: controller,
-                    validator: validGroupIcon,
-                    keyboardType: TextInputType.url,
-                    decoration: InputDecoration(
-                      labelText: "Enter a icon link",
-                    )),
-              ],
-            ),
-          ),
-        );
-      });
 }
 
 void showErrorMessage(

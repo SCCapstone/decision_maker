@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/group_left_row.dart';
 import 'package:frontEnd/models/group.dart';
-import 'group_row.dart';
 
-class GroupsList extends StatefulWidget {
-  final List<Group> groups;
+class GroupsLeftList extends StatefulWidget {
+  final List<Group> groupsLeft;
   final bool searching;
   final Function refreshGroups;
 
-  GroupsList({Key key, this.groups, this.searching, this.refreshGroups})
+  GroupsLeftList({Key key, this.groupsLeft, this.searching, this.refreshGroups})
       : super(key: key);
 
   @override
-  _GroupsListState createState() => _GroupsListState();
+  _GroupsLeftListState createState() => _GroupsLeftListState();
 }
 
-class _GroupsListState extends State<GroupsList> {
+class _GroupsLeftListState extends State<GroupsLeftList> {
   @override
   Widget build(BuildContext context) {
-    if (widget.groups.isEmpty) {
+    if (widget.groupsLeft.isEmpty) {
       return ListView(
         // list view so the refresh can be enabled
         children: <Widget>[
           Center(
             child: Text(
                 (widget.searching)
-                    ? "Group not found"
-                    : "No groups found! Click the plus button below to create one!",
+                    ? "Group not found."
+                    : "You have not left any groups.",
                 style: TextStyle(fontSize: 30)),
           ),
         ],
@@ -34,10 +34,10 @@ class _GroupsListState extends State<GroupsList> {
       return Scrollbar(
         child: ListView.builder(
           shrinkWrap: true,
-          itemCount: widget.groups.length,
+          itemCount: widget.groupsLeft.length,
           itemBuilder: (context, index) {
-            return GroupRow(
-              widget.groups[index],
+            return GroupLeftRow(
+              widget.groupsLeft[index],
               refreshGroups: widget.refreshGroups,
             );
           },
