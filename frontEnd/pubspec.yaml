@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   provider: ^4.0.4
   firebase_messaging: ^6.0.9
+  auto_size_text: ^2.1.0
 
 dev_dependencies:
   flutter_test:

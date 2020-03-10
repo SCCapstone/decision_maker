@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
@@ -272,14 +273,20 @@ class _GroupsHomeState extends State<GroupsHome>
                       indicatorWeight: 3,
                       indicatorColor: Colors.blueAccent,
                       tabs: <Widget>[
-                        Text(
+                        AutoSizeText(
                           "Groups Home",
+                          maxLines: 1,
                           style: TextStyle(fontSize: 17),
+                          minFontSize: 12,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
+                        AutoSizeText(
                           "Groups Left",
+                          maxLines: 1,
                           style: TextStyle(fontSize: 17),
-                        )
+                          minFontSize: 12,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
