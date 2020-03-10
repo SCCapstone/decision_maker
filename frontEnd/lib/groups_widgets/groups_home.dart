@@ -266,10 +266,10 @@ class _GroupsHomeState extends State<GroupsHome>
               child: Row(
                 children: <Widget>[
                   Container(
-                    width: MediaQuery.of(context).size.width * .65,
+                    width: MediaQuery.of(context).size.width * .67,
                     child: TabBar(
                       controller: this.tabController,
-                      isScrollable: true,
+                      isScrollable: false,
                       indicatorWeight: 3,
                       indicatorColor: Colors.blueAccent,
                       tabs: <Widget>[
@@ -292,7 +292,12 @@ class _GroupsHomeState extends State<GroupsHome>
                         children: <Widget>[
                           Text(
                             "Sort:",
-                            style: TextStyle(fontSize: 16, color: Colors.black),
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.35,
+                                color: Colors.black),
                           ),
                           Padding(
                             padding: EdgeInsets.all(
@@ -305,7 +310,11 @@ class _GroupsHomeState extends State<GroupsHome>
                               child: DropdownButton<String>(
                                 value: this.selectedSort,
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black),
+                                    fontSize: DefaultTextStyle.of(context)
+                                            .style
+                                            .fontSize *
+                                        0.35,
+                                    color: Colors.black),
                                 onChanged: (String newValue) {
                                   setSort(
                                       sortString: newValue, sendUpdate: true);
