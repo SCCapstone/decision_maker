@@ -304,7 +304,7 @@ class _GroupsHomeState extends State<GroupsHome>
                       child: PopupMenuButton<int>(
                         child: Icon(
                           Icons.sort,
-                          size: 35,
+                          size: MediaQuery.of(context).size.height * .04,
                           color: Colors.black,
                         ),
                         tooltip: "Sort Groups",
