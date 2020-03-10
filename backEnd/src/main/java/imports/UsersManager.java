@@ -12,9 +12,9 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
-import com.amazonaws.services.sns.model.DeleteEndpointResult;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,8 +50,6 @@ public class UsersManager extends DatabaseAccessManager {
   public static final int DEFAULT_DARK_THEME = 1;
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
-
-  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -143,12 +141,12 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withNull(ICON)
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
-              .withMap(CATEGORIES, EMPTY_MAP)
-              .withMap(OWNED_CATEGORIES, EMPTY_MAP)
-              .withMap(GROUPS, EMPTY_MAP)
-              .withMap(GROUPS_LEFT, EMPTY_MAP)
-              .withMap(FAVORITES, EMPTY_MAP)
-              .withMap(FAVORITE_OF, EMPTY_MAP);
+              .withMap(CATEGORIES, Collections.emptyMap())
+              .withMap(OWNED_CATEGORIES, Collections.emptyMap())
+              .withMap(GROUPS, Collections.emptyMap())
+              .withMap(GROUPS_LEFT, Collections.emptyMap())
+              .withMap(FAVORITES, Collections.emptyMap())
+              .withMap(FAVORITE_OF, Collections.emptyMap());
 
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(user);
@@ -173,7 +171,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap,
-      final Boolean isNewCategory, final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Boolean isOwner, final Metrics metrics, final LambdaLogger lambdaLogger) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -193,7 +191,7 @@ public class UsersManager extends DatabaseAccessManager {
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
-        if (isNewCategory && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+        if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
           final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
           updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
           valueMap.withString(":categoryName", categoryName);

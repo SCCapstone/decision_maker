@@ -18,7 +18,7 @@ public class PendingEventResolutionHandler implements RequestStreamHandler {
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
-    Metrics metrics = new Metrics(context.getAwsRequestId());
+    Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     LambdaLogger lambdaLogger = context.getLogger();
 
     final String classMethod = "PendingEventResolutionHandler.handleRequest";
@@ -37,6 +37,7 @@ public class PendingEventResolutionHandler implements RequestStreamHandler {
     }
 
     metrics.commonClose(resultStatus.success);
+    metrics.logMetrics();
     IOStreamsHelper.writeToOutput(outputStream, resultStatus.toString());
   }
 }

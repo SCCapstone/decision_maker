@@ -16,12 +16,29 @@ public class ErrorDescriptor<T> {
     this.exception = exception;
   }
 
+  public ErrorDescriptor(T input, String classMethod, Exception exception) {
+    this.input = input;
+    this.classMethod = classMethod;
+    this.exception = exception;
+  }
+
   public ErrorDescriptor(T input, String classMethod, String requestId,
       String developerMessage) {
     this.input = input;
     this.classMethod = classMethod;
     this.requestId = requestId;
     this.developerMessage = developerMessage;
+  }
+
+  public ErrorDescriptor(T input, String classMethod, String developerMessage) {
+    this.input = input;
+    this.classMethod = classMethod;
+    this.developerMessage = developerMessage;
+  }
+
+  public ErrorDescriptor withRequestId(String requestId) {
+    this.requestId = requestId;
+    return this;
   }
 
   public String toString() {

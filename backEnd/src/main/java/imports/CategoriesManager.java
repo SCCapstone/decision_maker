@@ -9,12 +9,12 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import models.Category;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
@@ -38,8 +38,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     super("categories", "CategoryId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus addNewCategory(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus addNewCategory(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "CategoriesManager.addNewCategory";
     metrics.commonSetup(classMethod);
 
@@ -54,38 +53,22 @@ public class CategoriesManager extends DatabaseAccessManager {
       final UUID uuid = UUID.randomUUID();
 
       try {
-        String nextCategoryIndex = uuid.toString();
-        String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
-        Map<String, Object> ratings = (Map<String, Object>) jsonMap.get(RequestFields.USER_RATINGS);
-        Map<String, Object> groups = new HashMap<>();
-        String owner = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String nextCategoryIndex = uuid.toString();
+        jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
 
-        int nextChoiceNo = this.getNextChoiceNumber(choices);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        jsonMap.putIfAbsent(OWNER, activeUser);
 
-        Item newCategory = new Item()
-            .withPrimaryKey(CATEGORY_ID, nextCategoryIndex)
-            .withString(CATEGORY_NAME, categoryName)
-            .withMap(CHOICES, choices)
-            .withMap(GROUPS, groups)
-            .withInt(NEXT_CHOICE_NO, nextChoiceNo)
-            .withString(OWNER, owner);
+        final Category newCategory = new Category(jsonMap);
+        newCategory.updateNextChoiceNo();
 
-        PutItemSpec putItemSpec = new PutItemSpec()
-            .withItem(newCategory);
-
-        this.putItem(putItemSpec);
+        this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 
         //put the entered ratings in the users table
-        Map<String, Object> insertNewCatForOwner = new HashMap<>();
-        insertNewCatForOwner.put(RequestFields.ACTIVE_USER, owner);
-        insertNewCatForOwner.put(CATEGORY_ID, nextCategoryIndex);
-        insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
-        insertNewCatForOwner.put(CATEGORY_NAME, categoryName);
-
         ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(insertNewCatForOwner, true, metrics, lambdaLogger);
+            .updateUserChoiceRatings(jsonMap, true, metrics, null);
 
+        //todo wrap this operation into a transaction
         if (updatedUsersTableResult.success) {
           resultStatus = new ResultStatus(true, "Category created successfully!");
         } else {
@@ -93,24 +76,25 @@ public class CategoriesManager extends DatabaseAccessManager {
               + updatedUsersTableResult.resultMessage;
         }
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        System.out.println(new ErrorDescriptor<>(jsonMap, classMethod, e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Error: Required request keys not found.").toString());
+      metrics.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
+
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus editCategory(Map<String, Object> jsonMap, Metrics metrics,
-      LambdaLogger lambdaLogger) {
-    ResultStatus resultStatus = new ResultStatus();
+  public ResultStatus editCategory(final Map<String, Object> jsonMap, final Metrics metrics) {
     String classMethod = "CategoriesManager.editCategory";
     metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
 
     //validate data, log results as there should be some validation already on the front end
     if (
@@ -121,44 +105,33 @@ public class CategoriesManager extends DatabaseAccessManager {
             jsonMap.containsKey(RequestFields.ACTIVE_USER)
     ) {
       try {
-        final String categoryId = (String) jsonMap.get(CATEGORY_ID);
-        final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        final Map<String, Object> choices = (Map<String, Object>) jsonMap.get(CHOICES);
-        final Map<String, Object> ratings = (Map<String, Object>) jsonMap
-            .get(RequestFields.USER_RATINGS);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        final Map<String, Object> categoryDataMapped = this.getItemByPrimaryKey(categoryId).asMap();
-        final String owner = (String) categoryDataMapped.get(OWNER);
+        final Category newCategory = new Category(jsonMap);
+        final Category oldCategory = new Category(
+            this.getItemByPrimaryKey(newCategory.getCategoryId()).asMap());
 
-        if (activeUser.equals(owner)) {
-          int nextChoiceNo = this.getNextChoiceNumber(choices);
+        if (activeUser.equals(oldCategory.getOwner())) {
+          newCategory.updateNextChoiceNo();
 
           String updateExpression =
               "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
                   + " = :next";
           ValueMap valueMap = new ValueMap()
-              .withString(":name", categoryName)
-              .withMap(":map", choices)
-              .withInt(":next", nextChoiceNo);
+              .withString(":name", newCategory.getCategoryName())
+              .withMap(":map", newCategory.getChoices())
+              .withInt(":next", newCategory.getNextChoiceNo());
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId)
+              .withPrimaryKey(this.getPrimaryKeyIndex(), newCategory.getCategoryId())
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap);
 
           this.updateItem(updateItemSpec);
 
           //put the entered ratings in the users table
-          Map<String, Object> insertNewCatForOwner = new HashMap<>();
-          insertNewCatForOwner.put(RequestFields.ACTIVE_USER, activeUser);
-          insertNewCatForOwner.put(CATEGORY_ID, categoryId);
-          insertNewCatForOwner.put(RequestFields.USER_RATINGS, ratings);
-          insertNewCatForOwner.put(CATEGORY_NAME,
-              categoryName); // we could potentially check to see if this has changed, but for now just blind update for simple code
-
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(insertNewCatForOwner, true, metrics, lambdaLogger);
+              .updateUserChoiceRatings(jsonMap, true, metrics, null);
 
           if (updatedUsersTableResult.success) {
             resultStatus = new ResultStatus(true, "Category saved successfully!");
@@ -171,13 +144,12 @@ public class CategoriesManager extends DatabaseAccessManager {
           resultStatus.resultMessage = "Error: editing user does not own this category";
         }
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Error: Required request keys not found.").toString());
+      metrics.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -185,22 +157,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private int getNextChoiceNumber(final Map<String, Object> choices) {
-    int nextChoiceNo = -1;
-
-    //get the max current choiceNo
-    for (String choiceNo : choices.keySet()) {
-      if (Integer.parseInt(choiceNo) > nextChoiceNo) {
-        nextChoiceNo = Integer.parseInt(choiceNo);
-      }
-    }
-
-    //move the next choice to be the next value up from the max
-    return nextChoiceNo + 1;
-  }
-
-  public ResultStatus getCategories(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus getCategories(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "CategoriesManager.getCategories";
     metrics.commonSetup(classMethod);
 
@@ -214,24 +171,24 @@ public class CategoriesManager extends DatabaseAccessManager {
     } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
       String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
       categoryIds = DatabaseManagers.GROUPS_MANAGER
-          .getAllCategoryIds(groupId, metrics, lambdaLogger);
+          .getAllCategoryIds(groupId, metrics, null);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       categoryIds = DatabaseManagers.USERS_MANAGER
-          .getAllOwnedCategoryIds(username, metrics, lambdaLogger);
+          .getAllOwnedCategoryIds(username, metrics, null);
       List<String> groupIds = DatabaseManagers.USERS_MANAGER
-          .getAllGroupIds(username, metrics, lambdaLogger);
+          .getAllGroupIds(username, metrics, null);
 
       for (String groupId : groupIds) {
         List<String> groupCategoryIds = DatabaseManagers.GROUPS_MANAGER
-            .getAllCategoryIds(groupId, metrics, lambdaLogger);
+            .getAllCategoryIds(groupId, metrics, null);
         categoryIds.addAll(groupCategoryIds);
       }
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "lookup key not in request payload/active user not set").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
+          "lookup key not in request payload/active user not set"));
     }
 
     if (success) {
@@ -244,8 +201,8 @@ public class CategoriesManager extends DatabaseAccessManager {
           Item dbData = this.getItemByPrimaryKey(id);
           categories.add(dbData.asMap());
         } catch (Exception e) {
-          lambdaLogger.log(
-              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, e));
         }
       }
 
@@ -257,10 +214,10 @@ public class CategoriesManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus deleteCategory(Map<String, Object> jsonMap, Metrics metrics,
-      LambdaLogger lambdaLogger) {
+  public ResultStatus deleteCategory(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "CategoriesManager.deleteCategory";
     metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
 
     if (
@@ -278,12 +235,12 @@ public class CategoriesManager extends DatabaseAccessManager {
 
           if (!groupIds.isEmpty()) {
             DatabaseManagers.GROUPS_MANAGER
-                .removeCategoryFromGroups(groupIds, categoryId, metrics, lambdaLogger);
+                .removeCategoryFromGroups(groupIds, categoryId, metrics, null);
           }
 
           //TODO These last two should probably be put into a ~transaction~
           DatabaseManagers.USERS_MANAGER
-              .removeOwnedCategory(username, categoryId, metrics, lambdaLogger);
+              .removeOwnedCategory(username, categoryId, metrics, null);
 
           DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
@@ -292,20 +249,17 @@ public class CategoriesManager extends DatabaseAccessManager {
 
           resultStatus = new ResultStatus(true, "Category deleted successfully!");
         } else {
-          lambdaLogger.log(
-              new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                  "User is not the owner of the category").toString());
+          metrics.log(
+              new ErrorDescriptor<>(jsonMap, classMethod, "User is not the owner of the category"));
           resultStatus.resultMessage = "Error: User is not the owner of the category.";
         }
       } catch (Exception e) {
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      lambdaLogger.log(
-          new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found").toString());
+      metrics.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 

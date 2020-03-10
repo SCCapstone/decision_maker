@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import models.Category;
 import models.Event;
 import models.Group;
 import models.User;
@@ -179,15 +180,13 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
     try {
       String categoryId = event.getCategoryId();
-      Item categoryData = DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId);
 
-      Map<String, Object> categoryDataMapped = categoryData.asMap();
-      Map<String, Object> categoryChoices = (Map<String, Object>) categoryDataMapped
-          .get(CategoriesManager.CHOICES);
+      Category category = new Category(
+          DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
 
       //build an array of user choice rating sums, start will all the current choice ids in the category
       final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
-      for (String choiceId : categoryChoices.keySet()) {
+      for (String choiceId : category.getChoices().keySet()) {
         choiceRatingsToSums.putIfAbsent(choiceId, 0);
       }
 
@@ -197,18 +196,16 @@ public class PendingEventsManager extends DatabaseAccessManager {
           final User user = new User(
               DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-          final Map<String, Object> userCategoryRatings = user.getCategories();
-          final Map<String, Object> categoryRatings = (Map<String, Object>) userCategoryRatings
-              .get(categoryId);
+          final Map<String, Integer> categoryRatings = user.getCategoryRatings().get(categoryId);
 
-            for (String choiceId : choiceRatingsToSums.keySet()) {
-              if (categoryRatings != null && categoryRatings.containsKey(choiceId)) {
-                choiceRatingsToSums.replace(choiceId,
-                    choiceRatingsToSums.get(choiceId) + Integer.parseInt((String) categoryRatings.get(choiceId)));
-              } else {
-                choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
-              }
+          for (String choiceId : choiceRatingsToSums.keySet()) {
+            if (categoryRatings != null && categoryRatings.containsKey(choiceId)) {
+              choiceRatingsToSums.replace(choiceId,
+                  choiceRatingsToSums.get(choiceId) + categoryRatings.get(choiceId));
+            } else {
+              choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
             }
+          }
         } catch (Exception e) {
           lambdaLogger.log(
               new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
@@ -220,7 +217,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
 
         //we add to the return map and remove the max from the choice rating map
-        returnValue.putIfAbsent(maxChoiceId, categoryChoices.get(maxChoiceId));
+        returnValue.putIfAbsent(maxChoiceId, category.getChoices().get(maxChoiceId));
         choiceRatingsToSums.remove(maxChoiceId);
       }
     } catch (Exception e) {
@@ -259,9 +256,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
     try {
       final Map<String, Integer> votingSums = new HashMap<>();
       final Map<String, Map<String, Integer>> votingNumbers = event.getVotingNumbers();
-      for (final String choiceId: votingNumbers.keySet()) {
+      for (final String choiceId : votingNumbers.keySet()) {
         Integer sum = 0;
-        for (final Integer vote: votingNumbers.get(choiceId).values()) {
+        for (final Integer vote : votingNumbers.get(choiceId).values()) {
           //I think this could technically just be sum += vote, but this is more safe
           if (vote == 1) {
             sum++;

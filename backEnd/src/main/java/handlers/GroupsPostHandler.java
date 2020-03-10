@@ -19,7 +19,7 @@ public class GroupsPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    Metrics metrics = new Metrics(context.getAwsRequestId());
+    Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     LambdaLogger lambdaLogger = context.getLogger();
 
     try {
@@ -84,7 +84,7 @@ public class GroupsPostHandler implements
       resultStatus.resultMessage = "Error: Unable to handle request.";
     }
 
-    metrics.logMetrics(lambdaLogger);
+    metrics.logMetrics();
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

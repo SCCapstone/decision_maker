@@ -20,7 +20,7 @@ public class UsersPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    final Metrics metrics = new Metrics(context.getAwsRequestId());
+    final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     final LambdaLogger lambdaLogger = context.getLogger();
 
     final String classMethod = "UsersPostHandler.handleRequest";
@@ -85,7 +85,7 @@ public class UsersPostHandler implements
     }
 
     metrics.commonClose(resultStatus.success);
-    metrics.logMetrics(lambdaLogger);
+    metrics.logMetrics();
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

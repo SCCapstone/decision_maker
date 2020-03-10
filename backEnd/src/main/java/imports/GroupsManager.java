@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -61,8 +62,6 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
-
-  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -153,7 +152,7 @@ public class GroupsManager extends DatabaseAccessManager {
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_VOTING_DURATION, defaultVotingDuration)
             .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
-            .withMap(EVENTS, EMPTY_MAP)
+            .withMap(EVENTS, Collections.emptyMap())
             .withInt(NEXT_EVENT_ID, 1)
             .withString(LAST_ACTIVITY, lastActivity);
 
@@ -173,9 +172,9 @@ public class GroupsManager extends DatabaseAccessManager {
         this.putItem(putItemSpec);
 
         final Group oldGroup = new Group();
-        oldGroup.setMembers(EMPTY_MAP);
+        oldGroup.setMembers(Collections.emptyMap());
         this.updateUsersTable(oldGroup, new Group(newGroup.asMap()), metrics, lambdaLogger);
-        this.updateCategoriesTable(EMPTY_MAP, categories, newGroupId, "", groupName);
+        this.updateCategoriesTable(Collections.emptyMap(), categories, newGroupId, "", groupName);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
@@ -336,8 +335,8 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, eventCreator);
           eventMap.put(SELECTED_CHOICE, null);
-          eventMap.put(TENTATIVE_CHOICES, EMPTY_MAP);
-          eventMap.put(VOTING_NUMBERS, EMPTY_MAP);
+          eventMap.put(TENTATIVE_CHOICES, Collections.emptyMap());
+          eventMap.put(VOTING_NUMBERS, Collections.emptyMap());
 
           String updateExpression =
               "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "

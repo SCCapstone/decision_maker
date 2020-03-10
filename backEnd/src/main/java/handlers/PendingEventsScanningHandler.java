@@ -15,7 +15,7 @@ public class PendingEventsScanningHandler implements RequestStreamHandler {
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
-    Metrics metrics = new Metrics(context.getAwsRequestId());
+    Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     LambdaLogger lambdaLogger = context.getLogger();
 
     try {
@@ -24,5 +24,7 @@ public class PendingEventsScanningHandler implements RequestStreamHandler {
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
     }
+
+    metrics.logMetrics();
   }
 }
