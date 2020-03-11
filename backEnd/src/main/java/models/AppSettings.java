@@ -27,11 +27,14 @@ public class AppSettings {
   }
 
   public AppSettings(final Map<String, Object> jsonMap) {
-    this.setDarkTheme(
-        this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
-    this.setGroupSort(
-        this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_GROUP_SORT)));
-    this.setMuted(this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
+    if (jsonMap != null) {
+      this.setDarkTheme(
+          this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
+      this.setGroupSort(
+          this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_GROUP_SORT)));
+      this.setMuted(
+          this.getIntFromBigDec((BigDecimal) jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
+    }
   }
 
   private Integer getIntFromBigDec(final BigDecimal input) {

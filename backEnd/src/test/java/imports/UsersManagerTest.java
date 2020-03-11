@@ -179,7 +179,10 @@ public class UsersManagerTest {
   public void getAllGroupIds_validInputActiveUser_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new Item().withMap(UsersManager.GROUPS, ImmutableMap
-        .of("GroupId1", "GroupName1", "GroupId2", "GroupName2")))
+        .of("GroupId1",
+            ImmutableMap.of(GroupsManager.GROUP_NAME, "name", GroupsManager.ICON, "icon"),
+            "GroupId2",
+            ImmutableMap.of(GroupsManager.GROUP_NAME, "name", GroupsManager.ICON, "icon"))))
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> groupIds = this.usersManager
