@@ -49,10 +49,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_NAME, CHOICES);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
-      final UUID uuid = UUID.randomUUID();
-
       try {
-        final String nextCategoryIndex = uuid.toString();
+        final String nextCategoryIndex = UUID.randomUUID().toString();
         jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
 
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
@@ -69,7 +67,8 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //todo wrap this operation into a transaction
         if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true, "Category created successfully!");
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(newCategory.asMap()));
         } else {
           resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
               + updatedUsersTableResult.resultMessage;
@@ -130,7 +129,11 @@ public class CategoriesManager extends DatabaseAccessManager {
               .updateUserChoiceRatings(jsonMap, true, metrics);
 
           if (updatedUsersTableResult.success) {
-            resultStatus = new ResultStatus(true, "Category saved successfully!");
+            oldCategory.setCategoryName(newCategory.getCategoryName());
+            oldCategory.setChoices(newCategory.getChoices());
+            oldCategory.setNextChoiceNo(newCategory.getNextChoiceNo());
+            resultStatus = new ResultStatus(true,
+                JsonEncoders.convertObjectToJson(oldCategory.asMap()));
           } else {
             resultStatus.resultMessage =
                 "Error: Unable to update this category's ratings in the users table. "
