@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -13,12 +14,14 @@ class CategoriesHome extends StatefulWidget {
 }
 
 class _CategoriesHomeState extends State<CategoriesHome> {
-  String _sortMethod;
+  int sortVal;
   List<Category> categories;
 
   @override
   void initState() {
-    categories = new List<Category>();
+    // TODO get sort method from user object
+    this.sortVal = Globals.alphabeticalSort;
+    this.categories = new List<Category>();
     getCategories();
     super.initState();
   }
@@ -28,20 +31,45 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
+        title: AutoSizeText(
           "My Categories",
-          style: TextStyle(
-              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.75),
+          maxLines: 1,
+          style: TextStyle(fontSize: 35),
+          minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
         ),
-//        actions: <Widget>[
-//          IconButton(
-//            icon: Icon(Icons.sort),
-//            onPressed: () {
-//              // can implement a variable that has the sort type, then setState here
-//              // TODO implement a sorting algorithm (https://github.com/SCCapstone/decision_maker/issues/31)
-//            },
-//          )
-//        ],
+        actions: <Widget>[
+          PopupMenuButton<int>(
+            child: Icon(
+              Icons.sort,
+              size: MediaQuery.of(context).size.height * .04,
+              color: Colors.black,
+            ),
+            tooltip: "Sort Categories",
+            onSelected: (int result) {
+              if (this.sortVal != result) {
+                // prevents useless updates if sort didn't change
+                this.sortVal = result;
+                setState(() {
+                  updateSort();
+                });
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+              PopupMenuItem<int>(
+                value: Globals.alphabeticalSort,
+                child: Text(Globals.alphabeticalSortString),
+              ),
+              PopupMenuItem<int>(
+                value: Globals.alphabeticalReverseSort,
+                child: Text(Globals.alphabeticalReverseSortString),
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.all(MediaQuery.of(context).size.height * .007),
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -56,8 +84,8 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                 height: MediaQuery.of(context).size.height * .75,
                 child: Container(
                   child: CategoryList(
-                    categories: categories,
-                    sortType: _sortMethod,
+                    categories: this.categories,
+                    sortType: this.sortVal,
                     refreshPage: this.refreshList,
                   ),
                 ),
@@ -83,10 +111,14 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     );
   }
 
+  void updateSort() {
+    // TODO make API call to update sort method
+  }
+
   void getCategories() {
-    categories.clear();
+    this.categories.clear();
     for (Category category in Globals.user.ownedCategories) {
-      categories.add(category);
+      this.categories.add(category);
     }
   }
 

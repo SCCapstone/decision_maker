@@ -37,7 +37,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
+          centerTitle: false,
           title: Text(
             "Add Categories",
             style: TextStyle(
@@ -126,7 +126,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesLoading() {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: true,
+            centerTitle: false,
             title: Text(
               "Add Categories",
               style: TextStyle(
@@ -138,7 +138,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: true,
+            centerTitle: false,
             title: Text(
               "Add Categories",
               style: TextStyle(

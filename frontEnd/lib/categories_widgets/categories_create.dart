@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
@@ -80,7 +81,13 @@ class _CreateCategoryState extends State<CreateCategory> {
       },
       child: Scaffold(
           appBar: AppBar(
-            title: Text("New Category"),
+            title: AutoSizeText(
+              "New Category",
+              maxLines: 1,
+              style: TextStyle(fontSize: 25),
+              minFontSize: 12,
+              overflow: TextOverflow.ellipsis,
+            ),
             actions: <Widget>[
               RaisedButton.icon(
                 icon: Icon(Icons.save),

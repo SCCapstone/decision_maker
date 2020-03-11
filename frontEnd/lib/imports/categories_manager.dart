@@ -185,4 +185,14 @@ class CategoriesManager {
     }
     return retVal;
   }
+
+  static void sortByAlphaAscending(List<Category> categories) {
+    categories.sort((a, b) =>
+        a.categoryName.toUpperCase().compareTo(b.categoryName.toUpperCase()));
+  }
+
+  static void sortByAlphaDescending(List<Category> categories) {
+    categories.sort((a, b) =>
+        b.categoryName.toUpperCase().compareTo(a.categoryName.toUpperCase()));
+  }
 }

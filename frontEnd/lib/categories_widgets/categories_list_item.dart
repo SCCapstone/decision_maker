@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_edit.dart';
 import 'package:frontEnd/models/category.dart';
@@ -8,9 +9,8 @@ class CategoriesListItem extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback afterEditCallback;
   final int index;
-  final bool isOwner;
 
-  CategoriesListItem(this.category, this.index, this.isOwner,
+  CategoriesListItem(this.category, this.index,
       {this.onDelete, this.afterEditCallback});
 
   @override
@@ -20,21 +20,21 @@ class CategoriesListItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Expanded(
-            child: Text(
-              category.categoryName,
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 1.5),
-            ),
-          ),
+              child: AutoSizeText(
+            category.categoryName,
+            maxLines: 1,
+            style: TextStyle(fontSize: 24),
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
+          )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              RaisedButton(
+              IconButton(
                 color: Colors.lightBlue,
-                child: Text(
-                  "Edit",
-                  style: TextStyle(),
-                ),
+                icon: Icon(Icons.edit),
+                iconSize: MediaQuery.of(context).size.width * .075,
+                tooltip: "Edit Category",
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -49,18 +49,14 @@ class CategoriesListItem extends StatelessWidget {
               Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-                child: Visibility(
-                  visible: isOwner,
-                  child: RaisedButton(
-                    color: Colors.red,
-                    child: Text(
-                      "Delete",
-                      style: TextStyle(),
-                    ),
-                    onPressed: () {
-                      confirmDelete(context);
-                    },
-                  ),
+                child: IconButton(
+                  color: Colors.red,
+                  icon: Icon(Icons.delete),
+                  iconSize: MediaQuery.of(context).size.width * .075,
+                  tooltip: "Delete Category",
+                  onPressed: () {
+                    confirmDelete(context);
+                  },
                 ),
               ),
             ],
@@ -94,7 +90,8 @@ class CategoriesListItem extends StatelessWidget {
               )
             ],
             content: Text("Are you sure you wish to delete the category "
-                "\"${category.categoryName}\"?"),
+                "\"${category.categoryName}\"?\n\n"
+                "This will remove it from all groups it is apart of."),
           );
         });
   }

@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
@@ -100,7 +101,13 @@ class _EditCategoryState extends State<EditCategory> {
         },
         child: Scaffold(
             appBar: AppBar(
-              title: Text("Edit Category"),
+              title: AutoSizeText(
+                "Edit Category",
+                maxLines: 1,
+                style: TextStyle(fontSize: 25),
+                minFontSize: 12,
+                overflow: TextOverflow.ellipsis,
+              ),
               actions: <Widget>[
                 Visibility(
                   visible: categoryChanged,
@@ -237,8 +244,12 @@ class _EditCategoryState extends State<EditCategory> {
   Widget categoriesLoading() {
     return Scaffold(
         appBar: AppBar(
-            title: Text(
+            title: AutoSizeText(
           "Edit Category",
+          maxLines: 1,
+          style: TextStyle(fontSize: 25),
+          minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
         )),
         body: Center(child: CircularProgressIndicator()));
   }
@@ -246,8 +257,12 @@ class _EditCategoryState extends State<EditCategory> {
   Widget categoriesError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
-            title: Text(
+            title: AutoSizeText(
           "Edit Category",
+          maxLines: 1,
+          style: TextStyle(fontSize: 25),
+          minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
         )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
@@ -305,6 +320,7 @@ class _EditCategoryState extends State<EditCategory> {
       }
       getRatings();
     } else {
+      this.errorLoading = true;
       this.errorWidget = categoriesError(resultStatus.errorMessage);
     }
     setState(() {
@@ -367,7 +383,7 @@ class _EditCategoryState extends State<EditCategory> {
   void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
-      showErrorMessage("Error.", "Must have at least one choice!", context);
+      showErrorMessage("Error", "Must have at least one choice!", context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
@@ -384,7 +400,7 @@ class _EditCategoryState extends State<EditCategory> {
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error.", "No duplicate choices allowed!", context);
+              "Input Error", "No duplicate choices allowed!", context);
           this.autoValidate = true;
         });
       } else if (this.isCategoryOwner) {
