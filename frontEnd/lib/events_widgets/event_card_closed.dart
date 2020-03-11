@@ -34,7 +34,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
           Text("Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20)),
           Text(
-            "Total attendees: ${widget.event.optedIn.length}",
+            "Total considered: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
           RaisedButton(

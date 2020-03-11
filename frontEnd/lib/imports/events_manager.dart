@@ -2,7 +2,7 @@ import 'package:frontEnd/models/event.dart';
 
 class EventsManager {
   static final String votingMode = "Voting";
-  static final String rsvpMode = "Rsvp";
+  static final String considerMode = "Consider";
   static final String occurringMode = "Ocurring";
   static final String closedMode = "Closed";
   static final String EVENT_ID = "EventId";
@@ -13,7 +13,7 @@ class EventsManager {
   static final String EVENT_START_DATE_TIME = "EventStartDateTime";
   static final String TYPE = "Type";
   static final String VOTING_DURATION = "VotingDuration";
-  static final String RSVP_DURATION = "RsvpDuration";
+  static final String CONSIDER_DURATION = "RsvpDuration";
   static final String POLL_PASS_PERCENT = "PollPassPercent";
   static final String OPTED_IN = "OptedIn";
   static final String TENTATIVE_ALGORITHM_CHOICES = "TentativeAlgorithmChoices";
@@ -27,7 +27,7 @@ class EventsManager {
         hours: 24)); // assumption that after 24 hours the event is done
     String retVal;
     if (event.tentativeAlgorithmChoices.isEmpty) {
-      retVal = rsvpMode;
+      retVal = considerMode;
     } else if (event.selectedChoice == null) {
       retVal = votingMode;
     } else if (event.selectedChoice.isNotEmpty &&

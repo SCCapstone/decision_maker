@@ -1,14 +1,6 @@
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/favorite.dart';
 
-String validGroupIcon(String input) {
-  if (!input.contains("http")) {
-    return "Not a valid url.";
-  } else {
-    return null;
-  }
-}
-
 String validGroupName(String input) {
   if (input.length == 0) {
     return "Group name cannot be empty.";
@@ -29,24 +21,11 @@ String validEventName(String input) {
   }
 }
 
-String validPassPercentage(String input) {
-  String retVal;
-  try {
-    int num = int.parse(input);
-    if (num < 0 || num > 100) {
-      retVal = "(0-100)";
-    }
-  } catch (e) {
-    retVal = "Not a number.";
-  }
-  return retVal;
-}
-
 String validVotingDuration(String input) {
   String retVal;
   try {
     int num = int.parse(input);
-    if (num <= 0) {
+    if (num < 0) {
       retVal = "Too small.";
     } else if (num >= 10000) {
       retVal = "Too big.";
@@ -57,7 +36,7 @@ String validVotingDuration(String input) {
   return retVal;
 }
 
-String validRsvpDuration(String input) {
+String validConsiderDuration(String input) {
   String retVal;
   try {
     int num = int.parse(input);

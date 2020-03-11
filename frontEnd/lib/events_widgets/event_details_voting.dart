@@ -129,7 +129,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                                 DefaultTextStyle.of(context).style.fontSize *
                                     0.3)),
                     ExpansionTile(
-                      title: Text("Attendees (${event.optedIn.length})"),
+                      title: Text("Considered (${event.optedIn.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,

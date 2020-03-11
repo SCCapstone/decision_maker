@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/events_widgets/event_details_rsvp.dart';
+import 'package:frontEnd/events_widgets/event_details_consider.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-class EventCardRsvp extends StatefulWidget {
+class EventCardConsider extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
 
-  EventCardRsvp(this.groupId, this.event, this.eventId);
+  EventCardConsider(this.groupId, this.event, this.eventId);
 
   @override
-  _EventCardRsvpState createState() => new _EventCardRsvpState();
+  _EventCardConsiderState createState() => new _EventCardConsiderState();
 }
 
-class _EventCardRsvpState extends State<EventCardRsvp> {
+class _EventCardConsiderState extends State<EventCardConsider> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,23 +32,23 @@ class _EventCardRsvpState extends State<EventCardRsvp> {
           ),
           Text("Proposed Date: ${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20)),
-          Text("RSVP By: ${widget.event.pollBeginFormatted}",
+          Text("Consider By: ${widget.event.pollBeginFormatted}",
               style: TextStyle(fontSize: 20)),
           Text(
-            "Tentative attendees: ${widget.event.optedIn.length}",
+            "Members considered: ${widget.event.optedIn.length}",
             style: TextStyle(fontSize: 20),
           ),
           RaisedButton(
-            child: Text("RSVP"),
+            child: Text("Consider"),
             color: Colors.green,
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => EventDetailsRsvp(
+                    builder: (context) => EventDetailsConsider(
                         groupId: widget.groupId,
                         eventId: widget.eventId,
-                        mode: EventsManager.rsvpMode)),
+                        mode: EventsManager.considerMode)),
               );
             },
           )
