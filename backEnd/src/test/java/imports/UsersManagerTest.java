@@ -41,13 +41,6 @@ public class UsersManagerTest {
 
   private final Map<String, Object> badInput = new HashMap<>();
 
-  private final String goodCategoryId = "CategoryId1";
-
-  private final Map<String, Object> getUserRatingsGoodInput = ImmutableMap.of(
-      CategoriesManager.CATEGORY_ID, goodCategoryId,
-      RequestFields.ACTIVE_USER, "ActiveUser"
-  );
-
   private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "validActiveUser",
       CategoriesManager.CATEGORY_ID, "CategoryId1",
@@ -509,81 +502,6 @@ public class UsersManagerTest {
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
-  }
-
-  //////////////////////////endregion
-  // getUserRatings tests //
-  //////////////////////////region
-  @Test
-  public void getUserRatings_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(UsersManager.CATEGORIES, ImmutableMap
-        .of(this.goodCategoryId, ImmutableMap.of("Choice", "1"), "ChoiceId2", "ChoiceRating2")))
-        .when(this.table).getItem(any(GetItemSpec.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  @Test
-  public void getUserRatings_badUsername_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
-
-//  @Test
-//  public void getUserRatings_badCategoryId_failureResult() {
-//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap(UsersManager.CATEGORIES, new HashMap())).when(this.table)
-//        .getItem(any(GetItemSpec.class));
-//
-//    ResultStatus resultStatus = this.usersManager
-//        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
-//
-//    assertFalse(resultStatus.success);
-//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
-
-  @Test
-  public void getUserRatings_noDbConnection_failureResult() {
-    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
-
-  @Test
-  public void getUserRatings_missingKey_failureResult() {
-    ResultStatus resultStatus = this.usersManager.getUserRatings(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-    resultStatus = this.usersManager.getUserRatings(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
-    verify(this.metrics, times(2)).commonClose(false);
   }
 
   //////////////////////////////endregion

@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import models.Event;
 import models.Group;
 import models.User;
 import utilities.ErrorDescriptor;
-import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -114,59 +114,50 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES,
             DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String groupName = (String) jsonMap.get(GROUP_NAME);
-        final Optional<List<Integer>> newIcon = Optional
-            .ofNullable((List<Integer>) jsonMap.get(ICON));
-        final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
-        final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
-        final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
-        List<String> members = (List<String>) jsonMap.get(MEMBERS);
+        jsonMap.putIfAbsent(GROUP_CREATOR, activeUser);
 
-        final UUID uuid = UUID.randomUUID();
-        final String newGroupId = uuid.toString();
-        final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
-            .format(this.getDateTimeFormatter());
-
-        //sanity check, add the active user to this mapping to make sure his data is added
-        members.add(activeUser);
-
-        final Map<String, Object> membersMapped = this
-            .getMembersMapForInsertion(members, metrics);
-
-        Item newGroup = new Item()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
-            .withString(GROUP_NAME, groupName)
-            .withString(GROUP_CREATOR, activeUser)
-            .withMap(MEMBERS, membersMapped)
-            .withMap(CATEGORIES, categories)
-            .withInt(DEFAULT_VOTING_DURATION, defaultVotingDuration)
-            .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
-            .withMap(EVENTS, Collections.emptyMap())
-            .withInt(NEXT_EVENT_ID, 1)
-            .withString(LAST_ACTIVITY, lastActivity);
-
-        String newIconFileName = null;
-        if (newIcon.isPresent()) { // if it's there, assume it's new image data
-          newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER.uploadImage(newIcon.get(), metrics)
+        if (jsonMap.containsKey(ICON)) { // if it's there, assume it's new image data
+          final String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+              .uploadImage((List<Integer>) jsonMap.get(ICON), metrics)
               .orElseThrow(Exception::new);
 
-          newGroup.withString(ICON, newIconFileName);
-        } else {
-          newGroup.withNull(ICON);
+          jsonMap.put(ICON, newIconFileName); // put overwrites current value
         }
 
+        final List<String> members = (List<String>) jsonMap.get(MEMBERS);
+        //sanity check, add the active user to this mapping to make sure his data is added
+        members.add(activeUser);
+        final Map<String, Object> membersMapped = this.getMembersMapForInsertion(members, metrics);
+        jsonMap.put(MEMBERS, membersMapped); // put overwrites current value
+
+        //TODO update the categories passed in to be a list of ids, then create categories map
+        //TODO similar to what we're doing with the members above (currently we're just relying on
+        //TODO user input which is bad
+
+        final String newGroupId = UUID.randomUUID().toString();
+        jsonMap.put(GROUP_ID, newGroupId);
+
+        final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
+            .format(this.getDateTimeFormatter());
+        jsonMap.put(LAST_ACTIVITY, lastActivity);
+
+        jsonMap.put(EVENTS, Collections.emptyMap());
+        jsonMap.put(NEXT_EVENT_ID, 1);
+
+        final Group newGroup = new Group(jsonMap);
         PutItemSpec putItemSpec = new PutItemSpec()
-            .withItem(newGroup);
+            .withItem(newGroup.asItem());
 
         this.putItem(putItemSpec);
 
         final Group oldGroup = new Group();
         oldGroup.setMembers(Collections.emptyMap());
-        this.updateUsersTable(oldGroup, new Group(newGroup.asMap()), metrics);
-        this.updateCategoriesTable(Collections.emptyMap(), categories, newGroupId, "", groupName);
+        this.updateUsersTable(oldGroup, newGroup, metrics);
+        this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
+            newGroup.getGroupName());
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
@@ -190,7 +181,7 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
             DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(GROUP_ID);
@@ -202,25 +193,26 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
-        final Map<String, Object> dbGroupDataMap = this.getItemByPrimaryKey(groupId)
-            .asMap();
-        final String groupCreator = (String) dbGroupDataMap.get(GROUP_CREATOR);
-        if (this.editInputIsValid(groupId, activeUser, groupCreator, members,
+        //TODO update the categories passed in to be a list of ids, then create categories map
+        //TODO similar to what we're doing with the members above (currently we're just relying on
+        //TODO user input which is bad
+
+        final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
+
+        if (this.editInputIsValid(groupId, activeUser, oldGroup.getGroupCreator(), members,
             defaultVotingDuration, defaultRsvpDuration)) {
 
-          if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
+          if (this.editInputHasPermissions(oldGroup, activeUser)) {
             //all validation is successful, build transaction actions
             final Map<String, Object> membersMapped = this
                 .getMembersMapForInsertion(members, metrics);
 
             String updateExpression =
-                "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
-                    + " = :creator, " + MEMBERS + " = :members, " + CATEGORIES + " = :categories, "
-                    + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
+                "set " + GROUP_NAME + " = :name, " + MEMBERS + " = :members, " + CATEGORIES
+                    + " = :categories, " + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
                     + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
-                .withString(":creator", groupCreator)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultVotingDuration", defaultVotingDuration)
@@ -244,20 +236,13 @@ public class GroupsManager extends DatabaseAccessManager {
             this.updateItem(updateItemSpec);
 
             //update mappings in users and categories tables
-            final Group oldGroup = new Group(dbGroupDataMap);
-            final Group newGroup = Group.builder()
-                .groupId(groupId)
-                .groupName(groupName)
-                .icon(newIconFileName)
-                .lastActivity(oldGroup.getLastActivity())
-                .build();
-            newGroup.setMembers(membersMapped);
+            final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
             this.updateUsersTable(oldGroup, newGroup, metrics);
-            this.updateCategoriesTable(
-                (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
-                (String) dbGroupDataMap.get(GROUP_NAME), groupName);
+            this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
+                oldGroup.getGroupName(), groupName);
 
-            resultStatus = new ResultStatus(true, "The group was saved successfully!");
+            resultStatus = new ResultStatus(true,
+                JsonEncoders.convertObjectToJson(newGroup.asMap()));
           } else {
             resultStatus.resultMessage = "Invalid request, missing permissions";
           }
@@ -286,52 +271,30 @@ public class GroupsManager extends DatabaseAccessManager {
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME,
             EVENT_START_DATE_TIME, VOTING_DURATION, RSVP_DURATION, GROUP_ID);
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
-      try {
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String eventName = (String) jsonMap.get(EVENT_NAME);
-        final String categoryId = (String) jsonMap.get(CATEGORY_ID);
-        final String categoryName = (String) jsonMap.get(CATEGORY_NAME);
-        final String eventStartDateTime = (String) jsonMap.get(EVENT_START_DATE_TIME);
-        final Integer votingDuration = (Integer) jsonMap.get(VOTING_DURATION);
-        final Integer rsvpDuration = (Integer) jsonMap.get(RSVP_DURATION);
-        final String groupId = (String) jsonMap.get(GROUP_ID);
 
-        final Item groupData = this.getItemByPrimaryKey(groupId);
-        final Map<String, Object> groupDataMapped = groupData.asMap();
-        final Group oldGroup = new Group(groupDataMapped);
-        final Map<String, Object> optedIn = (Map<String, Object>) groupDataMapped
-            .get(MEMBERS); //TODO figure out how use oldGroup for this
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
         final String eventId = oldGroup.getNextEventId().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
 
-        if (this.validEventInput(groupId, categoryId, votingDuration,
-            rsvpDuration)) {
-          final Map<String, Object> eventMap = new HashMap<>();
-          final Map<String, Object> eventCreator = new HashMap<>();
-          eventCreator.put("username", activeUser);
+        final Event newEvent = new Event(jsonMap);
 
-          eventMap.put(CATEGORY_ID, categoryId);
-          eventMap.put(CATEGORY_NAME, categoryName);
-          eventMap.put(EVENT_NAME, eventName);
-          eventMap.put(CREATED_DATE_TIME,
-              LocalDateTime.now(ZoneId.of("UTC")).format(this.getDateTimeFormatter()));
-          eventMap.put(EVENT_START_DATE_TIME, eventStartDateTime);
-          eventMap.put(VOTING_DURATION, votingDuration);
-          eventMap.put(RSVP_DURATION, rsvpDuration);
-          eventMap.put(OPTED_IN, optedIn);
-          eventMap.put(EVENT_CREATOR, eventCreator);
-          eventMap.put(SELECTED_CHOICE, null);
-          eventMap.put(TENTATIVE_CHOICES, Collections.emptyMap());
-          eventMap.put(VOTING_NUMBERS, Collections.emptyMap());
+        if (this.validEventInput(oldGroup, newEvent)) {
+          newEvent.setOptedIn(oldGroup.getMembers());
+          newEvent.setCreatedDateTime(lastActivity);
+          newEvent.setSelectedChoice(null);
+          newEvent.setTentativeAlgorithmChoices(Collections.emptyMap());
+          newEvent.setVotingNumbers(Collections.emptyMap());
 
           String updateExpression =
               "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "
                   + LAST_ACTIVITY + " = :lastActivity";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
-              .withMap(":map", eventMap)
+              .withMap(":map", newEvent.asMap())
               .withNumber(":nextEventId", oldGroup.getNextEventId() + 1)
               .withString(":lastActivity", lastActivity);
 
@@ -344,25 +307,24 @@ public class GroupsManager extends DatabaseAccessManager {
           this.updateItem(updateItemSpec);
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
-          if (rsvpDuration > 0) {
-            ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-                .addPendingEvent(groupId, eventId, rsvpDuration, metrics);
+          if (newEvent.getRsvpDuration() > 0) {
+            final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
+                .addPendingEvent(groupId, eventId, newEvent.getRsvpDuration(), metrics);
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
-            Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
-                RequestFields.EVENT_ID, eventId, PendingEventsManager.SCANNER_ID,
-                DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey());
-            ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
+            final Map<String, Object> processPendingEventInput = ImmutableMap
+                .of(GROUP_ID, groupId, RequestFields.EVENT_ID, eventId,
+                    PendingEventsManager.SCANNER_ID,
+                    DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey());
+            final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .processPendingEvent(processPendingEventInput, metrics);
           }
 
-          this.updateUsersTable(
-              oldGroup,
-              oldGroup.toBuilder().lastActivity(lastActivity).build(),
-              metrics
-          );
+          final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-          resultStatus = new ResultStatus(true, "event added successfully!");
+          this.updateUsersTable(oldGroup, newGroup, metrics);
+
+          resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
         } else {
           metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid request, bad input"));
           resultStatus.resultMessage = "Invalid request, bad input.";
@@ -387,14 +349,14 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(GROUP_ID, RequestFields.PARTICIPATING, RequestFields.EVENT_ID,
             RequestFields.ACTIVE_USER);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final Boolean participating = (Boolean) jsonMap.get(RequestFields.PARTICIPATING);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final Map<String, Object> userMap =
-            this.getMembersMapForInsertion(Arrays.asList(activeUser), metrics);
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
 
         String updateExpression;
         ValueMap valueMap = null;
@@ -403,7 +365,7 @@ public class GroupsManager extends DatabaseAccessManager {
           updateExpression =
               "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :userMap";
           valueMap = new ValueMap()
-              .withMap(":userMap", (Map<String, Object>) userMap.get(activeUser));
+              .withMap(":userMap", user.asMember().asMap());
         } else {
           updateExpression = "remove " + EVENTS + ".#eventId." + OPTED_IN + ".#username";
         }
@@ -419,7 +381,10 @@ public class GroupsManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         this.updateItem(updateItemSpec);
-        resultStatus = new ResultStatus(true, "Opted in/out successfully");
+
+        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(group.asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
@@ -432,14 +397,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  //TODO revisit this all together - was never implemented on the front end maybe?
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
 
-    final List<String> requiredKeys = Arrays
-        .asList(GROUP_ID, RequestFields.ACTIVE_USER);
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    final List<String> requiredKeys = Arrays.asList(GROUP_ID, RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
@@ -520,7 +486,7 @@ public class GroupsManager extends DatabaseAccessManager {
         .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
             RequestFields.ACTIVE_USER);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
@@ -575,15 +541,10 @@ public class GroupsManager extends DatabaseAccessManager {
     for (String username : members) {
       try {
         //get user's display name
-        Item user = DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username);
-        Map<String, Object> userData = user.asMap();
-        String displayName = (String) userData.get(UsersManager.DISPLAY_NAME);
-        String icon = (String) userData.get(UsersManager.ICON);
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-        membersMap.putIfAbsent(username, new HashMap<String, Object>() {{
-          put(UsersManager.DISPLAY_NAME, displayName);
-          put(UsersManager.ICON, icon);
-        }});
+        membersMap.putIfAbsent(username, user.asMember().asMap());
       } catch (Exception e) {
         success = false; // this may give false alarms as users may just have put in bad usernames
         metrics.log(new ErrorDescriptor<>(username, classMethod, e));
@@ -614,7 +575,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     isValid = isValid && creatorInGroup;
 
-    if (defaultVotingDuration <= 0 || defaultVotingDuration > MAX_DURATION) {
+    if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
       isValid = false;
     }
 
@@ -625,26 +586,24 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
-  private boolean validEventInput(
-      final String groupId, final String categoryId, final Integer votingDuration,
-      final Integer rsvpDuration) {
+  private boolean validEventInput(final Group oldGroup, final Event newEvent) {
     boolean isValid = true;
-    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
-      isValid = false;
-    }
-
-    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
-      isValid = false;
-    }
-
-    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
-      isValid = false;
-    }
+    //TODO - make this make sense - or maybe put thrown exceptions in the setting of the model attributes!
+//    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
+//      isValid = false;
+//    }
+//
+//    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
+//      isValid = false;
+//    }
+//
+//    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
+//      isValid = false;
+//    }
     return isValid;
   }
 
-  private boolean editInputHasPermissions(final Map<String, Object> dbGroupDataMap,
-      final String activeUser, final String groupCreator) {
+  private boolean editInputHasPermissions(final Group oldGroup, final String activeUser) {
     //the group creator is not changed or it is changed and the active user is the current creator
     boolean hasPermission = true;
 
@@ -787,8 +746,8 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private void updateCategoriesTable(final Map<String, Object> oldCategories,
-      final Map<String, Object> newCategories, final String groupId, final String oldGroupName,
+  private void updateCategoriesTable(final Map<String, String> oldCategories,
+      final Map<String, String> newCategories, final String groupId, final String oldGroupName,
       final String newGroupName) {
     final Set<String> categoriesToUpdate = new HashSet<>();
     String updateExpression;
@@ -954,10 +913,8 @@ public class GroupsManager extends DatabaseAccessManager {
     ArrayList<String> categoryIds = new ArrayList<>();
     boolean success = false;
     try {
-      Item dbData = this.getItemByPrimaryKey(groupId);
-      Map<String, Object> dbDataMap = dbData.asMap(); // specific group record as a map
-      Map<String, String> categoryMap = (Map<String, String>) dbDataMap.get(CATEGORIES);
-      categoryIds = new ArrayList<>(categoryMap.keySet());
+      final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+      categoryIds = new ArrayList<>(group.getCategories().keySet());
       success = true;
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
@@ -991,8 +948,8 @@ public class GroupsManager extends DatabaseAccessManager {
       metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
       resultStatus.resultMessage = "Error: Unable to parse request.";
     }
-    metrics.commonClose(resultStatus.success);
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

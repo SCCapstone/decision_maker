@@ -8,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +44,11 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
-    if (
-        jsonMap.containsKey(CATEGORY_NAME) &&
-            jsonMap.containsKey(CHOICES) &&
-            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_NAME, CHOICES);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       final UUID uuid = UUID.randomUUID();
 
       try {
@@ -94,14 +94,12 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_ID, CATEGORY_NAME,
+            CHOICES);
+
     //validate data, log results as there should be some validation already on the front end
-    if (
-        jsonMap.containsKey(CATEGORY_ID) &&
-            jsonMap.containsKey(CATEGORY_NAME) &&
-            jsonMap.containsKey(CHOICES) &&
-            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
@@ -214,10 +212,9 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
-    if (
-        jsonMap.containsKey(CATEGORY_ID) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
+    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER, CATEGORY_ID);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         // Confirm that the username matches with the owner of the category before deleting it
         String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));

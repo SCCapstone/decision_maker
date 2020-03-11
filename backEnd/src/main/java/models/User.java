@@ -41,6 +41,10 @@ public class User {
     this.setFavorites((Map<String, Object>) jsonMap.get(UsersManager.FAVORITES));
   }
 
+  public Member asMember() {
+    return new Member(this.displayName, this.icon);
+  }
+
   public void setGroups(final Map<String, Object> jsonMap) {
     this.groups = null;
     if (jsonMap != null) {

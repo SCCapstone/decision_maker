@@ -40,9 +40,6 @@ public class UsersPostHandler implements
           if (action.equals("updateUserChoiceRatings")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserChoiceRatings(payloadJsonMap, false, metrics);
-          } else if (action.equals("getUserRatings")) {
-            resultStatus = DatabaseManagers.USERS_MANAGER
-                .getUserRatings(payloadJsonMap, metrics);
           } else if (action.equals("updateUserSettings")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserSettings(payloadJsonMap, metrics);
