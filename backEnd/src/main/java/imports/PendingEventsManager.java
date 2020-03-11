@@ -187,12 +187,12 @@ public class PendingEventsManager extends DatabaseAccessManager {
           final User user = new User(
               DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-          final Map<String, Integer> categoryRatings = user.getCategoryRatings().get(categoryId);
+          final Map<String, Integer> categoryChoiceRatings = user.getCategoryRatings().get(categoryId);
 
           for (String choiceId : choiceRatingsToSums.keySet()) {
-            if (categoryRatings != null && categoryRatings.containsKey(choiceId)) {
+            if (categoryChoiceRatings != null && categoryChoiceRatings.containsKey(choiceId)) {
               choiceRatingsToSums.replace(choiceId,
-                  choiceRatingsToSums.get(choiceId) + categoryRatings.get(choiceId));
+                  choiceRatingsToSums.get(choiceId) + categoryChoiceRatings.get(choiceId));
             } else {
               choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
             }
