@@ -22,7 +22,7 @@ class GroupsManager {
   static final String MEMBERS = "Members";
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
-  static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
+  static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
 
@@ -279,16 +279,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error RSVPing (1).";
+          retVal.errorMessage = "Error considering (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Error RSVPing (2).";
+        retVal.errorMessage = "Error considering (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to RSVP. Check internet connection.";
+          "Network error. Failed to consider. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to RSVP.";
+      retVal.errorMessage = "Failed to consdier.";
     }
     return retVal;
   }

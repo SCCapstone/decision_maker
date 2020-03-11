@@ -34,7 +34,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
               style: TextStyle(fontSize: 20)),
           Text("Voting Ends: ${widget.event.pollEndFormatted}",
               style: TextStyle(fontSize: 20)),
-          Text("Total attendees: ${widget.event.optedIn.length}",
+          Text("Total considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20)),
           RaisedButton(
             child: Text("Vote"),

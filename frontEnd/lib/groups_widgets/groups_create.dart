@@ -24,7 +24,7 @@ class _CreateGroupState extends State<CreateGroup> {
   String groupName;
   int votingDuration;
   File icon;
-  int rsvpDuration;
+  int considerDuration;
 
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
@@ -36,14 +36,14 @@ class _CreateGroupState extends State<CreateGroup> {
   final TextEditingController groupNameController = new TextEditingController();
   final TextEditingController votingDurationController =
       new TextEditingController();
-  final TextEditingController rsvpDurationController =
+  final TextEditingController considerDurationController =
       new TextEditingController();
 
   @override
   void dispose() {
     groupNameController.dispose();
     votingDurationController.dispose();
-    rsvpDurationController.dispose();
+    considerDurationController.dispose();
     super.dispose();
   }
 
@@ -105,14 +105,15 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   TextFormField(
-                    controller: rsvpDurationController,
+                    controller: considerDurationController,
                     keyboardType: TextInputType.number,
-                    validator: validRsvpDuration,
+                    validator: validConsiderDuration,
                     onSaved: (String arg) {
-                      rsvpDuration = int.parse(arg.trim());
+                      considerDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
-                      labelText: "Enter a default RSVP duration (in minutes)",
+                      labelText:
+                          "Enter a default consider duration (in minutes)",
                     ),
                   ),
                   TextFormField(
@@ -231,7 +232,7 @@ class _CreateGroupState extends State<CreateGroup> {
           categories: selectedCategories,
           members: membersMap,
           defaultVotingDuration: votingDuration,
-          defaultRsvpDuration: rsvpDuration);
+          defaultConsiderDuration: considerDuration);
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog

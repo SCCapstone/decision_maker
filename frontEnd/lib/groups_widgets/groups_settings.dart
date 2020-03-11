@@ -31,7 +31,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   String groupName;
   String currentGroupIcon;
   int votingDuration;
-  int rsvpDuration;
+  int considerDuration;
   bool owner;
   List<Member> originalMembers = new List<Member>();
   List<Member> displayedMembers = new List<Member>();
@@ -44,14 +44,14 @@ class _GroupSettingsState extends State<GroupSettings> {
   final TextEditingController groupNameController = new TextEditingController();
   final TextEditingController votingDurationController =
       new TextEditingController();
-  final TextEditingController rsvpDurationController =
+  final TextEditingController considerDurationController =
       new TextEditingController();
 
   @override
   void dispose() {
     groupNameController.dispose();
     votingDurationController.dispose();
-    rsvpDurationController.dispose();
+    considerDurationController.dispose();
     super.dispose();
   }
 
@@ -81,12 +81,12 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
     groupName = Globals.currentGroup.groupName;
     votingDuration = Globals.currentGroup.defaultVotingDuration;
-    rsvpDuration = Globals.currentGroup.defaultRsvpDuration;
+    considerDuration = Globals.currentGroup.defaultConsiderDuration;
     currentGroupIcon = Globals.currentGroup.icon;
 
     groupNameController.text = groupName;
     votingDurationController.text = votingDuration.toString();
-    rsvpDurationController.text = rsvpDuration.toString();
+    considerDurationController.text = considerDuration.toString();
 
     super.initState();
   }
@@ -186,7 +186,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: Text(
-                                      "Default RSVP duration (mins)",
+                                      "Default consider duration (mins)",
                                       style: TextStyle(
                                           fontSize: DefaultTextStyle.of(context)
                                                   .style
@@ -200,18 +200,18 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     child: TextFormField(
                                       maxLength: 6,
                                       keyboardType: TextInputType.number,
-                                      validator: validRsvpDuration,
-                                      controller: rsvpDurationController,
+                                      validator: validConsiderDuration,
+                                      controller: considerDurationController,
                                       onChanged: (String arg) {
                                         try {
-                                          rsvpDuration = int.parse(arg);
+                                          considerDuration = int.parse(arg);
                                           enableAutoValidation();
                                         } catch (e) {
                                           autoValidate = true;
                                         }
                                       },
                                       onSaved: (String arg) {
-                                        rsvpDuration = int.parse(arg);
+                                        considerDuration = int.parse(arg);
                                       },
                                       decoration: InputDecoration(
                                           border: OutlineInputBorder(),
@@ -426,7 +426,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultRsvpDuration: Globals.currentGroup.defaultRsvpDuration,
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
       ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
@@ -456,7 +456,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: Globals.currentGroup.members,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultRsvpDuration: Globals.currentGroup.defaultRsvpDuration,
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
       ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
@@ -599,7 +599,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
     if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
-        rsvpDuration != Globals.currentGroup.defaultRsvpDuration ||
+        considerDuration != Globals.currentGroup.defaultConsiderDuration ||
         groupName != Globals.currentGroup.groupName ||
         newIcon) {
       setState(() {
@@ -635,7 +635,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: votingDuration,
-          defaultRsvpDuration: rsvpDuration,
+          defaultConsiderDuration: considerDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
       showLoadingDialog(context, "Saving...", true);
@@ -652,7 +652,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           originalCategories.addAll(selectedCategories);
           groupNameController.text = groupName;
           votingDurationController.text = votingDuration.toString();
-          rsvpDurationController.text = rsvpDuration.toString();
+          considerDurationController.text = considerDuration.toString();
           editing = false;
           autoValidate = false;
           newIcon = false;
