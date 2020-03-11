@@ -2,6 +2,7 @@ package models;
 
 import imports.UsersManager;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,11 +18,11 @@ public class AppSettings {
   private Integer groupSort;
   private Integer muted;
 
-  static AppSettings defaultSettings() {
+  public static AppSettings defaultSettings() {
     return AppSettings.builder()
-        .darkTheme(1)
-        .groupSort(0)
-        .muted(0)
+        .darkTheme(UsersManager.DEFAULT_DARK_THEME)
+        .groupSort(UsersManager.DEFAULT_GROUP_SORT)
+        .muted(UsersManager.DEFAULT_MUTED)
         .build();
   }
 
@@ -38,5 +39,13 @@ public class AppSettings {
       return input.intValue();
     }
     return null;
+  }
+
+  public Map<String, Object> asMap() {
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_DARK_THEME, this.darkTheme);
+    modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_GROUP_SORT, this.groupSort);
+    modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_MUTED, this.muted);
+    return modelAsMap;
   }
 }

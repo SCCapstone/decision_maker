@@ -43,13 +43,13 @@ public class Category {
   }
 
   public Map<String, Object> asMap() {
-    Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_ID, this.getCategoryId());
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.getCategoryName());
-    modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.getOwner());
-    modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.getNextChoiceNo());
-    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.getChoices());
-    modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.getGroups());
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.owner);
+    modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.nextChoiceNo);
+    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.choices);
+    modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.groups);
     return modelAsMap;
   }
 
