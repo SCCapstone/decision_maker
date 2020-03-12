@@ -20,7 +20,7 @@ class CreateCategory extends StatefulWidget {
 }
 
 class _CreateCategoryState extends State<CreateCategory> {
-  final formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
@@ -45,7 +45,7 @@ class _CreateCategoryState extends State<CreateCategory> {
     for (TextEditingController tec in this.ratesControllers.values) {
       tec.dispose();
     }
-    scrollController.dispose();
+    this.scrollController.dispose();
     super.dispose();
   }
 
@@ -74,122 +74,165 @@ class _CreateCategoryState extends State<CreateCategory> {
       this.currentChoice.requestFocus(context);
       this.currentChoice = null;
     }
-    return GestureDetector(
-      onTap: () {
-        // allows for anywhere on the screen to be clicked to lose focus of a textfield
-        hideKeyboard(context);
-      },
-      child: Scaffold(
-          appBar: AppBar(
-            title: AutoSizeText(
-              "New Category",
-              maxLines: 1,
-              style: TextStyle(fontSize: 25),
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
-            ),
-            actions: <Widget>[
-              RaisedButton.icon(
-                icon: Icon(Icons.save),
-                label: Text("Save"),
-                color: Colors.blue,
-                onPressed: saveCategory,
+    return WillPopScope(
+      onWillPop: handleBackPress,
+      child: GestureDetector(
+        onTap: () {
+          // allows for anywhere on the screen to be clicked to lose focus of a textfield
+          hideKeyboard(context);
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              title: AutoSizeText(
+                "New Category",
+                maxLines: 1,
+                style: TextStyle(fontSize: 25),
+                minFontSize: 12,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
-          body: Center(
-            child: Form(
-              key: this.formKey,
-              autovalidate: this.autoValidate,
-              child: Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .008),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * .7,
-                      child: TextFormField(
-                        maxLength: 40,
-                        validator: validCategory,
-                        controller: this.categoryNameController,
-                        textCapitalization: TextCapitalization.sentences,
-                        style: TextStyle(fontSize: 20),
-                        decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Category Name",
-                            counterText: ""),
+              actions: <Widget>[
+                RaisedButton.icon(
+                  icon: Icon(Icons.save),
+                  label: Text("Save"),
+                  color: Colors.blue,
+                  onPressed: saveCategory,
+                ),
+              ],
+            ),
+            body: Center(
+              child: Form(
+                key: this.formKey,
+                autovalidate: this.autoValidate,
+                child: Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .008),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .008),
-                    ),
-                    Expanded(
-                      child: Scrollbar(
-                        child: CustomScrollView(
-                          shrinkWrap: false,
-                          controller: this.scrollController,
-                          slivers: <Widget>[
-                            SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                  (context, index) => this.choiceRows[index],
-                                  childCount: this.choiceRows.length),
-                            )
-                          ],
+                      Container(
+                        width: MediaQuery.of(context).size.width * .7,
+                        child: TextFormField(
+                          maxLength: 40,
+                          validator: validCategory,
+                          controller: this.categoryNameController,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: TextStyle(fontSize: 20),
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Category Name",
+                              counterText: ""),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .035),
-                    ),
-                  ],
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .008),
+                      ),
+                      Expanded(
+                        child: Scrollbar(
+                          child: CustomScrollView(
+                            shrinkWrap: false,
+                            controller: this.scrollController,
+                            slivers: <Widget>[
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                    (context, index) => this.choiceRows[index],
+                                    childCount: this.choiceRows.length),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .035),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add),
-            onPressed: () {
-              setState(() {
-                this.focusNode = new FocusNode();
-                TextEditingController labelController =
-                    new TextEditingController();
-                this.labelControllers.putIfAbsent(
-                    this.nextChoiceValue.toString(), () => labelController);
-                TextEditingController rateController =
-                    new TextEditingController();
-                rateController.text = defaultRate.toString();
-                this.ratesControllers.putIfAbsent(
-                    this.nextChoiceValue.toString(), () => rateController);
+            floatingActionButton: FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () {
+                setState(() {
+                  this.focusNode = new FocusNode();
+                  TextEditingController labelController =
+                      new TextEditingController();
+                  this.labelControllers.putIfAbsent(
+                      this.nextChoiceValue.toString(), () => labelController);
+                  TextEditingController rateController =
+                      new TextEditingController();
+                  rateController.text = this.defaultRate.toString();
+                  this.ratesControllers.putIfAbsent(
+                      this.nextChoiceValue.toString(), () => rateController);
 
-                ChoiceRow choice = new ChoiceRow(
-                  this.nextChoiceValue.toString(),
-                  true,
-                  labelController,
-                  rateController,
-                  deleteChoice: (choice) => deleteChoice(choice),
-                  focusNode: focusNode,
-                );
-                this.currentChoice = choice;
-                this.choiceRows.add(choice);
-                this.nextChoiceValue++;
-                // allow the list to automatically scroll down as it grows
-                SchedulerBinding.instance.addPostFrameCallback((_) {
-                  this.scrollController.animateTo(
-                        this.scrollController.position.maxScrollExtent,
-                        duration: const Duration(microseconds: 100),
-                        curve: Curves.easeOut,
-                      );
+                  ChoiceRow choice = new ChoiceRow(
+                    this.nextChoiceValue.toString(),
+                    true,
+                    labelController,
+                    rateController,
+                    deleteChoice: (choice) => deleteChoice(choice),
+                    focusNode: this.focusNode,
+                  );
+                  this.currentChoice = choice;
+                  this.choiceRows.add(choice);
+                  this.nextChoiceValue++;
+                  // allow the list to automatically scroll down as it grows
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    this.scrollController.animateTo(
+                          this.scrollController.position.maxScrollExtent,
+                          duration: const Duration(microseconds: 100),
+                          curve: Curves.easeOut,
+                        );
+                  });
                 });
-              });
-            },
-          )),
+              },
+            )),
+      ),
     );
+  }
+
+  Future<bool> handleBackPress() async {
+    // if creating, ensure the user really wants to leave to lose their changes
+    final form = this.formKey.currentState;
+    if (this.choiceRows.isNotEmpty && form.validate()) {
+      confirmLeavePage();
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void confirmLeavePage() {
+    hideKeyboard(context);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Unsaved changes"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text(
+                "You have unsaved changes to this category. To save them click the \"Save\" button in "
+                "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
+          );
+        });
   }
 
   void saveCategory() async {

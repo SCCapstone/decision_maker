@@ -19,10 +19,13 @@ class CategoryPopupSingle extends StatefulWidget {
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   List<Widget> categoryRows = new List<Widget>();
   Future<ResultStatus<List<Category>>> resultFuture;
+  bool loading;
+  bool errorLoading;
+  Widget errorWidget;
 
   @override
   void initState() {
-    resultFuture = CategoriesManager.getAllCategoriesFromGroup(
+    this.resultFuture = CategoriesManager.getAllCategoriesFromGroup(
         Globals.currentGroup.groupId);
     super.initState();
   }
@@ -50,15 +53,22 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
             children: <Widget>[
               Scrollbar(
                 child: FutureBuilder(
-                    future: resultFuture,
+                    future: this.resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        ResultStatus<List<Category>> resultStatus = snapshot.data;
+                        ResultStatus<List<Category>> resultStatus =
+                            snapshot.data;
                         if (resultStatus.success) {
                           List<Category> categories = resultStatus.data;
+                          CategoriesManager.sortByAlphaAscending(categories);
                           for (Category category in categories) {
-                            this.categoryRows.add(CategoryRow(category,
+                            String owner = (category.owner == Globals.username)
+                                ? null
+                                : category.owner;
+                            this.categoryRows.add(CategoryRow(
+                                category,
                                 widget.selectedCategory.contains(category),
+                                owner,
                                 onSelect: () => selectCategory(category)));
                           }
                           if (this.categoryRows.length > 0) {

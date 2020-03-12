@@ -21,7 +21,7 @@ class _CategoryPickState extends State<CategoryPick> {
   void initState() {
     for (Category category in Globals.user.ownedCategories) {
       this.categoryRows.add(CategoryRow(category,
-          widget.selectedCategories.keys.contains(category.categoryId),
+          widget.selectedCategories.keys.contains(category.categoryId), null,
           onSelect: () => selectCategory(category)));
     }
     super.initState();

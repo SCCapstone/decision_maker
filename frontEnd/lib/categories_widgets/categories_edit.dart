@@ -57,7 +57,7 @@ class _EditCategoryState extends State<EditCategory> {
     for (TextEditingController tec in this.ratesControllers.values) {
       tec.dispose();
     }
-    scrollController.dispose();
+    this.scrollController.dispose();
     super.dispose();
   }
 
@@ -69,11 +69,11 @@ class _EditCategoryState extends State<EditCategory> {
     for (Category cat in Globals.activeUserCategories) {
       // if category is cached get it and don't bother querying DB
       if (cat.categoryId == widget.category.categoryId) {
-        category = cat;
-        loading = false;
+        this.category = cat;
+        this.loading = false;
       }
     }
-    if (loading) {
+    if (this.loading) {
       getCategory();
     } else {
       this.categoryName = widget.category.categoryName;
@@ -89,154 +89,161 @@ class _EditCategoryState extends State<EditCategory> {
       this.currentChoice.requestFocus(context);
       this.currentChoice = null;
     }
-    if (loading) {
+    if (this.loading) {
       return categoriesLoading();
-    } else if (errorLoading) {
-      return errorWidget;
+    } else if (this.errorLoading) {
+      return this.errorWidget;
     } else {
-      return GestureDetector(
-        onTap: () {
-          // allows for anywhere on the screen to be clicked to lose focus of a textfield
-          hideKeyboard(context);
-        },
-        child: Scaffold(
-            appBar: AppBar(
-              title: AutoSizeText(
-                "Edit Category",
-                maxLines: 1,
-                style: TextStyle(fontSize: 25),
-                minFontSize: 12,
-                overflow: TextOverflow.ellipsis,
-              ),
-              actions: <Widget>[
-                Visibility(
-                  visible: categoryChanged,
-                  child: RaisedButton.icon(
-                    icon: Icon(Icons.save),
-                    label: Text("Save"),
-                    color: Colors.blue,
-                    onPressed: saveCategory,
-                  ),
+      return WillPopScope(
+        onWillPop: handleBackPress,
+        child: GestureDetector(
+          onTap: () {
+            // allows for anywhere on the screen to be clicked to lose focus of a textfield
+            hideKeyboard(context);
+          },
+          child: Scaffold(
+              appBar: AppBar(
+                title: AutoSizeText(
+                  "Edit Category",
+                  maxLines: 1,
+                  style: TextStyle(fontSize: 25),
+                  minFontSize: 12,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-            body: Center(
-              child: Form(
-                key: this.formKey,
-                autovalidate: this.autoValidate,
-                child: Padding(
-                  padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .008),
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * .7,
-                        child: TextFormField(
-                          enabled: widget.editName,
-                          onChanged: (val) => checkForChanges(),
-                          maxLength: 40,
-                          controller: this.categoryNameController,
-                          validator: validCategory,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: TextStyle(fontSize: 20),
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Category Name",
-                              counterText: ""),
-                        ),
-                      ),
-                      Visibility(
-                        visible: !this.isCategoryOwner,
-                        child: Padding(
+                actions: <Widget>[
+                  Visibility(
+                    visible: this.categoryChanged,
+                    child: RaisedButton.icon(
+                      icon: Icon(Icons.save),
+                      label: Text("Save"),
+                      color: Colors.blue,
+                      onPressed: saveCategory,
+                    ),
+                  ),
+                ],
+              ),
+              body: Center(
+                child: Form(
+                  key: this.formKey,
+                  autovalidate: this.autoValidate,
+                  child: Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .015),
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .008),
                         ),
-                      ),
-                      Visibility(
-                        visible: !this.isCategoryOwner,
-                        child: Text(
-                          "Category Owner: ${widget.category.owner}",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.4),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .008),
-                      ),
-                      Expanded(
-                        child: Scrollbar(
-                          child: CustomScrollView(
-                            controller: scrollController,
-                            slivers: <Widget>[
-                              SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                    (context, index) => this.choiceRows[index],
-                                    childCount: this.choiceRows.length),
-                              )
-                            ],
+                        Container(
+                          width: MediaQuery.of(context).size.width * .7,
+                          child: TextFormField(
+                            enabled: widget.editName,
+                            onChanged: (val) => checkForChanges(),
+                            maxLength: 40,
+                            controller: this.categoryNameController,
+                            validator: validCategory,
+                            textCapitalization: TextCapitalization.sentences,
+                            style: TextStyle(fontSize: 20),
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: "Category Name",
+                                counterText: ""),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(
-                            MediaQuery.of(context).size.height * .035),
-                      ),
-                    ],
+                        Visibility(
+                          visible: !this.isCategoryOwner,
+                          child: Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .008),
+                          ),
+                        ),
+                        Visibility(
+                          visible: !this.isCategoryOwner,
+                          child: Text(
+                            "Category Owner: ${widget.category.owner}",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.4),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .008),
+                        ),
+                        Expanded(
+                          child: Scrollbar(
+                            child: CustomScrollView(
+                              controller: this.scrollController,
+                              slivers: <Widget>[
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                      (context, index) =>
+                                          this.choiceRows[index],
+                                      childCount: this.choiceRows.length),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.height * .035),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            floatingActionButton: Visibility(
-              visible: isCategoryOwner,
-              child: FloatingActionButton(
-                child: Icon(Icons.add),
-                onPressed: () {
-                  if (this.isCategoryOwner) {
-                    setState(() {
-                      focusNode = new FocusNode();
-                      TextEditingController labelController =
-                          new TextEditingController();
-                      labelControllers.putIfAbsent(
-                          this.nextChoiceNum.toString(), () => labelController);
-                      TextEditingController rateController =
-                          new TextEditingController();
-                      rateController.text = defaultRate.toString();
-                      ratesControllers.putIfAbsent(
-                          this.nextChoiceNum.toString(), () => rateController);
+              floatingActionButton: Visibility(
+                visible: this.isCategoryOwner,
+                child: FloatingActionButton(
+                  child: Icon(Icons.add),
+                  onPressed: () {
+                    if (this.isCategoryOwner) {
+                      setState(() {
+                        this.focusNode = new FocusNode();
+                        TextEditingController labelController =
+                            new TextEditingController();
+                        this.labelControllers.putIfAbsent(
+                            this.nextChoiceNum.toString(),
+                            () => labelController);
+                        TextEditingController rateController =
+                            new TextEditingController();
+                        rateController.text = this.defaultRate.toString();
+                        this.ratesControllers.putIfAbsent(
+                            this.nextChoiceNum.toString(),
+                            () => rateController);
 
-                      ChoiceRow choice = new ChoiceRow(
-                          this.nextChoiceNum.toString(),
-                          this.isCategoryOwner,
-                          labelController,
-                          rateController,
-                          deleteChoice: (choice) => deleteChoice(choice),
-                          focusNode: focusNode,
-                          checkForChange: checkForChanges);
-                      this.currentChoice = choice;
-                      this.choiceRows.add(choice);
-                      this.nextChoiceNum++;
-                      // allow the list to automatically scroll down as it grows
-                      SchedulerBinding.instance.addPostFrameCallback((_) {
-                        scrollController.animateTo(
-                          scrollController.position.maxScrollExtent,
-                          duration: const Duration(microseconds: 100),
-                          curve: Curves.easeOut,
-                        );
+                        ChoiceRow choice = new ChoiceRow(
+                            this.nextChoiceNum.toString(),
+                            this.isCategoryOwner,
+                            labelController,
+                            rateController,
+                            deleteChoice: (choice) => deleteChoice(choice),
+                            focusNode: this.focusNode,
+                            checkForChange: checkForChanges);
+                        this.currentChoice = choice;
+                        this.choiceRows.add(choice);
+                        this.nextChoiceNum++;
+                        // allow the list to automatically scroll down as it grows
+                        SchedulerBinding.instance.addPostFrameCallback((_) {
+                          this.scrollController.animateTo(
+                                this.scrollController.position.maxScrollExtent,
+                                duration: const Duration(microseconds: 100),
+                                curve: Curves.easeOut,
+                              );
+                        });
+                        checkForChanges();
                       });
-                      checkForChanges();
-                    });
-                  }
-                },
-              ),
-            )),
+                    }
+                  },
+                ),
+              )),
+        ),
       );
     }
   }
@@ -280,6 +287,45 @@ class _EditCategoryState extends State<EditCategory> {
         ));
   }
 
+  Future<bool> handleBackPress() async {
+    // if editing, ensure the user really wants to leave to lose their changes
+    if (this.categoryChanged) {
+      confirmLeavePage();
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void confirmLeavePage() {
+    hideKeyboard(context);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Unsaved changes"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("No"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              )
+            ],
+            content: Text(
+                "You have unsaved changes to this category. To save them click the \"Save\" button in "
+                "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
+          );
+        });
+  }
+
   void checkForChanges() {
     // if lengths differ, then automatically something has changed.
     bool changed = (this.originalLabels.length != this.labelControllers.length);
@@ -314,9 +360,9 @@ class _EditCategoryState extends State<EditCategory> {
       this.errorLoading = false;
       this.category = resultStatus.data.first;
       this.categoryName = category.categoryName;
-      if (category.owner == Globals.username) {
+      if (this.category.owner == Globals.username) {
         // cache groups that the user owns
-        Globals.activeUserCategories.insert(0, category);
+        Globals.activeUserCategories.insert(0, this.category);
       }
       getRatings();
     } else {
@@ -329,13 +375,13 @@ class _EditCategoryState extends State<EditCategory> {
   }
 
   void getRatings() {
-    this.isCategoryOwner = (category.owner == Globals.username);
-    this.categoryNameController.text = category.categoryName;
-    this.nextChoiceNum = category.nextChoiceNum;
+    this.isCategoryOwner = (this.category.owner == Globals.username);
+    this.categoryNameController.text = this.category.categoryName;
+    this.nextChoiceNum = this.category.nextChoiceNum;
 
-    for (String choiceId in category.choices.keys) {
+    for (String choiceId in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
-      labelController.text = category.choices[choiceId];
+      labelController.text = this.category.choices[choiceId];
       this.labelControllers.putIfAbsent(choiceId, () => labelController);
 
       TextEditingController rateController = new TextEditingController();
@@ -414,7 +460,7 @@ class _EditCategoryState extends State<EditCategory> {
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (status.success) {
           // TODO grab category from result and replace global list with it
-          if (this.categoryNameController.text.trim() != categoryName) {
+          if (this.categoryNameController.text.trim() != this.categoryName) {
             // new name, so update in the user object locally
             Globals.user.ownedCategories.remove(widget.category);
             Globals.user.ownedCategories.add(new Category.debug(

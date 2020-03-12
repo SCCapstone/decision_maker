@@ -6,8 +6,9 @@ class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
   bool selected;
+  final String owner;
 
-  CategoryRow(this.category, this.selected, {this.onSelect});
+  CategoryRow(this.category, this.selected, this.owner, {this.onSelect});
 
   @override
   _CategoryRow createState() => new _CategoryRow();
@@ -32,7 +33,9 @@ class _CategoryRow extends State<CategoryRow> {
           ),
           Expanded(
             child: Text(
-              widget.category.categoryName,
+              (widget.owner == null)
+                  ? widget.category.categoryName
+                  : "${widget.category.categoryName} (@${widget.owner})",
               style: TextStyle(fontSize: 20),
             ),
           ),

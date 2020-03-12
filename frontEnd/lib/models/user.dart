@@ -70,6 +70,7 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        " GroupsLeft: $groupsLeft UserRatings: $userRatings OwnedCategories: $ownedCategories Favorites: $favorites Icon: $icon";
+        " GroupsLeft: $groupsLeft UserRatings: $userRatings Categories $categories OwnedCategories: $ownedCategories "
+        "Favorites: $favorites Icon: $icon";
   }
 }
