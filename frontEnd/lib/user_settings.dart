@@ -7,7 +7,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/widgets/favorites_popup.dart';
+import 'package:frontEnd/widgets/favorites_page.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -28,7 +28,6 @@ class _UserSettingsState extends State<UserSettings> {
   bool newIcon = false;
   File _icon;
   String _displayName;
-  int _groupSort = 0;
   List<Favorite> displayedFavorites = new List<Favorite>();
   List<Favorite> originalFavorites = new List<Favorite>();
 
@@ -43,7 +42,6 @@ class _UserSettingsState extends State<UserSettings> {
   void initState() {
     _displayName = Globals.user.displayName;
     _darkTheme = Globals.user.appSettings.darkTheme;
-    _groupSort = Globals.user.appSettings.groupSort;
     _muted = Globals.user.appSettings.muted;
     originalFavorites = Globals.user.favorites;
     displayedFavorites.addAll(originalFavorites);
@@ -85,7 +83,7 @@ class _UserSettingsState extends State<UserSettings> {
                     Column(
                       children: [
                         Container(
-                            width: MediaQuery.of(context).size.width * .6,
+                            width: MediaQuery.of(context).size.width * .75,
                             child: TextFormField(
                               maxLength: 50,
                               controller: displayNameController,
@@ -101,32 +99,42 @@ class _UserSettingsState extends State<UserSettings> {
                                           .fontSize *
                                       0.6),
                               decoration: InputDecoration(
-                                  labelText: "Name", counterText: ""),
+                                  labelText: "Nickname (@${Globals.username})",
+                                  counterText: ""),
                             )),
                         Padding(
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .01),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          height: MediaQuery.of(context).size.height * .3,
-                          alignment: Alignment.topRight,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: _icon == null
-                                      ? getUserIconUrl(Globals.user)
-                                      : FileImage(_icon))),
+                        GestureDetector(
+                          onTap: () {
+                            showUserImage(
+                                _icon == null
+                                    ? getUserIconUrl(Globals.user)
+                                    : FileImage(_icon),
+                                context);
+                          },
                           child: Container(
+                            width: MediaQuery.of(context).size.width * .75,
+                            height: MediaQuery.of(context).size.height * .4,
+                            alignment: Alignment.topRight,
                             decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.7),
-                                shape: BoxShape.circle),
-                            child: IconButton(
-                              icon: Icon(Icons.edit),
-                              color: Colors.blueAccent,
-                              onPressed: () {
-                                getImage();
-                              },
+                                image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: _icon == null
+                                        ? getUserIconUrl(Globals.user)
+                                        : FileImage(_icon))),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  shape: BoxShape.circle),
+                              child: IconButton(
+                                icon: Icon(Icons.edit),
+                                color: Colors.blueAccent,
+                                onPressed: () {
+                                  getImage();
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -136,12 +144,18 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         RaisedButton.icon(
                             onPressed: () {
-                              showFavoritesPopup();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => FavoritesPage(
+                                          displayedFavorites))).then((_) {
+                                saveFavorites();
+                              });
                             },
                             icon: Icon(Icons.contacts),
                             label: Text("My Favorites")),
                         Container(
-                          width: MediaQuery.of(context).size.width * .7,
+                          width: MediaQuery.of(context).size.width * .75,
                           child: Column(
                             children: <Widget>[
                               Row(
@@ -197,52 +211,6 @@ class _UserSettingsState extends State<UserSettings> {
                             ],
                           ),
                         ),
-                        Container(
-                          // have to do this hack because the expansiontile title wouldn't line up
-                          width: MediaQuery.of(context).size.width * .78,
-                          child: ExpansionTile(
-                            title: Text(
-                              "Group Sort Method",
-                              style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
-                                      0.4),
-                              textAlign: TextAlign.left,
-                            ),
-                            children: <Widget>[
-                              SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * .12,
-                                child: ListView(
-                                  shrinkWrap: true,
-                                  children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        Radio(
-                                          value: Globals.alphabeticalSort,
-                                          groupValue: _groupSort,
-                                          onChanged: selectGroupSort,
-                                        ),
-                                        Text("Alphabetical")
-                                      ],
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Radio(
-                                          value: Globals.dateNewestSort,
-                                          groupValue: _groupSort,
-                                          onChanged: selectGroupSort,
-                                        ),
-                                        Text("Date")
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
                       ],
                     ),
                   ],
@@ -267,37 +235,34 @@ class _UserSettingsState extends State<UserSettings> {
     }
   }
 
-  void showFavoritesPopup() {
-    showDialog(
-        context: context,
-        child: FavoritesPopup(displayedFavorites, originalFavorites,
-            handlePopupClosed: () => popupClosed())).then((val) {
-      popupClosed();
-    });
-  }
-
-  void popupClosed() {
-    enableAutoValidation();
-    hideKeyboard(context);
-  }
-
-  void selectGroupSort(int val) {
-    _groupSort = val;
-    enableAutoValidation();
+  void saveFavorites() async {
+    List<String> userNames = new List<String>();
+    for (Favorite favorite in displayedFavorites) {
+      userNames.add(favorite.username);
+    }
+    ResultStatus resultStatus = await UsersManager.updateUserSettings(
+        _displayName,
+        boolToInt(_darkTheme),
+        boolToInt(_muted),
+        Globals.user.appSettings.groupSort,
+        userNames,
+        _icon);
+    if (resultStatus.success) {
+      originalFavorites.clear();
+      originalFavorites.addAll(displayedFavorites);
+    } else {
+      // if it failed then revert back to old favorites
+      displayedFavorites.clear();
+      displayedFavorites.addAll(originalFavorites);
+      showErrorMessage("Error", "Error saving favorites", context);
+    }
   }
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    Set newContactsSet = displayedFavorites.toSet();
-    Set oldContactsSet = originalFavorites.toSet();
-    // check if the user added or removed any users from their favorites list
-    bool newUsers = !(oldContactsSet.containsAll(newContactsSet) &&
-        oldContactsSet.length == newContactsSet.length);
     if (Globals.user.appSettings.darkTheme != _darkTheme ||
         Globals.user.appSettings.muted != _muted ||
         Globals.user.displayName != _displayName ||
-        Globals.user.appSettings.groupSort != _groupSort ||
-        newUsers ||
         newIcon) {
       setState(() {
         editing = true;
@@ -323,7 +288,7 @@ class _UserSettingsState extends State<UserSettings> {
           _displayName,
           boolToInt(_darkTheme),
           boolToInt(_muted),
-          _groupSort,
+          Globals.user.appSettings.groupSort,
           userNames,
           _icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
