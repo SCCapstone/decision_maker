@@ -26,8 +26,7 @@ public class Category {
     this.setCategoryId((String) jsonMap.get(CategoriesManager.CATEGORY_ID));
     this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
-    this.setNextChoiceNo(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
+    this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
     this.setChoicesRaw((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
     this.setGroups((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
   }
@@ -77,9 +76,9 @@ public class Category {
     }
   }
 
-  private Integer getIntFromBigInt(final BigDecimal input) {
+  private Integer getIntFromObject(final Object input) {
     if (input != null) {
-      return input.intValue();
+      return Integer.parseInt(input.toString());
     }
     return null;
   }

@@ -40,11 +40,10 @@ public class Group {
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
     this.setGroupCreator((String) jsonMap.get(GroupsManager.GROUP_CREATOR));
     this.setDefaultRsvpDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
+        this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
     this.setDefaultVotingDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
-    this.setNextEventId(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
+        this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
+    this.setNextEventId(this.getIntFromObject(jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
@@ -90,7 +89,7 @@ public class Group {
 
   public Map<String, Map<String, String>> getMembersMap() {
     final Map<String, Map<String, String>> membersMapped = new HashMap<>();
-    for (String username: this.members.keySet()) {
+    for (String username : this.members.keySet()) {
       membersMapped.putIfAbsent(username, this.members.get(username).asMap());
     }
     return membersMapped;
@@ -118,7 +117,7 @@ public class Group {
 
   public Map<String, Map<String, Object>> getEventsMap() {
     Map<String, Map<String, Object>> membersMapped = new HashMap<>();
-    for (String eventId: this.events.keySet()) {
+    for (String eventId : this.events.keySet()) {
       membersMapped.putIfAbsent(eventId, this.events.get(eventId).asMap());
     }
     return membersMapped;
@@ -152,9 +151,9 @@ public class Group {
         .build();
   }
 
-  private Integer getIntFromBigInt(final BigDecimal input) {
+  private Integer getIntFromObject(final Object input) {
     if (input != null) {
-      return input.intValue();
+      return Integer.parseInt(input.toString());
     }
     return null;
   }

@@ -1,6 +1,7 @@
 package models;
 
 import imports.UsersManager;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -63,7 +64,8 @@ public class User {
         final Map<String, Object> choiceRatings = (Map<String, Object>) jsonMap.get(categoryId);
         final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
         for (String choiceId : choiceRatings.keySet()) {
-          choiceRatingsConverted.putIfAbsent(choiceId, (Integer) choiceRatings.get(choiceId));
+          choiceRatingsConverted
+              .putIfAbsent(choiceId, getIntFromObject(choiceRatings.get(choiceId)));
         }
         this.categoryRatings.putIfAbsent(categoryId, choiceRatingsConverted);
       }
@@ -99,6 +101,13 @@ public class User {
             .putIfAbsent(username, new Favorite((Map<String, Object>) jsonMap.get(username)));
       }
     }
+  }
+
+  private Integer getIntFromObject(final Object input) {
+    if (input != null) {
+      return Integer.parseInt(input.toString());
+    }
+    return null;
   }
 
   public boolean pushEndpointArnIsSet() {
