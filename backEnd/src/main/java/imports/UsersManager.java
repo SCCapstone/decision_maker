@@ -90,6 +90,7 @@ public class UsersManager extends DatabaseAccessManager {
       groupIds = new ArrayList<>(user.getGroups().keySet());
       success = true;
     } catch (Exception e) {
+      System.out.println(new ErrorDescriptor<>(username, classMethod, e).toString());
       metrics.log(new ErrorDescriptor<>(username, classMethod, e));
     }
 

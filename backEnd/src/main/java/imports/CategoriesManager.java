@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,13 +52,13 @@ public class CategoriesManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String nextCategoryIndex = UUID.randomUUID().toString();
-        jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
-
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        jsonMap.putIfAbsent(OWNER, activeUser);
 
         final Category newCategory = new Category(jsonMap);
         newCategory.updateNextChoiceNo();
+        newCategory.setOwner(activeUser);
+        newCategory.setCategoryId(nextCategoryIndex);
+        newCategory.setGroups(Collections.emptyMap());
 
         this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 

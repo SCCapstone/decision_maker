@@ -37,10 +37,8 @@ public class Event {
     this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
-    this.setRsvpDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.RSVP_DURATION)));
-    this.setVotingDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.VOTING_DURATION)));
+    this.setRsvpDuration(this.getIntFromObject(jsonMap.get(GroupsManager.RSVP_DURATION)));
+    this.setVotingDuration(this.getIntFromObject(jsonMap.get(GroupsManager.VOTING_DURATION)));
     this.setSelectedChoice((String) jsonMap.get(GroupsManager.SELECTED_CHOICE));
 
     this.setOptedInRawMap((Map<String, Object>) jsonMap.get(GroupsManager.OPTED_IN));
@@ -83,7 +81,7 @@ public class Event {
 
   public Map<String, Map<String, String>> getOptedInMap() {
     final Map<String, Map<String, String>> membersMapped = new HashMap<>();
-    for (String username: this.optedIn.keySet()) {
+    for (String username : this.optedIn.keySet()) {
       membersMapped.putIfAbsent(username, this.optedIn.get(username).asMap());
     }
     return membersMapped;
@@ -109,7 +107,7 @@ public class Event {
 
         for (String username : votingPairsRaw.keySet()) {
           votingPairs.putIfAbsent(username,
-              this.getIntFromBigInt((BigDecimal) votingPairsRaw.get(username)));
+              this.getIntFromObject(votingPairsRaw.get(username)));
         }
 
         this.votingNumbers.putIfAbsent(choiceId, votingPairs);
@@ -126,9 +124,9 @@ public class Event {
     }
   }
 
-  private Integer getIntFromBigInt(final BigDecimal input) {
+  private Integer getIntFromObject(final Object input) {
     if (input != null) {
-      return input.intValue();
+      return Integer.parseInt(input.toString());
     }
     return null;
   }
