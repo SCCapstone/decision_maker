@@ -64,9 +64,11 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
           Visibility(
             visible: widget.groupCategory,
             child: Expanded(
-              child: Text(
-                (groupNum != 0) ? "Used in ($groupNum) groups" : "",
+              child: AutoSizeText(
+                (groupNum != 0) ? "Used in ($groupNum) other groups" : "",
                 style: TextStyle(fontSize: 15),
+                maxLines: 1,
+                minFontSize: 8,
               ),
             ),
           ),

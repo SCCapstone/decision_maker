@@ -259,22 +259,24 @@ class _CreateCategoryState extends State<CreateCategory> {
         });
       } else {
         showLoadingDialog(context, "Creating category...", true);
-        ResultStatus status = await CategoriesManager.addOrEditCategory(
-            this.categoryNameController.text.trim(),
-            labelsToSave,
-            ratesToSave,
-            null);
+        ResultStatus<Category> resultStatus =
+            await CategoriesManager.addOrEditCategory(
+                this.categoryNameController.text.trim(),
+                labelsToSave,
+                ratesToSave,
+                null);
         Navigator.of(context, rootNavigator: true).pop('dialog');
-        if (status.success) {
-          // TODO grab the category returned and update global variable
-//          Globals.user.ownedCategories.putIfAbsent(category.categoryId, ()=>category);
+        if (resultStatus.success) {
+          Category newCategory = resultStatus.data;
+          Globals.user.ownedCategories.add(newCategory);
+          Globals.activeUserCategories.add(newCategory);
           // update local ratings
           Globals.user.userRatings.update(
-              widget.category.categoryId, (existing) => ratesToSave,
+              newCategory.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
           Navigator.of(context).pop();
         } else {
-          showErrorMessage("Error", status.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, context);
         }
       }
     } else {

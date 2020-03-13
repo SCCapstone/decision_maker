@@ -25,12 +25,12 @@ class CategoriesManager {
   static final String getAction = "getCategories";
   static final String deleteAction = "deleteCategory";
 
-  static Future<ResultStatus> addOrEditCategory(
+  static Future<ResultStatus<Category>> addOrEditCategory(
       String categoryName,
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
       Category category) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+    ResultStatus<Category> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
 
@@ -59,7 +59,8 @@ class CategoriesManager {
 
         if (responseItem.success) {
           retVal.success = true;
-          // TODO get the category from the backend and put it in the resultStatus
+          retVal.data =
+              new Category.fromJson(json.decode(responseItem.resultMessage));
         } else {
           retVal.errorMessage = "Error saving the category (1).";
         }

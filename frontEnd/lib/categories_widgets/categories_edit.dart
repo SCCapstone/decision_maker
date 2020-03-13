@@ -46,7 +46,8 @@ class _EditCategoryState extends State<EditCategory> {
   ChoiceRow currentChoice;
   Widget errorWidget;
   Category category;
-  String categoryName;
+
+//  String categoryName;
 
   @override
   void dispose() {
@@ -76,7 +77,6 @@ class _EditCategoryState extends State<EditCategory> {
     if (this.loading) {
       getCategory();
     } else {
-      this.categoryName = widget.category.categoryName;
       getRatings();
     }
     super.initState();
@@ -344,7 +344,7 @@ class _EditCategoryState extends State<EditCategory> {
       }
     }
     // also check for category name change
-    if (this.categoryName != this.categoryNameController.text.trim()) {
+    if (this.category.categoryName != this.categoryNameController.text.trim()) {
       changed = true;
     }
     setState(() {
@@ -359,7 +359,6 @@ class _EditCategoryState extends State<EditCategory> {
     if (resultStatus.success) {
       this.errorLoading = false;
       this.category = resultStatus.data.first;
-      this.categoryName = category.categoryName;
       if (this.category.owner == Globals.username) {
         // cache groups that the user owns
         Globals.activeUserCategories.insert(0, this.category);
@@ -451,27 +450,28 @@ class _EditCategoryState extends State<EditCategory> {
         });
       } else if (this.isCategoryOwner) {
         showLoadingDialog(context, "Saving changes...", true);
-        this.category.categoryName = this.categoryNameController.text.trim();
-        ResultStatus status = await CategoriesManager.addOrEditCategory(
-            this.categoryNameController.text.trim(),
-            labelsToSave,
-            ratesToSave,
-            this.category);
-        Navigator.of(context, rootNavigator: true).pop('dialog');
-        if (status.success) {
-          // TODO grab category from result and replace global list with it
-          if (this.categoryNameController.text.trim() != this.categoryName) {
-            // new name, so update in the user object locally
-            Globals.user.ownedCategories.remove(widget.category);
-            Globals.user.ownedCategories.add(new Category.debug(
-                widget.category.categoryId,
+        ResultStatus<Category> resultStatus =
+            await CategoriesManager.addOrEditCategory(
                 this.categoryNameController.text.trim(),
-                null,
-                null,
-                null,
-                null));
-          }
-          // update local ratings
+                labelsToSave,
+                ratesToSave,
+                this.category);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+        if (resultStatus.success) {
+          // update category with new one returned from DB
+          this.category = resultStatus.data;
+          // update mapping in user object locally
+          Globals.user.ownedCategories.remove(widget.category);
+          Globals.user.ownedCategories.add(new Category.debug(
+              widget.category.categoryId,
+              this.category.categoryName,
+              null,
+              null,
+              null,
+              null));
+          Globals.activeUserCategories.remove(this.category);
+          Globals.activeUserCategories.add(this.category);
+          // update local ratings in user object locally
           Globals.user.userRatings.update(
               widget.category.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
@@ -479,18 +479,17 @@ class _EditCategoryState extends State<EditCategory> {
           setState(() {
             setOriginalValues();
             this.categoryChanged = false;
-            this.categoryName = this.categoryNameController.text.trim();
           });
         } else {
-          showErrorMessage("Error", status.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, context);
         }
       } else {
         showLoadingDialog(context, "Saving changes...", true);
-        ResultStatus status = await UsersManager.updateUserChoiceRatings(
+        ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
             this.category.categoryId, ratesToSave);
         Navigator.of(context, rootNavigator: true).pop('dialog');
 
-        if (status.success) {
+        if (resultStatus.success) {
           // update local ratings
           Globals.user.userRatings.update(
               widget.category.categoryId, (existing) => ratesToSave,
@@ -500,7 +499,7 @@ class _EditCategoryState extends State<EditCategory> {
             this.categoryChanged = false;
           });
         } else {
-          showErrorMessage("Error", status.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, context);
         }
       }
     } else {
