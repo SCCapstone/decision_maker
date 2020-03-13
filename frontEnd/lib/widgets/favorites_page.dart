@@ -19,19 +19,11 @@ class FavoritesPage extends StatefulWidget {
 class _FavoritesPageState extends State<FavoritesPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
-  List<UserRow> displayedUserRows = new List<UserRow>();
-  List<UserRow> searchResults = new List<UserRow>();
-  bool searching = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: formKey,
+      key: this.formKey,
       child: Scaffold(
           appBar: AppBar(
             title: Text("My Favorites"),
@@ -44,7 +36,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   children: <Widget>[
                     Expanded(
                       child: TextFormField(
-                          controller: userController,
+                          controller: this.userController,
                           validator: (value) {
                             return validNewFavorite(
                                 value.trim(), widget.displayedFavorites);
@@ -56,7 +48,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     FlatButton(
                       child: Text("Add User"),
                       onPressed: () {
-                        if (formKey.currentState.validate()) {
+                        if (this.formKey.currentState.validate()) {
                           addNewFavorite();
                         }
                       },
@@ -90,8 +82,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   void addNewFavorite() async {
-    ResultStatus<User> resultStatus =
-        await UsersManager.getUserData(username: userController.text.trim());
+    ResultStatus<User> resultStatus = await UsersManager.getUserData(
+        username: this.userController.text.trim());
     if (resultStatus.success) {
       User newFavorite = resultStatus.data;
       widget.displayedFavorites.add(new Favorite(
@@ -99,11 +91,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
           displayName: newFavorite.displayName,
           icon: newFavorite.icon));
     } else {
-      showErrorMessage("Error", "Cannot add: ${userController.text}", context);
+      showErrorMessage(
+          "Error", "Cannot add: ${this.userController.text}", context);
       hideKeyboard(context);
     }
     setState(() {
-      userController.clear();
+      this.userController.clear();
     });
   }
 }

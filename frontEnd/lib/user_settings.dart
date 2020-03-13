@@ -19,7 +19,6 @@ class UserSettings extends StatefulWidget {
 class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController displayNameController = TextEditingController();
-  final TextEditingController userIconController = TextEditingController();
 
   bool autoValidate = false;
   bool editing = false;
@@ -33,19 +32,18 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void dispose() {
-    displayNameController.dispose();
-    userIconController.dispose();
+    this.displayNameController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    _displayName = Globals.user.displayName;
-    _darkTheme = Globals.user.appSettings.darkTheme;
-    _muted = Globals.user.appSettings.muted;
-    originalFavorites = Globals.user.favorites;
-    displayedFavorites.addAll(originalFavorites);
-    displayNameController.text = _displayName;
+    this._displayName = Globals.user.displayName;
+    this._darkTheme = Globals.user.appSettings.darkTheme;
+    this._muted = Globals.user.appSettings.muted;
+    this.originalFavorites = Globals.user.favorites;
+    this.displayedFavorites.addAll(this.originalFavorites);
+    this.displayNameController.text = this._displayName;
     super.initState();
   }
 
@@ -62,7 +60,7 @@ class _UserSettingsState extends State<UserSettings> {
             title: Text("My Settings"),
             actions: <Widget>[
               Visibility(
-                visible: editing,
+                visible: this.editing,
                 child: RaisedButton.icon(
                     color: Colors.blue,
                     onPressed: validateInput,
@@ -73,8 +71,8 @@ class _UserSettingsState extends State<UserSettings> {
           ),
           body: Column(children: <Widget>[
             Form(
-              key: formKey,
-              autovalidate: autoValidate,
+              key: this.formKey,
+              autovalidate: this.autoValidate,
               child: Expanded(
                 child: ListView(
                   shrinkWrap: true,
@@ -86,10 +84,10 @@ class _UserSettingsState extends State<UserSettings> {
                             width: MediaQuery.of(context).size.width * .75,
                             child: TextFormField(
                               maxLength: 50,
-                              controller: displayNameController,
+                              controller: this.displayNameController,
                               validator: validName,
                               onChanged: (String arg) {
-                                _displayName = arg.trim();
+                                this._displayName = arg.trim();
                                 enableAutoValidation();
                               },
                               onSaved: (String arg) {},
@@ -109,9 +107,9 @@ class _UserSettingsState extends State<UserSettings> {
                         GestureDetector(
                           onTap: () {
                             showUserImage(
-                                _icon == null
+                                this._icon == null
                                     ? getUserIconUrl(Globals.user)
-                                    : FileImage(_icon),
+                                    : FileImage(this._icon),
                                 context);
                           },
                           child: Container(
@@ -121,9 +119,9 @@ class _UserSettingsState extends State<UserSettings> {
                             decoration: BoxDecoration(
                                 image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: _icon == null
+                                    image: this._icon == null
                                         ? getUserIconUrl(Globals.user)
-                                        : FileImage(_icon))),
+                                        : FileImage(this._icon))),
                             child: Container(
                               decoration: BoxDecoration(
                                   color: Colors.grey.withOpacity(0.7),
@@ -148,7 +146,7 @@ class _UserSettingsState extends State<UserSettings> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => FavoritesPage(
-                                          displayedFavorites))).then((_) {
+                                          this.displayedFavorites))).then((_) {
                                 saveFavorites();
                               });
                             },
@@ -173,10 +171,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: _muted,
+                                    value: this._muted,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _muted = value;
+                                        this._muted = value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -198,10 +196,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: !_darkTheme,
+                                    value: !this._darkTheme,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _darkTheme = !value;
+                                        this._darkTheme = !value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -229,79 +227,79 @@ class _UserSettingsState extends State<UserSettings> {
         maxHeight: 600);
 
     if (newIconFile != null) {
-      _icon = newIconFile;
-      newIcon = true;
+      this._icon = newIconFile;
+      this.newIcon = true;
       enableAutoValidation();
     }
   }
 
   void saveFavorites() async {
     List<String> userNames = new List<String>();
-    for (Favorite favorite in displayedFavorites) {
+    for (Favorite favorite in this.displayedFavorites) {
       userNames.add(favorite.username);
     }
     ResultStatus resultStatus = await UsersManager.updateUserSettings(
-        _displayName,
-        boolToInt(_darkTheme),
-        boolToInt(_muted),
+        Globals.user.displayName,
+        boolToInt(Globals.user.appSettings.darkTheme),
+        boolToInt(Globals.user.appSettings.muted),
         Globals.user.appSettings.groupSort,
         userNames,
-        _icon);
+        null);
     if (resultStatus.success) {
-      originalFavorites.clear();
-      originalFavorites.addAll(displayedFavorites);
+      this.originalFavorites.clear();
+      this.originalFavorites.addAll(this.displayedFavorites);
     } else {
       // if it failed then revert back to old favorites
-      displayedFavorites.clear();
-      displayedFavorites.addAll(originalFavorites);
-      showErrorMessage("Error", "Error saving favorites", context);
+      this.displayedFavorites.clear();
+      this.displayedFavorites.addAll(this.originalFavorites);
+      showErrorMessage("Error", "Error saving favorites.", context);
     }
   }
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    if (Globals.user.appSettings.darkTheme != _darkTheme ||
-        Globals.user.appSettings.muted != _muted ||
-        Globals.user.displayName != _displayName ||
-        newIcon) {
+    if (Globals.user.appSettings.darkTheme != this._darkTheme ||
+        Globals.user.appSettings.muted != this._muted ||
+        Globals.user.displayName != this._displayName ||
+        this.newIcon) {
       setState(() {
-        editing = true;
+        this.editing = true;
       });
     } else {
       setState(() {
-        editing = false;
+        this.editing = false;
       });
     }
   }
 
   void validateInput() async {
-    final form = formKey.currentState;
+    final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
       List<String> userNames = new List<String>();
-      for (Favorite favorite in displayedFavorites) {
+      for (Favorite favorite in this.displayedFavorites) {
         userNames.add(favorite.username);
       }
 
       showLoadingDialog(context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
-          _displayName,
-          boolToInt(_darkTheme),
-          boolToInt(_muted),
+          this._displayName,
+          boolToInt(this._darkTheme),
+          boolToInt(this._muted),
           Globals.user.appSettings.groupSort,
           userNames,
-          _icon);
+          this._icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         setState(() {
           hideKeyboard(context);
           // reset everything and reflect changes made
-          originalFavorites.clear();
-          originalFavorites.addAll(displayedFavorites);
-          editing = false;
-          newIcon = false;
-          autoValidate = false;
+          this.originalFavorites.clear();
+          this.originalFavorites.addAll(this.displayedFavorites);
+          this.editing = false;
+          this.newIcon = false;
+          this.autoValidate = false;
           changeTheme(context);
         });
       } else {
@@ -309,7 +307,7 @@ class _UserSettingsState extends State<UserSettings> {
         showErrorMessage("Error", resultStatus.errorMessage, context);
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 }
