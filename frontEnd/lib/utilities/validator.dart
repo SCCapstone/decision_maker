@@ -21,7 +21,7 @@ String validEventName(String input) {
   }
 }
 
-String validVotingDuration(String input) {
+String validVotingDuration(String input, bool verbose) {
   String retVal;
   try {
     int num = int.parse(input);
@@ -31,12 +31,24 @@ String validVotingDuration(String input) {
       retVal = "Too big.";
     }
   } catch (e) {
-    retVal = "Not a number.";
+    if (verbose) {
+      if (input.isEmpty) {
+        retVal = "Duration cannot be empty.";
+      } else {
+        retVal = "Not a number.";
+      }
+    } else {
+      if (input.isEmpty) {
+        retVal = "Empty.";
+      } else {
+        retVal = "Error.";
+      }
+    }
   }
   return retVal;
 }
 
-String validConsiderDuration(String input) {
+String validConsiderDuration(String input, bool verbose) {
   String retVal;
   try {
     int num = int.parse(input);
@@ -46,7 +58,19 @@ String validConsiderDuration(String input) {
       retVal = "Too big.";
     }
   } catch (e) {
-    retVal = "Not a number.";
+    if (verbose) {
+      if (input.isEmpty) {
+        retVal = "Duration cannot be empty.";
+      } else {
+        retVal = "Not a number.";
+      }
+    } else {
+      if (input.isEmpty) {
+        retVal = "Empty.";
+      } else {
+        retVal = "Error.";
+      }
+    }
   }
   return retVal;
 }

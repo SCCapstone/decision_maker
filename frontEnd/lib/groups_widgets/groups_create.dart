@@ -106,25 +106,33 @@ class _CreateGroupState extends State<CreateGroup> {
                   ),
                   TextFormField(
                     controller: considerDurationController,
+                    maxLength: 4,
                     keyboardType: TextInputType.number,
-                    validator: validConsiderDuration,
+                    validator: (value) {
+                      return validConsiderDuration(value, true);
+                    },
                     onSaved: (String arg) {
                       considerDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
                       labelText:
                           "Enter a default consider duration (in minutes)",
+                      counterText: ""
                     ),
                   ),
                   TextFormField(
                     controller: votingDurationController,
+                    maxLength: 4,
                     keyboardType: TextInputType.number,
-                    validator: validVotingDuration,
+                    validator: (value) {
+                      return validVotingDuration(value, true);
+                    },
                     onSaved: (String arg) {
                       votingDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
                       labelText: "Enter a default voting duration (in minutes)",
+                      counterText:  ""
                     ),
                   ),
                   Row(
