@@ -85,8 +85,18 @@ class _CreateEventState extends State<CreateEvent> {
         Globals.currentGroup.defaultConsiderDuration.toString();
     considerDuration = considerDurationController.text;
     votingDuration = votingDurationController.text;
-    considerButtonText = "Skip Consider";
-    voteButtonText = "Skip Voting";
+    if (considerDuration == "0") {
+      considerButtonText = "Set Consider";
+      willConsider = false;
+    } else {
+      considerButtonText = "Skip Consider";
+    }
+    if (votingDuration == "0") {
+      voteButtonText = "Set Voting";
+      willVote = false;
+    } else {
+      voteButtonText = "Skip Voting";
+    }
     super.initState();
   }
 
@@ -176,7 +186,9 @@ class _CreateEventState extends State<CreateEvent> {
                                 controller: considerDurationController,
                                 keyboardType: TextInputType.number,
                                 enabled: willConsider,
-                                validator: validConsiderDuration,
+                                validator: (value) {
+                                  return validConsiderDuration(value, true);
+                                },
                                 maxLength: textFieldLength,
                                 onChanged: (String arg) {
                                   // if already at max length and you keep typing, setState won't get called again
@@ -253,7 +265,9 @@ class _CreateEventState extends State<CreateEvent> {
                               child: TextFormField(
                                 controller: votingDurationController,
                                 keyboardType: TextInputType.number,
-                                validator: validVotingDuration,
+                                validator: (value) {
+                                  return validVotingDuration(value, true);
+                                },
                                 maxLength: textFieldLength,
                                 onChanged: (String arg) {
                                   if (!(arg.length == textFieldLength &&
@@ -424,7 +438,7 @@ class _CreateEventState extends State<CreateEvent> {
       votingStart = DateTime.now();
       displayVal = Globals.formatter.format(votingStart);
     } else {
-      if (validConsiderDuration(considerDuration) != null) {
+      if (validConsiderDuration(considerDuration, true) != null) {
         displayVal = Globals.formatter.format(votingStart);
       } else {
         votingStart = DateTime.now();
@@ -439,7 +453,7 @@ class _CreateEventState extends State<CreateEvent> {
   String calculateVotingEndDateTime() {
     String displayVal;
 
-    if (validVotingDuration(votingDuration) != null) {
+    if (validVotingDuration(votingDuration, true) != null) {
       displayVal = Globals.formatter.format(votingEnd);
     } else if (votingDuration == "0") {
       votingEnd = votingStart;
