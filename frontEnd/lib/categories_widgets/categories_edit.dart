@@ -160,14 +160,12 @@ class _EditCategoryState extends State<EditCategory> {
                         ),
                         Visibility(
                           visible: !this.isCategoryOwner,
-                          child: Text(
+                          child: AutoSizeText(
                             "Category Owner: ${widget.category.owner}",
                             style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: DefaultTextStyle.of(context)
-                                        .style
-                                        .fontSize *
-                                    0.4),
+                                fontWeight: FontWeight.bold, fontSize: 20),
+                            maxLines: 1,
+                            minFontSize: 12,
                           ),
                         ),
                         Padding(

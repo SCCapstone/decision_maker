@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -34,10 +35,10 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
 
   @override
   void initState() {
-    currentVote = voteEmpty;
-    voteMap = widget.event.votingNumbers[widget.choiceId];
-    if (voteMap.containsKey(Globals.username)) {
-      currentVote = int.parse(voteMap[Globals.username]);
+    this.currentVote = voteEmpty;
+    this.voteMap = widget.event.votingNumbers[widget.choiceId];
+    if (this.voteMap.containsKey(Globals.username)) {
+      this.currentVote = int.parse(this.voteMap[Globals.username]);
     }
     super.initState();
   }
@@ -49,23 +50,22 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          Text(widget.choiceName,
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 2.5)),
+          AutoSizeText(widget.choiceName,
+              minFontSize: 15, maxLines: 1, style: TextStyle(fontSize: 32)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (currentVote == voteNo)
+                    color: (this.currentVote == voteNo)
                         ? Colors.orangeAccent
                         : Theme.of(context).scaffoldBackgroundColor),
                 child: IconButton(
                   icon: Icon(Icons.thumb_down),
                   color: Colors.red,
                   onPressed: () {
-                    if (currentVote != voteNo) {
+                    if (this.currentVote != voteNo) {
                       // prevents wasteful API calls
                       tryVote(voteNo);
                     }
@@ -75,7 +75,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: (currentVote == voteYes)
+                  color: (this.currentVote == voteYes)
                       ? Colors.greenAccent
                       : Theme.of(context).scaffoldBackgroundColor,
                 ),
@@ -83,7 +83,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
                   icon: Icon(Icons.thumb_up),
                   color: Colors.green,
                   onPressed: () {
-                    if (currentVote != voteYes) {
+                    if (this.currentVote != voteYes) {
                       // prevents wasteful API calls
                       tryVote(voteYes);
                     }
@@ -98,13 +98,13 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   }
 
   void tryVote(int voteVal) async {
-    int previousVote = currentVote;
+    int previousVote = this.currentVote;
     // update changes locally so user doesn't have to fetch from DB to see new vote reflected
     widget.event.votingNumbers[widget.choiceId].update(
         Globals.username, (existing) => voteVal.toString(),
         ifAbsent: () => voteVal.toString());
     setState(() {
-      currentVote = voteVal;
+      this.currentVote = voteVal;
     });
 
     ResultStatus resultStatus = await GroupsManager.voteForChoice(
@@ -114,11 +114,11 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
       showErrorMessage("Error", resultStatus.errorMessage, context);
       setState(() {
         // if error, put vote back to what it was
-        currentVote = previousVote;
+        this.currentVote = previousVote;
         // update changes locally so user doesn't have to fetch from DB to see new vote
         widget.event.votingNumbers[widget.choiceId].update(
-            Globals.username, (existing) => currentVote.toString(),
-            ifAbsent: () => currentVote.toString());
+            Globals.username, (existing) => this.currentVote.toString(),
+            ifAbsent: () => this.currentVote.toString());
       });
     }
   }

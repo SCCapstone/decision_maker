@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -26,8 +27,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   @override
   void initState() {
     getEvent();
-    for (String username in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[username];
+    for (String username in this.event.eventCreator.keys) {
+      this.eventCreator = this.event.eventCreator[username];
     }
     super.initState();
   }
@@ -38,101 +39,101 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-          event.eventName,
-          style: TextStyle(
-              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
+        title: AutoSizeText(
+          this.event.eventName,
+          maxLines: 1,
+          minFontSize: 12,
+          style: TextStyle(fontSize: 36),
         ),
-        leading: BackButton(),
       ),
       body: RefreshIndicator(
         onRefresh: refreshList,
         child: ListView(
           shrinkWrap: true,
           children: <Widget>[
-            Column(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: Text(
-                        "Occurred",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
-                      ),
-                    ),
-                    Text(
-                      event.eventStartDateTimeFormatted,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.7),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: Text(
-                        "Category",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
-                      ),
-                    ),
-                    Text(
-                      event.categoryName,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.7),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: Text("Selected Choice",
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .01),
+                        child: AutoSizeText(
+                          "Occurred",
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8,
-                          )),
-                    ),
-                    Text(event.selectedChoice,
-                        style: TextStyle(
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.7)),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    Text("Event created by: $eventCreator",
-                        style: TextStyle(
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.3)),
-                    ExpansionTile(
-                      title: Text("Considered (${event.optedIn.length})"),
-                      children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * .2,
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: userRows,
-                          ),
+                              fontWeight: FontWeight.bold, fontSize: 40),
+                          minFontSize: 20,
+                          maxLines: 1,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                      AutoSizeText(
+                        this.event.eventStartDateTimeFormatted,
+                        style: TextStyle(fontSize: 32),
+                        minFontSize: 15,
+                        maxLines: 1,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .01),
+                        child: AutoSizeText(
+                          "Category",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 40),
+                          minFontSize: 20,
+                          maxLines: 1,
+                        ),
+                      ),
+                      AutoSizeText(
+                        this.event.categoryName,
+                        style: TextStyle(fontSize: 32),
+                        minFontSize: 15,
+                        maxLines: 1,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .01),
+                        child: AutoSizeText("Selected Choice",
+                            maxLines: 1,
+                            minFontSize: 20,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40,
+                            )),
+                      ),
+                      AutoSizeText(
+                        this.event.selectedChoice,
+                        style: TextStyle(fontSize: 32),
+                        maxLines: 1,
+                        minFontSize: 15,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .01),
+                      ),
+                      AutoSizeText("Event created by: ${this.eventCreator}",
+                          minFontSize: 12,
+                          maxLines: 1,
+                          style: TextStyle(fontSize: 16)),
+                      ExpansionTile(
+                        title:
+                            Text("Considered (${this.event.optedIn.length})"),
+                        children: <Widget>[
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .2,
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -143,14 +144,14 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   void getEvent() {
     Map<String, Event> events =
         GroupsManager.getGroupEvents(Globals.currentGroup);
-    event = events[widget.eventId];
+    this.event = events[widget.eventId];
 
-    userRows.clear();
-    for (String username in event.optedIn.keys) {
-      userRows.add(UserRowEvents(
-          event.optedIn[username][UsersManager.DISPLAY_NAME],
+    this.userRows.clear();
+    for (String username in this.event.optedIn.keys) {
+      this.userRows.add(UserRowEvents(
+          this.event.optedIn[username][UsersManager.DISPLAY_NAME],
           username,
-          event.optedIn[username][UsersManager.ICON]));
+          this.event.optedIn[username][UsersManager.ICON]));
     }
   }
 

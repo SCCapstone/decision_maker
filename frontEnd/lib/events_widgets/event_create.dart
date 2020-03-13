@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -150,7 +151,12 @@ class _CreateEventState extends State<CreateEvent> {
                           MediaQuery.of(context).size.height * .01),
                     ),
                     RaisedButton(
-                      child: Text(getCategoryButtonMessage()),
+                      child: AutoSizeText(
+                        getCategoryButtonMessage(),
+                        minFontSize: 10,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 15),
+                      ),
                       onPressed: () {
                         showCategoriesPopup();
                       },
@@ -182,7 +188,7 @@ class _CreateEventState extends State<CreateEvent> {
                                   }
                                 },
                                 decoration: InputDecoration(
-                                    labelText: "Consider Duration (in minutes)",
+                                    labelText: "Consider Duration (mins)",
                                     counterText: ""),
                               ),
                             ),
@@ -191,7 +197,12 @@ class _CreateEventState extends State<CreateEvent> {
                         Container(
                           width: MediaQuery.of(context).size.width * .3,
                           child: RaisedButton(
-                              child: Text(considerButtonText),
+                              child: AutoSizeText(
+                                considerButtonText,
+                                minFontSize: 10,
+                                maxLines: 1,
+                                style: TextStyle(fontSize: 15),
+                              ),
                               onPressed: () {
                                 willConsider = !willConsider;
                                 if (willConsider == false) {
@@ -221,13 +232,12 @@ class _CreateEventState extends State<CreateEvent> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Text(
+                    AutoSizeText(
                       calculateVotingStartDateTime(),
+                      maxLines: 1,
+                      minFontSize: 12,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.35),
+                      style: TextStyle(fontSize: 18),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -254,7 +264,7 @@ class _CreateEventState extends State<CreateEvent> {
                                   }
                                 },
                                 decoration: InputDecoration(
-                                    labelText: "Voting Duration (in minutes)",
+                                    labelText: "Voting Duration (mins)",
                                     counterText: ""),
                               ),
                             ),
@@ -263,7 +273,12 @@ class _CreateEventState extends State<CreateEvent> {
                         Container(
                           width: MediaQuery.of(context).size.width * .3,
                           child: RaisedButton(
-                              child: Text(voteButtonText),
+                              child: AutoSizeText(
+                                voteButtonText,
+                                minFontSize: 10,
+                                maxLines: 1,
+                                style: TextStyle(fontSize: 15),
+                              ),
                               onPressed: () {
                                 willVote = !willVote;
                                 if (willVote == false) {
@@ -293,13 +308,12 @@ class _CreateEventState extends State<CreateEvent> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Text(
+                    AutoSizeText(
                       calculateVotingEndDateTime(),
+                      minFontSize: 10,
+                      maxLines: 1,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.35),
+                      style: TextStyle(fontSize: 18),
                     ),
                   ],
                 )

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -30,8 +31,8 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   @override
   void initState() {
     getEvent();
-    for (String username in event.eventCreator.keys) {
-      eventCreator = event.eventCreator[username];
+    for (String username in this.event.eventCreator.keys) {
+      this.eventCreator = this.event.eventCreator[username];
     }
     super.initState();
   }
@@ -41,12 +42,12 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-          event.eventName,
-          style: TextStyle(
-              fontSize: DefaultTextStyle.of(context).style.fontSize * 0.6),
+        title: AutoSizeText(
+          this.event.eventName,
+          maxLines: 1,
+          minFontSize: 12,
+          style: TextStyle(fontSize: 36),
         ),
-        leading: BackButton(),
       ),
       body: RefreshIndicator(
         onRefresh: refreshList,
@@ -61,76 +62,70 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
-                      child: Text(
-                        (DateTime.now().isBefore(event.eventStartDateTime))
+                      child: AutoSizeText(
+                        (DateTime.now().isBefore(this.event.eventStartDateTime))
                             ? "Event Starts"
                             : "Event Started",
+                        minFontSize: 20,
+                        maxLines: 1,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
+                            fontWeight: FontWeight.bold, fontSize: 40),
                       ),
                     ),
-                    Text(
-                      event.eventStartDateTimeFormatted,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.7),
+                    AutoSizeText(
+                      this.event.eventStartDateTimeFormatted,
+                      minFontSize: 15,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 32),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
-                      child: Text(
+                      child: AutoSizeText(
                         "Category",
+                        minFontSize: 20,
+                        maxLines: 1,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8),
+                            fontWeight: FontWeight.bold, fontSize: 40),
                       ),
                     ),
-                    Text(
-                      event.categoryName,
-                      style: TextStyle(
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize *
-                                  0.7),
+                    AutoSizeText(
+                      this.event.categoryName,
+                      minFontSize: 12,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 32),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
-                      child: Text("Selected Choice",
+                      child: AutoSizeText("Selected Choice",
+                          minFontSize: 20,
+                          maxLines: 1,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.8,
+                            fontSize: 40,
                           )),
                     ),
-                    Text(event.selectedChoice,
-                        style: TextStyle(
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.7)),
+                    AutoSizeText(this.event.selectedChoice,
+                        minFontSize: 15,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 32)),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Text("Event created by: $eventCreator",
-                        style: TextStyle(
-                            fontSize:
-                                DefaultTextStyle.of(context).style.fontSize *
-                                    0.3)),
+                    AutoSizeText("Event created by: ${this.eventCreator}",
+                        minFontSize: 12,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 16)),
                     ExpansionTile(
-                      title: Text("Considered (${event.optedIn.length})"),
+                      title: Text("Considered (${this.event.optedIn.length})"),
                       children: <Widget>[
                         SizedBox(
                           height: MediaQuery.of(context).size.height * .2,
                           child: ListView(
                             shrinkWrap: true,
-                            children: userRows,
+                            children: this.userRows,
                           ),
                         ),
                       ],
@@ -148,14 +143,14 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   void getEvent() {
     Map<String, Event> events =
         GroupsManager.getGroupEvents(Globals.currentGroup);
-    event = events[widget.eventId];
+    this.event = events[widget.eventId];
 
-    userRows.clear();
+    this.userRows.clear();
     for (String username in event.optedIn.keys) {
-      userRows.add(UserRowEvents(
-          event.optedIn[username][UsersManager.DISPLAY_NAME],
+      this.userRows.add(UserRowEvents(
+          this.event.optedIn[username][UsersManager.DISPLAY_NAME],
           username,
-          event.optedIn[username][UsersManager.ICON]));
+          this.event.optedIn[username][UsersManager.ICON]));
     }
   }
 
@@ -167,7 +162,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     if (resultStatus.success) {
       Globals.currentGroup = resultStatus.data.first;
       getEvent();
-      if (EventsManager.getEventMode(event) != widget.mode) {
+      if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
         Navigator.of(context).pop();
       }

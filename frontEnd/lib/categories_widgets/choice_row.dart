@@ -72,7 +72,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
           return NumberPickerDialog.integer(
             minValue: 0,
             maxValue: 5,
-            title: new Text("Rate this choice:"),
+            title: Text("Rate this choice:"),
             initialIntegerValue: int.parse(widget.rateController.text),
           );
         }).then((int value) {
