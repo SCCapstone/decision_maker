@@ -84,8 +84,18 @@ class _CreateEventState extends State<CreateEvent> {
         Globals.currentGroup.defaultConsiderDuration.toString();
     considerDuration = considerDurationController.text;
     votingDuration = votingDurationController.text;
-    considerButtonText = "Skip Consider";
-    voteButtonText = "Skip Voting";
+    if (considerDuration == "0") {
+      considerButtonText = "Set Consider";
+      willConsider = false;
+    } else {
+      considerButtonText = "Skip Consider";
+    }
+    if (votingDuration == "0") {
+      voteButtonText = "Set Voting";
+      willVote = false;
+    } else {
+      voteButtonText = "Skip Voting";
+    }
     super.initState();
   }
 
