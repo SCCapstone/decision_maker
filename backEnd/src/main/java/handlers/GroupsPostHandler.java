@@ -1,7 +1,6 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -19,8 +18,7 @@ public class GroupsPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    Metrics metrics = new Metrics(context.getAwsRequestId());
-    LambdaLogger lambdaLogger = context.getLogger();
+    final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
@@ -39,25 +37,25 @@ public class GroupsPostHandler implements
 
               if (action.equals("getGroups")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .getGroups(payloadJsonMap, metrics, lambdaLogger);
+                    .getGroups(payloadJsonMap, metrics);
               } else if (action.equals("createNewGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .createNewGroup(payloadJsonMap, metrics, lambdaLogger);
+                    .createNewGroup(payloadJsonMap, metrics);
               } else if (action.equals("editGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .editGroup(payloadJsonMap, metrics, lambdaLogger);
+                    .editGroup(payloadJsonMap, metrics);
               } else if (action.equals("newEvent")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .newEvent(payloadJsonMap, metrics, lambdaLogger);
+                    .newEvent(payloadJsonMap, metrics);
               } else if (action.equals("optUserInOut")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .optInOutOfEvent(payloadJsonMap, metrics, lambdaLogger);
+                    .optInOutOfEvent(payloadJsonMap, metrics);
               } else if (action.equals("leaveGroup")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .leaveGroup(payloadJsonMap, metrics, lambdaLogger);
+                    .leaveGroup(payloadJsonMap, metrics);
               } else if (action.equals("voteForChoice")) {
                 resultStatus = DatabaseManagers.GROUPS_MANAGER
-                    .voteForChoice(payloadJsonMap, metrics, lambdaLogger);
+                    .voteForChoice(payloadJsonMap, metrics);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming groups endpoint.");
               } else {
@@ -84,7 +82,7 @@ public class GroupsPostHandler implements
       resultStatus.resultMessage = "Error: Unable to handle request.";
     }
 
-    metrics.logMetrics(lambdaLogger);
+    metrics.logMetrics();
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

@@ -1,7 +1,6 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import imports.DatabaseManagers;
 import java.io.IOException;
@@ -15,14 +14,15 @@ public class PendingEventsScanningHandler implements RequestStreamHandler {
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context)
       throws IOException {
-    Metrics metrics = new Metrics(context.getAwsRequestId());
-    LambdaLogger lambdaLogger = context.getLogger();
+    Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
     try {
       String scannerId = System.getenv(SCANNER_ID_ENV_KEY);
-      DatabaseManagers.PENDING_EVENTS_MANAGER.scanPendingEvents(scannerId, metrics, lambdaLogger);
+      DatabaseManagers.PENDING_EVENTS_MANAGER.scanPendingEvents(scannerId, metrics);
     } catch (Exception e) {
       //TODO add log message https://github.com/SCCapstone/decision_maker/issues/82
     }
+
+    metrics.logMetrics();
   }
 }

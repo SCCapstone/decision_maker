@@ -1,7 +1,6 @@
 package imports;
 
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -37,8 +36,7 @@ public class S3AccessManager {
     this.s3Client = amazonS3;
   }
 
-  public Optional<String> uploadImage(final List<Integer> fileData, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public Optional<String> uploadImage(final List<Integer> fileData, final Metrics metrics) {
     final String classMethod = "S3AccessManager.uploadImage";
     metrics.commonSetup(classMethod);
 
@@ -67,8 +65,7 @@ public class S3AccessManager {
       is.close();
     } catch (Exception e) {
       fileName = null;
-      lambdaLogger
-          .log(new ErrorDescriptor<>(fileData, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(fileData, classMethod, e));
     }
 
     metrics.commonClose(fileName != null);
