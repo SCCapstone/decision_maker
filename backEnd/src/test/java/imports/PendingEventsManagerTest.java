@@ -11,7 +11,6 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.stepfunctions.AWSStepFunctions;
 import com.amazonaws.services.stepfunctions.model.InvalidExecutionInputException;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
@@ -59,9 +58,6 @@ public class PendingEventsManagerTest {
   private AWSStepFunctions awsStepFunctions;
 
   @Mock
-  private LambdaLogger lambdaLogger;
-
-  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -88,7 +84,7 @@ public class PendingEventsManagerTest {
     doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY)
         .withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -110,7 +106,7 @@ public class PendingEventsManagerTest {
     doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid", this.YESTERDAY)
         .withString("gid;eid2", this.TOMORROW)).when(this.table).getItem(any(GetItemSpec.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -126,7 +122,7 @@ public class PendingEventsManagerTest {
     doThrow(InvalidExecutionInputException.class).when(this.awsStepFunctions)
         .startExecution(any(StartExecutionRequest.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -140,7 +136,7 @@ public class PendingEventsManagerTest {
     doReturn(new Item().withString(SCANNER_ID, "1").withString("gid;eid;bad", this.YESTERDAY)
         .withString("gid;eid2", this.YESTERDAY)).when(this.table).getItem(any(GetItemSpec.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -155,7 +151,7 @@ public class PendingEventsManagerTest {
         .withString("gid;eid", "lol this isn't a date string")).when(this.table)
         .getItem(any(GetItemSpec.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -167,7 +163,7 @@ public class PendingEventsManagerTest {
   public void scanPendingEvents_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
-    this.pendingEventsManager.scanPendingEvents("1", this.metrics, this.lambdaLogger);
+    this.pendingEventsManager.scanPendingEvents("1", this.metrics);
 
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);

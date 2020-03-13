@@ -7,24 +7,21 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.util.StringUtils;
 import com.google.common.collect.ImmutableMap;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import models.Group;
-import models.Member;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
@@ -62,8 +59,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public static final Integer MAX_DURATION = 10000;
 
-  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
-
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
   }
@@ -72,8 +67,7 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.getGroups";
     metrics.commonSetup(classMethod);
 
@@ -85,12 +79,11 @@ public class GroupsManager extends DatabaseAccessManager {
       groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics, lambdaLogger);
+      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics);
     } else {
       success = false;
       resultMessage = "Error: query key not defined.";
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
     }
 
     // this will be a json string representing an array of objects
@@ -101,8 +94,7 @@ public class GroupsManager extends DatabaseAccessManager {
           Item groupData = this.getItemByPrimaryKey(groupId);
           groups.add(groupData.asMap());
         } catch (Exception e) {
-          lambdaLogger.log(
-              new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
         }
       }
 
@@ -113,8 +105,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.createNewGroup";
     metrics.commonSetup(classMethod);
 
@@ -143,7 +134,7 @@ public class GroupsManager extends DatabaseAccessManager {
         members.add(activeUser);
 
         final Map<String, Object> membersMapped = this
-            .getMembersMapForInsertion(members, metrics, lambdaLogger);
+            .getMembersMapForInsertion(members, metrics);
 
         Item newGroup = new Item()
             .withPrimaryKey(this.getPrimaryKeyIndex(), newGroupId)
@@ -153,14 +144,14 @@ public class GroupsManager extends DatabaseAccessManager {
             .withMap(CATEGORIES, categories)
             .withInt(DEFAULT_VOTING_DURATION, defaultVotingDuration)
             .withInt(DEFAULT_RSVP_DURATION, defaultRsvpDuration)
-            .withMap(EVENTS, EMPTY_MAP)
+            .withMap(EVENTS, Collections.emptyMap())
             .withInt(NEXT_EVENT_ID, 1)
             .withString(LAST_ACTIVITY, lastActivity);
 
         String newIconFileName = null;
         if (newIcon.isPresent()) { // if it's there, assume it's new image data
-          newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
-              .uploadImage(newIcon.get(), metrics, lambdaLogger).orElseThrow(Exception::new);
+          newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER.uploadImage(newIcon.get(), metrics)
+              .orElseThrow(Exception::new);
 
           newGroup.withString(ICON, newIconFileName);
         } else {
@@ -173,27 +164,24 @@ public class GroupsManager extends DatabaseAccessManager {
         this.putItem(putItemSpec);
 
         final Group oldGroup = new Group();
-        oldGroup.setMembers(EMPTY_MAP);
-        this.updateUsersTable(oldGroup, new Group(newGroup.asMap()), metrics, lambdaLogger);
-        this.updateCategoriesTable(EMPTY_MAP, categories, newGroupId, "", groupName);
+        oldGroup.setMembers(Collections.emptyMap());
+        this.updateUsersTable(oldGroup, new Group(newGroup.asMap()), metrics);
+        this.updateCategoriesTable(Collections.emptyMap(), categories, newGroupId, "", groupName);
 
         resultStatus = new ResultStatus(true, "Group created successfully!");
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.editGroup";
     metrics.commonSetup(classMethod);
 
@@ -223,7 +211,7 @@ public class GroupsManager extends DatabaseAccessManager {
           if (this.editInputHasPermissions(dbGroupDataMap, activeUser, groupCreator)) {
             //all validation is successful, build transaction actions
             final Map<String, Object> membersMapped = this
-                .getMembersMapForInsertion(members, metrics, lambdaLogger);
+                .getMembersMapForInsertion(members, metrics);
 
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + GROUP_CREATOR
@@ -242,7 +230,7 @@ public class GroupsManager extends DatabaseAccessManager {
             String newIconFileName = null;
             if (newIcon.isPresent()) {
               newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
-                  .uploadImage(newIcon.get(), metrics, lambdaLogger).orElseThrow(Exception::new);
+                  .uploadImage(newIcon.get(), metrics).orElseThrow(Exception::new);
 
               updateExpression += ", " + ICON + " = :icon";
               valueMap.withString(":icon", newIconFileName);
@@ -264,7 +252,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 .lastActivity(oldGroup.getLastActivity())
                 .build();
             newGroup.setMembers(membersMapped);
-            this.updateUsersTable(oldGroup, newGroup, metrics, lambdaLogger);
+            this.updateUsersTable(oldGroup, newGroup, metrics);
             this.updateCategoriesTable(
                 (Map<String, Object>) dbGroupDataMap.get(CATEGORIES), categories, groupId,
                 (String) dbGroupDataMap.get(GROUP_NAME), groupName);
@@ -278,20 +266,19 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager";
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
+          "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus newEvent(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus newEvent(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.newEvent";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
@@ -336,8 +323,8 @@ public class GroupsManager extends DatabaseAccessManager {
           eventMap.put(OPTED_IN, optedIn);
           eventMap.put(EVENT_CREATOR, eventCreator);
           eventMap.put(SELECTED_CHOICE, null);
-          eventMap.put(TENTATIVE_CHOICES, EMPTY_MAP);
-          eventMap.put(VOTING_NUMBERS, EMPTY_MAP);
+          eventMap.put(TENTATIVE_CHOICES, Collections.emptyMap());
+          eventMap.put(VOTING_NUMBERS, Collections.emptyMap());
 
           String updateExpression =
               "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "
@@ -359,47 +346,40 @@ public class GroupsManager extends DatabaseAccessManager {
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           if (rsvpDuration > 0) {
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-                .addPendingEvent(groupId, eventId, rsvpDuration, metrics, lambdaLogger);
+                .addPendingEvent(groupId, eventId, rsvpDuration, metrics);
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
             Map<String, Object> processPendingEventInput = ImmutableMap.of(GROUP_ID, groupId,
                 RequestFields.EVENT_ID, eventId, PendingEventsManager.SCANNER_ID,
                 DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey());
             ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-                .processPendingEvent(processPendingEventInput, metrics, lambdaLogger);
+                .processPendingEvent(processPendingEventInput, metrics);
           }
 
           this.updateUsersTable(
               oldGroup,
               oldGroup.toBuilder().lastActivity(lastActivity).build(),
-              metrics,
-              lambdaLogger
+              metrics
           );
 
           resultStatus = new ResultStatus(true, "event added successfully!");
         } else {
-          lambdaLogger
-              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                  "Invalid request, bad input").toString());
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid request, bad input"));
           resultStatus.resultMessage = "Invalid request, bad input.";
         }
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.optInOutOfEvent";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
@@ -414,7 +394,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final Map<String, Object> userMap =
-            this.getMembersMapForInsertion(Arrays.asList(activeUser), metrics, lambdaLogger);
+            this.getMembersMapForInsertion(Arrays.asList(activeUser), metrics);
 
         String updateExpression;
         ValueMap valueMap = null;
@@ -441,22 +421,18 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
@@ -515,26 +491,19 @@ public class GroupsManager extends DatabaseAccessManager {
 
             resultStatus = new ResultStatus(true, "Group left successfully.");
           } else {
-            lambdaLogger
-                .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                    "Owner cannot leave group").toString());
+            metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Owner cannot leave group"));
             resultStatus.resultMessage = "Error: Owner cannot leave group.";
           }
         } else {
-          lambdaLogger
-              .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-                  "Group not found").toString());
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Group not found"));
           resultStatus.resultMessage = "Error: Group not found.";
         }
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found").toString());
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -542,8 +511,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.voteForChoice";
     metrics.commonSetup(classMethod);
 
@@ -584,14 +552,12 @@ public class GroupsManager extends DatabaseAccessManager {
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: unable to parse request in manager.";
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
     } else {
       resultStatus.resultMessage = "Error: required request keys not found.";
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Error: required request keys not found.").toString());
+      metrics.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, "Error: required request keys not found."));
     }
 
     metrics.commonClose(resultStatus.success);
@@ -599,7 +565,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private Map<String, Object> getMembersMapForInsertion(final List<String> members,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Metrics metrics) {
     final String classMethod = "GroupsManager.getMembersMapForInsertion";
     metrics.commonSetup(classMethod);
     boolean success = true;
@@ -620,9 +586,7 @@ public class GroupsManager extends DatabaseAccessManager {
         }});
       } catch (Exception e) {
         success = false; // this may give false alarms as users may just have put in bad usernames
-        lambdaLogger
-            .log(
-                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
@@ -695,7 +659,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private void sendAddedToGroupNotifications(final List<String> usernames, final Group addedTo,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Metrics metrics) {
     final String classMethod = "GroupsManager.sendAddedToGroupNotifications";
     metrics.commonSetup(classMethod);
 
@@ -714,17 +678,14 @@ public class GroupsManager extends DatabaseAccessManager {
         }
       } catch (Exception e) {
         success = false;
-        lambdaLogger
-            .log(
-                new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
     metrics.commonClose(success);
   }
 
-  private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
@@ -792,9 +753,7 @@ public class GroupsManager extends DatabaseAccessManager {
           DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
         } catch (Exception e) {
           success = false;
-          lambdaLogger
-              .log(
-                  new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(new ErrorDescriptor<>(member, classMethod, e));
         }
       }
     }
@@ -812,23 +771,17 @@ public class GroupsManager extends DatabaseAccessManager {
           DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
         } catch (Exception e) {
           success = false;
-          lambdaLogger
-              .log(new ErrorDescriptor<>(member, classMethod, metrics.getRequestId(), e)
-                  .toString());
+          metrics.log(new ErrorDescriptor<>(member, classMethod, e));
         }
       }
     }
 
     try {
       //blind send...
-      this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics,
-          lambdaLogger);
+      this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics);
     } catch (final Exception e) {
       success = false;
-      lambdaLogger
-          .log(
-              new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod,
-                  metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod, e));
     }
 
     metrics.commonClose(success);
@@ -890,8 +843,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus setEventTentativeChoices(final String groupId, final String eventId,
-      final Map<String, Object> tentativeChoices, final Group oldGroup,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Map<String, Object> tentativeChoices, final Group oldGroup, final Metrics metrics) {
     final String classMethod = "GroupsManager.setEventTentativeChoices";
     metrics.commonSetup(classMethod);
 
@@ -927,14 +879,12 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
-          metrics,
-          lambdaLogger
+          metrics
       );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting tentative algorithm choices";
-      lambdaLogger.log(
-          new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
-              classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
+          classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);
@@ -954,8 +904,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus setEventSelectedChoice(final String groupId, final String eventId,
-      final String result, final Group oldGroup,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final String result, final Group oldGroup, final Metrics metrics) {
     final String classMethod = "GroupsManager.setEventSelectedChoice";
     metrics.commonSetup(classMethod);
 
@@ -986,22 +935,19 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
-          metrics,
-          lambdaLogger
+          metrics
       );
     } catch (Exception e) {
       resultStatus.resultMessage = "Error setting selected choice";
-      lambdaLogger.log(
-          new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
-              classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(String.format("GroupId: %s, EventId: %s", groupId, eventId),
+          classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  public List<String> getAllCategoryIds(String groupId, Metrics metrics,
-      LambdaLogger lambdaLogger) {
+  public List<String> getAllCategoryIds(final String groupId, final Metrics metrics) {
     final String classMethod = "GroupsManager.getAllCategoryIds";
     metrics.commonSetup(classMethod);
 
@@ -1014,8 +960,7 @@ public class GroupsManager extends DatabaseAccessManager {
       categoryIds = new ArrayList<>(categoryMap.keySet());
       success = true;
     } catch (Exception e) {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
     }
 
     metrics.commonClose(success);
@@ -1024,9 +969,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public ResultStatus removeCategoryFromGroups(List<String> groupIds, String categoryId,
-      Metrics metrics,
-      LambdaLogger lambdaLogger) {
+  public ResultStatus removeCategoryFromGroups(final List<String> groupIds, final String categoryId,
+      final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
     metrics.commonSetup(classMethod);
     ResultStatus resultStatus = new ResultStatus();
@@ -1044,8 +988,7 @@ public class GroupsManager extends DatabaseAccessManager {
       }
       resultStatus.success = true;
     } catch (Exception e) {
-      lambdaLogger.log(
-          new ErrorDescriptor<>(categoryId, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
       resultStatus.resultMessage = "Error: Unable to parse request.";
     }
     metrics.commonClose(resultStatus.success);

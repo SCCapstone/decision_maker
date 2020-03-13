@@ -16,7 +16,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
@@ -120,9 +119,6 @@ public class UsersManagerTest {
   private S3AccessManager s3AccessManager;
 
   @Mock
-  private LambdaLogger lambdaLogger;
-
-  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -147,7 +143,7 @@ public class UsersManagerTest {
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllOwnedCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("TestUserName", this.metrics);
 
     assertEquals(categoryIds.size(), 2);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -161,7 +157,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllOwnedCategoryIds("BadTestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("BadTestUserName", this.metrics);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -174,7 +170,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     List<String> categoryIds = this.usersManager
-        .getAllOwnedCategoryIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllOwnedCategoryIds("TestUserName", this.metrics);
 
     assertEquals(categoryIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -194,7 +190,7 @@ public class UsersManagerTest {
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> groupIds = this.usersManager
-        .getAllGroupIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllGroupIds("TestUserName", this.metrics);
 
     assertEquals(groupIds.size(), 2);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -208,7 +204,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> groupIds = this.usersManager
-        .getAllGroupIds("BadTestUserName", this.metrics, this.lambdaLogger);
+        .getAllGroupIds("BadTestUserName", this.metrics);
 
     assertEquals(groupIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -221,7 +217,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     List<String> groupIds = this.usersManager
-        .getAllGroupIds("TestUserName", this.metrics, this.lambdaLogger);
+        .getAllGroupIds("TestUserName", this.metrics);
 
     assertEquals(groupIds.size(), 0);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -239,8 +235,7 @@ public class UsersManagerTest {
     doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics,
-            this.lambdaLogger);
+        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -255,8 +250,7 @@ public class UsersManagerTest {
     doReturn(new Item()).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserData(ImmutableMap.of(UsersManager.USERNAME, "userName"), this.metrics,
-            this.lambdaLogger);
+        .getUserData(ImmutableMap.of(UsersManager.USERNAME, "userName"), this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -271,8 +265,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics,
-            this.lambdaLogger);
+        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -286,8 +279,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics,
-            this.lambdaLogger);
+        .getUserData(ImmutableMap.of(RequestFields.ACTIVE_USER, "userName"), this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -299,7 +291,7 @@ public class UsersManagerTest {
   @Test
   public void getUserData_missingRequestKeys_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .getUserData(ImmutableMap.of(), this.metrics, this.lambdaLogger);
+        .getUserData(ImmutableMap.of(), this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -316,8 +308,7 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics,
-            this.lambdaLogger);
+        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -328,17 +319,17 @@ public class UsersManagerTest {
   @Test
   public void updateUserChoiceRatings_missingKey_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics);
     assertFalse(resultStatus.success);
 
     this.badInput.put(RequestFields.ACTIVE_USER, "activeUser");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics);
     assertFalse(resultStatus.success);
 
     this.badInput.put(CategoriesManager.CATEGORY_ID, "categoryId");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics, this.lambdaLogger);
+        .updateUserChoiceRatings(this.badInput, false, this.metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
@@ -354,7 +345,7 @@ public class UsersManagerTest {
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
             RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
-            false, this.metrics, this.lambdaLogger);
+            false, this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -371,7 +362,7 @@ public class UsersManagerTest {
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(3)).getTable(any(String.class));
@@ -385,16 +376,14 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
     doReturn(Optional.of("newIconFileName")).when(this.s3AccessManager)
-        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
+        .uploadImage(any(List.class), any(Metrics.class));
     userItem.withString(UsersManager.DISPLAY_NAME, "new display name");
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
-            this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.lambdaLogger, times(0)).log(any(String.class));
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -406,15 +395,13 @@ public class UsersManagerTest {
   public void updateUserSettings_validInputS3UploadFails_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(Optional.empty()).when(this.s3AccessManager)
-        .uploadImage(any(List.class), any(Metrics.class), any(LambdaLogger.class));
+        .uploadImage(any(List.class), any(Metrics.class));
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics,
-            this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInputWithIcon, this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.lambdaLogger, times(1)).log(any(String.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -438,10 +425,9 @@ public class UsersManagerTest {
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.lambdaLogger, times(0)).log(any(String.class));
     verify(this.dynamoDB, times(5)).getTable(any(String.class));
     verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(2)).getItem(any(GetItemSpec.class));
@@ -456,10 +442,9 @@ public class UsersManagerTest {
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.lambdaLogger, times(0)).log(any(String.class));
     verify(this.dynamoDB, times(6)).getTable(any(String.class));
     verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(3)).getItem(any(GetItemSpec.class));
@@ -479,10 +464,9 @@ public class UsersManagerTest {
         .updateItem(any(UpdateItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.lambdaLogger, times(3)).log(any(String.class));
     verify(this.dynamoDB, times(4)).getTable(any(String.class));
     verify(this.groupsManager, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -504,10 +488,9 @@ public class UsersManagerTest {
     doReturn(userItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.lambdaLogger, times(3)).log(any(String.class));
     verify(this.dynamoDB, times(5)).getTable(any(String.class));
     verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -518,10 +501,9 @@ public class UsersManagerTest {
   @Test
   public void updateUserSettings_invalidInputMissingKeys_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.badInput, this.metrics, this.lambdaLogger);
+        .updateUserSettings(this.badInput, this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.lambdaLogger, times(1)).log(any(String.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.groupsManager, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(0)).getItem(any(GetItemSpec.class));
@@ -540,7 +522,7 @@ public class UsersManagerTest {
         .when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -554,7 +536,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -569,7 +551,7 @@ public class UsersManagerTest {
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus resultStatus = this.usersManager
-//        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+//        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
 //
 //    assertFalse(resultStatus.success);
 //    verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -582,7 +564,7 @@ public class UsersManagerTest {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.getUserRatingsGoodInput, this.metrics, this.lambdaLogger);
+        .getUserRatings(this.getUserRatingsGoodInput, this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -592,12 +574,11 @@ public class UsersManagerTest {
 
   @Test
   public void getUserRatings_missingKey_failureResult() {
-    ResultStatus resultStatus = this.usersManager
-        .getUserRatings(this.badInput, metrics, lambdaLogger);
+    ResultStatus resultStatus = this.usersManager.getUserRatings(this.badInput, this.metrics);
     assertFalse(resultStatus.success);
 
     this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-    resultStatus = this.usersManager.getUserRatings(this.badInput, metrics, lambdaLogger);
+    resultStatus = this.usersManager.getUserRatings(this.badInput, this.metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
