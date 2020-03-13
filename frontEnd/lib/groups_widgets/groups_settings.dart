@@ -198,9 +198,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
-                                      maxLength: 6,
+                                      maxLength: 4,
                                       keyboardType: TextInputType.number,
-                                      validator: validConsiderDuration,
+                                      validator: (value) {
+                                        return validConsiderDuration(value, false);
+                                      },
                                       controller: considerDurationController,
                                       onChanged: (String arg) {
                                         try {
@@ -238,16 +240,20 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
-                                      maxLength: 6,
+                                      maxLength: 4,
                                       keyboardType: TextInputType.number,
-                                      validator: validVotingDuration,
+                                      validator: (value) {
+                                        return validVotingDuration(value, false);
+                                      },
                                       controller: votingDurationController,
                                       onChanged: (String arg) {
-                                        try {
+                                        if (int.tryParse(arg) != null) {
                                           votingDuration = int.parse(arg);
                                           enableAutoValidation();
-                                        } catch (e) {
+                                        } else if (arg.isNotEmpty) {
                                           autoValidate = true;
+                                        } else {
+                                          enableAutoValidation();
                                         }
                                       },
                                       onSaved: (String arg) {
