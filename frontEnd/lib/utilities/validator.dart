@@ -39,9 +39,9 @@ String validVotingDuration(String input, bool verbose) {
       }
     } else {
       if (input.isEmpty) {
-        retVal = "Empty";
+        retVal = "Empty.";
       } else {
-        retVal = "Error";
+        retVal = "Error.";
       }
     }
   }
