@@ -247,13 +247,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       },
                                       controller: votingDurationController,
                                       onChanged: (String arg) {
-                                        if (int.tryParse(arg) != null) {
+                                        try {
                                           votingDuration = int.parse(arg);
                                           enableAutoValidation();
-                                        } else if (arg.isNotEmpty) {
+                                        } catch (e) {
                                           autoValidate = true;
-                                        } else {
-                                          enableAutoValidation();
                                         }
                                       },
                                       onSaved: (String arg) {
