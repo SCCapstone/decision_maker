@@ -7,7 +7,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
-import 'package:frontEnd/widgets/favorites_popup.dart';
+import 'package:frontEnd/widgets/favorites_page.dart';
 
 class UserSettings extends StatefulWidget {
   UserSettings({Key key}) : super(key: key);
@@ -19,7 +19,6 @@ class UserSettings extends StatefulWidget {
 class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController displayNameController = TextEditingController();
-  final TextEditingController userIconController = TextEditingController();
 
   bool autoValidate = false;
   bool editing = false;
@@ -28,26 +27,23 @@ class _UserSettingsState extends State<UserSettings> {
   bool newIcon = false;
   File _icon;
   String _displayName;
-  int _groupSort = 0;
   List<Favorite> displayedFavorites = new List<Favorite>();
   List<Favorite> originalFavorites = new List<Favorite>();
 
   @override
   void dispose() {
-    displayNameController.dispose();
-    userIconController.dispose();
+    this.displayNameController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    _displayName = Globals.user.displayName;
-    _darkTheme = Globals.user.appSettings.darkTheme;
-    _groupSort = Globals.user.appSettings.groupSort;
-    _muted = Globals.user.appSettings.muted;
-    originalFavorites = Globals.user.favorites;
-    displayedFavorites.addAll(originalFavorites);
-    displayNameController.text = _displayName;
+    this._displayName = Globals.user.displayName;
+    this._darkTheme = Globals.user.appSettings.darkTheme;
+    this._muted = Globals.user.appSettings.muted;
+    this.originalFavorites = Globals.user.favorites;
+    this.displayedFavorites.addAll(this.originalFavorites);
+    this.displayNameController.text = this._displayName;
     super.initState();
   }
 
@@ -64,7 +60,7 @@ class _UserSettingsState extends State<UserSettings> {
             title: Text("My Settings"),
             actions: <Widget>[
               Visibility(
-                visible: editing,
+                visible: this.editing,
                 child: RaisedButton.icon(
                     color: Colors.blue,
                     onPressed: validateInput,
@@ -75,8 +71,8 @@ class _UserSettingsState extends State<UserSettings> {
           ),
           body: Column(children: <Widget>[
             Form(
-              key: formKey,
-              autovalidate: autoValidate,
+              key: this.formKey,
+              autovalidate: this.autoValidate,
               child: Expanded(
                 child: ListView(
                   shrinkWrap: true,
@@ -85,13 +81,13 @@ class _UserSettingsState extends State<UserSettings> {
                     Column(
                       children: [
                         Container(
-                            width: MediaQuery.of(context).size.width * .6,
+                            width: MediaQuery.of(context).size.width * .75,
                             child: TextFormField(
                               maxLength: 50,
-                              controller: displayNameController,
+                              controller: this.displayNameController,
                               validator: validName,
                               onChanged: (String arg) {
-                                _displayName = arg.trim();
+                                this._displayName = arg.trim();
                                 enableAutoValidation();
                               },
                               onSaved: (String arg) {},
@@ -101,32 +97,42 @@ class _UserSettingsState extends State<UserSettings> {
                                           .fontSize *
                                       0.6),
                               decoration: InputDecoration(
-                                  labelText: "Name", counterText: ""),
+                                  labelText: "Nickname (@${Globals.username})",
+                                  counterText: ""),
                             )),
                         Padding(
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .01),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .6,
-                          height: MediaQuery.of(context).size.height * .3,
-                          alignment: Alignment.topRight,
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: _icon == null
-                                      ? getUserIconUrl(Globals.user)
-                                      : FileImage(_icon))),
+                        GestureDetector(
+                          onTap: () {
+                            showUserImage(
+                                this._icon == null
+                                    ? getUserIconUrl(Globals.user)
+                                    : FileImage(this._icon),
+                                context);
+                          },
                           child: Container(
+                            width: MediaQuery.of(context).size.width * .75,
+                            height: MediaQuery.of(context).size.height * .4,
+                            alignment: Alignment.topRight,
                             decoration: BoxDecoration(
-                                color: Colors.grey.withOpacity(0.7),
-                                shape: BoxShape.circle),
-                            child: IconButton(
-                              icon: Icon(Icons.edit),
-                              color: Colors.blueAccent,
-                              onPressed: () {
-                                getImage();
-                              },
+                                image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: this._icon == null
+                                        ? getUserIconUrl(Globals.user)
+                                        : FileImage(this._icon))),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  shape: BoxShape.circle),
+                              child: IconButton(
+                                icon: Icon(Icons.edit),
+                                color: Colors.blueAccent,
+                                onPressed: () {
+                                  getImage();
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -136,12 +142,18 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         RaisedButton.icon(
                             onPressed: () {
-                              showFavoritesPopup();
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => FavoritesPage(
+                                          this.displayedFavorites))).then((_) {
+                                saveFavorites();
+                              });
                             },
                             icon: Icon(Icons.contacts),
                             label: Text("My Favorites")),
                         Container(
-                          width: MediaQuery.of(context).size.width * .7,
+                          width: MediaQuery.of(context).size.width * .75,
                           child: Column(
                             children: <Widget>[
                               Row(
@@ -159,10 +171,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: _muted,
+                                    value: this._muted,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _muted = value;
+                                        this._muted = value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -184,10 +196,10 @@ class _UserSettingsState extends State<UserSettings> {
                                     ),
                                   ),
                                   Switch(
-                                    value: !_darkTheme,
+                                    value: !this._darkTheme,
                                     onChanged: (bool value) {
                                       setState(() {
-                                        _darkTheme = !value;
+                                        this._darkTheme = !value;
                                         enableAutoValidation();
                                       });
                                     },
@@ -197,52 +209,6 @@ class _UserSettingsState extends State<UserSettings> {
                             ],
                           ),
                         ),
-                        Container(
-                          // have to do this hack because the expansiontile title wouldn't line up
-                          width: MediaQuery.of(context).size.width * .78,
-                          child: ExpansionTile(
-                            title: Text(
-                              "Group Sort Method",
-                              style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
-                                      0.4),
-                              textAlign: TextAlign.left,
-                            ),
-                            children: <Widget>[
-                              SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * .12,
-                                child: ListView(
-                                  shrinkWrap: true,
-                                  children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        Radio(
-                                          value: Globals.alphabeticalSort,
-                                          groupValue: _groupSort,
-                                          onChanged: selectGroupSort,
-                                        ),
-                                        Text("Alphabetical")
-                                      ],
-                                    ),
-                                    Row(
-                                      children: <Widget>[
-                                        Radio(
-                                          value: Globals.dateNewestSort,
-                                          groupValue: _groupSort,
-                                          onChanged: selectGroupSort,
-                                        ),
-                                        Text("Date")
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
                       ],
                     ),
                   ],
@@ -261,82 +227,79 @@ class _UserSettingsState extends State<UserSettings> {
         maxHeight: 600);
 
     if (newIconFile != null) {
-      _icon = newIconFile;
-      newIcon = true;
+      this._icon = newIconFile;
+      this.newIcon = true;
       enableAutoValidation();
     }
   }
 
-  void showFavoritesPopup() {
-    showDialog(
-        context: context,
-        child: FavoritesPopup(displayedFavorites, originalFavorites,
-            handlePopupClosed: () => popupClosed())).then((val) {
-      popupClosed();
-    });
-  }
-
-  void popupClosed() {
-    enableAutoValidation();
-    hideKeyboard(context);
-  }
-
-  void selectGroupSort(int val) {
-    _groupSort = val;
-    enableAutoValidation();
+  void saveFavorites() async {
+    List<String> userNames = new List<String>();
+    for (Favorite favorite in this.displayedFavorites) {
+      userNames.add(favorite.username);
+    }
+    ResultStatus resultStatus = await UsersManager.updateUserSettings(
+        Globals.user.displayName,
+        boolToInt(Globals.user.appSettings.darkTheme),
+        boolToInt(Globals.user.appSettings.muted),
+        Globals.user.appSettings.groupSort,
+        userNames,
+        null);
+    if (resultStatus.success) {
+      this.originalFavorites.clear();
+      this.originalFavorites.addAll(this.displayedFavorites);
+    } else {
+      // if it failed then revert back to old favorites
+      this.displayedFavorites.clear();
+      this.displayedFavorites.addAll(this.originalFavorites);
+      showErrorMessage("Error", "Error saving favorites.", context);
+    }
   }
 
   void enableAutoValidation() {
     // the moment the user makes changes to their previously saved settings, display the save button
-    Set newContactsSet = displayedFavorites.toSet();
-    Set oldContactsSet = originalFavorites.toSet();
-    // check if the user added or removed any users from their favorites list
-    bool newUsers = !(oldContactsSet.containsAll(newContactsSet) &&
-        oldContactsSet.length == newContactsSet.length);
-    if (Globals.user.appSettings.darkTheme != _darkTheme ||
-        Globals.user.appSettings.muted != _muted ||
-        Globals.user.displayName != _displayName ||
-        Globals.user.appSettings.groupSort != _groupSort ||
-        newUsers ||
-        newIcon) {
+    if (Globals.user.appSettings.darkTheme != this._darkTheme ||
+        Globals.user.appSettings.muted != this._muted ||
+        Globals.user.displayName != this._displayName ||
+        this.newIcon) {
       setState(() {
-        editing = true;
+        this.editing = true;
       });
     } else {
       setState(() {
-        editing = false;
+        this.editing = false;
       });
     }
   }
 
   void validateInput() async {
-    final form = formKey.currentState;
+    final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
       List<String> userNames = new List<String>();
-      for (Favorite favorite in displayedFavorites) {
+      for (Favorite favorite in this.displayedFavorites) {
         userNames.add(favorite.username);
       }
 
       showLoadingDialog(context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
-          _displayName,
-          boolToInt(_darkTheme),
-          boolToInt(_muted),
-          _groupSort,
+          this._displayName,
+          boolToInt(this._darkTheme),
+          boolToInt(this._muted),
+          Globals.user.appSettings.groupSort,
           userNames,
-          _icon);
+          this._icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         setState(() {
           hideKeyboard(context);
           // reset everything and reflect changes made
-          originalFavorites.clear();
-          originalFavorites.addAll(displayedFavorites);
-          editing = false;
-          newIcon = false;
-          autoValidate = false;
+          this.originalFavorites.clear();
+          this.originalFavorites.addAll(this.displayedFavorites);
+          this.editing = false;
+          this.newIcon = false;
+          this.autoValidate = false;
           changeTheme(context);
         });
       } else {
@@ -344,7 +307,7 @@ class _UserSettingsState extends State<UserSettings> {
         showErrorMessage("Error", resultStatus.errorMessage, context);
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 }

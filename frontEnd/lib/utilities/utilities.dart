@@ -92,7 +92,8 @@ String convertTimeToString(TimeOfDay time) {
 
 String convertTimeToStringFormatted(TimeOfDay time) {
   String retVal = "";
-  if (time.hourOfPeriod == 0) { // midnight and noon are given a value of zero
+  if (time.hourOfPeriod == 0) {
+    // midnight and noon are given a value of zero
     retVal += "12:";
   } else {
     retVal += time.hourOfPeriod.toString() + ":";
@@ -189,6 +190,24 @@ void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
               ],
             ),
           ),
+        );
+      });
+}
+
+void showUserImage(ImageProvider image, BuildContext buildContext) {
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          content: Image(image: image),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Return"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
         );
       });
 }

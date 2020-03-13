@@ -22,13 +22,17 @@ class UserRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Container(
-            // TODO allow user to click on image to get blown up pic
-            height: MediaQuery.of(context).size.height * .2,
-            width: MediaQuery.of(context).size.width * .15,
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: getIconUrl(icon), fit: BoxFit.cover)),
+          GestureDetector(
+            onTap: (){
+              showUserImage(getIconUrl(icon), context);
+            },
+            child: Container(
+              height: MediaQuery.of(context).size.height * .2,
+              width: MediaQuery.of(context).size.width * .15,
+              decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: getIconUrl(icon), fit: BoxFit.cover)),
+            ),
           ),
           Padding(
               padding:
