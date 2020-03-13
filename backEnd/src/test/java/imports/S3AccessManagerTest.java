@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.collect.ImmutableList;
@@ -37,9 +36,6 @@ public class S3AccessManagerTest {
   @Mock
   private Metrics metrics;
 
-  @Mock
-  private LambdaLogger lambdaLogger;
-
   @BeforeEach
   private void init() {
     this.s3AccessManager = new S3AccessManager(this.s3Client);
@@ -52,11 +48,10 @@ public class S3AccessManagerTest {
   @Test
   public void uploadImage_validInput_successfulResult() {
     Optional<String> result = this.s3AccessManager
-        .uploadImage(this.imageUploadGoodInput, this.metrics, this.lambdaLogger);
+        .uploadImage(this.imageUploadGoodInput, this.metrics);
 
     assertTrue(result.isPresent());
     verify(this.s3Client, times(1)).putObject(any(PutObjectRequest.class));
-    verify(this.lambdaLogger, times(0)).log(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -66,11 +61,10 @@ public class S3AccessManagerTest {
         .putObject(any(PutObjectRequest.class));
 
     Optional<String> result = this.s3AccessManager
-        .uploadImage(this.imageUploadGoodInput, this.metrics, this.lambdaLogger);
+        .uploadImage(this.imageUploadGoodInput, this.metrics);
 
     assertFalse(result.isPresent());
     verify(this.s3Client, times(1)).putObject(any(PutObjectRequest.class));
-    verify(this.lambdaLogger, times(1)).log(any(String.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
 

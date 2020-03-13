@@ -8,13 +8,12 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
-import com.amazonaws.services.sns.model.DeleteEndpointResult;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,8 +50,6 @@ public class UsersManager extends DatabaseAccessManager {
   public static final int DEFAULT_MUTED = 0;
   public static final int DEFAULT_GROUP_SORT = 0;
 
-  public static final Map<String, Object> EMPTY_MAP = new HashMap<>();
-
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
   }
@@ -61,8 +58,7 @@ public class UsersManager extends DatabaseAccessManager {
     super("users", "Username", Regions.US_EAST_2, dynamoDB);
   }
 
-  public List<String> getAllOwnedCategoryIds(final String username, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public List<String> getAllOwnedCategoryIds(final String username, final Metrics metrics) {
     final String classMethod = "UsersManager.getAllOwnedCategoryIds";
     metrics.commonSetup(classMethod);
 
@@ -79,20 +75,17 @@ public class UsersManager extends DatabaseAccessManager {
         categoryIds = new ArrayList<>(categoryMap.keySet());
         success = true;
       } else {
-        lambdaLogger.log(new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(),
-            "user lookup returned null").toString());
+        metrics.log(new ErrorDescriptor<>(username, classMethod, "user lookup returned null"));
       }
     } catch (Exception e) {
-      lambdaLogger.log(
-          new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(username, classMethod, e));
     }
 
     metrics.commonClose(success);
     return categoryIds;
   }
 
-  public List<String> getAllGroupIds(final String username, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public List<String> getAllGroupIds(final String username, final Metrics metrics) {
     final String classMethod = "UsersManager.getAllGroupIds";
     metrics.commonSetup(classMethod);
 
@@ -109,12 +102,10 @@ public class UsersManager extends DatabaseAccessManager {
         groupIds = new ArrayList<>(groupMap.keySet());
         success = true;
       } else {
-        lambdaLogger.log(new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(),
-            "user lookup returned null").toString());
+        metrics.log(new ErrorDescriptor<>(username, classMethod, "user lookup returned null"));
       }
     } catch (Exception e) {
-      lambdaLogger.log(
-          new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+      metrics.log(new ErrorDescriptor<>(username, classMethod, e));
     }
 
     metrics.commonClose(success);
@@ -122,12 +113,12 @@ public class UsersManager extends DatabaseAccessManager {
     return groupIds;
   }
 
-  public ResultStatus getUserData(final Map<String, Object> jsonMap, Metrics metrics,
-      LambdaLogger lambdaLogger) {
+  public ResultStatus getUserData(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.getUserData";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
+
     if (jsonMap.containsKey(UsersManager.USERNAME)) {
       final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
       Item user = this.getItemByPrimaryKey(otherUser);
@@ -143,12 +134,12 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withNull(ICON)
               .withMap(APP_SETTINGS, this.getDefaultAppSettings())
-              .withMap(CATEGORIES, EMPTY_MAP)
-              .withMap(OWNED_CATEGORIES, EMPTY_MAP)
-              .withMap(GROUPS, EMPTY_MAP)
-              .withMap(GROUPS_LEFT, EMPTY_MAP)
-              .withMap(FAVORITES, EMPTY_MAP)
-              .withMap(FAVORITE_OF, EMPTY_MAP);
+              .withMap(CATEGORIES, Collections.emptyMap())
+              .withMap(OWNED_CATEGORIES, Collections.emptyMap())
+              .withMap(GROUPS, Collections.emptyMap())
+              .withMap(GROUPS_LEFT, Collections.emptyMap())
+              .withMap(FAVORITES, Collections.emptyMap())
+              .withMap(FAVORITE_OF, Collections.emptyMap());
 
           PutItemSpec putItemSpec = new PutItemSpec()
               .withItem(user);
@@ -158,13 +149,11 @@ public class UsersManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: ";
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -172,8 +161,8 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserChoiceRatings(Map<String, Object> jsonMap,
-      final Boolean isNewCategory, final Metrics metrics, final LambdaLogger lambdaLogger) {
+  public ResultStatus updateUserChoiceRatings(final Map<String, Object> jsonMap,
+      final Boolean isOwner, final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -193,7 +182,7 @@ public class UsersManager extends DatabaseAccessManager {
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
-        if (isNewCategory && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+        if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
           final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
           updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
           valueMap.withString(":categoryName", categoryName);
@@ -209,13 +198,12 @@ public class UsersManager extends DatabaseAccessManager {
 
         resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Error: Required request keys not found.").toString());
+      metrics.log(
+          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -223,8 +211,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserSettings(Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus updateUserSettings(Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserAppSettings";
     metrics.commonSetup(classMethod);
 
@@ -292,8 +279,8 @@ public class UsersManager extends DatabaseAccessManager {
           List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
 
           //try to create the file in s3, if no filename returned, throw exception
-          String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
-              .uploadImage(newIcon, metrics, lambdaLogger).orElseThrow(Exception::new);
+          String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER.uploadImage(newIcon, metrics)
+              .orElseThrow(Exception::new);
 
           updateUserExpression += ", " + ICON + " = :icon";
           userValueMap.withString(":icon", newIconFileName);
@@ -331,9 +318,7 @@ public class UsersManager extends DatabaseAccessManager {
 
               DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
             } catch (Exception e) {
-              lambdaLogger.log(
-                  new ErrorDescriptor<>(groupId, classMethod, metrics.getRequestId(), e)
-                      .toString());
+              metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
             }
           }
         }
@@ -352,29 +337,23 @@ public class UsersManager extends DatabaseAccessManager {
 
               this.updateItem(updateFavoritesOfItemSpec);
             } catch (Exception e) {
-              lambdaLogger.log(
-                  new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e)
-                      .toString());
+              metrics.log(new ErrorDescriptor<>(username, classMethod, e));
             }
           }
         }
 
-        this.updateActiveUsersFavorites(newFavorites, oldFavorites, activeUser, metrics,
-            lambdaLogger);
+        this.updateActiveUsersFavorites(newFavorites, oldFavorites, activeUser, metrics);
 
         Item updatedUser = this.getItemByPrimaryKey(activeUser);
 
         resultStatus = new ResultStatus(true,
             JsonEncoders.convertObjectToJson(updatedUser.asMap()));
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found.").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -383,8 +362,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
-      final Set<String> oldFavorites, final String activeUser, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+      final Set<String> oldFavorites, final String activeUser, final Metrics metrics) {
     final String classMethod = "UsersManager.updateActiveUsersFavorites";
     metrics.commonSetup(classMethod);
 
@@ -420,8 +398,8 @@ public class UsersManager extends DatabaseAccessManager {
           this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {
           hadError = true;
-          lambdaLogger.log(
-              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(
+              new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
@@ -470,8 +448,7 @@ public class UsersManager extends DatabaseAccessManager {
           this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {
           hadError = true;
-          lambdaLogger.log(
-              new ErrorDescriptor<>(username, classMethod, metrics.getRequestId(), e).toString());
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
@@ -488,8 +465,7 @@ public class UsersManager extends DatabaseAccessManager {
     }
   }
 
-  public ResultStatus getUserRatings(Map<String, Object> jsonMap, final Metrics metrics,
-      final LambdaLogger lambdaLogger) {
+  public ResultStatus getUserRatings(Map<String, Object> jsonMap, final Metrics metrics) {
     ResultStatus resultStatus = new ResultStatus();
     final String classMethod = "UsersManager.getUserRatings";
     metrics.commonSetup(classMethod);
@@ -519,13 +495,11 @@ public class UsersManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true, "{}");
         }
       } catch (Exception e) {
-        lambdaLogger
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
       }
     } else {
-      lambdaLogger.log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-          "Required request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -542,7 +516,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public ResultStatus createPlatformEndpointAndStoreArn(final Map<String, Object> jsonMap,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Metrics metrics) {
     final String classMethod = "UsersManager.createPlatformEndpointAndStoreArn";
     metrics.commonSetup(classMethod);
 
@@ -561,7 +535,7 @@ public class UsersManager extends DatabaseAccessManager {
                 .withToken(deviceToken)
                 .withCustomUserData(activeUser);
         final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
-            .registerPlatformEndpoint(createPlatformEndpointRequest, metrics, lambdaLogger);
+            .registerPlatformEndpoint(createPlatformEndpointRequest, metrics);
 
         final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
 
@@ -575,14 +549,12 @@ public class UsersManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "user post arn set successfully");
       } catch (Exception e) {
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(
+            new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Exception inside of manager.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found.").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -591,7 +563,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public ResultStatus unregisterPushEndpoint(final Map<String, Object> jsonMap,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Metrics metrics) {
     final String classMethod = "UsersManager.unregisterPushEndpoint";
     metrics.commonSetup(classMethod);
 
@@ -624,14 +596,11 @@ public class UsersManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true, "endpoint unregistered");
         }
       } catch (Exception e) {
-        lambdaLogger.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(), e).toString());
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Exception inside of manager.";
       }
     } else {
-      lambdaLogger
-          .log(new ErrorDescriptor<>(jsonMap, classMethod, metrics.getRequestId(),
-              "Required request keys not found.").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -640,7 +609,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public ResultStatus removeOwnedCategory(final String username, final String categoryId,
-      final Metrics metrics, final LambdaLogger lambdaLogger) {
+      final Metrics metrics) {
     final String className = "UsersManager.removeOwnedCategory";
     metrics.commonSetup(className);
 
@@ -658,10 +627,9 @@ public class UsersManager extends DatabaseAccessManager {
       this.updateItem(updateItemSpec);
       resultStatus = new ResultStatus(true, "Owned category removed successfully");
     } catch (Exception e) {
-      lambdaLogger.log(
+      metrics.log(
           new ErrorDescriptor<>(String.format("Username: %s, categoryId: %s", username, categoryId),
-              className, metrics.getRequestId(), e)
-              .toString());
+              className, e));
       resultStatus.resultMessage = "Exception in manager";
     }
 

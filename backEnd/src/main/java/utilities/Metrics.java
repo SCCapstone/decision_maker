@@ -18,13 +18,15 @@ public class Metrics {
   private final LinkedList<String> functionNames;
 
   private final String requestId;
+  private final LambdaLogger lambdaLogger;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
 
-  public Metrics(String requestId) {
+  public Metrics(final String requestId, final LambdaLogger lambdaLogger) {
     this.functionNames = new LinkedList<>();
 
     this.requestId = requestId;
+    this.lambdaLogger = lambdaLogger;
     this.countMetrics = new HashMap<>();
     this.timeMetrics = new HashMap<>();
   }
@@ -123,10 +125,18 @@ public class Metrics {
     }
   }
 
-  public void logMetrics(LambdaLogger logger) {
+  public void log(final String message) {
+    this.lambdaLogger.log(message);
+  }
+
+  public void log(final ErrorDescriptor error) {
+    this.lambdaLogger.log(error.withRequestId(this.requestId).toString());
+  }
+
+  public void logMetrics() {
     for (String funcName : this.countMetrics.keySet()) {
       for (String metricName : this.countMetrics.get(funcName).keySet()) {
-        logger.log(String
+        this.lambdaLogger.log(String
             .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
                 this.countMetrics.get(funcName).get(metricName)));
       }
@@ -134,7 +144,7 @@ public class Metrics {
 
     for (String funcName : this.timeMetrics.keySet()) {
       for (String metricName : this.timeMetrics.get(funcName).keySet()) {
-        logger.log(String
+        this.lambdaLogger.log(String
             .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
                 this.timeMetrics.get(funcName).get(metricName)));
       }

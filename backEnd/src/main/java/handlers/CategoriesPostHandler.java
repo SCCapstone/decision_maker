@@ -1,7 +1,6 @@
 package handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -19,8 +18,7 @@ public class CategoriesPostHandler implements
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
     ResultStatus resultStatus = new ResultStatus();
-    Metrics metrics = new Metrics(context.getAwsRequestId());
-    LambdaLogger lambdaLogger = context.getLogger();
+    Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
     try {
       Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
@@ -39,16 +37,16 @@ public class CategoriesPostHandler implements
 
               if (action.equals("newCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER.addNewCategory(payloadJsonMap,
-                    metrics, lambdaLogger);
+                    metrics);
               } else if (action.equals("editCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER.editCategory(payloadJsonMap,
-                    metrics, lambdaLogger);
+                    metrics);
               } else if (action.equals("getCategories")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER
-                    .getCategories(payloadJsonMap, metrics, lambdaLogger);
+                    .getCategories(payloadJsonMap, metrics);
               } else if (action.equals("deleteCategory")) {
                 resultStatus = DatabaseManagers.CATEGORIES_MANAGER
-                    .deleteCategory(payloadJsonMap, metrics, lambdaLogger);
+                    .deleteCategory(payloadJsonMap, metrics);
               } else if (action.equals("warmingEndpoint")) {
                 resultStatus = new ResultStatus(true, "Warming categories endpoint.");
               } else {
@@ -75,7 +73,7 @@ public class CategoriesPostHandler implements
       resultStatus.resultMessage = "Error: Unable to handle request.";
     }
 
-    metrics.logMetrics(lambdaLogger);
+    metrics.logMetrics();
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }
