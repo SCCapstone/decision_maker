@@ -52,6 +52,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String nextCategoryIndex = UUID.randomUUID().toString();
+        jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
         final Category newCategory = new Category(jsonMap);

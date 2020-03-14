@@ -116,11 +116,11 @@ public class Group {
   }
 
   public Map<String, Map<String, Object>> getEventsMap() {
-    Map<String, Map<String, Object>> membersMapped = new HashMap<>();
+    Map<String, Map<String, Object>> eventsMapped = new HashMap<>();
     for (String eventId : this.events.keySet()) {
-      membersMapped.putIfAbsent(eventId, this.events.get(eventId).asMap());
+      eventsMapped.putIfAbsent(eventId, this.events.get(eventId).asMap());
     }
-    return membersMapped;
+    return eventsMapped;
   }
 
   public boolean groupNameIsSet() {
