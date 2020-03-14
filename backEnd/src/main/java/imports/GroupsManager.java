@@ -308,8 +308,8 @@ public class GroupsManager extends DatabaseAccessManager {
               errorMessage += "Error: Unable to remove this group from the categories table. "
                   + removeFromCategoriesResult.resultMessage;
             } else {
-              // if we reach this, then only removeGroupFromUsers failed, so remove \n
-              errorMessage = errorMessage.replace("\n", "");
+              // if we reach this, then only removeGroupFromUsers failed, so trim to remove \n
+              errorMessage = errorMessage.trim();
             }
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage));
             resultStatus.resultMessage = errorMessage;
