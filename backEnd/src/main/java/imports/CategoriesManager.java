@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -259,6 +260,36 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
 
+    return resultStatus;
+  }
+
+  public ResultStatus removeGroupFromCategories(List<String> categoryIds, String groupId,
+      Metrics metrics) {
+    final String className = "CategoriesManager.removeGroupFromCategories";
+    metrics.commonSetup(className);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String updateExpression = "remove " + GROUPS + ".#groupId";
+      final NameMap nameMap = new NameMap().with("#groupId", groupId);
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
+
+      for (String categoryId : categoryIds) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
+        this.updateItem(updateItemSpec);
+      }
+      resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
+    } catch (Exception e) {
+      metrics.log(
+          new ErrorDescriptor<>(groupId, className, e));
+      resultStatus.resultMessage = "Exception inside of manager.";
+    }
+
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

@@ -3,6 +3,7 @@ package imports;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -57,7 +58,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
-  public static final Integer MAX_DURATION = 10000;
+  public static final Integer MAX_DURATION = 9999;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -257,6 +258,76 @@ public class GroupsManager extends DatabaseAccessManager {
     } else {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
           "Required request keys not found"));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus deleteGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "GroupsManager.deleteGroup";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(GROUP_ID, RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        Item item = this.getItemByPrimaryKey(groupId);
+        if (activeUser.equals(item.getString(GROUP_CREATOR))) {
+          List<String> members = new ArrayList<>(item.getMap(MEMBERS).keySet());
+          List<String> categoryIds = new ArrayList<>(item.getMap(CATEGORIES).keySet());
+
+          ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
+              .removeGroupFromUsers(members, groupId, metrics);
+          ResultStatus removeFromCategoriesResult = new ResultStatus(true, "");
+          if (!categoryIds.isEmpty()) {
+            removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
+                .removeGroupFromCategories(categoryIds, groupId, metrics);
+          }
+
+          if (removeFromUsersResult.success && removeFromCategoriesResult.success) {
+            //TODO can probably put this into a transaction
+            DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId);
+
+            this.deleteItem(deleteItemSpec);
+
+            resultStatus = new ResultStatus(true, "Group deleted successfully!");
+          } else {
+            String errorMessage = "";
+            if (!removeFromUsersResult.success) {
+              errorMessage = "Error: Unable to remove this group from the users table. " + removeFromUsersResult.resultMessage + "\n";
+            }
+            if (!removeFromCategoriesResult.success) {
+              errorMessage += "Error: Unable to remove this group from the categories table. " + removeFromCategoriesResult.resultMessage;
+            } else {
+              // if we reach this, then only removeGroupFromUsers failed, so remove \n
+              errorMessage = errorMessage.replace("\n", "");
+            }
+            metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage));
+            resultStatus.resultMessage = errorMessage;
+          }
+
+        } else {
+          metrics.log(
+              new ErrorDescriptor<>(jsonMap, classMethod,
+                  "User is not the owner of the group"));
+          resultStatus.resultMessage = "Error: User is not the owner of the group.";
+        }
+      } catch (Exception e) {
+        metrics
+            .log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+      }
+    } else {
+      metrics
+          .log(new ErrorDescriptor<>(jsonMap, classMethod,
+              "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);

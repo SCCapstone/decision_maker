@@ -558,4 +558,34 @@ public class UsersManager extends DatabaseAccessManager {
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
+
+  public ResultStatus removeGroupFromUsers(final List<String> users, final String groupId,
+      final Metrics metrics) {
+    final String className = "UsersManager.removeGroupFromUsers";
+    metrics.commonSetup(className);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String updateExpression = "remove " + GROUPS + ".#groupId";
+      final NameMap nameMap = new NameMap().with("#groupId", groupId);
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
+
+      for (String user : users) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), user);
+        this.updateItem(updateItemSpec);
+      }
+      resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
+    } catch (Exception e) {
+      metrics.log(
+          new ErrorDescriptor<>(groupId, className, e));
+      resultStatus.resultMessage = "Exception inside of manager.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
 }
