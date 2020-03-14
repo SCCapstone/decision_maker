@@ -301,12 +301,10 @@ public class GroupsManager extends DatabaseAccessManager {
           } else {
             String errorMessage = "";
             if (!removeFromUsersResult.success) {
-              errorMessage = "Error: Unable to remove this group from the users table. "
-                  + removeFromUsersResult.resultMessage + "\n";
+              errorMessage = "Error: Unable to remove this group from the users table. " + removeFromUsersResult.resultMessage + "\n";
             }
             if (!removeFromCategoriesResult.success) {
-              errorMessage += "Error: Unable to remove this group from the categories table. "
-                  + removeFromCategoriesResult.resultMessage;
+              errorMessage += "Error: Unable to remove this group from the categories table. " + removeFromCategoriesResult.resultMessage;
             } else {
               // if we reach this, then only removeGroupFromUsers failed, so remove \n
               errorMessage = errorMessage.replace("\n", "");
