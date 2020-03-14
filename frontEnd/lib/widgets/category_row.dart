@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -32,10 +33,12 @@ class _CategoryRow extends State<CategoryRow> {
             },
           ),
           Expanded(
-            child: Text(
+            child: AutoSizeText(
               (widget.owner == null)
                   ? widget.category.categoryName
                   : "${widget.category.categoryName} (@${widget.owner})",
+              minFontSize: 12,
+              maxLines: 1,
               style: TextStyle(fontSize: 20),
             ),
           ),

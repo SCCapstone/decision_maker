@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,7 +82,7 @@ class _UserSettingsState extends State<UserSettings> {
                     Column(
                       children: [
                         Container(
-                            width: MediaQuery.of(context).size.width * .75,
+                            width: MediaQuery.of(context).size.width * .8,
                             child: TextFormField(
                               maxLength: 50,
                               controller: this.displayNameController,
@@ -91,11 +92,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 enableAutoValidation();
                               },
                               onSaved: (String arg) {},
-                              style: TextStyle(
-                                  fontSize: DefaultTextStyle.of(context)
-                                          .style
-                                          .fontSize *
-                                      0.6),
+                              style: TextStyle(fontSize: 25),
                               decoration: InputDecoration(
                                   labelText: "Nickname (@${Globals.username})",
                                   counterText: ""),
@@ -113,8 +110,8 @@ class _UserSettingsState extends State<UserSettings> {
                                 context);
                           },
                           child: Container(
-                            width: MediaQuery.of(context).size.width * .75,
-                            height: MediaQuery.of(context).size.height * .4,
+                            width: MediaQuery.of(context).size.width * .65,
+                            height: MediaQuery.of(context).size.height * .35,
                             alignment: Alignment.topRight,
                             decoration: BoxDecoration(
                                 image: DecorationImage(
@@ -153,7 +150,7 @@ class _UserSettingsState extends State<UserSettings> {
                             icon: Icon(Icons.contacts),
                             label: Text("My Favorites")),
                         Container(
-                          width: MediaQuery.of(context).size.width * .75,
+                          width: MediaQuery.of(context).size.width * .8,
                           child: Column(
                             children: <Widget>[
                               Row(
@@ -161,13 +158,11 @@ class _UserSettingsState extends State<UserSettings> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
-                                    child: Text(
+                                    child: AutoSizeText(
                                       "Mute Notifcations",
-                                      style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
-                                              0.4),
+                                      minFontSize: 14,
+                                      maxLines: 1,
+                                      style: TextStyle(fontSize: 20),
                                     ),
                                   ),
                                   Switch(
@@ -186,13 +181,11 @@ class _UserSettingsState extends State<UserSettings> {
                                     MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Expanded(
-                                    child: Text(
+                                    child: AutoSizeText(
                                       "Light Theme",
-                                      style: TextStyle(
-                                          fontSize: DefaultTextStyle.of(context)
-                                                  .style
-                                                  .fontSize *
-                                              0.4),
+                                      minFontSize: 14,
+                                      maxLines: 1,
+                                      style: TextStyle(fontSize: 20),
                                     ),
                                   ),
                                   Switch(

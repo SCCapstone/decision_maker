@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -32,8 +33,11 @@ class UserRowEvents extends StatelessWidget {
           ),
           Expanded(
             child: Center(
-              child: Text(
+              child: AutoSizeText(
                 this.displayName,
+                maxLines: 1,
+                minFontSize: 11,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 20),
               ),
             ),

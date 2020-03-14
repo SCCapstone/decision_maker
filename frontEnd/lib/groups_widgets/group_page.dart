@@ -122,23 +122,52 @@ class _GroupPageState extends State<GroupPage> {
     return Scaffold(
         appBar: AppBar(
             centerTitle: true,
-            title: Text(
-              widget.groupName,
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
-            )),
+            title: AutoSizeText(
+              Globals.currentGroup.groupName,
+              maxLines: 1,
+              style: TextStyle(fontSize: 40),
+              minFontSize: 12,
+              overflow: TextOverflow.ellipsis,
+            ),
+            actions: <Widget>[
+              Visibility(
+                // hacky but prevents weird autosizing of text since settings icon isn't there
+                visible: false,
+                maintainState: true,
+                maintainAnimation: true,
+                maintainSize: true,
+                child: IconButton(
+                  icon: Icon(Icons.settings),
+                ),
+              )
+            ]),
         body: Center(child: CircularProgressIndicator()));
   }
 
   Widget groupError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: true,
-            title: Text(
-              widget.groupName,
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
-            )),
+          centerTitle: true,
+          title: AutoSizeText(
+            Globals.currentGroup.groupName,
+            maxLines: 1,
+            style: TextStyle(fontSize: 40),
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
+          ),
+          actions: <Widget>[
+            Visibility(
+              // hacky but prevents weird autosizing of text since settings icon isn't there
+              visible: false,
+              maintainState: true,
+              maintainAnimation: true,
+              maintainSize: true,
+              child: IconButton(
+                icon: Icon(Icons.settings),
+              ),
+            )
+          ],
+        ),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
           child: RefreshIndicator(

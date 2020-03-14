@@ -114,7 +114,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     },
                     decoration: InputDecoration(
                       labelText:
-                          "Enter a default consider duration (in minutes)",
+                          "Enter a default consider duration (mins)",
                       counterText: ""
                     ),
                   ),
@@ -129,7 +129,7 @@ class _CreateGroupState extends State<CreateGroup> {
                       votingDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
-                      labelText: "Enter a default voting duration (in minutes)",
+                      labelText: "Enter a default voting duration (mins)",
                       counterText:  ""
                     ),
                   ),

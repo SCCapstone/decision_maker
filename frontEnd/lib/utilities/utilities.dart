@@ -213,6 +213,24 @@ void showUserImage(ImageProvider image, BuildContext buildContext) {
       });
 }
 
+void showGroupImage(ImageProvider image, BuildContext buildContext) {
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          content: Image(image: image),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Return"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      });
+}
+
 void hideKeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(new FocusNode());
 }
