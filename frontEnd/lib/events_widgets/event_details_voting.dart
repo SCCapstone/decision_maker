@@ -53,6 +53,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
           this.event.eventName,
           maxLines: 1,
           minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
         leading: BackButton(),
@@ -74,6 +75,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                         "Event Starts",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -82,6 +84,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       this.event.eventStartDateTimeFormatted,
                       minFontSize: 15,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -90,6 +93,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       child: AutoSizeText("Voting Ends",
                           minFontSize: 20,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 40,
@@ -98,6 +102,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     AutoSizeText(this.event.pollEndFormatted,
                         minFontSize: 15,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 32)),
                     Padding(
                       padding: EdgeInsets.all(
@@ -106,6 +111,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                         "Category",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -114,6 +120,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                       this.event.categoryName,
                       minFontSize: 15,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -123,6 +130,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     AutoSizeText("Event created by: ${this.eventCreator}",
                         minFontSize: 12,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
                     ExpansionTile(
                       title: Text("Considered (${this.event.optedIn.length})"),

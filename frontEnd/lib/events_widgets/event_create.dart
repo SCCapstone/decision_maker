@@ -165,6 +165,7 @@ class _CreateEventState extends State<CreateEvent> {
                         getCategoryButtonMessage(),
                         minFontSize: 10,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 15),
                       ),
                       onPressed: () {
@@ -213,6 +214,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 considerButtonText,
                                 minFontSize: 10,
                                 maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
                               onPressed: () {
@@ -248,6 +250,7 @@ class _CreateEventState extends State<CreateEvent> {
                       calculateVotingStartDateTime(),
                       maxLines: 1,
                       minFontSize: 12,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18),
                     ),
@@ -291,6 +294,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 voteButtonText,
                                 minFontSize: 10,
                                 maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
                               onPressed: () {
@@ -326,6 +330,7 @@ class _CreateEventState extends State<CreateEvent> {
                       calculateVotingEndDateTime(),
                       minFontSize: 10,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18),
                     ),

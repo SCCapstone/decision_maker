@@ -105,10 +105,10 @@ class _GroupSettingsState extends State<GroupSettings> {
             resizeToAvoidBottomInset: true,
             appBar: AppBar(
               title: AutoSizeText(
-                "${Globals.currentGroup.groupName} Settings",
+                "Group Settings",
                 minFontSize: 15,
                 maxLines: 1,
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(fontSize: 25),
               ),
               actions: <Widget>[
                 Visibility(

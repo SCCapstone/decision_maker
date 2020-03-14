@@ -43,6 +43,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
           this.event.eventName,
           maxLines: 1,
           minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
       ),
@@ -67,6 +68,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                               fontWeight: FontWeight.bold, fontSize: 40),
                           minFontSize: 20,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       AutoSizeText(
@@ -74,6 +76,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         style: TextStyle(fontSize: 32),
                         minFontSize: 15,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Padding(
                         padding: EdgeInsets.all(
@@ -84,6 +87,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                               fontWeight: FontWeight.bold, fontSize: 40),
                           minFontSize: 20,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       AutoSizeText(
@@ -91,6 +95,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         style: TextStyle(fontSize: 32),
                         minFontSize: 15,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Padding(
                         padding: EdgeInsets.all(
@@ -98,6 +103,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         child: AutoSizeText("Selected Choice",
                             maxLines: 1,
                             minFontSize: 20,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 40,
@@ -116,6 +122,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                       AutoSizeText("Event created by: ${this.eventCreator}",
                           minFontSize: 12,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 16)),
                       ExpansionTile(
                         title:

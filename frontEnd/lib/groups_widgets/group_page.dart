@@ -50,6 +50,7 @@ class _GroupPageState extends State<GroupPage> {
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.settings),
+              tooltip: "Settings",
               onPressed: () {
                 Navigator.push(
                   context,
@@ -123,7 +124,7 @@ class _GroupPageState extends State<GroupPage> {
         appBar: AppBar(
             centerTitle: true,
             title: AutoSizeText(
-              Globals.currentGroup.groupName,
+              widget.groupName,
               maxLines: 1,
               style: TextStyle(fontSize: 40),
               minFontSize: 12,
@@ -149,7 +150,7 @@ class _GroupPageState extends State<GroupPage> {
         appBar: AppBar(
           centerTitle: true,
           title: AutoSizeText(
-            Globals.currentGroup.groupName,
+            widget.groupName,
             maxLines: 1,
             style: TextStyle(fontSize: 40),
             minFontSize: 12,

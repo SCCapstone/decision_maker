@@ -1,4 +1,5 @@
 import 'package:amazon_cognito_identity_dart/cognito.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/main.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -49,10 +50,12 @@ class _SignInState extends State<SignInPage> {
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
           centerTitle: true,
-          title: Text("Pocket Poll",
-              style: TextStyle(
-                  fontSize:
-                      DefaultTextStyle.of(context).style.fontSize * 0.8))),
+          title: AutoSizeText(
+            "Pocket Poll",
+            style: TextStyle(fontSize: 40),
+            maxLines: 1,
+            minFontSize: 20,
+          )),
       body: Form(
         key: formKey,
         autovalidate: autoValidate,
@@ -123,9 +126,7 @@ class _SignInState extends State<SignInPage> {
                   },
                   child: Text(
                     (signUp) ? "Sign Up" : "Sign In",
-                    style: TextStyle(
-                        fontSize:
-                            DefaultTextStyle.of(context).style.fontSize * 0.7),
+                    style: TextStyle(fontSize: 32),
                   ),
                 ),
               ),
@@ -136,12 +137,13 @@ class _SignInState extends State<SignInPage> {
                 visible: !signUp,
                 child: InkWell(
                   child: Center(
-                    child: Text(
+                    child: AutoSizeText(
                       "Forgot Password? Click here to reset.",
+                      maxLines: 1,
+                      minFontSize: 14,
                       style: TextStyle(
                           color: Colors.blue,
-                          fontSize:
-                              DefaultTextStyle.of(context).style.fontSize * 0.4,
+                          fontSize: 20,
                           decoration: TextDecoration.underline),
                     ),
                   ),
@@ -162,9 +164,14 @@ class _SignInState extends State<SignInPage> {
                 children: <Widget>[
                   Flexible(
                     fit: FlexFit.loose,
-                    child: Text((signUp)
-                        ? "Already have an account?"
-                        : "Create an account?"),
+                    child: AutoSizeText(
+                      (signUp)
+                          ? "Already have an account?"
+                          : "Create an account?",
+                      maxLines: 1,
+                      minFontSize: 12,
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                   Flexible(
                     child: RaisedButton(

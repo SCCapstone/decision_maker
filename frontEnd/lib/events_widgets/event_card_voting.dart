@@ -30,6 +30,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
               widget.event.eventName,
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -40,18 +41,21 @@ class _EventCardVotingState extends State<EventCardVoting> {
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Voting Ends: ${widget.event.pollEndFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Total considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             RaisedButton(
               child: Text("Vote"),

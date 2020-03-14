@@ -166,6 +166,7 @@ class _EditCategoryState extends State<EditCategory> {
                                 fontWeight: FontWeight.bold, fontSize: 20),
                             maxLines: 1,
                             minFontSize: 12,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Padding(

@@ -46,6 +46,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
           this.event.eventName,
           maxLines: 1,
           minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
       ),
@@ -68,6 +69,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                             : "Event Started",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -76,6 +78,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       this.event.eventStartDateTimeFormatted,
                       minFontSize: 15,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -85,6 +88,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                         "Category",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -93,6 +97,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       this.event.categoryName,
                       minFontSize: 12,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -101,6 +106,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       child: AutoSizeText("Selected Choice",
                           minFontSize: 20,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 40,
@@ -109,6 +115,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     AutoSizeText(this.event.selectedChoice,
                         minFontSize: 15,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 32)),
                     Padding(
                       padding: EdgeInsets.all(
@@ -117,6 +124,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     AutoSizeText("Event created by: ${this.eventCreator}",
                         minFontSize: 12,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
                     ExpansionTile(
                       title: Text("Considered (${this.event.optedIn.length})"),

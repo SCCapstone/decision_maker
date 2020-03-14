@@ -51,7 +51,10 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           AutoSizeText(widget.choiceName,
-              minFontSize: 15, maxLines: 1, style: TextStyle(fontSize: 32)),
+              minFontSize: 15,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 32)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[

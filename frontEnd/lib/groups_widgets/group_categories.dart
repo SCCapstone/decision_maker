@@ -123,6 +123,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 "Categories Added By Members",
                 minFontSize: 15,
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 26),
               ),
             ),

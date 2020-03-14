@@ -45,6 +45,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
           this.event.eventName,
           maxLines: 1,
           minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
         leading: BackButton(),
@@ -66,6 +67,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                         "Proposed Time",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -74,6 +76,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                       Globals.formatter.format(this.event.eventStartDateTime),
                       minFontSize: 15,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -82,6 +85,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                       child: AutoSizeText("Consider Time Ends",
                           minFontSize: 20,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 40,
@@ -90,6 +94,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     AutoSizeText(this.event.pollBeginFormatted,
                         minFontSize: 15,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 32)),
                     Padding(
                       padding: EdgeInsets.all(
@@ -98,6 +103,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                         "Category",
                         minFontSize: 20,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 40),
                       ),
@@ -106,6 +112,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                       this.event.categoryName,
                       minFontSize: 15,
                       maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
                     Padding(
@@ -115,6 +122,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     AutoSizeText("Event created by: ${this.eventCreator}",
                         minFontSize: 12,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
                     ExpansionTile(
                       title:
@@ -136,6 +144,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     AutoSizeText("Consider Me?",
                         minFontSize: 12,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 20)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

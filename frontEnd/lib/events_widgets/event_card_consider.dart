@@ -30,6 +30,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
               widget.event.eventName,
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -40,18 +41,21 @@ class _EventCardConsiderState extends State<EventCardConsider> {
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Consider By: ${widget.event.pollBeginFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Members considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             RaisedButton(
               child: Text("Consider"),

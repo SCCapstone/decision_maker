@@ -29,6 +29,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
               widget.event.eventName,
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -39,18 +40,21 @@ class _EventCardClosedState extends State<EventCardClosed> {
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Total considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             RaisedButton(
               child: Text("View Results"),

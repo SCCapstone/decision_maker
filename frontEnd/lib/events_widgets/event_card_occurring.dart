@@ -30,6 +30,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
               widget.event.eventName,
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -42,12 +43,14 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Selected Choice: ${widget.event.selectedChoice}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
               "Total considered: ${widget.event.optedIn.length}",

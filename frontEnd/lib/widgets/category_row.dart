@@ -39,6 +39,7 @@ class _CategoryRow extends State<CategoryRow> {
                   : "${widget.category.categoryName} (@${widget.owner})",
               minFontSize: 12,
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 20),
             ),
           ),
