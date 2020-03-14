@@ -92,7 +92,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final List<String> requiredKeys = Arrays
         .asList(GroupsManager.GROUP_ID, RequestFields.EVENT_ID, SCANNER_ID);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);

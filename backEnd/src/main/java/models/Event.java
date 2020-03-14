@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
+import utilities.RequestFields;
 
 @Data
 public class Event {
@@ -36,20 +37,35 @@ public class Event {
     this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
-    this.setRsvpDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.RSVP_DURATION)));
-    this.setVotingDuration(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(GroupsManager.VOTING_DURATION)));
+    this.setRsvpDuration(this.getIntFromObject(jsonMap.get(GroupsManager.RSVP_DURATION)));
+    this.setVotingDuration(this.getIntFromObject(jsonMap.get(GroupsManager.VOTING_DURATION)));
     this.setSelectedChoice((String) jsonMap.get(GroupsManager.SELECTED_CHOICE));
 
-    this.setOptedIn((Map<String, Object>) jsonMap.get(GroupsManager.OPTED_IN));
+    this.setOptedInRawMap((Map<String, Object>) jsonMap.get(GroupsManager.OPTED_IN));
     this.setTentativeAlgorithmChoices(
         (Map<String, Object>) jsonMap.get(GroupsManager.TENTATIVE_CHOICES));
     this.setVotingNumbers((Map<String, Object>) jsonMap.get(GroupsManager.VOTING_NUMBERS));
-    this.setEventCreator((Map<String, Object>) jsonMap.get(GroupsManager.EVENT_CREATOR));
+    this.setEventCreator(jsonMap);
   }
 
-  public void setOptedIn(final Map<String, Object> jsonMap) {
+  public Map<String, Object> asMap() {
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(GroupsManager.CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(GroupsManager.CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(GroupsManager.EVENT_NAME, this.eventName);
+    modelAsMap.putIfAbsent(GroupsManager.CREATED_DATE_TIME, this.createdDateTime);
+    modelAsMap.putIfAbsent(GroupsManager.EVENT_START_DATE_TIME, this.eventStartDateTime);
+    modelAsMap.putIfAbsent(GroupsManager.RSVP_DURATION, this.rsvpDuration);
+    modelAsMap.putIfAbsent(GroupsManager.VOTING_DURATION, this.votingDuration);
+    modelAsMap.putIfAbsent(GroupsManager.SELECTED_CHOICE, this.selectedChoice);
+    modelAsMap.putIfAbsent(GroupsManager.OPTED_IN, this.getOptedInMap());
+    modelAsMap.putIfAbsent(GroupsManager.TENTATIVE_CHOICES, this.tentativeAlgorithmChoices);
+    modelAsMap.putIfAbsent(GroupsManager.VOTING_NUMBERS, this.votingNumbers);
+    modelAsMap.putIfAbsent(GroupsManager.EVENT_CREATOR, this.eventCreator);
+    return modelAsMap;
+  }
+
+  public void setOptedInRawMap(final Map<String, Object> jsonMap) {
     this.optedIn = null;
     if (jsonMap != null) {
       this.optedIn = new HashMap<>();
@@ -57,6 +73,18 @@ public class Event {
         this.optedIn.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
       }
     }
+  }
+
+  public void setOptedIn(final Map<String, Member> memberMap) {
+    this.optedIn = memberMap;
+  }
+
+  public Map<String, Map<String, String>> getOptedInMap() {
+    final Map<String, Map<String, String>> membersMapped = new HashMap<>();
+    for (String username : this.optedIn.keySet()) {
+      membersMapped.putIfAbsent(username, this.optedIn.get(username).asMap());
+    }
+    return membersMapped;
   }
 
   public void setTentativeAlgorithmChoices(final Map<String, Object> jsonMap) {
@@ -79,7 +107,7 @@ public class Event {
 
         for (String username : votingPairsRaw.keySet()) {
           votingPairs.putIfAbsent(username,
-              this.getIntFromBigInt((BigDecimal) votingPairsRaw.get(username)));
+              this.getIntFromObject(votingPairsRaw.get(username)));
         }
 
         this.votingNumbers.putIfAbsent(choiceId, votingPairs);
@@ -89,16 +117,16 @@ public class Event {
 
   public void setEventCreator(final Map<String, Object> jsonMap) {
     this.eventCreator = null;
-    if (jsonMap != null) {
+    if (jsonMap != null && jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       this.eventCreator = new HashMap<>();
       this.eventCreator
-          .putIfAbsent(UsersManager.USERNAME, (String) jsonMap.get(UsersManager.USERNAME));
+          .putIfAbsent(UsersManager.USERNAME, (String) jsonMap.get(RequestFields.ACTIVE_USER));
     }
   }
 
-  private Integer getIntFromBigInt(final BigDecimal input) {
+  private Integer getIntFromObject(final Object input) {
     if (input != null) {
-      return input.intValue();
+      return Integer.parseInt(input.toString());
     }
     return null;
   }

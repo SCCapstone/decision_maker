@@ -26,9 +26,8 @@ public class Category {
     this.setCategoryId((String) jsonMap.get(CategoriesManager.CATEGORY_ID));
     this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
-    this.setNextChoiceNo(
-        this.getIntFromBigInt((BigDecimal) jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
-    this.setChoices((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
+    this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
+    this.setChoicesRaw((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
     this.setGroups((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
   }
 
@@ -43,17 +42,17 @@ public class Category {
   }
 
   public Map<String, Object> asMap() {
-    Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_ID, this.getCategoryId());
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.getCategoryName());
-    modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.getOwner());
-    modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.getNextChoiceNo());
-    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.getChoices());
-    modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.getGroups());
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.owner);
+    modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.nextChoiceNo);
+    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.choices);
+    modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.groups);
     return modelAsMap;
   }
 
-  public void setChoices(final Map<String, Object> jsonMap) {
+  public void setChoicesRaw(final Map<String, Object> jsonMap) {
     this.choices = null;
     if (jsonMap != null) {
       this.choices = new HashMap<>();
@@ -61,6 +60,10 @@ public class Category {
         this.choices.putIfAbsent(choiceId, (String) jsonMap.get(choiceId));
       }
     }
+  }
+
+  public void setChoices(final Map<String, String> choices) {
+    this.choices = choices;
   }
 
   public void setGroups(final Map<String, Object> jsonMap) {
@@ -73,9 +76,9 @@ public class Category {
     }
   }
 
-  private Integer getIntFromBigInt(final BigDecimal input) {
+  private Integer getIntFromObject(final Object input) {
     if (input != null) {
-      return input.intValue();
+      return Integer.parseInt(input.toString());
     }
     return null;
   }

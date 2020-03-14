@@ -1,6 +1,7 @@
 package models;
 
 import imports.UsersManager;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,5 +17,12 @@ public class Member {
   public Member(final Map<String, Object> jsonMap) {
     this.setDisplayName((String) jsonMap.get(UsersManager.DISPLAY_NAME));
     this.setIcon((String) jsonMap.get(UsersManager.ICON));
+  }
+
+  public Map<String, String> asMap() {
+    Map<String, String> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(UsersManager.DISPLAY_NAME, this.displayName);
+    modelAsMap.putIfAbsent(UsersManager.ICON, this.icon);
+    return modelAsMap;
   }
 }

@@ -3,7 +3,6 @@ package imports;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -19,10 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import models.AppSettings;
 import models.User;
 import utilities.Config;
 import utilities.ErrorDescriptor;
-import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -66,17 +65,10 @@ public class UsersManager extends DatabaseAccessManager {
     boolean success = false;
 
     try {
-      final Item user = this.getItemByPrimaryKey(username);
+      final User user = new User(this.getItemByPrimaryKey(username).asMap());
 
-      if (user != null) {
-        Map<String, Object> userMapped = user.asMap(); // specific user record as a map
-        Map<String, String> categoryMap = (Map<String, String>) userMapped.get(OWNED_CATEGORIES);
-
-        categoryIds = new ArrayList<>(categoryMap.keySet());
-        success = true;
-      } else {
-        metrics.log(new ErrorDescriptor<>(username, classMethod, "user lookup returned null"));
-      }
+      categoryIds = new ArrayList<>(user.getOwnedCategories().keySet());
+      success = true;
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(username, classMethod, e));
     }
@@ -93,17 +85,10 @@ public class UsersManager extends DatabaseAccessManager {
     boolean success = false;
 
     try {
-      Item user = this.getItemByPrimaryKey(username);
+      final User user = new User(this.getItemByPrimaryKey(username).asMap());
 
-      if (user != null) {
-        Map<String, Object> userMapped = user.asMap(); // specific user record as a map
-        Map<String, String> groupMap = (Map<String, String>) userMapped.get(GROUPS);
-
-        groupIds = new ArrayList<>(groupMap.keySet());
-        success = true;
-      } else {
-        metrics.log(new ErrorDescriptor<>(username, classMethod, "user lookup returned null"));
-      }
+      groupIds = new ArrayList<>(user.getGroups().keySet());
+      success = true;
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(username, classMethod, e));
     }
@@ -133,7 +118,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(USERNAME, activeUser)
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withNull(ICON)
-              .withMap(APP_SETTINGS, this.getDefaultAppSettings())
+              .withMap(APP_SETTINGS, AppSettings.defaultSettings().asMap())
               .withMap(CATEGORIES, Collections.emptyMap())
               .withMap(OWNED_CATEGORIES, Collections.emptyMap())
               .withMap(GROUPS, Collections.emptyMap())
@@ -141,10 +126,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(FAVORITES, Collections.emptyMap())
               .withMap(FAVORITE_OF, Collections.emptyMap());
 
-          PutItemSpec putItemSpec = new PutItemSpec()
-              .withItem(user);
-
-          this.putItem(putItemSpec);
+          this.putItem(new PutItemSpec().withItem(user));
         }
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
@@ -166,14 +148,14 @@ public class UsersManager extends DatabaseAccessManager {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, CategoriesManager.CATEGORY_ID,
+            RequestFields.USER_RATINGS);
+
     ResultStatus resultStatus = new ResultStatus();
-    if (
-        jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
-            jsonMap.containsKey(CategoriesManager.CATEGORY_ID) &&
-            jsonMap.containsKey(RequestFields.USER_RATINGS)
-    ) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
-        final String user = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
         final Map<String, Object> ratings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
@@ -189,7 +171,7 @@ public class UsersManager extends DatabaseAccessManager {
         }
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), user)
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
@@ -211,7 +193,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus updateUserSettings(Map<String, Object> jsonMap, final Metrics metrics) {
+  public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserAppSettings";
     metrics.commonSetup(classMethod);
 
@@ -229,7 +211,7 @@ public class UsersManager extends DatabaseAccessManager {
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, DISPLAY_NAME, APP_SETTINGS, FAVORITES);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
@@ -237,11 +219,7 @@ public class UsersManager extends DatabaseAccessManager {
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
-        Item userDataRaw = this.getItemByPrimaryKey(activeUser);
-        Map<String, Object> user = userDataRaw.asMap();
-
-        String oldDisplayName = (String) user.get(DISPLAY_NAME);
-        Set<String> oldFavorites = new HashSet<>(((Map) user.get(FAVORITES)).keySet());
+        User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
         //as long as this remains a small group of settings, I think it's okay to always overwrite
         //this does imply that the entire appSettings array is sent from the front end though
@@ -257,7 +235,7 @@ public class UsersManager extends DatabaseAccessManager {
         NameMap favoritesOfNameMap = new NameMap();
 
         //determine if the display name/icon have changed
-        if (!oldDisplayName.equals(newDisplayName)) {
+        if (!oldUser.getDisplayName().equals(newDisplayName)) {
           updateUserExpression += ", " + DISPLAY_NAME + " = :name";
           userValueMap.withString(":name", newDisplayName);
 
@@ -307,8 +285,7 @@ public class UsersManager extends DatabaseAccessManager {
         if (updateGroupsExpression != null) {
           UpdateItemSpec updateGroupItemSpec;
 
-          List<String> groupIds = new ArrayList<>(((Map) user.get(GROUPS)).keySet());
-          for (String groupId : groupIds) {
+          for (String groupId : oldUser.getGroups().keySet()) {
             try {
               updateGroupItemSpec = new UpdateItemSpec()
                   .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
@@ -326,8 +303,8 @@ public class UsersManager extends DatabaseAccessManager {
         if (updateFavoritesOfExpression != null) {
           UpdateItemSpec updateFavoritesOfItemSpec;
 
-          List<String> usernamesToUpdate = new ArrayList<>(((Map) user.get(FAVORITE_OF)).keySet());
-          for (String username : usernamesToUpdate) {
+          //all of the users that this user is a favorite of need to be updated
+          for (String username : oldUser.getGroups().keySet()) {
             try {
               updateFavoritesOfItemSpec = new UpdateItemSpec()
                   .withPrimaryKey(this.getPrimaryKeyIndex(), username)
@@ -342,7 +319,8 @@ public class UsersManager extends DatabaseAccessManager {
           }
         }
 
-        this.updateActiveUsersFavorites(newFavorites, oldFavorites, activeUser, metrics);
+        this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
+            metrics);
 
         Item updatedUser = this.getItemByPrimaryKey(activeUser);
 
@@ -398,8 +376,7 @@ public class UsersManager extends DatabaseAccessManager {
           this.updateItem(updateFavoritesItemSpec);
         } catch (Exception e) {
           hadError = true;
-          metrics.log(
-              new ErrorDescriptor<>(username, classMethod, e));
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
@@ -433,16 +410,15 @@ public class UsersManager extends DatabaseAccessManager {
           this.updateItem(updateFavoritesOfItemSpec);
 
           //add the other user's data to the active user's 'favorites' map
-          Item newFavoriteUser = this.getItemByPrimaryKey(username);
-          Map<String, Object> newFavoriteUserMapped = newFavoriteUser.asMap();
+          final User newFavoriteUser = new User(this.getItemByPrimaryKey(username).asMap());
 
           updateFavoritesItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
               .withUpdateExpression(updateFavoriteExpression)
               .withNameMap(new NameMap().with("#newFavoriteUser", username))
               .withValueMap(new ValueMap().withMap(":newFavorite", new HashMap<String, Object>() {{
-                put(DISPLAY_NAME, (String) newFavoriteUserMapped.get(DISPLAY_NAME));
-                put(ICON, (String) newFavoriteUserMapped.get(ICON));
+                put(DISPLAY_NAME, newFavoriteUser.getDisplayName());
+                put(ICON, newFavoriteUser.getIcon());
               }}));
 
           this.updateItem(updateFavoritesItemSpec);
@@ -465,56 +441,6 @@ public class UsersManager extends DatabaseAccessManager {
     }
   }
 
-  public ResultStatus getUserRatings(Map<String, Object> jsonMap, final Metrics metrics) {
-    ResultStatus resultStatus = new ResultStatus();
-    final String classMethod = "UsersManager.getUserRatings";
-    metrics.commonSetup(classMethod);
-
-    if (
-        jsonMap.containsKey(RequestFields.ACTIVE_USER) &&
-            jsonMap.containsKey(CategoriesManager.CATEGORY_ID)
-    ) {
-      try {
-        String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        String categoryId = (String) jsonMap.get(CategoriesManager.CATEGORY_ID);
-
-        GetItemSpec getItemSpec = new GetItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser);
-        Item userDataRaw = this.getItem(getItemSpec);
-
-        Map<String, Object> userCategories = (Map<String, Object>) userDataRaw.asMap()
-            .get(CATEGORIES);
-
-        Map<String, Object> userRatings = (Map<String, Object>) userCategories.get(categoryId);
-        if (userRatings != null) {
-          resultStatus = new ResultStatus(
-              true,
-              JsonEncoders.convertObjectToJson(userRatings));
-        } else {
-          //this just means they haven't ever saved rating for this category
-          resultStatus = new ResultStatus(true, "{}");
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Error: Unable to parse request. Exception message: " + e;
-      }
-    } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  private Map<String, Object> getDefaultAppSettings() {
-    Map<String, Object> retMap = new HashMap<>();
-    retMap.put(APP_SETTINGS_DARK_THEME, DEFAULT_DARK_THEME);
-    retMap.put(APP_SETTINGS_MUTED, DEFAULT_MUTED);
-    retMap.put(APP_SETTINGS_GROUP_SORT, DEFAULT_GROUP_SORT);
-    return retMap;
-  }
-
   public ResultStatus createPlatformEndpointAndStoreArn(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "UsersManager.createPlatformEndpointAndStoreArn";
@@ -525,11 +451,11 @@ public class UsersManager extends DatabaseAccessManager {
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, RequestFields.DEVICE_TOKEN);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String deviceToken = (String) jsonMap.get(RequestFields.DEVICE_TOKEN);
-        CreatePlatformEndpointRequest createPlatformEndpointRequest =
+        final CreatePlatformEndpointRequest createPlatformEndpointRequest =
             new CreatePlatformEndpointRequest()
                 .withPlatformApplicationArn(Config.PUSH_SNS_PLATFORM_ARN)
                 .withToken(deviceToken)
@@ -549,8 +475,7 @@ public class UsersManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
         resultStatus = new ResultStatus(true, "user post arn set successfully");
       } catch (Exception e) {
-        metrics.log(
-            new ErrorDescriptor<>(jsonMap, classMethod, e));
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Exception inside of manager.";
       }
     } else {
@@ -569,19 +494,14 @@ public class UsersManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
-    final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER);
+    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER);
 
-    if (IOStreamsHelper.allKeysContained(jsonMap, requiredKeys)) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-
         final User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
         if (user.pushEndpointArnIsSet()) {
-          final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
-              .withEndpointArn(user.getPushEndpointArn());
-
           final String updateExpression = "remove " + PUSH_ENDPOINT_ARN;
           final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
@@ -591,6 +511,8 @@ public class UsersManager extends DatabaseAccessManager {
 
           //we've made it here without exception, now we try to actually delete the arn
           //If the following fails we're still safe as there's no reference to the arn in the db anymore
+          final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
+              .withEndpointArn(user.getPushEndpointArn());
           DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
 
           resultStatus = new ResultStatus(true, "endpoint unregistered");
