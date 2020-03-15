@@ -238,7 +238,7 @@ class _CreateCategoryState extends State<CreateCategory> {
   void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
-      showErrorMessage("Error.", "Must have at least one choice!", context);
+      showErrorMessage("Error", "Must have at least one choice!", context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
@@ -254,7 +254,7 @@ class _CreateCategoryState extends State<CreateCategory> {
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error.", "No duplicate choices allowed!", context);
+              "Input Error", "No duplicate choices allowed!", context);
           this.autoValidate = true;
         });
       } else {
