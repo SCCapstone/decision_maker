@@ -47,8 +47,6 @@ class _EditCategoryState extends State<EditCategory> {
   Widget errorWidget;
   Category category;
 
-//  String categoryName;
-
   @override
   void dispose() {
     this.categoryNameController.dispose();
@@ -77,6 +75,12 @@ class _EditCategoryState extends State<EditCategory> {
     if (this.loading) {
       getCategory();
     } else {
+      // put the recently accessed category back to top of list of cached categories
+      Globals.activeUserCategories.remove(this.category);
+      Globals.activeUserCategories.insert(0, this.category);
+      if (Globals.activeUserCategories.length > Globals.maxCategoryCacheSize) {
+        Globals.activeUserCategories.removeAt(Globals.maxCategoryCacheSize - 1);
+      }
       getRatings();
     }
     super.initState();
@@ -362,6 +366,11 @@ class _EditCategoryState extends State<EditCategory> {
       if (this.category.owner == Globals.username) {
         // cache groups that the user owns
         Globals.activeUserCategories.insert(0, this.category);
+        if (Globals.activeUserCategories.length >
+            Globals.maxCategoryCacheSize) {
+          Globals.activeUserCategories
+              .removeAt(Globals.maxCategoryCacheSize - 1);
+        }
       }
       getRatings();
     } else {

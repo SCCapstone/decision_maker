@@ -270,6 +270,11 @@ class _CreateCategoryState extends State<CreateCategory> {
           Category newCategory = resultStatus.data;
           Globals.user.ownedCategories.add(newCategory);
           Globals.activeUserCategories.add(newCategory);
+          if (Globals.activeUserCategories.length >
+              Globals.maxCategoryCacheSize) {
+            Globals.activeUserCategories
+                .removeAt(Globals.maxCategoryCacheSize - 1);
+          }
           // update local ratings
           Globals.user.userRatings.update(
               newCategory.categoryId, (existing) => ratesToSave,
