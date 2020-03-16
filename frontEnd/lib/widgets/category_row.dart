@@ -8,9 +8,8 @@ class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
   bool selected;
-  final String owner;
 
-  CategoryRow(this.category, this.selected, this.owner, {this.onSelect});
+  CategoryRow(this.category, this.selected, {this.onSelect});
 
   @override
   _CategoryRow createState() => new _CategoryRow();

@@ -62,13 +62,9 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                           List<Category> categories = resultStatus.data;
                           CategoriesManager.sortByAlphaAscending(categories);
                           for (Category category in categories) {
-                            String owner = (category.owner == Globals.username)
-                                ? null
-                                : category.owner;
                             this.categoryRows.add(CategoryRow(
                                 category,
                                 widget.selectedCategory.contains(category),
-                                owner,
                                 onSelect: () => selectCategory(category)));
                           }
                           if (this.categoryRows.length > 0) {
