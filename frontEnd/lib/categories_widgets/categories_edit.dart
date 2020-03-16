@@ -471,13 +471,9 @@ class _EditCategoryState extends State<EditCategory> {
           this.category = resultStatus.data;
           // update mapping in user object locally
           Globals.user.ownedCategories.remove(widget.category);
-          Globals.user.ownedCategories.add(new Category.debug(
-              widget.category.categoryId,
-              this.category.categoryName,
-              null,
-              null,
-              null,
-              null));
+          Globals.user.ownedCategories.add(new Category(
+              categoryId: widget.category.categoryId,
+              categoryName: this.category.categoryName));
           Globals.activeUserCategories.remove(this.category);
           Globals.activeUserCategories.add(this.category);
           // update local ratings in user object locally

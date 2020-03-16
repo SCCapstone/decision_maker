@@ -50,8 +50,8 @@ class User {
     List<Category> categoryList = new List<Category>();
     Map<String, dynamic> categoriesRaw = json[UsersManager.OWNED_CATEGORIES];
     for (String catId in categoriesRaw.keys) {
-      categoryList.add(Category.debug(
-          catId, categoriesRaw[catId].toString(), null, null, null, null));
+      categoryList.add(Category(
+          categoryId: catId, categoryName: categoriesRaw[catId].toString()));
     }
 
     return User(
