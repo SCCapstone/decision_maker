@@ -129,8 +129,7 @@ class _GroupsHomeState extends State<GroupsHome>
       length: this.totalTabs,
       child: Scaffold(
         drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
+          child: Column(
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(color: Theme.of(context).accentColor),
@@ -195,22 +194,23 @@ class _GroupsHomeState extends State<GroupsHome>
                         MaterialPageRoute(
                             builder: (context) => UserSettings()));
                   }),
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .31),
-              ),
-              ListTile(
-                  leading: Icon(Icons.exit_to_app),
-                  title: Text('Log Out', style: TextStyle(fontSize: 16)),
-                  onTap: () {
-                    logOutUser(context);
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) => SignInPage(),
-                        ),
-                        ModalRoute.withName('/'));
-                  })
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ListTile(
+                      leading: Icon(Icons.exit_to_app),
+                      title: Text('Log Out', style: TextStyle(fontSize: 16)),
+                      onTap: () {
+                        logOutUser(context);
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (BuildContext context) => SignInPage(),
+                            ),
+                            ModalRoute.withName('/'));
+                      }),
+                ),
+              )
             ],
           ),
         ),

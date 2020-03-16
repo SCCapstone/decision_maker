@@ -18,6 +18,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -518,6 +519,35 @@ public class UsersManagerTest {
   ////////////////////////////////endregion
   // checkAppSettingsVals tests //
   ////////////////////////////////region
+
+  /////////////////////////////////endregion
+  // removeGroupFromUsers tests //
+  ////////////////////////////////region
+  @Test
+  public void removeGroupFromUsers_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void removeGroupFromUsers_validInputDbDiesDuringUpdate_failureResult() {
+    doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   //endregion
 }
