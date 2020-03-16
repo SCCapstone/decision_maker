@@ -105,6 +105,8 @@ class _GroupRowState extends State<GroupRow> {
                   });
                 },
                 child: Container(
+                  // for some reason the color has to be set for the on tap above to work?
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   height: MediaQuery.of(context).size.width * .20,
                   width: MediaQuery.of(context).size.width * .15,
                   child: Center(
