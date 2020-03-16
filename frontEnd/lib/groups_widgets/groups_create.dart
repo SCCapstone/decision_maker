@@ -29,8 +29,6 @@ class _CreateGroupState extends State<CreateGroup> {
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
       new Map<String, String>(); // map of categoryIds -> categoryName
-  Map<String, String> originalCategories =
-      new Map<String, String>(); // map of categoryIds -> categoryName
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
@@ -190,12 +188,20 @@ class _CreateGroupState extends State<CreateGroup> {
                           )),
                     ],
                   ),
-                  RaisedButton.icon(
-                      onPressed: validateInput,
-                      icon: Icon(Icons.add),
-                      label: Text("Create Group"))
                 ],
               ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BottomAppBar(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton.icon(
+                  onPressed: validateInput,
+                  icon: Icon(Icons.add),
+                  label: Text("Create Group"))
             ],
           ),
         ),

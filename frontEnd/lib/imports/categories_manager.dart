@@ -13,6 +13,7 @@ class CategoriesManager {
 
   //breaking style guide for consistency with backend vars
   static final String CATEGORY_ID = "CategoryId";
+  static final String CATEGORY_IDS = "CategoryIds";
   static final String CATEGORY_NAME = "CategoryName";
   static final String CHOICES = "Choices";
   static final String GROUPS = "Groups";
@@ -24,12 +25,12 @@ class CategoriesManager {
   static final String getAction = "getCategories";
   static final String deleteAction = "deleteCategory";
 
-  static Future<ResultStatus> addOrEditCategory(
+  static Future<ResultStatus<Category>> addOrEditCategory(
       String categoryName,
       Map<String, String> choiceLabels,
       Map<String, String> choiceRatings,
       Category category) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+    ResultStatus<Category> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
 
@@ -58,7 +59,8 @@ class CategoriesManager {
 
         if (responseItem.success) {
           retVal.success = true;
-          // TODO get the category from the backend and put it in the resultStatus
+          retVal.data =
+              new Category.fromJson(json.decode(responseItem.resultMessage));
         } else {
           retVal.errorMessage = "Error saving the category (1).";
         }
@@ -74,11 +76,17 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList() async {
+  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+      {String categoryId}) async {
     ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
+    if (categoryId != null) {
+      List<String> categoryIdList = new List<String>.from([categoryId]);
+      jsonRequestBody[RequestFields.PAYLOAD]
+          .putIfAbsent(CATEGORY_IDS, () => categoryIdList);
+    }
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -177,5 +185,15 @@ class CategoriesManager {
       retVal.errorMessage = "Failed to delete category.";
     }
     return retVal;
+  }
+
+  static void sortByAlphaAscending(List<Category> categories) {
+    categories.sort((a, b) =>
+        a.categoryName.toUpperCase().compareTo(b.categoryName.toUpperCase()));
+  }
+
+  static void sortByAlphaDescending(List<Category> categories) {
+    categories.sort((a, b) =>
+        b.categoryName.toUpperCase().compareTo(a.categoryName.toUpperCase()));
   }
 }

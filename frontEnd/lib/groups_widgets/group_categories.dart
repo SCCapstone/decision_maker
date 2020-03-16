@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/categories_widgets/categories_create.dart';
+import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -16,7 +18,7 @@ class GroupCategories extends StatefulWidget {
 }
 
 class _GroupCategoriesState extends State<GroupCategories> {
-  bool initialLoad = true;
+  bool loading = true;
   bool errorLoading = false;
   Widget errorWidget;
   List<Widget> ownedCategoryRows = new List<Widget>();
@@ -30,14 +32,14 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
   @override
   Widget build(BuildContext context) {
-    if (initialLoad) {
+    if (loading) {
       return categoriesLoading();
     } else if (errorLoading) {
       return errorWidget;
     } else {
       return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
+          centerTitle: false,
           title: Text(
             "Add Categories",
             style: TextStyle(
@@ -57,21 +59,42 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             Visibility(
               visible: ownedCategoryRows.isEmpty,
-              child: Column(
-                children: <Widget>[
-                  Text(
-                      "No categories found! Click button below to create some."),
-                  Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .007),
-                  ),
-                  RaisedButton(
-                    child: Text("Create Categories"),
-                    onPressed: () {
-                      //TODO take user to category page
-                    },
-                  )
-                ],
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                    MediaQuery.of(context).size.width * .07,
+                    0,
+                    MediaQuery.of(context).size.width * .07,
+                    0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .015),
+                    ),
+                    Text(
+                        "No categories found to add. Navigate to the categories homepage to create some."),
+                    Padding(
+                      padding: EdgeInsets.all(
+                          MediaQuery.of(context).size.height * .007),
+                    ),
+                    RaisedButton(
+                      child: Text("Create Categories"),
+                      onPressed: () {
+                        Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CategoriesHome()))
+                            .then((val) {
+                          setState(() {
+                            this.loading = true;
+                          });
+                          this.getCategories();
+                        });
+                      },
+                    )
+                  ],
+                ),
               ),
             ),
             ConstrainedBox(
@@ -126,7 +149,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesLoading() {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: true,
+            centerTitle: false,
             title: Text(
               "Add Categories",
               style: TextStyle(
@@ -138,7 +161,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: true,
+            centerTitle: false,
             title: Text(
               "Add Categories",
               style: TextStyle(
@@ -174,7 +197,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   void getCategories() async {
     ResultStatus<List<Category>> resultStatus =
         await CategoriesManager.getAllCategoriesList();
-    initialLoad = false;
+    loading = false;
     if (resultStatus.success) {
       errorLoading = false;
       List<Category> selectedCats = resultStatus.data;

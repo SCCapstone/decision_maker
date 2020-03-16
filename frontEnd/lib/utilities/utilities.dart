@@ -21,6 +21,7 @@ Future<bool> internetCheck() async {
 void logOutUser(BuildContext context) {
   UsersManager.unregisterPushEndpoint();
   Globals.clearGlobals();
+  Globals.activeUserCategories.clear();
   clearTokens();
 }
 

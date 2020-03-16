@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_edit.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -25,6 +26,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
   void initState() {
     selectVal = widget.selected;
     if (widget.groupCategory) {
+      // find the num of other groups this category is in if its not yours
       for (String groupId in Globals.user.groups.keys) {
         if (widget.category.groups.containsKey(groupId) &&
             groupId != Globals.currentGroup.groupId) {
@@ -52,26 +54,32 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             },
           ),
           Expanded(
-            child: Text(
-              widget.category.categoryName,
-              style: TextStyle(fontSize: 20),
-            ),
-          ),
+              child: AutoSizeText(
+            widget.category.categoryName,
+            maxLines: 1,
+            style: TextStyle(fontSize: 20),
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
+          )),
           Visibility(
             visible: widget.groupCategory,
             child: Expanded(
-              child: Text(
-                (groupNum != 0) ? "Used in ($groupNum) groups" : "",
+              child: AutoSizeText(
+                (groupNum != 0) ? "Used in ($groupNum) other groups" : "",
                 style: TextStyle(fontSize: 15),
+                maxLines: 1,
+                minFontSize: 8,
               ),
             ),
           ),
           Padding(
             padding: EdgeInsets.all(MediaQuery.of(context).size.width * .01),
           ),
-          RaisedButton(
+          IconButton(
             color: Colors.lightBlue,
-            child: Text("Edit"),
+            icon: Icon(Icons.edit),
+            iconSize: MediaQuery.of(context).size.width * .075,
+            tooltip: (widget.groupCategory) ? "Edit Ratings" : "Edit Category",
             onPressed: () {
               Navigator.push(
                   context,

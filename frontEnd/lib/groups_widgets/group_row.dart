@@ -110,6 +110,8 @@ class _GroupRowState extends State<GroupRow> {
                                 ? Icon(Icons.notifications_off)
                                 : Icon(Icons.notifications),
                             color: Colors.blueAccent,
+                            tooltip:
+                                (this.notificationsMuted) ? "Unmute" : "Mute",
                             onPressed: () {
                               setState(() {
                                 // TODO mute the group

@@ -320,20 +320,21 @@ class _CreateEventState extends State<CreateEvent> {
               ],
             )),
         bottomNavigationBar: BottomAppBar(
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-              RaisedButton.icon(
-                  onPressed: () {
-                    if (categorySelected.isEmpty) {
-                      showPopupMessage("Select a category.", context);
-                    } else {
-                      validateInput();
-                    }
-                  },
-                  icon: Icon(Icons.add),
-                  label: Text("Create"))
-            ])),
+                  RaisedButton.icon(
+                      onPressed: () {
+                        if (categorySelected.isEmpty) {
+                          showPopupMessage("Select a category.", context);
+                        } else {
+                          validateInput();
+                        }
+                      },
+                      icon: Icon(Icons.add),
+                      label: Text("Create"))
+                ])),
       ),
     );
   }

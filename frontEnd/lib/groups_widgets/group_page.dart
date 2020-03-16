@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -39,10 +40,12 @@ class _GroupPageState extends State<GroupPage> {
       return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text(
+          title: AutoSizeText(
             Globals.currentGroup.groupName,
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+            maxLines: 1,
+            style: TextStyle(fontSize: 40),
+            minFontSize: 12,
+            overflow: TextOverflow.ellipsis,
           ),
           actions: <Widget>[
             IconButton(

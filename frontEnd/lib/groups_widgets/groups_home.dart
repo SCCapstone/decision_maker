@@ -236,6 +236,7 @@ class _GroupsHomeState extends State<GroupsHome>
                     controller: this.searchBarController,
                     style: TextStyle(color: Colors.white, fontSize: 30),
                     decoration: InputDecoration(
+                        border: InputBorder.none,
                         hintText: "Search Group",
                         hintStyle: TextStyle(
                             color: Colors.white, fontStyle: FontStyle.italic)),

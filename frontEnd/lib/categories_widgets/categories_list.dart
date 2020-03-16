@@ -8,7 +8,7 @@ import 'categories_list_item.dart';
 
 class CategoryList extends StatefulWidget {
   final List<Category> categories;
-  final String sortType;
+  final int sortType;
   final Function refreshPage;
 
   CategoryList({Key key, this.categories, this.sortType, this.refreshPage})
@@ -33,12 +33,12 @@ class _CategoryListState extends State<CategoryList> {
               shrinkWrap: true,
               itemCount: widget.categories.length,
               itemBuilder: (BuildContext context, int index) {
-                bool isOwner = false;
-                if (widget.categories[index].owner == Globals.username) {
-                  isOwner = true;
+                if (widget.sortType == Globals.alphabeticalSort) {
+                  CategoriesManager.sortByAlphaAscending(widget.categories);
+                } else {
+                  CategoriesManager.sortByAlphaDescending(widget.categories);
                 }
-                return CategoriesListItem(
-                    widget.categories[index], index, isOwner,
+                return CategoriesListItem(widget.categories[index], index,
                     onDelete: () => removeItem(index),
                     afterEditCallback: widget.refreshPage);
               }));
@@ -56,6 +56,8 @@ class _CategoryListState extends State<CategoryList> {
 
     if (status.success) {
       setState(() {
+        Globals.activeUserCategories.remove(widget.categories[index]);
+        Globals.user.ownedCategories.remove(widget.categories[index]);
         widget.categories.remove(widget.categories[index]);
       });
     } else {
