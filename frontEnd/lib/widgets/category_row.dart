@@ -19,19 +19,15 @@ class _CategoryRow extends State<CategoryRow> {
 
   @override
   void initState() {
-    if (widget.category.owner == null) {
-      categoryText = widget.category.categoryName;
+    // only show owner in row if the user doesn't own it
+    bool isActiveUserCategoryOwner = widget.category.owner == Globals.username;
+    if (isActiveUserCategoryOwner) {
+      this.categoryText = widget.category.categoryName;
     } else {
-      // only show owner in row if the user doesn't own it
-      bool isActiveUserCategoryOwner =
-          widget.category.owner == Globals.username;
-      if (isActiveUserCategoryOwner) {
-        categoryText = widget.category.categoryName;
-      } else {
-        categoryText =
-            "${widget.category.categoryName} (@${widget.category.owner})";
-      }
+      this.categoryText =
+          "${widget.category.categoryName} (@${widget.category.owner})";
     }
+
     super.initState();
   }
 
