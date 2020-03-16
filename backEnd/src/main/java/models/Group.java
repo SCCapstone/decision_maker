@@ -26,13 +26,12 @@ public class Group {
   private Integer defaultVotingDuration;
   private Integer nextEventId;
   private String lastActivity;
+  private Map<String, Event> events;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
   @Setter(AccessLevel.NONE)
   private Map<String, String> categories;
-  @Setter(AccessLevel.NONE)
-  private Map<String, Event> events;
 
   public Group(final Map<String, Object> jsonMap) {
     this.setGroupId((String) jsonMap.get(GroupsManager.GROUP_ID));
@@ -48,7 +47,7 @@ public class Group {
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
     this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
-    this.setEvents((Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
+    this.setEventsRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
   }
 
   public Item asItem() {
@@ -105,7 +104,7 @@ public class Group {
     }
   }
 
-  public void setEvents(final Map<String, Object> jsonMap) {
+  public void setEventsRawMap(final Map<String, Object> jsonMap) {
     this.events = null;
     if (jsonMap != null) {
       this.events = new HashMap<>();

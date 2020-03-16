@@ -112,8 +112,6 @@ public class CategoriesManagerTest {
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
 
-    System.out.println(resultStatus.resultMessage);
-
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
