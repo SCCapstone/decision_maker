@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -16,6 +17,22 @@ class CategoryRow extends StatefulWidget {
 }
 
 class _CategoryRow extends State<CategoryRow> {
+  String categoryText;
+
+  @override
+  void initState() {
+    // only show owner in row if the user doesn't own it
+    bool isActiveUserCategoryOwner = widget.category.owner == Globals.username;
+    if (isActiveUserCategoryOwner) {
+      this.categoryText = widget.category.categoryName;
+    } else {
+      this.categoryText =
+          "${widget.category.categoryName} (@${widget.category.owner})";
+    }
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -34,9 +51,7 @@ class _CategoryRow extends State<CategoryRow> {
           ),
           Expanded(
             child: AutoSizeText(
-              (widget.owner == null)
-                  ? widget.category.categoryName
-                  : "${widget.category.categoryName} (@${widget.owner})",
+              this.categoryText,
               minFontSize: 12,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

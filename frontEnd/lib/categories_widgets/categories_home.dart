@@ -124,7 +124,6 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   Future<Null> refreshList() async {
     getCategories();
-    //TODO look in to updating this so that we don't have to re-query the categories, we could potentially use some global var for this (https://github.com/SCCapstone/decision_maker/issues/106)
     setState(() {});
   }
 }

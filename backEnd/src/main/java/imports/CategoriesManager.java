@@ -8,6 +8,8 @@ import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,23 +45,21 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
-    if (
-        jsonMap.containsKey(CATEGORY_NAME) &&
-            jsonMap.containsKey(CHOICES) &&
-            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
-      final UUID uuid = UUID.randomUUID();
 
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_NAME, CHOICES);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
-        final String nextCategoryIndex = uuid.toString();
+        final String nextCategoryIndex = UUID.randomUUID().toString();
         jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
-
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        jsonMap.putIfAbsent(OWNER, activeUser);
 
         final Category newCategory = new Category(jsonMap);
         newCategory.updateNextChoiceNo();
+        newCategory.setOwner(activeUser);
+        newCategory.setCategoryId(nextCategoryIndex);
+        newCategory.setGroups(Collections.emptyMap());
 
         this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 
@@ -69,7 +69,8 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         //todo wrap this operation into a transaction
         if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true, "Category created successfully!");
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(newCategory.asMap()));
         } else {
           resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
               + updatedUsersTableResult.resultMessage;
@@ -94,14 +95,12 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_ID, CATEGORY_NAME,
+            CHOICES);
+
     //validate data, log results as there should be some validation already on the front end
-    if (
-        jsonMap.containsKey(CATEGORY_ID) &&
-            jsonMap.containsKey(CATEGORY_NAME) &&
-            jsonMap.containsKey(CHOICES) &&
-            jsonMap.containsKey(RequestFields.USER_RATINGS) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
@@ -132,7 +131,11 @@ public class CategoriesManager extends DatabaseAccessManager {
               .updateUserChoiceRatings(jsonMap, true, metrics);
 
           if (updatedUsersTableResult.success) {
-            resultStatus = new ResultStatus(true, "Category saved successfully!");
+            oldCategory.setCategoryName(newCategory.getCategoryName());
+            oldCategory.setChoices(newCategory.getChoices());
+            oldCategory.setNextChoiceNo(newCategory.getNextChoiceNo());
+            resultStatus = new ResultStatus(true,
+                JsonEncoders.convertObjectToJson(oldCategory.asMap()));
           } else {
             resultStatus.resultMessage =
                 "Error: Unable to update this category's ratings in the users table. "
@@ -214,10 +217,9 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
-    if (
-        jsonMap.containsKey(CATEGORY_ID) &&
-            jsonMap.containsKey(RequestFields.ACTIVE_USER)
-    ) {
+    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER, CATEGORY_ID);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         // Confirm that the username matches with the owner of the category before deleting it
         String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));

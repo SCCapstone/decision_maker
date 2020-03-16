@@ -22,12 +22,12 @@ class CreateCategory extends StatefulWidget {
 class _CreateCategoryState extends State<CreateCategory> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
-      new TextEditingController();
+  new TextEditingController();
   final int defaultRate = 3;
   final Map<String, TextEditingController> labelControllers =
-      new LinkedHashMap<String, TextEditingController>();
+  new LinkedHashMap<String, TextEditingController>();
   final Map<String, TextEditingController> ratesControllers =
-      new LinkedHashMap<String, TextEditingController>();
+  new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
@@ -105,7 +105,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                 autovalidate: this.autoValidate,
                 child: Padding(
                   padding:
-                      EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .015),
                   child: Column(
                     children: <Widget>[
                       Padding(
@@ -138,7 +138,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                             slivers: <Widget>[
                               SliverList(
                                 delegate: SliverChildBuilderDelegate(
-                                    (context, index) => this.choiceRows[index],
+                                        (context, index) => this.choiceRows[index],
                                     childCount: this.choiceRows.length),
                               )
                             ],
@@ -160,11 +160,11 @@ class _CreateCategoryState extends State<CreateCategory> {
                 setState(() {
                   this.focusNode = new FocusNode();
                   TextEditingController labelController =
-                      new TextEditingController();
+                  new TextEditingController();
                   this.labelControllers.putIfAbsent(
                       this.nextChoiceValue.toString(), () => labelController);
                   TextEditingController rateController =
-                      new TextEditingController();
+                  new TextEditingController();
                   rateController.text = this.defaultRate.toString();
                   this.ratesControllers.putIfAbsent(
                       this.nextChoiceValue.toString(), () => rateController);
@@ -183,10 +183,10 @@ class _CreateCategoryState extends State<CreateCategory> {
                   // allow the list to automatically scroll down as it grows
                   SchedulerBinding.instance.addPostFrameCallback((_) {
                     this.scrollController.animateTo(
-                          this.scrollController.position.maxScrollExtent,
-                          duration: const Duration(microseconds: 100),
-                          curve: Curves.easeOut,
-                        );
+                      this.scrollController.position.maxScrollExtent,
+                      duration: const Duration(microseconds: 100),
+                      curve: Curves.easeOut,
+                    );
                   });
                 });
               },
@@ -230,7 +230,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             ],
             content: Text(
                 "You have unsaved changes to this category. To save them click the \"Save\" button in "
-                "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
+                    "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
           );
         });
   }
@@ -260,11 +260,11 @@ class _CreateCategoryState extends State<CreateCategory> {
       } else {
         showLoadingDialog(context, "Creating category...", true);
         ResultStatus<Category> resultStatus =
-            await CategoriesManager.addOrEditCategory(
-                this.categoryNameController.text.trim(),
-                labelsToSave,
-                ratesToSave,
-                null);
+        await CategoriesManager.addOrEditCategory(
+            this.categoryNameController.text.trim(),
+            labelsToSave,
+            ratesToSave,
+            null);
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           Category newCategory = resultStatus.data;

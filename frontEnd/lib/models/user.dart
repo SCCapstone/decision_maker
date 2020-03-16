@@ -1,3 +1,4 @@
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
@@ -50,8 +51,10 @@ class User {
     List<Category> categoryList = new List<Category>();
     Map<String, dynamic> categoriesRaw = json[UsersManager.OWNED_CATEGORIES];
     for (String catId in categoriesRaw.keys) {
-      categoryList.add(Category.debug(
-          catId, categoriesRaw[catId].toString(), null, null, null, null));
+      categoryList.add(Category(
+          categoryId: catId,
+          categoryName: categoriesRaw[catId].toString(),
+          owner: json[UsersManager.USERNAME]));
     }
 
     return User(
