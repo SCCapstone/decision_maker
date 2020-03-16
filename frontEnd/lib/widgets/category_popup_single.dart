@@ -62,8 +62,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                           List<Category> categories = resultStatus.data;
                           CategoriesManager.sortByAlphaAscending(categories);
                           for (Category category in categories) {
-                            this.categoryRows.add(CategoryRow(
-                                category,
+                            this.categoryRows.add(CategoryRow(category,
                                 widget.selectedCategory.contains(category),
                                 onSelect: () => selectCategory(category)));
                           }

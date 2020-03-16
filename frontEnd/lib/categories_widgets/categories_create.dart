@@ -11,9 +11,7 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
 class CreateCategory extends StatefulWidget {
-  final Category category;
-
-  CreateCategory({Key key, this.category}) : super(key: key);
+  CreateCategory({Key key}) : super(key: key);
 
   @override
   _CreateCategoryState createState() => _CreateCategoryState();
@@ -238,7 +236,7 @@ class _CreateCategoryState extends State<CreateCategory> {
   void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
-      showErrorMessage("Error.", "Must have at least one choice!", context);
+      showErrorMessage("Error", "Must have at least one choice!", context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
@@ -254,7 +252,7 @@ class _CreateCategoryState extends State<CreateCategory> {
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error.", "No duplicate choices allowed!", context);
+              "Input Error", "No duplicate choices allowed!", context);
           this.autoValidate = true;
         });
       } else {
@@ -268,8 +266,15 @@ class _CreateCategoryState extends State<CreateCategory> {
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           Category newCategory = resultStatus.data;
-          Globals.user.ownedCategories.add(newCategory);
+          Globals.user.ownedCategories.add(new Category(
+              categoryId: newCategory.categoryId,
+              categoryName: newCategory.categoryName));
           Globals.activeUserCategories.add(newCategory);
+          if (Globals.activeUserCategories.length >
+              Globals.maxCategoryCacheSize) {
+            Globals.activeUserCategories
+                .removeAt(Globals.maxCategoryCacheSize - 1);
+          }
           // update local ratings
           Globals.user.userRatings.update(
               newCategory.categoryId, (existing) => ratesToSave,
