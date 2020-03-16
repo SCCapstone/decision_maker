@@ -11,9 +11,7 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
 class CreateCategory extends StatefulWidget {
-  final Category category;
-
-  CreateCategory({Key key, this.category}) : super(key: key);
+  CreateCategory({Key key}) : super(key: key);
 
   @override
   _CreateCategoryState createState() => _CreateCategoryState();
@@ -268,7 +266,9 @@ class _CreateCategoryState extends State<CreateCategory> {
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           Category newCategory = resultStatus.data;
-          Globals.user.ownedCategories.add(newCategory);
+          Globals.user.ownedCategories.add(new Category(
+              categoryId: newCategory.categoryId,
+              categoryName: newCategory.categoryName));
           Globals.activeUserCategories.add(newCategory);
           if (Globals.activeUserCategories.length >
               Globals.maxCategoryCacheSize) {
