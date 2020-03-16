@@ -19,7 +19,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import java.util.Arrays;
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -456,7 +456,7 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .removeGroupFromCategories(Arrays.asList("CategoryId1", "CategoryId2"), "GroupId1",
+        .removeGroupFromCategories(Sets.newHashSet("CategoryId1", "CategoryId2"), "GroupId1",
             this.metrics);
 
     assertTrue(resultStatus.success);
@@ -466,11 +466,22 @@ public class CategoriesManagerTest {
   }
 
   @Test
+  public void removeGroupFromCategories_validInput_noCategories_successfulResult() {
+    ResultStatus resultStatus = this.categoriesManager
+        .removeGroupFromCategories(Sets.newHashSet(), "GroupId1", this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
   public void removeGroupFromCategories_validInputDbDiesDuringUpdate_failureResult() {
     doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager
-        .removeGroupFromCategories(Arrays.asList("User1", "User2"), "GroupId1", this.metrics);
+        .removeGroupFromCategories(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));

@@ -263,7 +263,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus removeGroupFromCategories(List<String> categoryIds, String groupId,
+  public ResultStatus removeGroupFromCategories(Set<String> categoryIds, String groupId,
       Metrics metrics) {
     final String className = "CategoriesManager.removeGroupFromCategories";
     metrics.commonSetup(className);
@@ -271,22 +271,26 @@ public class CategoriesManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      final String updateExpression = "remove " + GROUPS + ".#groupId";
-      final NameMap nameMap = new NameMap().with("#groupId", groupId);
+      if (categoryIds.isEmpty()) {
+        resultStatus = new ResultStatus(true,
+            "Success: Group does not need to be removed from categories table.");
+      } else {
+        final String updateExpression = "remove " + GROUPS + ".#groupId";
+        final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
-      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap);
+        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap);
 
-      for (String categoryId : categoryIds) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
-        this.updateItem(updateItemSpec);
+        for (String categoryId : categoryIds) {
+          updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
+          this.updateItem(updateItemSpec);
+        }
+        resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
       }
-      resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
     } catch (Exception e) {
-      metrics.log(
-          new ErrorDescriptor<>(groupId, className, e));
-      resultStatus.resultMessage = "Exception inside of manager.";
+      metrics.log(new ErrorDescriptor<>(groupId, className, e));
+      resultStatus.resultMessage = "Exception inside of: " + className;
     }
 
     metrics.commonClose(resultStatus.success);

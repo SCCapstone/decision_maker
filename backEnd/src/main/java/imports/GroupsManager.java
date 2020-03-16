@@ -277,18 +277,15 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        Item item = this.getItemByPrimaryKey(groupId);
-        if (activeUser.equals(item.getString(GROUP_CREATOR))) {
-          List<String> members = new ArrayList<>(item.getMap(MEMBERS).keySet());
-          List<String> categoryIds = new ArrayList<>(item.getMap(CATEGORIES).keySet());
+        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        if (activeUser.equals(group.getGroupCreator())) {
+          Set<String> members = group.getMembers().keySet();
+          Set<String> categoryIds = group.getCategories().keySet();
 
           ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
               .removeGroupFromUsers(members, groupId, metrics);
-          ResultStatus removeFromCategoriesResult = new ResultStatus(true, "");
-          if (!categoryIds.isEmpty()) {
-            removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
-                .removeGroupFromCategories(categoryIds, groupId, metrics);
-          }
+          ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
+              .removeGroupFromCategories(categoryIds, groupId, metrics);
 
           if (removeFromUsersResult.success && removeFromCategoriesResult.success) {
             //TODO can probably put this into a transaction
@@ -299,20 +296,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
             resultStatus = new ResultStatus(true, "Group deleted successfully!");
           } else {
-            String errorMessage = "";
-            if (!removeFromUsersResult.success) {
-              errorMessage = "Error: Unable to remove this group from the users table. "
-                  + removeFromUsersResult.resultMessage + "\n";
-            }
-            if (!removeFromCategoriesResult.success) {
-              errorMessage += "Error: Unable to remove this group from the categories table. "
-                  + removeFromCategoriesResult.resultMessage;
-            } else {
-              // if we reach this, then only removeGroupFromUsers failed, so trim to remove \n
-              errorMessage = errorMessage.trim();
-            }
-            metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage));
-            resultStatus.resultMessage = errorMessage;
+            resultStatus = removeFromUsersResult.applyResultStatus(removeFromCategoriesResult);
+            metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, resultStatus.resultMessage));
           }
 
         } else {
@@ -322,14 +307,12 @@ public class GroupsManager extends DatabaseAccessManager {
           resultStatus.resultMessage = "Error: User is not the owner of the group.";
         }
       } catch (Exception e) {
-        metrics
-            .log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
       metrics
-          .log(new ErrorDescriptor<>(jsonMap, classMethod,
-              "Required request keys not found"));
+          .log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
     metrics.commonClose(resultStatus.success);

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -186,9 +187,9 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
         .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
         .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
@@ -201,32 +202,9 @@ public class GroupsManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-  }
-
-  @Test
-  public void deleteGroup_validInput_noCategories_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of())
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
-
-    ResultStatus resultStatus = this.groupsManager
-        .deleteGroup(this.deleteGroupGoodInput, metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -236,9 +214,9 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_usersTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
         .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
         .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
@@ -251,9 +229,9 @@ public class GroupsManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
   }
@@ -262,9 +240,9 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_categoriesTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
         .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
         .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
@@ -277,9 +255,9 @@ public class GroupsManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(List.class), any(String.class), any(Metrics.class));
+        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
   }

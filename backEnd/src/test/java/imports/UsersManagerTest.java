@@ -18,7 +18,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Arrays;
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -528,7 +528,7 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Arrays.asList("User1", "User2"), "GroupId1", this.metrics);
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -541,7 +541,7 @@ public class UsersManagerTest {
     doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Arrays.asList("User1", "User2"), "GroupId1", this.metrics);
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));

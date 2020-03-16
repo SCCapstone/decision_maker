@@ -559,7 +559,7 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus removeGroupFromUsers(final List<String> users, final String groupId,
+  public ResultStatus removeGroupFromUsers(final Set<String> users, final String groupId,
       final Metrics metrics) {
     final String className = "UsersManager.removeGroupFromUsers";
     metrics.commonSetup(className);
@@ -582,7 +582,7 @@ public class UsersManager extends DatabaseAccessManager {
     } catch (Exception e) {
       metrics.log(
           new ErrorDescriptor<>(groupId, className, e));
-      resultStatus.resultMessage = "Exception inside of manager.";
+      resultStatus.resultMessage = "Exception inside of: " + className;
     }
 
     metrics.commonClose(resultStatus.success);
