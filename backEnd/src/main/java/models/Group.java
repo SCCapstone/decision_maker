@@ -2,7 +2,6 @@ package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import imports.GroupsManager;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;

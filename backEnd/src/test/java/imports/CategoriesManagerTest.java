@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -22,6 +23,7 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +47,9 @@ public class CategoriesManagerTest {
       RequestFields.USER_RATINGS, ImmutableMap.of("0", "rating", "2", "rating"),
       RequestFields.ACTIVE_USER, "ActiveUser"
   ));
+
+  private final Item newCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+      (ImmutableMap.of("catId", "catName", "catId2", "catName2")));
 
   private final Map<String, Object> editCategoryGoodInput = Maps.newHashMap(ImmutableMap.of(
       CategoriesManager.CATEGORY_ID, "CategoryId",
@@ -108,6 +113,7 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -118,14 +124,15 @@ public class CategoriesManagerTest {
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).putItem(any(PutItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void addNewCategory_validInputBadUsers_failureResult() {
+  public void addNewCategory_validInputBadUserRatingsUpdate_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -137,12 +144,30 @@ public class CategoriesManagerTest {
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested\
     verify(this.table, times(1)).putItem(any(PutItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false); // whole operation
+    verify(this.metrics, times(1)).commonClose(true); // valid input
+  }
+
+  @Test
+  public void addNewCategory_validInputBadUserGet_failureResult() {
+    doThrow(NullPointerException.class).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+
+    ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0))
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false); // whole operation
+    verify(this.metrics, times(0)).commonClose(true); // valid input
   }
 
   @Test
   public void addNewCategory_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -152,7 +177,8 @@ public class CategoriesManagerTest {
         .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false); // whole operation
+    verify(this.metrics, times(1)).commonClose(true); // valid input
   }
 
   @Test
