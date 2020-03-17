@@ -2,7 +2,6 @@ package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import imports.CategoriesManager;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -10,7 +9,7 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class Category {
+public class Category implements Model {
 
   private String categoryId;
   private String categoryName;

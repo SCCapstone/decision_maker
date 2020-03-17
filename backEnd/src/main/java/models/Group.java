@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
-public class Group {
+public class Group implements Model {
 
   private String groupId;
   private String groupName;

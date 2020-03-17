@@ -129,7 +129,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(FAVORITES, Collections.emptyMap())
               .withMap(FAVORITE_OF, Collections.emptyMap());
 
-          this.putItem(new PutItemSpec().withItem(user));
+          this.putItem(user);
         }
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));

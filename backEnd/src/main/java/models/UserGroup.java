@@ -1,6 +1,5 @@
 package models;
 
-import imports.CategoriesManager;
 import imports.GroupsManager;
 import imports.UsersManager;
 import java.util.Collections;

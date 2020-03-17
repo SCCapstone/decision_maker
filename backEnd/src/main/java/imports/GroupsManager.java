@@ -182,7 +182,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Group newGroup = new Group(jsonMap);
         newGroup.setIsOpen(false); // TODO get from 'required' request key (it's not required rn)
-        this.putItem(newGroup.asItem());
+        this.putItem(newGroup);
 
         //old group being null signals we're creating a new group
         this.updateUsersTable(null, newGroup, metrics);
