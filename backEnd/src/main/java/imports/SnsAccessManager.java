@@ -9,6 +9,8 @@ import com.amazonaws.services.sns.model.DeleteEndpointRequest;
 import com.amazonaws.services.sns.model.DeleteEndpointResult;
 import com.amazonaws.services.sns.model.GetEndpointAttributesRequest;
 import com.amazonaws.services.sns.model.GetEndpointAttributesResult;
+import com.amazonaws.services.sns.model.GetPlatformApplicationAttributesRequest;
+import com.amazonaws.services.sns.model.GetPlatformApplicationAttributesResult;
 import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
@@ -95,5 +97,11 @@ public class SnsAccessManager {
         .withTargetArn(arn)
         .withMessage(message);
     return this.client.publish(publishRequest);
+  }
+
+  public GetPlatformApplicationAttributesResult getPlatformAttributes(final String platformArn) {
+    return this.client
+        .getPlatformApplicationAttributes(
+            new GetPlatformApplicationAttributesRequest().withPlatformApplicationArn(platformArn));
   }
 }
