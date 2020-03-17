@@ -19,7 +19,7 @@ public class User {
   @Setter(AccessLevel.NONE)
   private Map<String, UserGroup> groups;
   @Setter(AccessLevel.NONE)
-  private Map<String, UserGroup> groupsLeft;
+  private Map<String, Group> groupsLeft;
   @Setter(AccessLevel.NONE)
   private Map<String, Map<String, Integer>> categoryRatings;
   @Setter(AccessLevel.NONE)
@@ -37,6 +37,7 @@ public class User {
     this.setAppSettings(
         new AppSettings((Map<String, Object>) jsonMap.get(UsersManager.APP_SETTINGS)));
     this.setGroups((Map<String, Object>) jsonMap.get(UsersManager.GROUPS));
+    this.setGroupsLeft((Map<String, Object>) jsonMap.get(UsersManager.GROUPS_LEFT));
     this.setCategoryRatings((Map<String, Object>) jsonMap.get(UsersManager.CATEGORIES));
     this.setOwnedCategories((Map<String, Object>) jsonMap.get(UsersManager.OWNED_CATEGORIES));
     this.setFavoriteOf((Map<String, Object>) jsonMap.get(UsersManager.FAVORITE_OF));
@@ -53,6 +54,16 @@ public class User {
       this.groups = new HashMap<>();
       for (String groupId : jsonMap.keySet()) {
         this.groups.putIfAbsent(groupId, new UserGroup((Map<String, Object>) jsonMap.get(groupId)));
+      }
+    }
+  }
+
+  public void setGroupsLeft(final Map<String, Object> jsonMap) {
+    this.groupsLeft = null;
+    if (jsonMap != null) {
+      this.groupsLeft = new HashMap<>();
+      for (String groupId : jsonMap.keySet()) {
+        this.groupsLeft.putIfAbsent(groupId, new Group((Map<String, Object>) jsonMap.get(groupId)));
       }
     }
   }

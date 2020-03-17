@@ -42,6 +42,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String ICON = "Icon";
   public static final String GROUP_CREATOR = "GroupCreator";
   public static final String MEMBERS = "Members";
+  public static final String MEMBERS_LEFT = "MembersLeft";
   public static final String CATEGORIES = "Categories";
   public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";

@@ -26,7 +26,7 @@ public class UserGroup {
     if (jsonMap != null) {
       this.eventsUnseen = new HashMap<>();
       for (String eventId : jsonMap.keySet()) {
-        this.eventsUnseen.put(eventId, this.getBoolFromObject(jsonMap.get(eventId)));
+        this.eventsUnseen.put(eventId, true);
       }
     }
   }
