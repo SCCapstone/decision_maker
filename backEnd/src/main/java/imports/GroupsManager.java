@@ -47,6 +47,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
+  public static final String IS_OPEN = "IsOpen";
 
   public static final String CATEGORY_ID = "CategoryId";
   public static final String CATEGORY_NAME = "CategoryName";
@@ -178,10 +179,7 @@ public class GroupsManager extends DatabaseAccessManager {
         jsonMap.put(NEXT_EVENT_ID, 1);
 
         final Group newGroup = new Group(jsonMap);
-        PutItemSpec putItemSpec = new PutItemSpec()
-            .withItem(newGroup.asItem());
-
-        this.putItem(putItemSpec);
+        this.putItem(newGroup.asItem());
 
         final Group oldGroup = new Group();
         oldGroup.setMembers(Collections.emptyMap());

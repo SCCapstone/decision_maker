@@ -80,6 +80,10 @@ public class DatabaseAccessManager {
     return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
   }
 
+  public PutItemOutcome putItem(final Item item) throws NullPointerException {
+    return this.dynamoDb.getTable(this.tableName).putItem(new PutItemSpec().withItem(item));
+  }
+
   public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
   }

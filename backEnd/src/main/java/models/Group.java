@@ -26,9 +26,12 @@ public class Group {
   private Integer nextEventId;
   private String lastActivity;
   private Map<String, Event> events;
+  private Boolean isOpen;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
+  @Setter(AccessLevel.NONE)
+  private Map<String, Member> membersLeft;
   @Setter(AccessLevel.NONE)
   private Map<String, String> categories;
 
@@ -43,6 +46,7 @@ public class Group {
         this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
     this.setNextEventId(this.getIntFromObject(jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
+    this.setIsOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
     this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
@@ -69,6 +73,7 @@ public class Group {
     modelAsMap.putIfAbsent(GroupsManager.DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
     modelAsMap.putIfAbsent(GroupsManager.NEXT_EVENT_ID, this.nextEventId);
     modelAsMap.putIfAbsent(GroupsManager.LAST_ACTIVITY, this.lastActivity);
+    modelAsMap.putIfAbsent(GroupsManager.IS_OPEN, this.isOpen);
     modelAsMap.putIfAbsent(GroupsManager.MEMBERS, this.getMembersMap());
     modelAsMap.putIfAbsent(GroupsManager.CATEGORIES, this.categories);
     modelAsMap.putIfAbsent(GroupsManager.EVENTS, this.getEventsMap());
@@ -152,6 +157,13 @@ public class Group {
   private Integer getIntFromObject(final Object input) {
     if (input != null) {
       return Integer.parseInt(input.toString());
+    }
+    return null;
+  }
+
+  private Boolean getBoolFromObject(final Object input) {
+    if (input != null) {
+      return Boolean.parseBoolean(input.toString());
     }
     return null;
   }

@@ -17,7 +17,9 @@ public class User {
   private AppSettings appSettings;
 
   @Setter(AccessLevel.NONE)
-  private Map<String, Group> groups;
+  private Map<String, UserGroup> groups;
+  @Setter(AccessLevel.NONE)
+  private Map<String, UserGroup> groupsLeft;
   @Setter(AccessLevel.NONE)
   private Map<String, Map<String, Integer>> categoryRatings;
   @Setter(AccessLevel.NONE)
@@ -50,7 +52,7 @@ public class User {
     if (jsonMap != null) {
       this.groups = new HashMap<>();
       for (String groupId : jsonMap.keySet()) {
-        this.groups.putIfAbsent(groupId, new Group((Map<String, Object>) jsonMap.get(groupId)));
+        this.groups.putIfAbsent(groupId, new UserGroup((Map<String, Object>) jsonMap.get(groupId)));
       }
     }
   }

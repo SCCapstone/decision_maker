@@ -27,7 +27,7 @@ public class Category {
     this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
     this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
-    this.setChoicesRaw((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
+    this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
     this.setGroups((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
   }
 
@@ -52,7 +52,7 @@ public class Category {
     return modelAsMap;
   }
 
-  public void setChoicesRaw(final Map<String, Object> jsonMap) {
+  public void setChoicesRawMap(final Map<String, Object> jsonMap) {
     this.choices = null;
     if (jsonMap != null) {
       this.choices = new HashMap<>();
