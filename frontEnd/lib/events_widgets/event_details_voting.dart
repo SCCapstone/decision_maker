@@ -35,7 +35,9 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   void initState() {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
-      this.eventCreator = this.event.eventCreator[username];
+      this.eventCreator = this.event.eventCreator[username]
+              [UsersManager.DISPLAY_NAME] +
+          " (@$username)";
     }
     for (String choiceId in this.event.tentativeAlgorithmChoices.keys) {
       this.choices.putIfAbsent(

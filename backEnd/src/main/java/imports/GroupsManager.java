@@ -341,7 +341,6 @@ public class GroupsManager extends DatabaseAccessManager {
         jsonMap.putIfAbsent(activeUser, eventCreator.asMember().asMap());
 
         final Event newEvent = new Event(jsonMap);
-
         if (this.validEventInput(oldGroup, newEvent)) {
           newEvent.setOptedIn(oldGroup.getMembers());
           newEvent.setCreatedDateTime(lastActivity);
