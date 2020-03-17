@@ -180,6 +180,7 @@ public class GroupsManager extends DatabaseAccessManager {
         jsonMap.put(NEXT_EVENT_ID, 1);
 
         final Group newGroup = new Group(jsonMap);
+        newGroup.setIsOpen(false); // TODO get from 'required' request key (it's not required rn)
         this.putItem(newGroup.asItem());
 
         final Group oldGroup = new Group();
