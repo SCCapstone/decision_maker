@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
+import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
@@ -54,7 +55,7 @@ public class GroupsPostHandler implements
           } else if (action.equals("voteForChoice")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
-            resultStatus = new ResultStatus(true, "Warming groups endpoint.");
+            resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));

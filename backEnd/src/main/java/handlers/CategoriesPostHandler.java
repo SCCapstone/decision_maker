@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
+import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
@@ -50,7 +51,7 @@ public class CategoriesPostHandler implements
             resultStatus = DatabaseManagers.CATEGORIES_MANAGER
                 .deleteCategory(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
-            resultStatus = new ResultStatus(true, "Warming categories endpoint.");
+            resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));
