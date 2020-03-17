@@ -23,7 +23,6 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +49,13 @@ public class CategoriesManagerTest {
 
   private final Item newCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
       (ImmutableMap.of("catId", "catName", "catId2", "catName2")));
+
+  private final Item newCategoryInvalidUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+      new HashMap<String, String>() {{
+        for (int i = 0; i < 20; i++) {
+          put("catId" + (new Integer(i)).toString(), "catName" + (new Integer(i)).toString());
+        }
+      }});
 
   private final Map<String, Object> editCategoryGoodInput = Maps.newHashMap(ImmutableMap.of(
       CategoriesManager.CATEGORY_ID, "CategoryId",
@@ -150,7 +156,28 @@ public class CategoriesManagerTest {
 
   @Test
   public void addNewCategory_validInputBadUserGet_failureResult() {
-    doThrow(NullPointerException.class).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+
+    ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(1))
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+    //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
+    verify(this.dynamoDB, times(1)).getTable(
+        any(String.class)); // the db is hit twice, but only once by the dependency being tested\
+    verify(this.table, times(1)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false); // whole operation
+    verify(this.metrics, times(1)).commonClose(true); // valid input
+  }
+
+  @Test
+  public void addNewCategory_invalidInput_failureResult() {
+    doReturn(newCategoryInvalidUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
