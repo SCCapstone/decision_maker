@@ -84,6 +84,7 @@ public class CategoriesManager extends DatabaseAccessManager {
           resultStatus.resultMessage = "Error: invalid request";
         }
       } catch (Exception e) {
+        System.out.println(new ErrorDescriptor<>(jsonMap, classMethod, e).toString());
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
