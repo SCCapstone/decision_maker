@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import models.Category;
@@ -64,7 +65,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         newCategory.setCategoryId(nextCategoryIndex);
         newCategory.setGroups(Collections.emptyMap());
 
-        if (this.newCategoryIsValid(newCategory, metrics)) {
+        Optional<String> isValid = this.newCategoryIsValid(newCategory, metrics);
+        if (!isValid.isPresent()) {
           this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 
           //put the entered ratings in the users table
@@ -81,10 +83,9 @@ public class CategoriesManager extends DatabaseAccessManager {
                 + updatedUsersTableResult.resultMessage;
           }
         } else {
-          resultStatus.resultMessage = "Error: invalid request";
+          resultStatus.resultMessage = isValid.get();
         }
       } catch (Exception e) {
-        System.out.println(new ErrorDescriptor<>(jsonMap, classMethod, e).toString());
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
@@ -98,53 +99,62 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private boolean newCategoryIsValid(final Category newCategory, final Metrics metrics) {
+  private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
     final String classMethod = "CategoryManager.newCategoryIsValid";
     metrics.commonSetup(classMethod);
-    //check that the owner isn't exceeding the maximum number of categories allowed
-    boolean isValid = true;
+
+    String isValid = null;
 
     try {
       final User user = new User(
           DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(newCategory.getOwner()).asMap());
 
       if (user.getOwnedCategories().size() >= MAX_NUMBER_OF_CATEGORIES) {
-        //user already has maximum allowed number of categories
-        isValid = false;
+        isValid = this.getUpdatedInvalidMessage(isValid,
+            "Error: user already has maximum allowed number of categories.");
       }
 
       for (String categoryName : user.getOwnedCategories().values()) {
         if (categoryName.equals(newCategory.getCategoryName())) {
-          //user can not own two categories with the same name
-          isValid = false;
+          isValid = this.getUpdatedInvalidMessage(isValid,
+              "Error: user can not own two categories with the same name.");
           break;
         }
       }
 
       if (newCategory.getChoices().size() < 1) {
-        //category must have at least one choice.
-        isValid = false;
+        isValid = this
+            .getUpdatedInvalidMessage(isValid, "Error: category must have at least one choice.");
       }
 
       for (String choiceLabel : newCategory.getChoices().values()) {
         if (choiceLabel.length() < 1) {
-          //choice labels cannot be empty
-          isValid = false;
+          isValid = this.getUpdatedInvalidMessage(isValid, "Error: choice labels cannot be empty.");
           break;
         }
       }
 
       if (newCategory.getCategoryName().length() < 1) {
-        //category name can not be empty
-        isValid = false;
+        isValid = this.getUpdatedInvalidMessage(isValid, "Error: category name can not be empty.");
       }
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
-      isValid = false;
+      isValid = this.getUpdatedInvalidMessage(isValid, "Exception");
     }
 
-    metrics.commonClose(isValid); // we shouldn't let api calls in that are invalid
-    return isValid;
+    metrics.commonClose(isValid == null); // we should get pinged by invalid calls
+    return Optional.ofNullable(isValid);
+  }
+
+  private String getUpdatedInvalidMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   public ResultStatus editCategory(final Map<String, Object> jsonMap, final Metrics metrics) {
