@@ -177,7 +177,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Group newGroup = new Group(jsonMap);
         newGroup.setGroupId(newGroupId);
         newGroup.setGroupCreator(activeUser);
-        newGroup.setIsOpen(false); // TODO get from 'required' request key (it's not required rn)
+        newGroup.setOpen(false); // TODO get from 'required' request key (it's not required rn)
         newGroup.setMembersLeft(Collections.emptyMap());
         newGroup.setNextEventId(1);
         newGroup.setEvents(Collections.emptyMap());
@@ -721,7 +721,7 @@ public class GroupsManager extends DatabaseAccessManager {
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
         if (!username.equals(addedTo.getGroupCreator())) {
-          if (user.pushEndpointArnIsSet() && user.getAppSettings().getMuted() == 0) {
+          if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
                 "You have been added to new group: " + addedTo.getGroupName());
           }
@@ -805,7 +805,7 @@ public class GroupsManager extends DatabaseAccessManager {
         if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
           updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
               + " = :groupIcon";
-          Sys.withString(":groupIcon", newGroup.getIcon());
+          valueMap.withString(":groupIcon", newGroup.getIcon());
         }
 
         if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()

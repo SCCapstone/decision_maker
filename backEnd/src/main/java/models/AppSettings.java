@@ -13,10 +13,10 @@ import lombok.Data;
 public class AppSettings {
 
   //TODO at some point update the ints to bools
-  private Integer darkTheme;
+  private boolean darkTheme;
   private Integer groupSort;
   private Integer categorySort;
-  private Integer muted;
+  private boolean muted;
 
   public static AppSettings defaultSettings() {
     return AppSettings.builder()
@@ -29,11 +29,11 @@ public class AppSettings {
 
   public AppSettings(final Map<String, Object> jsonMap) {
     if (jsonMap != null) {
-      this.setDarkTheme(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
+      this.setDarkTheme(this.getBoolFromObject(jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
       this.setGroupSort(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_GROUP_SORT)));
       this.setCategorySort(
           this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_CATEGORY_SORT)));
-      this.setMuted(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
+      this.setMuted(this.getBoolFromObject(jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
     }
   }
 
@@ -42,6 +42,13 @@ public class AppSettings {
       return Integer.parseInt(input.toString());
     }
     return null;
+  }
+
+  private boolean getBoolFromObject(final Object input) {
+    if (input != null) {
+      return Boolean.parseBoolean(input.toString());
+    }
+    return false;
   }
 
   public Map<String, Object> asMap() {

@@ -47,8 +47,8 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String EVENTS_UNSEEN = "EventsUnseen";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
-  public static final int DEFAULT_DARK_THEME = 1;
-  public static final int DEFAULT_MUTED = 0;
+  public static final boolean DEFAULT_DARK_THEME = true;
+  public static final boolean DEFAULT_MUTED = false;
   public static final int DEFAULT_GROUP_SORT = 0;
   public static final int DEFAULT_CATEGORY_SORT = 0;
 

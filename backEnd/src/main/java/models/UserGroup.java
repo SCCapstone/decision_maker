@@ -15,7 +15,7 @@ public class UserGroup {
   private String groupName;
   private String icon;
   private String lastActivity;
-  private Boolean muted;
+  private boolean muted;
   private Map<String, Boolean> eventsUnseen;
 
   public UserGroup(final Map<String, Object> jsonMap) {
@@ -56,10 +56,10 @@ public class UserGroup {
     }
   }
 
-  private Boolean getBoolFromObject(final Object input) {
+  private boolean getBoolFromObject(final Object input) {
     if (input != null) {
       return Boolean.parseBoolean(input.toString());
     }
-    return null;
+    return false;
   }
 }

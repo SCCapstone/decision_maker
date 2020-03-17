@@ -26,7 +26,7 @@ public class Group implements Model {
   private Integer nextEventId;
   private String lastActivity;
   private Map<String, Event> events;
-  private Boolean isOpen;
+  private boolean isOpen;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
@@ -46,7 +46,7 @@ public class Group implements Model {
         this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
     this.setNextEventId(this.getIntFromObject(jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
-    this.setIsOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
+    this.setOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
     this.setMembersLeft((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS_LEFT));
@@ -173,10 +173,10 @@ public class Group implements Model {
     return null;
   }
 
-  private Boolean getBoolFromObject(final Object input) {
+  private boolean getBoolFromObject(final Object input) {
     if (input != null) {
       return Boolean.parseBoolean(input.toString());
     }
-    return null;
+    return false;
   }
 }
