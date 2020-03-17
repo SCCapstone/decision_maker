@@ -14,9 +14,11 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import models.Category;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
@@ -31,6 +33,8 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String GROUPS = "Groups";
   public static final String NEXT_CHOICE_NO = "NextChoiceNo";
   public static final String OWNER = "Owner";
+
+  public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
 
   public CategoriesManager() {
     super("categories", "CategoryId", Regions.US_EAST_2);
@@ -53,7 +57,6 @@ public class CategoriesManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String nextCategoryIndex = UUID.randomUUID().toString();
-        jsonMap.putIfAbsent(CATEGORY_ID, nextCategoryIndex);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
         final Category newCategory = new Category(jsonMap);
@@ -62,19 +65,25 @@ public class CategoriesManager extends DatabaseAccessManager {
         newCategory.setCategoryId(nextCategoryIndex);
         newCategory.setGroups(Collections.emptyMap());
 
-        this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
+        Optional<String> errorMessage = this.newCategoryIsValid(newCategory, metrics);
+        if (!errorMessage.isPresent()) {
+          this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 
-        //put the entered ratings in the users table
-        ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-            .updateUserChoiceRatings(jsonMap, true, metrics);
+          //put the entered ratings in the users table
+          jsonMap.putIfAbsent(CATEGORY_ID, newCategory.getCategoryId()); // add required key
+          ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
+              .updateUserChoiceRatings(jsonMap, true, metrics);
 
-        //todo wrap this operation into a transaction
-        if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(newCategory.asMap()));
+          //TODO wrap this operation into a transaction with the above
+          if (updatedUsersTableResult.success) {
+            resultStatus = new ResultStatus(true,
+                JsonEncoders.convertObjectToJson(newCategory.asMap()));
+          } else {
+            resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
+                + updatedUsersTableResult.resultMessage;
+          }
         } else {
-          resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
-              + updatedUsersTableResult.resultMessage;
+          resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -88,6 +97,66 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
+    final String classMethod = "CategoryManager.newCategoryIsValid";
+    metrics.commonSetup(classMethod);
+
+    String errorMessage = null;
+
+    try {
+      final User user = new User(
+          DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(newCategory.getOwner()).asMap());
+
+      if (user.getOwnedCategories().size() >= MAX_NUMBER_OF_CATEGORIES) {
+        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+            "Error: user already has maximum allowed number of categories.");
+      }
+
+      for (String categoryName : user.getOwnedCategories().values()) {
+        if (categoryName.equals(newCategory.getCategoryName())) {
+          errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+              "Error: user can not own two categories with the same name.");
+          break;
+        }
+      }
+
+      if (newCategory.getChoices().size() < 1) {
+        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+                "Error: category must have at least one choice.");
+      }
+
+      for (String choiceLabel : newCategory.getChoices().values()) {
+        if (choiceLabel.trim().length() < 1) {
+          errorMessage = this
+              .getUpdatedInvalidMessage(errorMessage, "Error: choice labels cannot be empty.");
+          break;
+        }
+      }
+
+      if (newCategory.getCategoryName().trim().length() < 1) {
+        errorMessage = this
+            .getUpdatedInvalidMessage(errorMessage, "Error: category name can not be empty.");
+      }
+    } catch (Exception e) {
+      metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
+      errorMessage = this.getUpdatedInvalidMessage(errorMessage, "Exception");
+    }
+
+    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
+    return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedInvalidMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   public ResultStatus editCategory(final Map<String, Object> jsonMap, final Metrics metrics) {

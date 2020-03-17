@@ -21,15 +21,14 @@ public class Event {
   private Integer rsvpDuration;
   private Integer votingDuration;
   private String selectedChoice;
-
-  @Setter(AccessLevel.NONE)
   private Map<String, Member> optedIn;
+
   @Setter(AccessLevel.NONE)
   private Map<String, String> tentativeAlgorithmChoices;
   @Setter(AccessLevel.NONE)
   private Map<String, Map<String, Integer>> votingNumbers;
   @Setter(AccessLevel.NONE)
-  private Map<String, String> eventCreator;
+  private Map<String, Member> eventCreator;
 
   public Event(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(GroupsManager.CATEGORY_ID));
@@ -45,7 +44,7 @@ public class Event {
     this.setTentativeAlgorithmChoices(
         (Map<String, Object>) jsonMap.get(GroupsManager.TENTATIVE_CHOICES));
     this.setVotingNumbers((Map<String, Object>) jsonMap.get(GroupsManager.VOTING_NUMBERS));
-    this.setEventCreator(jsonMap);
+    this.setEventCreatorRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENT_CREATOR));
   }
 
   public Map<String, Object> asMap() {
@@ -61,7 +60,7 @@ public class Event {
     modelAsMap.putIfAbsent(GroupsManager.OPTED_IN, this.getOptedInMap());
     modelAsMap.putIfAbsent(GroupsManager.TENTATIVE_CHOICES, this.tentativeAlgorithmChoices);
     modelAsMap.putIfAbsent(GroupsManager.VOTING_NUMBERS, this.votingNumbers);
-    modelAsMap.putIfAbsent(GroupsManager.EVENT_CREATOR, this.eventCreator);
+    modelAsMap.putIfAbsent(GroupsManager.EVENT_CREATOR, this.getEventCreatorMap());
     return modelAsMap;
   }
 
@@ -73,10 +72,6 @@ public class Event {
         this.optedIn.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
       }
     }
-  }
-
-  public void setOptedIn(final Map<String, Member> memberMap) {
-    this.optedIn = memberMap;
   }
 
   public Map<String, Map<String, String>> getOptedInMap() {
@@ -115,13 +110,24 @@ public class Event {
     }
   }
 
-  public void setEventCreator(final Map<String, Object> jsonMap) {
+  public void setEventCreatorRawMap(final Map<String, Object> jsonMap) {
     this.eventCreator = null;
-    if (jsonMap != null && jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+    if (jsonMap != null) {
       this.eventCreator = new HashMap<>();
-      this.eventCreator
-          .putIfAbsent(UsersManager.USERNAME, (String) jsonMap.get(RequestFields.ACTIVE_USER));
+      for (String username : jsonMap.keySet()) {
+        this.eventCreator.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
+      }
     }
+  }
+
+  public void setEventCreator(final Map<String, Member> memberMap) { this.eventCreator = memberMap; }
+
+  public Map<String, Map<String, String>> getEventCreatorMap() {
+    final Map<String, Map<String, String>> eventCreatorMap = new HashMap<>();
+    for (String username : this.eventCreator.keySet()) {
+      eventCreatorMap.putIfAbsent(username, this.eventCreator.get(username).asMap());
+    }
+    return eventCreatorMap;
   }
 
   private Integer getIntFromObject(final Object input) {
