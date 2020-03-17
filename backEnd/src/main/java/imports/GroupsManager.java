@@ -29,6 +29,7 @@ import java.util.UUID;
 import models.Event;
 import models.Group;
 import models.User;
+import models.UserGroup;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
@@ -183,9 +184,8 @@ public class GroupsManager extends DatabaseAccessManager {
         newGroup.setIsOpen(false); // TODO get from 'required' request key (it's not required rn)
         this.putItem(newGroup.asItem());
 
-        final Group oldGroup = new Group();
-        oldGroup.setMembers(Collections.emptyMap());
-        this.updateUsersTable(oldGroup, newGroup, metrics);
+        //old group being null signals we're creating a new group
+        this.updateUsersTable(null, newGroup, metrics);
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
@@ -729,6 +729,7 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
+  //if oldGroup is null, that signals that we're creating a new group
   private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
@@ -737,53 +738,66 @@ public class GroupsManager extends DatabaseAccessManager {
     final Set<String> usersToUpdate = new HashSet<>();
 
     NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
+
+    final Set<String> newMembers = newGroup.getMembers().keySet();
+    final Set<String> addedUsernames = new HashSet<>(newMembers);
+    final Set<String> removedUsernames = Collections.emptySet();
+
+    if (oldGroup != null) {
+      final Set<String> oldMembers = oldGroup.getMembers().keySet();
+      removedUsernames.addAll(oldMembers);
+
+      // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
+      addedUsernames.removeAll(oldMembers);
+      removedUsernames.removeAll(newMembers);
+
+      if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+          .equals(oldGroup.getLastActivity())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (!oldGroup.getNextEventId().equals(newGroup.getNextEventId())) {
+
+      } else if (!oldMembers.equals(newMembers)) {
+        usersToUpdate.addAll(addedUsernames);
+      }
+    } else {
+      //this is a new group, every addedUsername needs to be updated
+      usersToUpdate.addAll(addedUsernames);
+    }
+
     String updateExpression;
     ValueMap valueMap;
     UpdateItemSpec updateItemSpec;
 
-    final Set<String> newMembers = newGroup.getMembers().keySet();
-    final Set<String> addedUsernames = new HashSet<>(newMembers);
-
-    final Set<String> oldMembers = oldGroup.getMembers().keySet();
-    final Set<String> removedUsernames = new HashSet<>(oldMembers);
-
-    // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
-    addedUsernames.removeAll(oldMembers);
-    removedUsernames.removeAll(newMembers);
-
-    if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
-        .equals(oldGroup.getLastActivity())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (!oldMembers.equals(newMembers)) {
-      usersToUpdate.addAll(addedUsernames);
-    }
-
     //update users with new group mapping based on which attributes were updated
     if (!usersToUpdate.isEmpty()) {
-      //we have to update the entire mapping because the groupId key may
-      //not be in the mapping yet if this is a new group
-      updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
-
-      Map<String, Object> groupDataForUser = new HashMap<>();
-      groupDataForUser.put(GROUP_NAME, newGroup.getGroupName());
-
-      if (newGroup.iconIsSet()) {
-        groupDataForUser.put(ICON, newGroup.getIcon());
+      if (oldGroup == null) {
+        //if this is a new Group we need to create the entire map
+        updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
+        valueMap = new ValueMap()
+            .withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
       } else {
-        groupDataForUser.put(ICON, oldGroup.getIcon());
-      }
+        //since this group already exists, we're just updating the mappings that have changed
+        //for simplicity in the code, we'll always update the group name
+        updateExpression = "set " + UsersManager.GROUPS + ".#groupId." + GroupsManager.GROUP_NAME
+            + " = :groupName";
+        valueMap = new ValueMap().withString(":groupName", newGroup.getGroupName());
 
-      if (newGroup.lastActivityIsSet()) {
-        groupDataForUser.put(LAST_ACTIVITY, newGroup.getLastActivity());
-      } else {
-        groupDataForUser.put(LAST_ACTIVITY, oldGroup.getLastActivity());
-      }
+        if (!newGroup.getIcon().equals(oldGroup.getIcon())) {
+          updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
+              + " = :groupIcon";
+          valueMap = new ValueMap().withString(":groupIcon", newGroup.getIcon());
+        }
 
-      valueMap = new ValueMap().withMap(":nameIconMap", groupDataForUser);
+        if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
+          updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
+              + " = :lastActivity";
+          valueMap = new ValueMap().withString(":lastActivity", newGroup.getLastActivity());
+        }
+      }
 
       updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)
