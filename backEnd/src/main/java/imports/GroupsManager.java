@@ -190,7 +190,7 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
-        resultStatus = new ResultStatus(true, "Group created successfully!");
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
