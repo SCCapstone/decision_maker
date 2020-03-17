@@ -29,7 +29,7 @@ public class Event {
   @Setter(AccessLevel.NONE)
   private Map<String, Map<String, Integer>> votingNumbers;
   @Setter(AccessLevel.NONE)
-  private Map<String, String> eventCreator;
+  private Map<String, Member> eventCreator;
 
   public Event(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(GroupsManager.CATEGORY_ID));
@@ -118,9 +118,10 @@ public class Event {
   public void setEventCreator(final Map<String, Object> jsonMap) {
     this.eventCreator = null;
     if (jsonMap != null && jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
       this.eventCreator = new HashMap<>();
       this.eventCreator
-          .putIfAbsent(UsersManager.USERNAME, (String) jsonMap.get(RequestFields.ACTIVE_USER));
+          .putIfAbsent(activeUser, new Member((Map<String, Object>) jsonMap.get(activeUser)));
     }
   }
 
