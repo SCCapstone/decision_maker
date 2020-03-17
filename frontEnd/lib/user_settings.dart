@@ -84,9 +84,9 @@ class _UserSettingsState extends State<UserSettings> {
                         Container(
                             width: MediaQuery.of(context).size.width * .8,
                             child: TextFormField(
-                              maxLength: 50,
+                              maxLength: Globals.maxDisplayNameLength,
                               controller: this.displayNameController,
-                              validator: validName,
+                              validator: validDisplayName,
                               onChanged: (String arg) {
                                 this._displayName = arg.trim();
                                 enableAutoValidation();
@@ -229,25 +229,31 @@ class _UserSettingsState extends State<UserSettings> {
   }
 
   void saveFavorites() async {
-    List<String> userNames = new List<String>();
-    for (Favorite favorite in this.displayedFavorites) {
-      userNames.add(favorite.username);
-    }
-    ResultStatus resultStatus = await UsersManager.updateUserSettings(
-        Globals.user.displayName,
-        boolToInt(Globals.user.appSettings.darkTheme),
-        boolToInt(Globals.user.appSettings.muted),
-        Globals.user.appSettings.groupSort,
-        userNames,
-        null);
-    if (resultStatus.success) {
-      this.originalFavorites.clear();
-      this.originalFavorites.addAll(this.displayedFavorites);
-    } else {
-      // if it failed then revert back to old favorites
-      this.displayedFavorites.clear();
-      this.displayedFavorites.addAll(this.originalFavorites);
-      showErrorMessage("Error", "Error saving favorites.", context);
+    Set oldFavorites = this.originalFavorites.toSet();
+    Set newFavorites = this.displayedFavorites.toSet();
+    bool changedFavorites = !(oldFavorites.containsAll(newFavorites) &&
+        oldFavorites.length == newFavorites.length);
+    if (changedFavorites) {
+      List<String> userNames = new List<String>();
+      for (Favorite favorite in this.displayedFavorites) {
+        userNames.add(favorite.username);
+      }
+      ResultStatus resultStatus = await UsersManager.updateUserSettings(
+          Globals.user.displayName,
+          boolToInt(Globals.user.appSettings.darkTheme),
+          boolToInt(Globals.user.appSettings.muted),
+          Globals.user.appSettings.groupSort,
+          userNames,
+          null);
+      if (resultStatus.success) {
+        this.originalFavorites.clear();
+        this.originalFavorites.addAll(this.displayedFavorites);
+      } else {
+        // if it failed then revert back to old favorites
+        this.displayedFavorites.clear();
+        this.displayedFavorites.addAll(this.originalFavorites);
+        showErrorMessage("Error", "Error saving favorites.", context);
+      }
     }
   }
 

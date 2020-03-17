@@ -13,7 +13,7 @@ class Globals {
   static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
   static Group currentGroup;
   static List<Category> activeUserCategories = new List<Category>();
-  static SharedPreferences tokens;
+  static SharedPreferences sharedPrefs;
   static int dateNewestSort = 0;
   static int alphabeticalSort = 1;
   static int alphabeticalReverseSort = 2;
@@ -22,7 +22,33 @@ class Globals {
   static String alphabeticalReverseSortString = "Alphabetical (Z-A)";
   static String dateNewestSortString = "Date Modified (Newest)";
   static String dateOldestSortString = "Date Modified (Oldest)";
-  static int maxCategoryCacheSize = 10;
+
+  // validation variables
+  static final int maxCategoryCacheSize = 10;
+  static final int maxEventsPulled = 25;
+  static final int maxCategories = 25;
+  static final int minEmailLength = 3;
+  static final int maxEmailLength = 60;
+  static final int minUsernameLength = 4;
+  static final int maxUsernameLength = 25;
+  static final int minPasswordLength = 8;
+  static final int maxPasswordLength = 30;
+  static final int minDisplayNameLength = 1;
+  static final int maxDisplayNameLength = 40;
+  static final int minGroupNameLength = 1;
+  static final int maxGroupNameLength = 40;
+  static final int minEventNameLength = 1;
+  static final int maxEventNameLength = 30;
+  static final int minCategoryNameLength = 1;
+  static final int maxCategoryNameLength = 25;
+  static final int minChoiceNameLength = 1;
+  static final int maxChoiceNameLength = 25;
+  static final int minConsiderTime = 0;
+  static final int maxConsiderTime = 9999;
+  static final int maxConsiderDigits = minVotingTime.toString().length;
+  static final int minVotingTime = 0;
+  static final int maxVotingTime = 9999;
+  static final int maxVotingDigits = maxVotingTime.toString().length;
 
   static String resetUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://www.shiftadmin.com";
@@ -51,11 +77,11 @@ class Globals {
     android = null;
   }
 
-  static Future<SharedPreferences> getTokens() async {
-    if (tokens == null) {
-      tokens = await SharedPreferences.getInstance();
+  static Future<SharedPreferences> getSharedPrefs() async {
+    if (sharedPrefs == null) {
+      sharedPrefs = await SharedPreferences.getInstance();
     }
 
-    return tokens;
+    return sharedPrefs;
   }
 }

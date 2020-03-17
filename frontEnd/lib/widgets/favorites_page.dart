@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
@@ -36,6 +37,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   children: <Widget>[
                     Expanded(
                       child: TextFormField(
+                          maxLength: Globals.maxUsernameLength,
                           controller: this.userController,
                           validator: (value) {
                             return validNewFavorite(
@@ -43,6 +45,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           },
                           decoration: InputDecoration(
                             labelText: "Enter a username to add",
+                            counterText: "",
                           )),
                     ),
                     FlatButton(

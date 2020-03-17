@@ -83,7 +83,7 @@ class _MembersPageState extends State<MembersPage> {
                         visible: !showFavorites,
                         child: Expanded(
                           child: TextFormField(
-                              maxLength: 100,
+                              maxLength: Globals.maxUsernameLength,
                               controller: userController,
                               validator: (value) {
                                 List<String> allUsers = new List<String>();
@@ -95,7 +95,7 @@ class _MembersPageState extends State<MembersPage> {
                                     allUsers.add(user.username);
                                   }
                                 }
-                                return validUser(value.trim(), allUsers);
+                                return validNewUser(value.trim(), allUsers);
                               },
                               decoration: InputDecoration(
                                   labelText: "Enter a username to add",
@@ -117,7 +117,7 @@ class _MembersPageState extends State<MembersPage> {
                         visible: showFavorites,
                         child: Expanded(
                           child: TextFormField(
-                            maxLength: 100,
+                            maxLength: Globals.maxUsernameLength,
                             controller: favoriteController,
                             decoration: InputDecoration(
                                 labelText: "Add user from favorites",

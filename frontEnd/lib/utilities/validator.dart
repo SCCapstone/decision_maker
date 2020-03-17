@@ -1,33 +1,37 @@
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
 
 String validGroupName(String input) {
-  if (input.length == 0) {
-    return "Group name cannot be empty.";
-  } else if (input.length > 50) {
-    return "Group name is too large.";
-  } else {
-    return null;
+  input = input.trim(); // sanity check trim
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Group name cannot be empty.";
+  } else if (input.length > Globals.maxGroupNameLength) {
+    retVal = "Group name is too large.";
   }
+  return retVal;
 }
 
 String validEventName(String input) {
-  if (input.length == 0) {
-    return "Event name cannot be empty.";
-  } else if (input.length > 50) {
-    return "Event name is too large.";
-  } else {
-    return null;
+  input = input.trim(); // sanity check trim
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Event name cannot be empty.";
+  } else if (input.length > Globals.maxEventNameLength) {
+    retVal = "Event name is too large.";
   }
+  return retVal;
 }
 
 String validVotingDuration(String input, bool verbose) {
+  input = input.trim(); // sanity check trim
   String retVal;
   try {
     int num = int.parse(input);
-    if (num < 0) {
+    if (num < Globals.minVotingTime) {
       retVal = "Too small.";
-    } else if (num >= 10000) {
+    } else if (num > Globals.maxVotingTime) {
       retVal = "Too big.";
     }
   } catch (e) {
@@ -49,12 +53,13 @@ String validVotingDuration(String input, bool verbose) {
 }
 
 String validConsiderDuration(String input, bool verbose) {
+  input = input.trim(); // sanity check trim
   String retVal;
   try {
     int num = int.parse(input);
-    if (num < 0) {
+    if (num < Globals.minConsiderTime) {
       retVal = "Too small.";
-    } else if (num >= 10000) {
+    } else if (num > Globals.maxConsiderTime) {
       retVal = "Too big.";
     }
   } catch (e) {
@@ -75,51 +80,73 @@ String validConsiderDuration(String input, bool verbose) {
   return retVal;
 }
 
-String validUser(String user, List<String> users) {
+String validNewUser(String user, List<String> users) {
+  user = user.trim(); // sanity check trim
+  String retVal;
   if (user.isEmpty) {
-    return "Username cannot be empty.";
-  } else if (user.trim() == Globals.username) {
-    return "Can't add yourself.";
-  } else if (users.contains(user.trim())) {
-    return "Username already added.";
-  } else {
-    return null;
+    retVal = "Username cannot be empty.";
+  } else if (user.length > Globals.maxUsernameLength) {
+    retVal = "Username is too large.";
+  } else if (user == Globals.username) {
+    retVal = "Can't add yourself.";
+  } else if (users.contains(user)) {
+    retVal = "Username already added.";
   }
+  return retVal;
 }
 
-String validChoice(String input) {
-  if (input.length == 0) {
-    return "Choice name cannot be empty.";
-  } else {
-    return null;
+String validChoiceName(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Choice name cannot be empty.";
+  } else if (input.length > Globals.maxChoiceNameLength) {
+    retVal = "Choice name is too large.";
   }
+  return retVal;
 }
 
-String validCategory(String input) {
-  if (input.length == 0) {
-    return "Category name cannot be empty.";
-  } else {
-    return null;
+String validCategoryName(String input, List<Category> categories) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  bool repeat = false;
+  for (Category category in categories) {
+    if (category.categoryName == input) {
+      repeat = true;
+    }
   }
+  if (input.isEmpty) {
+    retVal = "Category name cannot be empty.";
+  } else if (input.length > Globals.maxCategoryNameLength) {
+    retVal = "Category name is too large.";
+  } else if (repeat) {
+    retVal = "Category name already exists.";
+  }
+  return retVal;
 }
 
 String validEmail(String input) {
   /*
     Validates an email with a given inputField object. Cannot have an empty email or one without a @ symbol
    */
+  input = input.trim(); // sanity check trim
   String retVal;
   if (input.isEmpty) {
     retVal = "Email cannot be empty.";
   } else if (!input.contains("@")) {
     retVal = "Enter a valid email address.";
+  } else if (input.length > Globals.maxEventNameLength) {
+    return "Email is too large";
   }
   return retVal;
 }
 
 String validNewPassword(String input) {
+  input = input.trim(); // sanity check trim
   String retVal = ""; // initialize it this way to avoid null pointer exception
-  if (input.length < 8) {
-    retVal += "Must contain at least 8 characters.\n";
+  if (input.length < Globals.minPasswordLength) {
+    retVal +=
+        "Must contain at least ${Globals.minPasswordLength} characters.\n";
   }
   if (!RegExp(r'[a-z]+').hasMatch(input)) {
     retVal += "Must contain at least one lowercase letter.\n";
@@ -142,42 +169,54 @@ String validNewPassword(String input) {
 }
 
 String validPassword(String input) {
+  input = input.trim(); // sanity check trim
   String retVal;
   if (input.isEmpty) {
     retVal = "Password cannot be empty.";
+  } else if (input.length > Globals.maxPasswordLength) {
+    retVal = "Password is too large.";
   }
   return retVal;
 }
 
 String validUsername(String input) {
+  input = input.trim(); // sanity check trim
   String retVal;
   if (input.isEmpty) {
     retVal = "Username cannot be empty.";
+  } else if (input.length > Globals.maxUsernameLength) {
+    retVal = "Username is too large.";
   }
   return retVal;
 }
 
-String validName(String input) {
+String validDisplayName(String input) {
+  input = input.trim(); // sanity check trim
   String retVal;
   if (input.isEmpty) {
     retVal = "Name cannot be empty.";
+  } else if (input.length > Globals.maxDisplayNameLength) {
+    retVal = "Name is too large.";
   }
   return retVal;
 }
 
 String validNewFavorite(String input, List<Favorite> favorites) {
+  input = input.trim(); // sanity check trim
   String retVal;
   bool duplicates = false;
   for (Favorite favorite in favorites) {
-    if (favorite.username == input.trim()) {
+    if (favorite.username == input) {
       duplicates = true;
     }
   }
   if (input.isEmpty) {
     retVal = "Username cannot be empty.";
+  } else if (input.length > Globals.maxUsernameLength) {
+    retVal = "Username is too large.";
   } else if (duplicates) {
     retVal = "You already have this username saved.";
-  } else if (input.trim() == Globals.username) {
+  } else if (input == Globals.username) {
     retVal = "Cannot add yourself.";
   }
   return retVal;

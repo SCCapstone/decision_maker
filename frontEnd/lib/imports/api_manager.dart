@@ -16,7 +16,7 @@ Future<ResultStatus<String>> makeApiRequest(
   ResultStatus<String> retVal =
       new ResultStatus(success: false, networkError: false);
 
-  SharedPreferences tokens = await Globals.getTokens();
+  SharedPreferences tokens = await Globals.getSharedPrefs();
   if (tokens.containsKey(idTokenKey)) {
     Map<String, String> headers = {
       "Authorization": "Bearer " + tokens.getString(idTokenKey)

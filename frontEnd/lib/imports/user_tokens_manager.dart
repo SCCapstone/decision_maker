@@ -48,7 +48,7 @@ Future<bool> refreshUserTokens() async {
 
   //Use the stored refresh token to get new tokens and then call storeUserTokens to store the new tokens
   //hint, don't overwrite the refresh token, that one token can be used many times and you only get it once
-  String refreshToken = (await Globals.getTokens()).getString(refreshTokenKey);
+  String refreshToken = (await Globals.getSharedPrefs()).getString(refreshTokenKey);
 
   Map<String, String> headers = {
     "Content-Type": "application/x-www-form-urlencoded"
@@ -80,11 +80,11 @@ Future<bool> refreshUserTokens() async {
 
 Future<void> storeUserTokens(
     String accessToken, String refreshToken, String idToken) async {
-  (await Globals.getTokens()).setString(accessTokenKey, accessToken);
-  (await Globals.getTokens()).setString(idTokenKey, idToken);
-  (await Globals.getTokens()).setString(refreshTokenKey, refreshToken);
+  (await Globals.getSharedPrefs()).setString(accessTokenKey, accessToken);
+  (await Globals.getSharedPrefs()).setString(idTokenKey, idToken);
+  (await Globals.getSharedPrefs()).setString(refreshTokenKey, refreshToken);
 }
 
 void clearTokens() async {
-  (await Globals.getTokens()).clear();
+  (await Globals.getSharedPrefs()).clear();
 }
