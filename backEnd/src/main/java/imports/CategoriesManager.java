@@ -65,8 +65,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         newCategory.setCategoryId(nextCategoryIndex);
         newCategory.setGroups(Collections.emptyMap());
 
-        Optional<String> isValid = this.newCategoryIsValid(newCategory, metrics);
-        if (!isValid.isPresent()) {
+        Optional<String> errorMessage = this.newCategoryIsValid(newCategory, metrics);
+        if (!errorMessage.isPresent()) {
           this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
 
           //put the entered ratings in the users table
@@ -83,7 +83,7 @@ public class CategoriesManager extends DatabaseAccessManager {
                 + updatedUsersTableResult.resultMessage;
           }
         } else {
-          resultStatus.resultMessage = isValid.get();
+          resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -103,47 +103,49 @@ public class CategoriesManager extends DatabaseAccessManager {
     final String classMethod = "CategoryManager.newCategoryIsValid";
     metrics.commonSetup(classMethod);
 
-    String isValid = null;
+    String errorMessage = null;
 
     try {
       final User user = new User(
           DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(newCategory.getOwner()).asMap());
 
       if (user.getOwnedCategories().size() >= MAX_NUMBER_OF_CATEGORIES) {
-        isValid = this.getUpdatedInvalidMessage(isValid,
+        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
             "Error: user already has maximum allowed number of categories.");
       }
 
       for (String categoryName : user.getOwnedCategories().values()) {
         if (categoryName.equals(newCategory.getCategoryName())) {
-          isValid = this.getUpdatedInvalidMessage(isValid,
+          errorMessage = this.getUpdatedInvalidMessage(errorMessage,
               "Error: user can not own two categories with the same name.");
           break;
         }
       }
 
       if (newCategory.getChoices().size() < 1) {
-        isValid = this
-            .getUpdatedInvalidMessage(isValid, "Error: category must have at least one choice.");
+        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+                "Error: category must have at least one choice.");
       }
 
       for (String choiceLabel : newCategory.getChoices().values()) {
-        if (choiceLabel.length() < 1) {
-          isValid = this.getUpdatedInvalidMessage(isValid, "Error: choice labels cannot be empty.");
+        if (choiceLabel.trim().length() < 1) {
+          errorMessage = this
+              .getUpdatedInvalidMessage(errorMessage, "Error: choice labels cannot be empty.");
           break;
         }
       }
 
-      if (newCategory.getCategoryName().length() < 1) {
-        isValid = this.getUpdatedInvalidMessage(isValid, "Error: category name can not be empty.");
+      if (newCategory.getCategoryName().trim().length() < 1) {
+        errorMessage = this
+            .getUpdatedInvalidMessage(errorMessage, "Error: category name can not be empty.");
       }
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
-      isValid = this.getUpdatedInvalidMessage(isValid, "Exception");
+      errorMessage = this.getUpdatedInvalidMessage(errorMessage, "Exception");
     }
 
-    metrics.commonClose(isValid == null); // we should get pinged by invalid calls
-    return Optional.ofNullable(isValid);
+    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
+    return Optional.ofNullable(errorMessage);
   }
 
   private String getUpdatedInvalidMessage(final String current, final String update) {
