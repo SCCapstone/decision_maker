@@ -50,7 +50,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final boolean DEFAULT_DARK_THEME = true;
   public static final boolean DEFAULT_MUTED = false;
   public static final int DEFAULT_GROUP_SORT = 0;
-  public static final int DEFAULT_CATEGORY_SORT = 0;
+  public static final int DEFAULT_CATEGORY_SORT = 1;
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
