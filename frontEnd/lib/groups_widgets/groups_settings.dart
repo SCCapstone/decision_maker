@@ -136,6 +136,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         Column(
                           children: [
                             TextFormField(
+                              maxLength: Globals.maxGroupNameLength,
                               controller: groupNameController,
                               validator: validGroupName,
                               onChanged: (String arg) {
@@ -146,8 +147,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 groupName = arg.trim();
                               },
                               style: TextStyle(fontSize: 33),
-                              decoration:
-                                  InputDecoration(labelText: "Group Name"),
+                              decoration: InputDecoration(
+                                  labelText: "Group Name", counterText: ""),
                             ),
                             Padding(
                               padding: EdgeInsets.all(
@@ -210,7 +211,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: TextFormField(
-                                        maxLength: 4,
+                                        maxLength: Globals.maxConsiderDigits,
                                         keyboardType: TextInputType.number,
                                         validator: (value) {
                                           return validConsiderDuration(
@@ -252,7 +253,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: TextFormField(
-                                        maxLength: 4,
+                                        maxLength: Globals.maxVotingDigits,
                                         keyboardType: TextInputType.number,
                                         validator: (value) {
                                           return validVotingDuration(
@@ -384,7 +385,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 child: Text("Delete Group"),
                                 color: Colors.red,
                                 onPressed: () {
-                                  confirmDeleteGroup(context);
+                                  confirmDeleteGroup();
                                 },
                               ),
                             ),
@@ -560,7 +561,7 @@ class _GroupSettingsState extends State<GroupSettings> {
         });
   }
 
-  void confirmDeleteGroup(BuildContext context) {
+  void confirmDeleteGroup() {
     showDialog(
         context: context,
         builder: (context) {
@@ -616,7 +617,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           context,
           new MaterialPageRoute(
               builder: (BuildContext context) => GroupsHome()),
-              (Route<dynamic> route) => false);
+          (Route<dynamic> route) => false);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }

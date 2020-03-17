@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'categories_list.dart';
 
 class CategoriesHome extends StatefulWidget {
@@ -101,11 +102,17 @@ class _CategoriesHomeState extends State<CategoriesHome> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          // Navigate to second route when tapped.
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => CreateCategory()),
-          ).then((_) => this.getCategories());
+          if (Globals.user.ownedCategories.length >= Globals.maxCategories) {
+            showErrorMessage(
+                "Error",
+                "You cannot create more than ${Globals.user.ownedCategories.length} categories at this time.",
+                context);
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CreateCategory()),
+            ).then((_) => this.getCategories());
+          }
         },
       ),
     );

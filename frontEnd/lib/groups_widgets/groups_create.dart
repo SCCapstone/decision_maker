@@ -66,14 +66,14 @@ class _CreateGroupState extends State<CreateGroup> {
               Column(
                 children: [
                   TextFormField(
+                    maxLength: Globals.maxGroupNameLength,
                     controller: groupNameController,
                     validator: validGroupName,
                     onSaved: (String arg) {
                       groupName = arg.trim();
                     },
                     decoration: InputDecoration(
-                      labelText: "Enter a group name",
-                    ),
+                        labelText: "Enter a group name", counterText: ""),
                   ),
                   Padding(
                     padding: EdgeInsets.all(
@@ -104,7 +104,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   ),
                   TextFormField(
                     controller: considerDurationController,
-                    maxLength: 4,
+                    maxLength: Globals.maxConsiderDigits,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       return validConsiderDuration(value, true);
@@ -113,14 +113,12 @@ class _CreateGroupState extends State<CreateGroup> {
                       considerDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
-                      labelText:
-                          "Enter a default consider duration (mins)",
-                      counterText: ""
-                    ),
+                        labelText: "Enter a default consider duration (mins)",
+                        counterText: ""),
                   ),
                   TextFormField(
                     controller: votingDurationController,
-                    maxLength: 4,
+                    maxLength: Globals.maxVotingDigits,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       return validVotingDuration(value, true);
@@ -129,9 +127,8 @@ class _CreateGroupState extends State<CreateGroup> {
                       votingDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
-                      labelText: "Enter a default voting duration (mins)",
-                      counterText:  ""
-                    ),
+                        labelText: "Enter a default voting duration (mins)",
+                        counterText: ""),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,

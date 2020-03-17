@@ -119,14 +119,15 @@ class _CreateEventState extends State<CreateEvent> {
                 Column(
                   children: <Widget>[
                     TextFormField(
+                      maxLength: Globals.maxEventNameLength,
                       controller: eventNameController,
                       validator: validEventName,
                       textCapitalization: TextCapitalization.sentences,
                       onSaved: (String arg) {
                         eventName = arg;
                       },
-                      decoration:
-                          InputDecoration(labelText: "Enter an event name"),
+                      decoration: InputDecoration(
+                          labelText: "Enter an event name", counterText: ""),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -190,7 +191,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 validator: (value) {
                                   return validConsiderDuration(value, true);
                                 },
-                                maxLength: textFieldLength,
+                                maxLength: Globals.maxConsiderDigits,
                                 onChanged: (String arg) {
                                   // if already at max length and you keep typing, setState won't get called again
                                   if (!(arg.length == textFieldLength &&
@@ -271,7 +272,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 validator: (value) {
                                   return validVotingDuration(value, true);
                                 },
-                                maxLength: textFieldLength,
+                                maxLength: Globals.maxVotingDigits,
                                 onChanged: (String arg) {
                                   if (!(arg.length == textFieldLength &&
                                       votingDuration.length ==

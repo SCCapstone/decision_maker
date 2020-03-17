@@ -113,8 +113,11 @@ class _CreateCategoryState extends State<CreateCategory> {
                       Container(
                         width: MediaQuery.of(context).size.width * .7,
                         child: TextFormField(
-                          maxLength: 40,
-                          validator: validCategory,
+                          maxLength: Globals.maxCategoryNameLength,
+                          validator: (value) {
+                            return validCategoryName(
+                                value.trim(), Globals.user.ownedCategories);
+                          },
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),

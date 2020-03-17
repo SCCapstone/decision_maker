@@ -144,9 +144,12 @@ class _EditCategoryState extends State<EditCategory> {
                           child: TextFormField(
                             enabled: widget.editName,
                             onChanged: (val) => checkForChanges(),
-                            maxLength: 40,
+                            maxLength: Globals.maxCategoryNameLength,
                             controller: this.categoryNameController,
-                            validator: validCategory,
+                            validator: (value) {
+                              return validCategoryName(
+                                  value.trim(), Globals.user.ownedCategories);
+                            },
                             textCapitalization: TextCapitalization.sentences,
                             style: TextStyle(fontSize: 20),
                             decoration: InputDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -34,8 +35,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
             onChanged: (val) {
               widget.checkForChange();
             },
-            validator: validChoice,
-            maxLength: 40,
+            validator: validChoiceName,
+            maxLength: Globals.maxChoiceNameLength,
             enabled: widget.isOwner,
             textCapitalization: TextCapitalization.sentences,
             focusNode: widget.focusNode,

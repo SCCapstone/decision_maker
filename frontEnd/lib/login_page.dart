@@ -56,12 +56,13 @@ class _SignInState extends State<SignInPage> {
             maxLines: 1,
             minFontSize: 20,
           )),
-      body: Form(
-        key: formKey,
-        autovalidate: autoValidate,
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+      body: GestureDetector(
+        onTap: () {
+          hideKeyboard(context);
+        },
+        child: Form(
+          key: formKey,
+          autovalidate: autoValidate,
           child: ListView(
             padding: EdgeInsets.all(25.0),
             children: <Widget>[
@@ -70,26 +71,24 @@ class _SignInState extends State<SignInPage> {
                   child: TextFormField(
                     keyboardType: TextInputType.emailAddress,
                     controller: emailController,
+                    maxLength: Globals.maxEmailLength,
                     validator: validEmail,
                     onSaved: (String arg) {
                       email = arg.trim();
                     },
-                    style: TextStyle(
-                        fontSize:
-                            DefaultTextStyle.of(context).style.fontSize * 0.8),
-                    decoration: InputDecoration(labelText: "Email"),
+                    style: TextStyle(fontSize: 32),
+                    decoration:
+                        InputDecoration(labelText: "Email", counterText: ""),
                   )),
               TextFormField(
                 key: new Key("username"),
-                maxLength: 30,
+                maxLength: Globals.maxUsernameLength,
                 controller: usernameController,
                 validator: validUsername,
                 onSaved: (String arg) {
                   username = arg.trim();
                 },
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 0.8),
+                style: TextStyle(fontSize: 32),
                 decoration:
                     InputDecoration(labelText: "Username", counterText: ""),
               ),
@@ -98,15 +97,15 @@ class _SignInState extends State<SignInPage> {
                 obscureText: true,
                 autocorrect: false,
                 // don't allow user's passwords to be saved in their keyboard
+                maxLength: Globals.maxPasswordLength,
                 controller: passwordController,
                 validator: (signUp) ? validNewPassword : validPassword,
                 onSaved: (String arg) {
                   password = arg.trim();
                 },
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 0.8),
-                decoration: InputDecoration(labelText: "Password"),
+                style: TextStyle(fontSize: 32),
+                decoration:
+                    InputDecoration(labelText: "Password", counterText: ""),
               ),
               Padding(
                 padding: EdgeInsets.all(5.0),
@@ -184,6 +183,7 @@ class _SignInState extends State<SignInPage> {
                           emailController.clear();
                           signUp = !signUp;
                           autoValidate = false;
+                          hideKeyboard(context);
                         });
                       },
                       child: Text((!signUp) ? "Sign Up" : "Sign In"),
