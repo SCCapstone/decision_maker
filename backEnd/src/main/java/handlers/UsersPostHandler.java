@@ -44,8 +44,7 @@ public class UsersPostHandler implements
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserSettings(payloadJsonMap, metrics);
           } else if (action.equals("getUserData")) {
-            resultStatus = DatabaseManagers.USERS_MANAGER
-                .getUserData(payloadJsonMap, metrics);
+            resultStatus = DatabaseManagers.USERS_MANAGER.getUserData(payloadJsonMap, metrics);
           } else if (action.equals("registerPushEndpoint")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .createPlatformEndpointAndStoreArn(payloadJsonMap, metrics);
