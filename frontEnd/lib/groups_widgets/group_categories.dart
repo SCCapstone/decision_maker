@@ -1,5 +1,5 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -52,10 +52,11 @@ class _GroupCategoriesState extends State<GroupCategories> {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
-            Text(
+            AutoSizeText(
               "My Categories",
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
+              minFontSize: 15,
+              maxLines: 1,
+              style: TextStyle(fontSize: 26),
             ),
             Visibility(
               visible: ownedCategoryRows.isEmpty,
@@ -118,11 +119,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             Visibility(
               visible: (groupCategoryRows.isNotEmpty),
-              child: Text(
+              child: AutoSizeText(
                 "Categories Added By Members",
-                style: TextStyle(
-                    fontSize:
-                        DefaultTextStyle.of(context).style.fontSize * 0.5),
+                minFontSize: 15,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 26),
               ),
             ),
             Expanded(

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/category.dart';
@@ -48,8 +49,11 @@ class _CategoryRow extends State<CategoryRow> {
             },
           ),
           Expanded(
-            child: Text(
+            child: AutoSizeText(
               this.categoryText,
+              minFontSize: 12,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 20),
             ),
           ),

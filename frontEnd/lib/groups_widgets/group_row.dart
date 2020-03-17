@@ -1,4 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -45,6 +47,7 @@ class _GroupRowState extends State<GroupRow> {
                               groupName: widget.group.groupName,
                             )),
                   ).then((val) {
+                    Globals.currentGroup = null;
                     // TODO figure out a better way to refresh without making unnecessary API calls
                     this.widget.refreshGroups();
                   });
@@ -72,6 +75,7 @@ class _GroupRowState extends State<GroupRow> {
                                 groupName: widget.group.groupName,
                               )),
                     ).then((val) {
+                      Globals.currentGroup = null;
                       // TODO figure out a better way to refresh without making unnecessary API calls
                       this.widget.refreshGroups();
                     });
@@ -80,8 +84,11 @@ class _GroupRowState extends State<GroupRow> {
                     color: Colors.blueGrey.withOpacity(0.25),
                     height: MediaQuery.of(context).size.width * .20,
                     child: Center(
-                      child: Text(
+                      child: AutoSizeText(
                         widget.group.groupName,
+                        minFontSize: 12,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 25),
                       ),
@@ -98,6 +105,8 @@ class _GroupRowState extends State<GroupRow> {
                   });
                 },
                 child: Container(
+                  // for some reason the color has to be set for the on tap above to work?
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   height: MediaQuery.of(context).size.width * .20,
                   width: MediaQuery.of(context).size.width * .15,
                   child: Center(

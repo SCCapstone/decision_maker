@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -43,8 +44,11 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
                   color: Colors.blueGrey.withOpacity(0.25),
                   height: MediaQuery.of(context).size.width * .20,
                   child: Center(
-                    child: Text(
+                    child: AutoSizeText(
                       widget.group.groupName,
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 25),
                     ),

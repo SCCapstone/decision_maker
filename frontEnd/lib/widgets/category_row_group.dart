@@ -69,6 +69,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                 style: TextStyle(fontSize: 15),
                 maxLines: 1,
                 minFontSize: 8,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),

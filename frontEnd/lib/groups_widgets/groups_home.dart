@@ -154,8 +154,11 @@ class _GroupsHomeState extends State<GroupsHome>
                         child: CircleAvatar(
                             backgroundImage: getUserIconUrl(Globals.user)),
                       ),
-                      title: Text(
+                      title: AutoSizeText(
                         Globals.username,
+                        minFontSize: 12,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 24,
                             color: Theme.of(context).primaryColorDark),
@@ -218,10 +221,11 @@ class _GroupsHomeState extends State<GroupsHome>
           centerTitle: true,
           title: Visibility(
             visible: !(searching),
-            child: Text(
+            child: AutoSizeText(
               "Pocket Poll",
-              style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.8),
+              maxLines: 1,
+              minFontSize: 20,
+              style: TextStyle(fontSize: 40),
             ),
           ),
           actions: <Widget>[

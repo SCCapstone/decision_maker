@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -23,7 +24,7 @@ class UserRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           GestureDetector(
-            onTap: (){
+            onTap: () {
               showUserImage(getIconUrl(icon), context);
             },
             child: Container(
@@ -38,8 +39,11 @@ class UserRow extends StatelessWidget {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .005)),
           Expanded(
-            child: Text(
+            child: AutoSizeText(
               "${this.displayName} (@${this.username})",
+              maxLines: 1,
+              minFontSize: 11,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 18),
             ),
           ),
