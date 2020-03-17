@@ -1,14 +1,11 @@
 package models;
 
 import imports.GroupsManager;
-import imports.UsersManager;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
-import utilities.RequestFields;
 
 @Data
 public class Event {

@@ -16,7 +16,7 @@ public class JsonEncoders {
       outputString.append(JsonEncoders.convertStringToJson((String) value));
     } else if (value instanceof List) {
       outputString.append(JsonEncoders.convertListToJson((List) value));
-    } else if (value instanceof Number) {
+    } else if (value instanceof Number || value instanceof Boolean) {
       outputString.append(JsonEncoders.convertStringToJson(value.toString()));
     } else {
       outputString.append("null"); // assuming null pointer

@@ -1,7 +1,6 @@
 package models;
 
 import imports.UsersManager;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -14,23 +13,27 @@ import lombok.Data;
 public class AppSettings {
 
   //TODO at some point update the ints to bools
-  private Integer darkTheme;
+  private boolean darkTheme;
   private Integer groupSort;
-  private Integer muted;
+  private Integer categorySort;
+  private boolean muted;
 
   public static AppSettings defaultSettings() {
     return AppSettings.builder()
         .darkTheme(UsersManager.DEFAULT_DARK_THEME)
         .groupSort(UsersManager.DEFAULT_GROUP_SORT)
+        .categorySort(UsersManager.DEFAULT_CATEGORY_SORT)
         .muted(UsersManager.DEFAULT_MUTED)
         .build();
   }
 
   public AppSettings(final Map<String, Object> jsonMap) {
     if (jsonMap != null) {
-      this.setDarkTheme(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
+      this.setDarkTheme(this.getBoolFromObject(jsonMap.get(UsersManager.APP_SETTINGS_DARK_THEME)));
       this.setGroupSort(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_GROUP_SORT)));
-      this.setMuted(this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
+      this.setCategorySort(
+          this.getIntFromObject(jsonMap.get(UsersManager.APP_SETTINGS_CATEGORY_SORT)));
+      this.setMuted(this.getBoolFromObject(jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
     }
   }
 
@@ -41,10 +44,18 @@ public class AppSettings {
     return null;
   }
 
+  private boolean getBoolFromObject(final Object input) {
+    if (input != null) {
+      return Boolean.parseBoolean(input.toString());
+    }
+    return false;
+  }
+
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_DARK_THEME, this.darkTheme);
     modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_GROUP_SORT, this.groupSort);
+    modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_CATEGORY_SORT, this.categorySort);
     modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_MUTED, this.muted);
     return modelAsMap;
   }

@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
-public class Group {
+public class Group implements Model {
 
   private String groupId;
   private String groupName;
@@ -26,9 +26,12 @@ public class Group {
   private Integer nextEventId;
   private String lastActivity;
   private Map<String, Event> events;
+  private boolean isOpen;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
+  @Setter(AccessLevel.NONE)
+  private Map<String, Boolean> membersLeft;
   @Setter(AccessLevel.NONE)
   private Map<String, String> categories;
 
@@ -43,8 +46,10 @@ public class Group {
         this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
     this.setNextEventId(this.getIntFromObject(jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
+    this.setOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
 
     this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
+    this.setMembersLeft((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS_LEFT));
     this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
     this.setEventsRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
   }
@@ -69,7 +74,9 @@ public class Group {
     modelAsMap.putIfAbsent(GroupsManager.DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
     modelAsMap.putIfAbsent(GroupsManager.NEXT_EVENT_ID, this.nextEventId);
     modelAsMap.putIfAbsent(GroupsManager.LAST_ACTIVITY, this.lastActivity);
+    modelAsMap.putIfAbsent(GroupsManager.IS_OPEN, this.isOpen);
     modelAsMap.putIfAbsent(GroupsManager.MEMBERS, this.getMembersMap());
+    modelAsMap.putIfAbsent(GroupsManager.MEMBERS_LEFT, this.membersLeft);
     modelAsMap.putIfAbsent(GroupsManager.CATEGORIES, this.categories);
     modelAsMap.putIfAbsent(GroupsManager.EVENTS, this.getEventsMap());
     return modelAsMap;
@@ -81,6 +88,16 @@ public class Group {
       this.members = new HashMap<>();
       for (String username : jsonMap.keySet()) {
         this.members.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
+      }
+    }
+  }
+
+  public void setMembersLeft(final Map<String, Object> jsonMap) {
+    this.membersLeft = null;
+    if (jsonMap != null) {
+      this.membersLeft = new HashMap<>();
+      for (String username : jsonMap.keySet()) {
+        this.membersLeft.putIfAbsent(username, true);
       }
     }
   }
@@ -154,5 +171,12 @@ public class Group {
       return Integer.parseInt(input.toString());
     }
     return null;
+  }
+
+  private boolean getBoolFromObject(final Object input) {
+    if (input != null) {
+      return Boolean.parseBoolean(input.toString());
+    }
+    return false;
   }
 }
