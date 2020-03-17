@@ -364,10 +364,14 @@ public class GroupsManager extends DatabaseAccessManager {
         final String eventId = oldGroup.getNextEventId().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final User eventCreator = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
 
         final Event newEvent = new Event(jsonMap);
 
         if (this.validEventInput(oldGroup, newEvent)) {
+          newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
           newEvent.setOptedIn(oldGroup.getMembers());
           newEvent.setCreatedDateTime(lastActivity);
           newEvent.setSelectedChoice(null);
