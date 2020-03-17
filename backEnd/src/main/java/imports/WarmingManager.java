@@ -1,5 +1,6 @@
 package imports;
 
+import utilities.Config;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
@@ -15,6 +16,8 @@ public class WarmingManager {
       DatabaseManagers.USERS_MANAGER.describeTable();
       DatabaseManagers.CATEGORIES_MANAGER.describeTable();
       DatabaseManagers.USERS_MANAGER.describeTable();
+      DatabaseManagers.S3_ACCESS_MANAGER.imageBucketExists();
+      DatabaseManagers.SNS_ACCESS_MANAGER.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
 
       resultStatus = new ResultStatus(true, "Endpoints warmed.");
     } catch (Exception e) {
