@@ -150,7 +150,6 @@ public class GroupsManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        jsonMap.putIfAbsent(GROUP_CREATOR, activeUser);
 
         if (jsonMap.containsKey(ICON)) { // if it's there, assume it's new image data
           final String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
@@ -163,6 +162,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final List<String> members = (List<String>) jsonMap.get(MEMBERS);
         //sanity check, add the active user to this mapping to make sure his data is added
         members.add(activeUser);
+
         final Map<String, Object> membersMapped = this.getMembersMapForInsertion(members, metrics);
         jsonMap.put(MEMBERS, membersMapped); // put overwrites current value
 
@@ -171,17 +171,17 @@ public class GroupsManager extends DatabaseAccessManager {
         //TODO user input which is bad
 
         final String newGroupId = UUID.randomUUID().toString();
-        jsonMap.put(GROUP_ID, newGroupId);
-
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
-        jsonMap.put(LAST_ACTIVITY, lastActivity);
-
-        jsonMap.put(EVENTS, Collections.emptyMap());
-        jsonMap.put(NEXT_EVENT_ID, 1);
 
         final Group newGroup = new Group(jsonMap);
+        newGroup.setGroupId(newGroupId);
+        newGroup.setGroupCreator(activeUser);
         newGroup.setIsOpen(false); // TODO get from 'required' request key (it's not required rn)
+        newGroup.setMembersLeft(Collections.emptyMap());
+        newGroup.setNextEventId(1);
+        newGroup.setEvents(Collections.emptyMap());
+        newGroup.setLastActivity(lastActivity);
         this.putItem(newGroup);
 
         //old group being null signals we're creating a new group
@@ -757,7 +757,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final Set<String> newMembers = newGroup.getMembers().keySet();
     final Set<String> addedUsernames = new HashSet<>(newMembers);
-    final Set<String> removedUsernames = Collections.emptySet();
+    final Set<String> removedUsernames = new HashSet<>();
 
     if (oldGroup != null) {
       final Set<String> oldMembers = oldGroup.getMembers().keySet();
@@ -786,7 +786,7 @@ public class GroupsManager extends DatabaseAccessManager {
     }
 
     String updateExpression;
-    ValueMap valueMap;
+    ValueMap valueMap = new ValueMap();
     UpdateItemSpec updateItemSpec;
 
     //update users with new group mapping based on which attributes were updated
@@ -794,26 +794,26 @@ public class GroupsManager extends DatabaseAccessManager {
       if (oldGroup == null) {
         //if this is a new Group we need to create the entire map
         updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
-        valueMap = new ValueMap()
-            .withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
+        valueMap.withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
       } else {
         //since this group already exists, we're just updating the mappings that have changed
         //for simplicity in the code, we'll always update the group name
         updateExpression = "set " + UsersManager.GROUPS + ".#groupId." + GroupsManager.GROUP_NAME
             + " = :groupName";
-        valueMap = new ValueMap().withString(":groupName", newGroup.getGroupName());
+        valueMap.withString(":groupName", newGroup.getGroupName());
 
-        if (!newGroup.getIcon().equals(oldGroup.getIcon())) {
+        if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
           updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
               + " = :groupIcon";
-          valueMap = new ValueMap().withString(":groupIcon", newGroup.getIcon());
+          Sys.withString(":groupIcon", newGroup.getIcon());
         }
 
-        if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
+        if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+            .equals(oldGroup.getLastActivity())) {
           updateExpression +=
               ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
                   + " = :lastActivity";
-          valueMap = new ValueMap().withString(":lastActivity", newGroup.getLastActivity());
+          valueMap.withString(":lastActivity", newGroup.getLastActivity());
         }
 
         if (updatedEventId != null) {
@@ -821,7 +821,7 @@ public class GroupsManager extends DatabaseAccessManager {
               ", " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
                   + ".#eventId = :true";
           nameMap.with("#eventId", updatedEventId);
-          valueMap = new ValueMap().withBoolean(":true", true);
+          valueMap.withBoolean(":true", true);
         }
       }
 
@@ -863,8 +863,7 @@ public class GroupsManager extends DatabaseAccessManager {
     try {
       //blind send...
       this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics);
-    } catch (
-        final Exception e) {
+    } catch (final Exception e) {
       success = false;
       metrics.log(new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod, e));
     }
