@@ -1,5 +1,7 @@
 package imports;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -17,8 +19,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -59,6 +63,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
+  public static final Integer INITIAL_EVENTS_PULLED = 25;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -87,13 +92,14 @@ public class GroupsManager extends DatabaseAccessManager {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
     }
 
-    // this will be a json string representing an array of objects
+    //we should now have the groupIds that we are getting groups for
     if (success) {
       List<Map> groups = new ArrayList<>();
       for (String groupId : groupIds) {
         try {
-          Item groupData = this.getItemByPrimaryKey(groupId);
-          groups.add(groupData.asMap());
+          final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+          this.limitNumberOfEvents(group, INITIAL_EVENTS_PULLED);
+          groups.add(group.asMap());
         } catch (Exception e) {
           metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
         }
@@ -104,6 +110,29 @@ public class GroupsManager extends DatabaseAccessManager {
 
     metrics.commonClose(success);
     return new ResultStatus(success, resultMessage);
+  }
+
+  private void limitNumberOfEvents(final Group group, final Integer count) {
+    if (group.getEvents().size() > count) {
+      //we stream each key pair in the entrySet to be sorted, limited, then collected into a new map
+      Map<String, Event> sortedEvents = group.getEvents()
+          .entrySet()
+          .stream()
+          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
+          .limit(count)
+          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+
+      group.setEvents(sortedEvents);
+    }
+  }
+
+  private int isEventXAfterY(final Event x, final Event y) {
+    final LocalDateTime xCreationDate = LocalDateTime
+        .parse(x.getCreatedDateTime(), this.getDateTimeFormatter());
+    final LocalDateTime yCreationDate = LocalDateTime
+        .parse(y.getCreatedDateTime(), this.getDateTimeFormatter());
+
+    return yCreationDate.compareTo(xCreationDate);
   }
 
   public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {

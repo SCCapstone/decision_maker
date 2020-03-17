@@ -21,9 +21,8 @@ public class Event {
   private Integer rsvpDuration;
   private Integer votingDuration;
   private String selectedChoice;
-
-  @Setter(AccessLevel.NONE)
   private Map<String, Member> optedIn;
+
   @Setter(AccessLevel.NONE)
   private Map<String, String> tentativeAlgorithmChoices;
   @Setter(AccessLevel.NONE)
@@ -73,10 +72,6 @@ public class Event {
         this.optedIn.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
       }
     }
-  }
-
-  public void setOptedIn(final Map<String, Member> memberMap) {
-    this.optedIn = memberMap;
   }
 
   public Map<String, Map<String, String>> getOptedInMap() {
