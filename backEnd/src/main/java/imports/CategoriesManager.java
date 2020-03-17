@@ -33,7 +33,7 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String NEXT_CHOICE_NO = "NextChoiceNo";
   public static final String OWNER = "Owner";
 
-  public static final Integer MAX_NUMBER_OF_CATEGORIES = 5;
+  public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
 
   public CategoriesManager() {
     super("categories", "CategoryId", Regions.US_EAST_2);

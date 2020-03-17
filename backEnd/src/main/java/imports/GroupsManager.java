@@ -63,7 +63,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
-  public static final Integer INITIAL_EVENTS_PULLED = 5;
+  public static final Integer INITIAL_EVENTS_PULLED = 25;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -118,7 +118,7 @@ public class GroupsManager extends DatabaseAccessManager {
       Map<String, Event> sortedEvents = group.getEvents()
           .entrySet()
           .stream()
-          .sorted((e1, e2) -> this.isEventXBeforeY(e1.getValue(), e2.getValue()))
+          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
           .limit(count)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
@@ -126,13 +126,13 @@ public class GroupsManager extends DatabaseAccessManager {
     }
   }
 
-  private int isEventXBeforeY(final Event x, final Event y) {
+  private int isEventXAfterY(final Event x, final Event y) {
     final LocalDateTime xCreationDate = LocalDateTime
         .parse(x.getCreatedDateTime(), this.getDateTimeFormatter());
     final LocalDateTime yCreationDate = LocalDateTime
         .parse(y.getCreatedDateTime(), this.getDateTimeFormatter());
 
-    return xCreationDate.compareTo(yCreationDate);
+    return yCreationDate.compareTo(xCreationDate);
   }
 
   public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
