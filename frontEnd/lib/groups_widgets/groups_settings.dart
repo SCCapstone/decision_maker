@@ -591,12 +591,20 @@ class _GroupSettingsState extends State<GroupSettings> {
   }
 
   void tryDelete() async {
-    ResultStatus status =
+    showLoadingDialog(context, "Deleting group...", true);
+    ResultStatus resultStatus =
         await GroupsManager.deleteGroup(Globals.currentGroup.groupId);
-    if (status.success) {
-      // TODO delete entire group, then go back to home page (https://github.com/SCCapstone/decision_maker/issues/114)
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+
+    if (resultStatus.success) {
+      Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Navigator.pushAndRemoveUntil(
+          context,
+          new MaterialPageRoute(
+              builder: (BuildContext context) => GroupsHome()),
+              (Route<dynamic> route) => false);
     } else {
-      showErrorMessage("Error", status.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 

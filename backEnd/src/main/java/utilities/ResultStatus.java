@@ -19,4 +19,9 @@ public class ResultStatus {
     return "{\"success\":\"" + (this.success ? "true" : "false")
         + "\",\"resultMessage\":\"" + this.resultMessage + "\"}";
   }
+
+  public ResultStatus applyResultStatus(ResultStatus otherStatus) {
+    return new ResultStatus(this.success && otherStatus.success,
+        this.resultMessage + "\n\n" + otherStatus.resultMessage);
+  }
 }
