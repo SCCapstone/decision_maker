@@ -24,6 +24,7 @@ public class WarmingManager {
       metrics.log(new ErrorDescriptor<>("input", classMethod, e));
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }
