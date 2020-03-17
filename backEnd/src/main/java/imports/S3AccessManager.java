@@ -71,4 +71,8 @@ public class S3AccessManager {
     metrics.commonClose(fileName != null);
     return Optional.ofNullable(fileName);
   }
+
+  public Boolean imageBucketExists() {
+    return this.s3Client.doesBucketExistV2(S3_IMAGE_BUCKET);
+  }
 }

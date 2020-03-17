@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
+import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
@@ -44,8 +45,7 @@ public class UsersPostHandler implements
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserSettings(payloadJsonMap, metrics);
           } else if (action.equals("getUserData")) {
-            resultStatus = DatabaseManagers.USERS_MANAGER
-                .getUserData(payloadJsonMap, metrics);
+            resultStatus = DatabaseManagers.USERS_MANAGER.getUserData(payloadJsonMap, metrics);
           } else if (action.equals("registerPushEndpoint")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .createPlatformEndpointAndStoreArn(payloadJsonMap, metrics);
@@ -53,7 +53,7 @@ public class UsersPostHandler implements
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .unregisterPushEndpoint(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
-            resultStatus = new ResultStatus(true, "Warming users endpoint.");
+            resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered.";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));

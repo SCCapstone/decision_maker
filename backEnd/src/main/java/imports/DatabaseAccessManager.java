@@ -12,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.TransactGetItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
@@ -101,5 +102,9 @@ public class DatabaseAccessManager {
   public TransactGetItemsResult executeGetTransaction(
       final TransactGetItemsRequest transactGetItemsRequest) {
     return this.client.transactGetItems(transactGetItemsRequest);
+  }
+
+  public TableDescription describeTable() {
+    return this.dynamoDb.getTable(this.tableName).describe();
   }
 }
