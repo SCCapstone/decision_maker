@@ -185,7 +185,8 @@ public class GroupsManager extends DatabaseAccessManager {
         this.putItem(newGroup);
 
         //old group being null signals we're creating a new group
-        this.updateUsersTable(null, newGroup, metrics);
+        //updatedEventId being null signals this isn't an event update
+        this.updateUsersTable(null, newGroup, null, metrics);
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
@@ -267,7 +268,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
             //update mappings in users and categories tables
             final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
-            this.updateUsersTable(oldGroup, newGroup, metrics);
+            this.updateUsersTable(oldGroup, newGroup, null, metrics);
             this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
                 oldGroup.getGroupName(), groupName);
 
@@ -411,7 +412,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
           final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-          this.updateUsersTable(oldGroup, newGroup, metrics);
+          //TODO I think this is getting called twice when rsvp is <= 0 since it's called by set tentative choices
+          this.updateUsersTable(oldGroup, newGroup, eventId, metrics);
 
           resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
         } else {
@@ -733,8 +735,18 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  //if oldGroup is null, that signals that we're creating a new group
-  private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics) {
+  /**
+   * This method updates user items based on the changed definition of a group
+   *
+   * @param oldGroup       The old group definition before the update. If this param is null, then
+   *                       that signals that a new group is being created.
+   * @param newGroup       The new group definition after the update.
+   * @param updatedEventId This is the event id of an event that just changed states. Null means
+   *                       this isn't being called from an event update.
+   * @param metrics        Standard metrics object for profiling and logging
+   */
+  private void updateUsersTable(final Group oldGroup, final Group newGroup,
+      final String updatedEventId, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
@@ -755,15 +767,16 @@ public class GroupsManager extends DatabaseAccessManager {
       addedUsernames.removeAll(oldMembers);
       removedUsernames.removeAll(newMembers);
 
-      if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
+      if (updatedEventId != null) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.groupNameIsSet() && !newGroup.getGroupName()
+          .equals(oldGroup.getGroupName())) {
         usersToUpdate.addAll(newMembers);
       } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
         usersToUpdate.addAll(newMembers);
       } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
           .equals(oldGroup.getLastActivity())) {
         usersToUpdate.addAll(newMembers);
-      } else if (!oldGroup.getNextEventId().equals(newGroup.getNextEventId())) {
-
       } else if (!oldMembers.equals(newMembers)) {
         usersToUpdate.addAll(addedUsernames);
       }
@@ -797,9 +810,18 @@ public class GroupsManager extends DatabaseAccessManager {
         }
 
         if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
-          updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
-              + " = :lastActivity";
+          updateExpression +=
+              ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
+                  + " = :lastActivity";
           valueMap = new ValueMap().withString(":lastActivity", newGroup.getLastActivity());
+        }
+
+        if (updatedEventId != null) {
+          updateExpression +=
+              ", " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
+                  + ".#eventId = :true";
+          nameMap.with("#eventId", updatedEventId);
+          valueMap = new ValueMap().withBoolean(":true", true);
         }
       }
 
@@ -841,7 +863,8 @@ public class GroupsManager extends DatabaseAccessManager {
     try {
       //blind send...
       this.sendAddedToGroupNotifications(new ArrayList<>(addedUsernames), newGroup, metrics);
-    } catch (final Exception e) {
+    } catch (
+        final Exception e) {
       success = false;
       metrics.log(new ErrorDescriptor<>(new ArrayList<>(addedUsernames), classMethod, e));
     }
@@ -941,6 +964,7 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          eventId,
           metrics
       );
     } catch (Exception e) {
@@ -997,6 +1021,7 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          eventId,
           metrics
       );
     } catch (Exception e) {
