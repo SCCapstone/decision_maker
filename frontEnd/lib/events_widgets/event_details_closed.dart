@@ -28,9 +28,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   void initState() {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
-      this.eventCreator = this.event.eventCreator[username]
-              [UsersManager.DISPLAY_NAME] +
-          " (@$username)";
+      this.eventCreator =
+          "${this.event.eventCreator[username][UsersManager.DISPLAY_NAME]} (@$username)";
     }
     super.initState();
   }

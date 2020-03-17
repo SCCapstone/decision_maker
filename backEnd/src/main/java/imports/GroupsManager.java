@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import models.Event;
 import models.Group;
 import models.User;
@@ -367,11 +368,11 @@ public class GroupsManager extends DatabaseAccessManager {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final User eventCreator = new User(
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
-        jsonMap.putIfAbsent(activeUser, eventCreator.asMember().asMap());
 
         final Event newEvent = new Event(jsonMap);
 
         if (this.validEventInput(oldGroup, newEvent)) {
+          newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
           newEvent.setOptedIn(oldGroup.getMembers());
           newEvent.setCreatedDateTime(lastActivity);
           newEvent.setSelectedChoice(null);
