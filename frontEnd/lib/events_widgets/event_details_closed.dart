@@ -29,7 +29,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
-          "${this.event.eventCreator[username][UsersManager.DISPLAY_NAME]} (@$username)";
+          "${this.event.eventCreator[username].displayName} (@$username)";
     }
     super.initState();
   }
@@ -154,10 +154,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
-      this.userRows.add(UserRowEvents(
-          this.event.optedIn[username][UsersManager.DISPLAY_NAME],
-          username,
-          this.event.optedIn[username][UsersManager.ICON]));
+      this.userRows.add(UserRowEvents(this.event.optedIn[username].displayName,
+          username, this.event.optedIn[username].icon));
     }
   }
 

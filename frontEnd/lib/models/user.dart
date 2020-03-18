@@ -1,8 +1,6 @@
-import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
-import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user_group.dart';
 
 import 'app_settings.dart';
@@ -96,6 +94,31 @@ class User {
         ownedCategories: categoryList,
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
+  }
+
+  Map asMap() {
+    // need this for encoding to work properly
+    Map<String, dynamic> groupsMap = new Map<String, dynamic>();
+    for (String groupId in this.groups.keys) {
+      groupsMap.putIfAbsent(groupId, () => this.groups[groupId].asMap());
+    }
+    Map<String, dynamic> groupsLeftMap = new Map<String, dynamic>();
+    for (String groupId in this.groupsLeft.keys) {
+      groupsLeftMap.putIfAbsent(
+          groupId, () => this.groupsLeft[groupId].asMap());
+    }
+
+    return {
+      UsersManager.USERNAME: username,
+      UsersManager.DISPLAY_NAME: displayName,
+      UsersManager.APP_SETTINGS: appSettings.asMap(),
+      UsersManager.GROUPS: groupsMap,
+      UsersManager.GROUPS_LEFT: groupsLeftMap,
+      UsersManager.USER_RATINGS: userRatings,
+      UsersManager.OWNED_CATEGORIES: ownedCategories,
+      UsersManager.FAVORITES: favorites,
+      UsersManager.ICON: icon
+    };
   }
 
   @override

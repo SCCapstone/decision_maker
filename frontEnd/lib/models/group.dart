@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:frontEnd/imports/groups_manager.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/member.dart';
 
@@ -58,16 +57,15 @@ class Group {
     LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
         key: (k) => k, value: (k) => events[k]);
     events = sortedMap.cast();
+
     // map of username -> member
     Map<String, Member> memberMap = new Map<String, Member>();
     for (String username in json[GroupsManager.MEMBERS].keys) {
-      Member member = new Member(
-          username: username,
-          displayName: json[GroupsManager.MEMBERS][username]
-              [UsersManager.DISPLAY_NAME],
-          icon: json[GroupsManager.MEMBERS][username][UsersManager.ICON]);
+      Member member =
+          new Member.fromJson(json[GroupsManager.MEMBERS][username], username);
       memberMap.putIfAbsent(username, () => member);
     }
+
     // map of category id to category category name
     Map<String, String> categoriesMap = new Map<String, String>();
     for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
@@ -115,13 +113,17 @@ class Group {
     for (String eventId in this.events.keys) {
       eventsMap.putIfAbsent(eventId, () => this.events[eventId].asMap());
     }
+    Map<String, dynamic> membersMap = new Map<String, dynamic>();
+    for (String username in this.members.keys) {
+      membersMap.putIfAbsent(username, () => this.members[username].asMap());
+    }
     return {
       GroupsManager.GROUP_ID: this.groupId,
       GroupsManager.GROUP_NAME: this.groupName,
       GroupsManager.ICON: this.icon,
       GroupsManager.GROUP_CREATOR: this.groupCreator,
       GroupsManager.LAST_ACTIVITY: this.lastActivity,
-      GroupsManager.MEMBERS: this.members,
+      GroupsManager.MEMBERS: membersMap,
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,

@@ -270,6 +270,7 @@ class _CreateCategoryState extends State<CreateCategory> {
         if (resultStatus.success) {
           Category newCategory = resultStatus.data;
           Globals.user.ownedCategories.add(new Category(
+              owner: Globals.username,
               categoryId: newCategory.categoryId,
               categoryName: newCategory.categoryName));
           Globals.activeUserCategories.add(newCategory);

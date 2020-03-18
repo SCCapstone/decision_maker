@@ -28,7 +28,7 @@ class EventProposedChoice extends StatefulWidget {
 
 class _EventProposedChoiceState extends State<EventProposedChoice> {
   int currentVote;
-  Map<String, int> voteMap = new Map<String, int>();
+  Map<String, int> voteMap;
   static final int voteYes = 1;
   static final int voteNo = 0;
   static final int voteEmpty = -1;
@@ -104,14 +104,14 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
     int previousVote = this.currentVote;
     // update changes locally so user doesn't have to fetch from DB to see new vote reflected
     if (widget.event.votingNumbers[widget.choiceId] == null) {
-      Map<String, int> voteInfo = new Map<String, int>();
-      voteInfo.putIfAbsent(Globals.username, () => voteVal);
-      widget.event.votingNumbers.putIfAbsent(widget.choiceId, () => voteInfo);
-    } else {
-      widget.event.votingNumbers[widget.choiceId].update(
-          Globals.username, (existing) => voteVal,
-          ifAbsent: () => voteVal);
+      widget.event.votingNumbers
+          .putIfAbsent(widget.choiceId, () => new Map<String, int>());
     }
+
+    widget.event.votingNumbers[widget.choiceId].update(
+        Globals.username, (existing) => voteVal,
+        ifAbsent: () => voteVal);
+
     setState(() {
       this.currentVote = voteVal;
     });

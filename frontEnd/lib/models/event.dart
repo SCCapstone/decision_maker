@@ -1,6 +1,7 @@
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/imports/users_manager.dart';
+
+import 'member.dart';
 
 class Event {
   final String categoryId;
@@ -12,10 +13,10 @@ class Event {
   final DateTime pollEnd;
   final int votingDuration;
   final int considerDuration;
-  final Map<String, Map<String, String>> optedIn;
+  final Map<String, Member> optedIn;
   final Map<String, String> tentativeAlgorithmChoices;
   final Map<String, Map<String, int>> votingNumbers;
-  final Map<String, Map<String, String>> eventCreator;
+  final Map<String, Member> eventCreator;
   final String selectedChoice;
   final String eventStartDateTimeFormatted;
   final String pollBeginFormatted;
@@ -87,19 +88,14 @@ class Event {
         pollEndTemp.minute,
         pollEndTemp.millisecond,
         pollEndTemp.microsecond);
-    // map of username to user info (icon, displayName)
-    Map<String, Map<String, String>> optInMap =
-        new Map<String, Map<String, String>>();
+    // map of username to user info (Member)
+    Map<String, Member> optInMap = new Map<String, Member>();
     for (String username in json[EventsManager.OPTED_IN].keys) {
-      Map<String, String> memberInfo = new Map<String, String>();
-      memberInfo.putIfAbsent(
-          UsersManager.DISPLAY_NAME,
-          () => json[EventsManager.OPTED_IN][username]
-              [UsersManager.DISPLAY_NAME]);
-      memberInfo.putIfAbsent(UsersManager.ICON,
-          () => json[EventsManager.OPTED_IN][username][UsersManager.ICON]);
-      optInMap.putIfAbsent(username, () => memberInfo);
+      Member member =
+          new Member.fromJson(json[EventsManager.OPTED_IN][username], username);
+      optInMap.putIfAbsent(username, () => member);
     }
+
     Map<String, String> choicesMap = new Map<String, String>();
     for (String choiceId
         in json[EventsManager.TENTATIVE_ALGORITHM_CHOICES].keys) {
@@ -108,19 +104,15 @@ class Event {
           () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
               .toString());
     }
-    // map of username to user info (icon, displayName)
-    Map<String, Map<String, String>> eventCreatorMap =
-        new Map<String, Map<String, String>>();
+
+    // map of username to user info (Member)
+    Map<String, Member> eventCreatorMap = new Map<String, Member>();
     for (String username in json[EventsManager.EVENT_CREATOR].keys) {
-      Map<String, String> memberInfo = new Map<String, String>();
-      memberInfo.putIfAbsent(
-          UsersManager.DISPLAY_NAME,
-          () => json[EventsManager.EVENT_CREATOR][username]
-              [UsersManager.DISPLAY_NAME]);
-      memberInfo.putIfAbsent(UsersManager.ICON,
-          () => json[EventsManager.EVENT_CREATOR][username][UsersManager.ICON]);
-      eventCreatorMap.putIfAbsent(username, () => memberInfo);
+      Member member = new Member.fromJson(
+          json[EventsManager.EVENT_CREATOR][username], username);
+      eventCreatorMap.putIfAbsent(username, () => member);
     }
+
     // map of choiceId -> map of username and corresponding vote of said user
     Map<String, Map<String, int>> votingNumMap =
         new Map<String, Map<String, int>>();
@@ -157,6 +149,22 @@ class Event {
   }
 
   Map asMap() {
+    // need this for encoding to work properly
+    Map<String, dynamic> optedInMap = new Map<String, dynamic>();
+    if (this.optedIn != null) {
+      for (String username in this.optedIn.keys) {
+        optedInMap.putIfAbsent(username, () => this.optedIn[username].asMap());
+      }
+    }
+
+    Map<String, dynamic> eventCreatorMap = new Map<String, dynamic>();
+    if (this.eventCreator != null) {
+      for (String username in this.eventCreator.keys) {
+        eventCreatorMap.putIfAbsent(
+            username, () => this.eventCreator[username].asMap());
+      }
+    }
+
     return {
       // Need the DateTime objects to be Strings when used in the API request
       // because json.encode can't encode DateTime objects.
@@ -169,10 +177,10 @@ class Event {
           this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.VOTING_DURATION: this.votingDuration,
       EventsManager.CONSIDER_DURATION: this.considerDuration,
-      EventsManager.OPTED_IN: this.optedIn,
+      EventsManager.OPTED_IN: optedInMap,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
       EventsManager.SELECTED_CHOICE: this.selectedChoice,
-      EventsManager.EVENT_CREATOR: this.eventCreator,
+      EventsManager.EVENT_CREATOR: eventCreatorMap,
       EventsManager.VOTING_NUMBERS: this.votingNumbers
     };
   }

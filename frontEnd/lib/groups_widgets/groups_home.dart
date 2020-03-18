@@ -531,9 +531,9 @@ class _GroupsHomeState extends State<GroupsHome>
   void setGroupsLeftSort() {
     // don't need to update DB, separate method so there isn't a break in consistency
     if (this.groupsLeftSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortLeftByAlphaDescending(this.groupsLeft);
+      GroupsManager.sortByAlphaDescending(this.groupsLeft);
     } else if (this.groupsLeftSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortLeftByAlphaAscending(this.groupsLeft);
+      GroupsManager.sortByAlphaAscending(this.groupsLeft);
     }
   }
 
@@ -550,15 +550,8 @@ class _GroupsHomeState extends State<GroupsHome>
   }
 
   void loadGroups() {
-    this.totalGroups.clear();
-    this.groupsLeft.clear();
-    for (String groupId in Globals.user.groups.keys) {
-      this.totalGroups.add(Globals.user.groups[groupId]);
-    }
-    // get the groups left from the user object
-    for (String groupId in Globals.user.groupsLeft.keys) {
-      this.groupsLeft.add(Globals.user.groupsLeft[groupId]);
-    }
+    this.totalGroups = Globals.user.groups.values.toList();
+    this.groupsLeft = Globals.user.groupsLeft.values.toList();
     this.groupHomeSortVal = Globals.user.appSettings.groupSort;
     setGroupsHomeSort(false);
     setGroupsLeftSort();

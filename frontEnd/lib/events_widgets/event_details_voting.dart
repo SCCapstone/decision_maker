@@ -36,7 +36,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
-          "${this.event.eventCreator[username][UsersManager.DISPLAY_NAME]} (@$username)";
+          "${this.event.eventCreator[username].displayName} (@$username)";
     }
     for (String choiceId in this.event.tentativeAlgorithmChoices.keys) {
       this.choices.putIfAbsent(
@@ -189,10 +189,8 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
-      userRows.add(UserRowEvents(
-          this.event.optedIn[username][UsersManager.DISPLAY_NAME],
-          username,
-          this.event.optedIn[username][UsersManager.ICON]));
+      userRows.add(UserRowEvents(this.event.optedIn[username].displayName,
+          username, this.event.optedIn[username].icon));
     }
   }
 

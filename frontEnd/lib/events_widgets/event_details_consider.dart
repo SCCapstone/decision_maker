@@ -7,6 +7,7 @@ import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/user_row_events.dart';
 
@@ -32,7 +33,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
-          "${this.event.eventCreator[username][UsersManager.DISPLAY_NAME]} (@$username)";
+          "${this.event.eventCreator[username].displayName} (@$username)";
     }
     super.initState();
   }
@@ -155,8 +156,6 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                           color: Colors.red,
                           onPressed: () {
                             tryConsider(false);
-                            this.userRows.remove(Globals.username);
-                            setState(() {});
                           },
                         ),
                         RaisedButton(
@@ -164,11 +163,6 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                           color: Colors.green,
                           onPressed: () {
                             tryConsider(true);
-                            this.userRows.putIfAbsent(
-                                Globals.username,
-                                () => UserRowEvents(Globals.user.displayName,
-                                    Globals.username, Globals.user.icon));
-                            setState(() {});
                           },
                         )
                       ],
@@ -183,12 +177,41 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     );
   }
 
-  void tryConsider(bool considerVal) async {
-    // not sure if we want a loading dialog for this as that would be annoying for the user. Only show error for now
+  void tryConsider(bool considerUser) async {
+    bool oldConsiderUser = !considerUser;
+    // update group in local memory to reflect the change in consider value
+    if (considerUser) {
+      Globals.currentGroup.events[widget.eventId].optedIn.putIfAbsent(
+          Globals.username, () => new Member.fromUser(Globals.user));
+      this.userRows.putIfAbsent(
+          Globals.username,
+          () => UserRowEvents(
+              Globals.user.displayName, Globals.username, Globals.user.icon));
+    } else {
+      Globals.currentGroup.events[widget.eventId].optedIn
+          .remove(Globals.username);
+      this.userRows.remove(Globals.username);
+    }
+    setState(() {});
+
     ResultStatus resultStatus = await GroupsManager.optInOutOfEvent(
-        widget.groupId, widget.eventId, considerVal);
+        widget.groupId, widget.eventId, considerUser);
     if (!resultStatus.success) {
+      // revert consider back if it failed
+      if (oldConsiderUser) {
+        Globals.currentGroup.events[widget.eventId].optedIn.putIfAbsent(
+            Globals.username, () => new Member.fromUser(Globals.user));
+        this.userRows.putIfAbsent(
+            Globals.username,
+            () => UserRowEvents(
+                Globals.user.displayName, Globals.username, Globals.user.icon));
+      } else {
+        Globals.currentGroup.events[widget.eventId].optedIn
+            .remove(Globals.username);
+        this.userRows.remove(Globals.username);
+      }
       showErrorMessage("Error", resultStatus.errorMessage, context);
+      setState(() {});
     }
   }
 
@@ -199,10 +222,8 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     for (String username in this.event.optedIn.keys) {
       this.userRows.putIfAbsent(
           username,
-          () => UserRowEvents(
-              this.event.optedIn[username][UsersManager.DISPLAY_NAME],
-              username,
-              this.event.optedIn[username][UsersManager.ICON]));
+          () => UserRowEvents(this.event.optedIn[username].displayName,
+              username, this.event.optedIn[username].icon));
     }
   }
 

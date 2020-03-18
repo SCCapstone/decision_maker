@@ -45,6 +45,14 @@ class Member {
     return username.hashCode;
   }
 
+  Map asMap() {
+    return {
+      UsersManager.USERNAME: username,
+      UsersManager.DISPLAY_NAME: displayName,
+      UsersManager.ICON: icon
+    };
+  }
+
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName Icon: $icon";

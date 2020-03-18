@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group_interface.dart';
 import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
@@ -152,7 +153,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile) async {
+  static Future<ResultStatus<Group>> editGroup(
+      Group group, File iconFile) async {
     ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -349,22 +351,12 @@ class GroupsManager {
         .compareTo(DateTime.parse(b.lastActivity)));
   }
 
-  static void sortByAlphaAscending(List<UserGroup> groups) {
+  static void sortByAlphaAscending(List<GroupInterface> groups) {
     groups.sort((a, b) =>
         a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
   }
 
-  static void sortByAlphaDescending(List<UserGroup> groups) {
-    groups.sort((a, b) =>
-        b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
-  }
-
-  static void sortLeftByAlphaAscending(List<GroupLeft> groups) {
-    groups.sort((a, b) =>
-        a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
-  }
-
-  static void sortLeftByAlphaDescending(List<GroupLeft> groups) {
+  static void sortByAlphaDescending(List<GroupInterface> groups) {
     groups.sort((a, b) =>
         b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
   }
