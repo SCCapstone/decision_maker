@@ -240,9 +240,8 @@ class _UserSettingsState extends State<UserSettings> {
       }
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
           Globals.user.displayName,
-          boolToInt(Globals.user.appSettings.darkTheme),
-          boolToInt(Globals.user.appSettings.muted),
-          Globals.user.appSettings.groupSort,
+          Globals.user.appSettings.darkTheme,
+          Globals.user.appSettings.muted,
           userNames,
           null);
       if (resultStatus.success) {
@@ -285,9 +284,8 @@ class _UserSettingsState extends State<UserSettings> {
       showLoadingDialog(context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
           this._displayName,
-          boolToInt(this._darkTheme),
-          boolToInt(this._muted),
-          Globals.user.appSettings.groupSort,
+          this._darkTheme,
+          this._muted,
           userNames,
           this._icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');

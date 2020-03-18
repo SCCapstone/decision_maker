@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/models/app_settings.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 
@@ -74,19 +75,14 @@ class UsersManager {
     return retVal;
   }
 
-  static Future<ResultStatus> updateUserSettings(
-      String displayName,
-      int darkTheme,
-      int muted,
-      int groupSort,
-      List<String> favorites,
-      File image) async {
+  static Future<ResultStatus> updateUserSettings(String displayName,
+      bool darkTheme, bool muted, List<String> favorites, File image) async {
     ResultStatus retVal = new ResultStatus(success: false);
-
-    Map<String, dynamic> settings = new Map<String, dynamic>();
-    settings.putIfAbsent(APP_SETTINGS_DARK_THEME, () => darkTheme);
-    settings.putIfAbsent(APP_SETTINGS_MUTED, () => muted);
-    settings.putIfAbsent(APP_SETTINGS_GROUP_SORT, () => groupSort);
+    AppSettings settings = new AppSettings(
+        muted: muted,
+        darkTheme: darkTheme,
+        groupSort: Globals.user.appSettings.groupSort,
+        categorySort: Globals.user.appSettings.categorySort);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = updateSettingsAction;
@@ -95,7 +91,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(FAVORITES, () => favorites);
     jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(APP_SETTINGS, () => settings);
+        .putIfAbsent(APP_SETTINGS, () => settings.asMap());
     if (image != null) {
       jsonRequestBody[RequestFields.PAYLOAD]
           .putIfAbsent(ICON, () => image.readAsBytesSync());
