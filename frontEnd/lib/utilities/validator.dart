@@ -106,7 +106,7 @@ String validChoiceName(String input) {
   return retVal;
 }
 
-String validCategoryName(String input, List<Category> categories) {
+String validCategoryName(String input, List<Category> categories, bool edit) {
   input = input.trim(); // sanity check trim
   String retVal;
   bool repeat = false;
@@ -119,7 +119,7 @@ String validCategoryName(String input, List<Category> categories) {
     retVal = "Category name cannot be empty.";
   } else if (input.length > Globals.maxCategoryNameLength) {
     retVal = "Category name is too large.";
-  } else if (repeat) {
+  } else if (repeat && !edit) {
     retVal = "Category name already exists.";
   }
   return retVal;

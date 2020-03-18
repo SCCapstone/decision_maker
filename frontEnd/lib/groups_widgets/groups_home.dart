@@ -556,8 +556,8 @@ class _GroupsHomeState extends State<GroupsHome>
     for (String groupId in Globals.user.groupsLeft.keys) {
       Group group = new Group(
           groupId: groupId,
-          groupName: Globals.user.groupsLeft[groupId][GroupsManager.GROUP_NAME],
-          icon: Globals.user.groupsLeft[groupId][GroupsManager.ICON]);
+          groupName: Globals.user.groupsLeft[groupId].groupName,
+          icon: Globals.user.groupsLeft[groupId].icon);
       this.groupsLeft.add(group);
     }
     this.groupHomeSortVal = Globals.user.appSettings.groupSort;

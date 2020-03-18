@@ -115,8 +115,8 @@ class _CreateCategoryState extends State<CreateCategory> {
                         child: TextFormField(
                           maxLength: Globals.maxCategoryNameLength,
                           validator: (value) {
-                            return validCategoryName(
-                                value.trim(), Globals.user.ownedCategories);
+                            return validCategoryName(value.trim(),
+                                Globals.user.ownedCategories, false);
                           },
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,

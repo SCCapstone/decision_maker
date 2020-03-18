@@ -12,9 +12,8 @@ class User {
   String icon;
   final AppSettings appSettings;
   final Map<String, Group> groups;
-  final Map<String, dynamic> userRatings;
-  final Map<String, dynamic> groupsLeft;
-  final Map<String, dynamic> categories;
+  final Map<String, Map<String, String>> userRatings;
+  final Map<String, Group> groupsLeft;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
 
@@ -25,7 +24,6 @@ class User {
       this.groups,
       this.userRatings,
       this.groupsLeft,
-      this.categories,
       this.ownedCategories,
       this.favorites,
       this.icon});
@@ -37,7 +35,6 @@ class User {
       this.groups,
       this.userRatings,
       this.groupsLeft,
-      this.categories,
       this.ownedCategories,
       this.favorites,
       this.icon);
@@ -52,6 +49,16 @@ class User {
           icon: groupsRaw[groupId][GroupsManager.ICON],
           lastActivity: groupsRaw[groupId][GroupsManager.LAST_ACTIVITY]);
       groupsMap.putIfAbsent(groupId, () => group);
+    }
+
+    Map<String, Group> groupsLeftMap = new Map<String, Group>();
+    Map<String, dynamic> groupsLeftRaw = json[UsersManager.GROUPS_LEFT];
+    for (String groupId in groupsLeftRaw.keys) {
+      Group group = new Group(
+          groupId: groupId,
+          groupName: groupsLeftRaw[groupId][GroupsManager.GROUP_NAME],
+          icon: groupsLeftRaw[groupId][GroupsManager.ICON]);
+      groupsLeftMap.putIfAbsent(groupId, () => group);
     }
 
     List<Favorite> favoriteList = new List<Favorite>();
@@ -69,14 +76,27 @@ class User {
           owner: json[UsersManager.USERNAME]));
     }
 
+    Map<String, Map<String, String>> userRatings =
+        new Map<String, Map<String, String>>();
+    Map<String, dynamic> userRatingsRaw = json[UsersManager.USER_RATINGS];
+    if (userRatingsRaw != null) {
+      for (String categoryId in userRatingsRaw.keys) {
+        Map<String, String> categoryRatings = new Map<String, String>();
+        for (String choiceId in userRatingsRaw[categoryId].keys) {
+          categoryRatings.putIfAbsent(
+              choiceId, () => userRatingsRaw[categoryId][choiceId].toString());
+        }
+        userRatings.putIfAbsent(categoryId, () => categoryRatings);
+      }
+    }
+
     return User(
         username: json[UsersManager.USERNAME],
         displayName: json[UsersManager.DISPLAY_NAME],
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: groupsMap,
-        userRatings: json[UsersManager.CATEGORIES],
-        groupsLeft: json[UsersManager.GROUPS_LEFT],
-        categories: json[UsersManager.CATEGORIES],
+        userRatings: userRatings,
+        groupsLeft: groupsLeftMap,
         ownedCategories: categoryList,
         favorites: favoriteList,
         icon: json[UsersManager.ICON]);
@@ -85,7 +105,7 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        " GroupsLeft: $groupsLeft UserRatings: $userRatings Categories $categories OwnedCategories: $ownedCategories "
+        " GroupsLeft: $groupsLeft UserRatings: $userRatings OwnedCategories: $ownedCategories "
         "Favorites: $favorites Icon: $icon";
   }
 }
