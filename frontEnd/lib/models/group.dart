@@ -109,6 +109,10 @@ class Group {
   }
 
   Map asMap() {
+    Map<String, dynamic> eventsMap = new Map<String, dynamic>();
+    for (String eventId in this.events.keys) {
+      eventsMap.putIfAbsent(eventId, () => this.events[eventId].asMap());
+    }
     return {
       GroupsManager.GROUP_ID: this.groupId,
       GroupsManager.GROUP_NAME: this.groupName,
@@ -117,7 +121,7 @@ class Group {
       GroupsManager.LAST_ACTIVITY: this.lastActivity,
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
-      GroupsManager.EVENTS: this.events.toString(),
+      GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
       GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
       GroupsManager.NEXT_EVENT_ID: this.nextEventId

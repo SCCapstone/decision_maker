@@ -1,5 +1,6 @@
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 
 class Event {
   final String categoryId;
@@ -11,10 +12,10 @@ class Event {
   final DateTime pollEnd;
   final int votingDuration;
   final int considerDuration;
-  final Map<String, dynamic> optedIn;
-  final Map<String, dynamic> tentativeAlgorithmChoices;
-  final Map<String, dynamic> votingNumbers;
-  final Map<String, dynamic> eventCreator;
+  final Map<String, Map<String, String>> optedIn;
+  final Map<String, String> tentativeAlgorithmChoices;
+  final Map<String, Map<String, int>> votingNumbers;
+  final Map<String, Map<String, String>> eventCreator;
   final String selectedChoice;
   final String eventStartDateTimeFormatted;
   final String pollBeginFormatted;
@@ -75,8 +76,9 @@ class Event {
         pollBeginTemp.minute,
         pollBeginTemp.millisecond,
         pollBeginTemp.microsecond);
-    DateTime pollEndTemp = pollBeginTemp.toLocal().add(new Duration(
-        minutes: (json[EventsManager.VOTING_DURATION] + 1)));
+    DateTime pollEndTemp = pollBeginTemp
+        .toLocal()
+        .add(new Duration(minutes: (json[EventsManager.VOTING_DURATION] + 1)));
     DateTime pollEndUTC = DateTime.utc(
         pollEndTemp.year,
         pollEndTemp.month,
@@ -85,6 +87,52 @@ class Event {
         pollEndTemp.minute,
         pollEndTemp.millisecond,
         pollEndTemp.microsecond);
+
+    Map<String, Map<String, String>> optInMap =
+        new Map<String, Map<String, String>>();
+    for (String username in json[EventsManager.OPTED_IN].keys) {
+      Map<String, String> memberInfo = new Map<String, String>();
+      memberInfo.putIfAbsent(
+          UsersManager.DISPLAY_NAME,
+          () => json[EventsManager.OPTED_IN][username]
+              [UsersManager.DISPLAY_NAME]);
+      memberInfo.putIfAbsent(UsersManager.ICON,
+          () => json[EventsManager.OPTED_IN][username][UsersManager.ICON]);
+      optInMap.putIfAbsent(username, () => memberInfo);
+    }
+    Map<String, String> choicesMap = new Map<String, String>();
+    for (String choiceId
+        in json[EventsManager.TENTATIVE_ALGORITHM_CHOICES].keys) {
+      choicesMap.putIfAbsent(
+          choiceId,
+          () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
+              .toString());
+    }
+
+    Map<String, Map<String, String>> eventCreatorMap =
+        new Map<String, Map<String, String>>();
+    for (String username in json[EventsManager.EVENT_CREATOR].keys) {
+      Map<String, String> memberInfo = new Map<String, String>();
+      memberInfo.putIfAbsent(
+          UsersManager.DISPLAY_NAME,
+          () => json[EventsManager.EVENT_CREATOR][username]
+              [UsersManager.DISPLAY_NAME]);
+      memberInfo.putIfAbsent(UsersManager.ICON,
+          () => json[EventsManager.EVENT_CREATOR][username][UsersManager.ICON]);
+      eventCreatorMap.putIfAbsent(username, () => memberInfo);
+    }
+
+    Map<String, Map<String, int>> votingNumMap =
+        new Map<String, Map<String, int>>();
+    for (String choiceNum in json[EventsManager.VOTING_NUMBERS].keys) {
+      for (String username
+          in json[EventsManager.VOTING_NUMBERS][choiceNum].keys) {
+        Map<String, int> voteInfo = new Map<String, int>();
+        voteInfo.putIfAbsent(username,
+            () => json[EventsManager.VOTING_NUMBERS][choiceNum][username]);
+        votingNumMap.putIfAbsent(choiceNum, () => voteInfo);
+      }
+    }
 
     return Event(
         categoryId: json[EventsManager.CATEGORY_ID],
@@ -97,12 +145,11 @@ class Event {
         pollBegin: pollBeginUTC.toLocal(),
         votingDuration: json[EventsManager.VOTING_DURATION],
         considerDuration: json[EventsManager.CONSIDER_DURATION],
-        optedIn: json[EventsManager.OPTED_IN],
-        tentativeAlgorithmChoices:
-            json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
+        optedIn: optInMap,
+        tentativeAlgorithmChoices: choicesMap,
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
-        votingNumbers: json[EventsManager.VOTING_NUMBERS],
-        eventCreator: json[EventsManager.EVENT_CREATOR],
+        votingNumbers: votingNumMap,
+        eventCreator: eventCreatorMap,
         eventStartDateTimeFormatted: Globals.formatter
             .format(DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME])),
         pollEndFormatted: Globals.formatter.format(pollEndUTC.toLocal()),

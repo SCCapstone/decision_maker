@@ -248,6 +248,7 @@ class _CreateGroupState extends State<CreateGroup> {
       if (resultStatus.success) {
         // update the local user object with this new group returned from the DB
         UserGroup newGroup = new UserGroup(
+            groupId: resultStatus.data.groupId,
             groupName: resultStatus.data.groupName,
             icon: resultStatus.data.icon,
             lastActivity: resultStatus.data.lastActivity,
