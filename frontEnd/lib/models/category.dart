@@ -1,8 +1,10 @@
+import 'package:frontEnd/imports/categories_manager.dart';
+
 class Category {
   final String categoryName;
   final String categoryId;
-  final Map<String, dynamic> choices;
-  final Map<String, dynamic> groups;
+  final Map<String, String> choices;
+  final Map<String, String> groups; // groupId -> groupName
   final int nextChoiceNum;
   final String owner;
 
@@ -18,13 +20,25 @@ class Category {
       this.nextChoiceNum, this.owner);
 
   factory Category.fromJson(Map<String, dynamic> json) {
+    Map<String, String> groupsMap = new Map<String, String>();
+    Map<String, dynamic> groupsRaw = json[CategoriesManager.GROUPS];
+    for (String groupId in groupsRaw.keys) {
+      groupsMap.putIfAbsent(groupId, () => groupsRaw[groupId].toString());
+    }
+
+    Map<String, String> choicesMap = new Map<String, String>();
+    Map<String, dynamic> choicesRaw = json[CategoriesManager.CHOICES];
+    for (String choiceNum in choicesRaw.keys) {
+      choicesMap.putIfAbsent(choiceNum, () => choicesRaw[choiceNum].toString());
+    }
+
     return Category(
-        categoryId: json['CategoryId'],
-        categoryName: json['CategoryName'],
-        choices: json['Choices'],
-        groups: json['Groups'],
-        nextChoiceNum: json['NextChoiceNo'],
-        owner: json["Owner"]);
+        categoryId: json[CategoriesManager.CATEGORY_ID],
+        categoryName: json[CategoriesManager.CATEGORY_NAME],
+        choices: choicesMap,
+        groups: groupsMap,
+        nextChoiceNum: json[CategoriesManager.NEXT_CHOICE_NO],
+        owner: json[CategoriesManager.OWNER]);
   }
 
   factory Category.fromJsonUser(Map<String, dynamic> json) {
