@@ -428,10 +428,6 @@ class _GroupSettingsState extends State<GroupSettings> {
     if (changedMembers) {
       Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in displayedMembers) {
-//        Map<String, String> memberInfo = new Map<String, String>();
-//        memberInfo.putIfAbsent(
-//            UsersManager.DISPLAY_NAME, () => member.displayName);
-//        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
         membersMap.putIfAbsent(member.username, () => member);
       }
 
