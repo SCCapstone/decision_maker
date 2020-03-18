@@ -494,7 +494,6 @@ class _GroupsHomeState extends State<GroupsHome>
                 context,
                 MaterialPageRoute(builder: (context) => CreateGroup()),
               ).then((val) {
-                // TODO figure out a better way to refresh without making unnecessary API calls
                 loadGroups();
               });
             },
