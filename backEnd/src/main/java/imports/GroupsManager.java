@@ -29,6 +29,7 @@ import java.util.UUID;
 import models.Event;
 import models.Group;
 import models.User;
+import models.UserGroup;
 import utilities.ErrorDescriptor;
 import utilities.JsonEncoders;
 import utilities.Metrics;
@@ -42,11 +43,13 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String ICON = "Icon";
   public static final String GROUP_CREATOR = "GroupCreator";
   public static final String MEMBERS = "Members";
+  public static final String MEMBERS_LEFT = "MembersLeft";
   public static final String CATEGORIES = "Categories";
   public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
+  public static final String IS_OPEN = "IsOpen";
 
   public static final String CATEGORY_ID = "CategoryId";
   public static final String CATEGORY_NAME = "CategoryName";
@@ -147,7 +150,6 @@ public class GroupsManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        jsonMap.putIfAbsent(GROUP_CREATOR, activeUser);
 
         if (jsonMap.containsKey(ICON)) { // if it's there, assume it's new image data
           final String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
@@ -160,6 +162,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final List<String> members = (List<String>) jsonMap.get(MEMBERS);
         //sanity check, add the active user to this mapping to make sure his data is added
         members.add(activeUser);
+
         final Map<String, Object> membersMapped = this.getMembersMapForInsertion(members, metrics);
         jsonMap.put(MEMBERS, membersMapped); // put overwrites current value
 
@@ -168,28 +171,26 @@ public class GroupsManager extends DatabaseAccessManager {
         //TODO user input which is bad
 
         final String newGroupId = UUID.randomUUID().toString();
-        jsonMap.put(GROUP_ID, newGroupId);
-
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
-        jsonMap.put(LAST_ACTIVITY, lastActivity);
-
-        jsonMap.put(EVENTS, Collections.emptyMap());
-        jsonMap.put(NEXT_EVENT_ID, 1);
 
         final Group newGroup = new Group(jsonMap);
-        PutItemSpec putItemSpec = new PutItemSpec()
-            .withItem(newGroup.asItem());
+        newGroup.setGroupId(newGroupId);
+        newGroup.setGroupCreator(activeUser);
+        newGroup.setOpen(false); // TODO get from 'required' request key (it's not required rn)
+        newGroup.setMembersLeft(Collections.emptyMap());
+        newGroup.setNextEventId(1);
+        newGroup.setEvents(Collections.emptyMap());
+        newGroup.setLastActivity(lastActivity);
+        this.putItem(newGroup);
 
-        this.putItem(putItemSpec);
-
-        final Group oldGroup = new Group();
-        oldGroup.setMembers(Collections.emptyMap());
-        this.updateUsersTable(oldGroup, newGroup, metrics);
+        //old group being null signals we're creating a new group
+        //updatedEventId being null signals this isn't an event update
+        this.updateUsersTable(null, newGroup, null, metrics);
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
-        resultStatus = new ResultStatus(true, "Group created successfully!");
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -267,7 +268,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
             //update mappings in users and categories tables
             final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
-            this.updateUsersTable(oldGroup, newGroup, metrics);
+            this.updateUsersTable(oldGroup, newGroup, null, metrics);
             this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
                 oldGroup.getGroupName(), groupName);
 
@@ -411,7 +412,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
           final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-          this.updateUsersTable(oldGroup, newGroup, metrics);
+          //TODO I think this is getting called twice when rsvp is <= 0 since it's called by set tentative choices
+          this.updateUsersTable(oldGroup, newGroup, eventId, metrics);
 
           resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
         } else {
@@ -719,7 +721,7 @@ public class GroupsManager extends DatabaseAccessManager {
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
         if (!username.equals(addedTo.getGroupCreator())) {
-          if (user.pushEndpointArnIsSet() && user.getAppSettings().getMuted() == 0) {
+          if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
                 "You have been added to new group: " + addedTo.getGroupName());
           }
@@ -733,7 +735,18 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private void updateUsersTable(final Group oldGroup, final Group newGroup, final Metrics metrics) {
+  /**
+   * This method updates user items based on the changed definition of a group
+   *
+   * @param oldGroup       The old group definition before the update. If this param is null, then
+   *                       that signals that a new group is being created.
+   * @param newGroup       The new group definition after the update.
+   * @param updatedEventId This is the event id of an event that just changed states. Null means
+   *                       this isn't being called from an event update.
+   * @param metrics        Standard metrics object for profiling and logging
+   */
+  private void updateUsersTable(final Group oldGroup, final Group newGroup,
+      final String updatedEventId, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
@@ -741,53 +754,76 @@ public class GroupsManager extends DatabaseAccessManager {
     final Set<String> usersToUpdate = new HashSet<>();
 
     NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
-    String updateExpression;
-    ValueMap valueMap;
-    UpdateItemSpec updateItemSpec;
 
     final Set<String> newMembers = newGroup.getMembers().keySet();
     final Set<String> addedUsernames = new HashSet<>(newMembers);
+    final Set<String> removedUsernames = new HashSet<>();
 
-    final Set<String> oldMembers = oldGroup.getMembers().keySet();
-    final Set<String> removedUsernames = new HashSet<>(oldMembers);
+    if (oldGroup != null) {
+      final Set<String> oldMembers = oldGroup.getMembers().keySet();
+      removedUsernames.addAll(oldMembers);
 
-    // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
-    addedUsernames.removeAll(oldMembers);
-    removedUsernames.removeAll(newMembers);
+      // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
+      addedUsernames.removeAll(oldMembers);
+      removedUsernames.removeAll(newMembers);
 
-    if (newGroup.groupNameIsSet() && !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
-        .equals(oldGroup.getLastActivity())) {
-      usersToUpdate.addAll(newMembers);
-    } else if (!oldMembers.equals(newMembers)) {
+      if (updatedEventId != null) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.groupNameIsSet() && !newGroup.getGroupName()
+          .equals(oldGroup.getGroupName())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+          .equals(oldGroup.getLastActivity())) {
+        usersToUpdate.addAll(newMembers);
+      } else if (!oldMembers.equals(newMembers)) {
+        usersToUpdate.addAll(addedUsernames);
+      }
+    } else {
+      //this is a new group, every addedUsername needs to be updated
       usersToUpdate.addAll(addedUsernames);
     }
 
+    String updateExpression;
+    ValueMap valueMap = new ValueMap();
+    UpdateItemSpec updateItemSpec;
+
     //update users with new group mapping based on which attributes were updated
     if (!usersToUpdate.isEmpty()) {
-      //we have to update the entire mapping because the groupId key may
-      //not be in the mapping yet if this is a new group
-      updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :nameIconMap";
-
-      Map<String, Object> groupDataForUser = new HashMap<>();
-      groupDataForUser.put(GROUP_NAME, newGroup.getGroupName());
-
-      if (newGroup.iconIsSet()) {
-        groupDataForUser.put(ICON, newGroup.getIcon());
+      if (oldGroup == null) {
+        //if this is a new Group we need to create the entire map
+        updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
+        valueMap.withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
       } else {
-        groupDataForUser.put(ICON, oldGroup.getIcon());
-      }
+        //since this group already exists, we're just updating the mappings that have changed
+        //for simplicity in the code, we'll always update the group name
+        updateExpression = "set " + UsersManager.GROUPS + ".#groupId." + GroupsManager.GROUP_NAME
+            + " = :groupName";
+        valueMap.withString(":groupName", newGroup.getGroupName());
 
-      if (newGroup.lastActivityIsSet()) {
-        groupDataForUser.put(LAST_ACTIVITY, newGroup.getLastActivity());
-      } else {
-        groupDataForUser.put(LAST_ACTIVITY, oldGroup.getLastActivity());
-      }
+        if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
+          updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
+              + " = :groupIcon";
+          valueMap.withString(":groupIcon", newGroup.getIcon());
+        }
 
-      valueMap = new ValueMap().withMap(":nameIconMap", groupDataForUser);
+        if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+            .equals(oldGroup.getLastActivity())) {
+          updateExpression +=
+              ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
+                  + " = :lastActivity";
+          valueMap.withString(":lastActivity", newGroup.getLastActivity());
+        }
+
+        if (updatedEventId != null) {
+          updateExpression +=
+              ", " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
+                  + ".#eventId = :true";
+          nameMap.with("#eventId", updatedEventId);
+          valueMap.withBoolean(":true", true);
+        }
+      }
 
       updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)
@@ -927,6 +963,7 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          eventId,
           metrics
       );
     } catch (Exception e) {
@@ -983,6 +1020,7 @@ public class GroupsManager extends DatabaseAccessManager {
       this.updateUsersTable(
           oldGroup,
           oldGroup.clone().toBuilder().lastActivity(lastActivity).build(),
+          eventId,
           metrics
       );
     } catch (Exception e) {

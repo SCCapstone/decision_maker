@@ -18,6 +18,7 @@ import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
 import java.time.format.DateTimeFormatter;
+import models.Model;
 
 public class DatabaseAccessManager {
 
@@ -26,7 +27,8 @@ public class DatabaseAccessManager {
   private final String primaryKeyIndex;
   private final Regions region;
   private final AmazonDynamoDBClient client;
-  private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter
+      .ofPattern("yyyy-MM-dd HH:mm:ss");
 
   public DatabaseAccessManager(final String tableName, final String primaryKeyIndex,
       final Regions regions) {
@@ -73,15 +75,22 @@ public class DatabaseAccessManager {
         .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
   }
 
-  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec) throws NullPointerException {
+  public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec)
+      throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
   }
 
-  public PutItemOutcome putItem(final PutItemSpec putItemSpec) throws NullPointerException {
-    return this.dynamoDb.getTable(this.tableName).putItem(putItemSpec);
+  public PutItemOutcome putItem(final Item item) throws NullPointerException {
+    return this.dynamoDb.getTable(this.tableName).putItem(new PutItemSpec().withItem(item));
   }
 
-  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec) throws NullPointerException {
+  public PutItemOutcome putItem(final Model model) throws NullPointerException {
+    return this.dynamoDb.getTable(this.tableName)
+        .putItem(new PutItemSpec().withItem(model.asItem()));
+  }
+
+  public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec)
+      throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
   }
 

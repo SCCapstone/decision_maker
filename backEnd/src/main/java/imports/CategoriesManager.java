@@ -67,7 +67,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         Optional<String> errorMessage = this.newCategoryIsValid(newCategory, metrics);
         if (!errorMessage.isPresent()) {
-          this.putItem(new PutItemSpec().withItem(newCategory.asItem()));
+          this.putItem(newCategory);
 
           //put the entered ratings in the users table
           jsonMap.putIfAbsent(CATEGORY_ID, newCategory.getCategoryId()); // add required key

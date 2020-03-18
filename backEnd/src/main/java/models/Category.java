@@ -2,7 +2,6 @@ package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import imports.CategoriesManager;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -10,7 +9,7 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class Category {
+public class Category implements Model {
 
   private String categoryId;
   private String categoryName;
@@ -27,7 +26,7 @@ public class Category {
     this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
     this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
-    this.setChoicesRaw((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
+    this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
     this.setGroups((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
   }
 
@@ -52,7 +51,7 @@ public class Category {
     return modelAsMap;
   }
 
-  public void setChoicesRaw(final Map<String, Object> jsonMap) {
+  public void setChoicesRawMap(final Map<String, Object> jsonMap) {
     this.choices = null;
     if (jsonMap != null) {
       this.choices = new HashMap<>();

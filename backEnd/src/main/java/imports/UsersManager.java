@@ -36,6 +36,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   public static final String APP_SETTINGS_MUTED = "Muted";
   public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
+  public static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   public static final String GROUPS = "Groups";
   public static final String GROUPS_LEFT = "GroupsLeft";
   public static final String CATEGORIES = "Categories";
@@ -43,11 +44,13 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String FAVORITES = "Favorites";
   public static final String FAVORITE_OF = "FavoriteOf";
   public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
+  public static final String EVENTS_UNSEEN = "EventsUnseen";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
-  public static final int DEFAULT_DARK_THEME = 1;
-  public static final int DEFAULT_MUTED = 0;
+  public static final boolean DEFAULT_DARK_THEME = true;
+  public static final boolean DEFAULT_MUTED = false;
   public static final int DEFAULT_GROUP_SORT = 0;
+  public static final int DEFAULT_CATEGORY_SORT = 1;
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -126,7 +129,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(FAVORITES, Collections.emptyMap())
               .withMap(FAVORITE_OF, Collections.emptyMap());
 
-          this.putItem(new PutItemSpec().withItem(user));
+          this.putItem(user);
         }
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
