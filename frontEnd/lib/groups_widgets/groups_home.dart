@@ -571,6 +571,7 @@ class _GroupsHomeState extends State<GroupsHome>
     }
     this.groupHomeSortVal = Globals.user.appSettings.groupSort;
     setGroupsHomeSort(false);
+    setGroupsLeftSort();
   }
 
   void toggleSearch() {
