@@ -49,11 +49,9 @@ class Group {
         members: json[GroupsManager.MEMBERS],
         categories: json[GroupsManager.CATEGORIES],
         events: json[GroupsManager.EVENTS],
-        defaultVotingDuration:
-            int.parse(json[GroupsManager.DEFAULT_VOTING_DURATION]),
-        defaultConsiderDuration:
-            int.parse(json[GroupsManager.DEFAULT_CONSIDER_DURATION]),
-        nextEventId: int.parse(json[GroupsManager.NEXT_EVENT_ID]));
+        defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
+        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
+        nextEventId: json[GroupsManager.NEXT_EVENT_ID]);
   }
 
   @override

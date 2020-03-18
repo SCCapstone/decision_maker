@@ -23,7 +23,7 @@ class Category {
         categoryName: json['CategoryName'],
         choices: json['Choices'],
         groups: json['Groups'],
-        nextChoiceNum: int.parse(json['NextChoiceNo']),
+        nextChoiceNum: json['NextChoiceNo'],
         owner: json["Owner"]);
   }
 
