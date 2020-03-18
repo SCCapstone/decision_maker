@@ -92,7 +92,6 @@ class _GroupPageState extends State<GroupPage> {
             Navigator.push(context,
                     MaterialPageRoute(builder: (context) => CreateEvent()))
                 .then((_) {
-              // TODO figure out a better way to refresh without making unnecessary API calls
               this.refreshList();
             });
           },

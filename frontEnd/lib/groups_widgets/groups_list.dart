@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'group_row.dart';
 
 class GroupsList extends StatefulWidget {
-  final List<Group> groups;
+  final List<UserGroup> groups;
   final bool searching;
   final Function refreshGroups;
 

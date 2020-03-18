@@ -3,6 +3,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/models/favorite.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/user_group.dart';
 
 import 'app_settings.dart';
 
@@ -11,7 +12,7 @@ class User {
   String displayName;
   String icon;
   final AppSettings appSettings;
-  final Map<String, Group> groups;
+  final Map<String, UserGroup> groups;
   final Map<String, Map<String, String>> userRatings;
   final Map<String, Group> groupsLeft;
   final List<Category> ownedCategories;
@@ -40,15 +41,12 @@ class User {
       this.icon);
 
   factory User.fromJson(Map<String, dynamic> json) {
-    Map<String, Group> groupsMap = new Map<String, Group>();
+    Map<String, UserGroup> groupsMap = new Map<String, UserGroup>();
     Map<String, dynamic> groupsRaw = json[UsersManager.GROUPS];
     for (String groupId in groupsRaw.keys) {
-      Group group = new Group(
-          groupId: groupId,
-          groupName: groupsRaw[groupId][GroupsManager.GROUP_NAME],
-          icon: groupsRaw[groupId][GroupsManager.ICON],
-          lastActivity: groupsRaw[groupId][GroupsManager.LAST_ACTIVITY]);
-      groupsMap.putIfAbsent(groupId, () => group);
+      UserGroup userGroup =
+          new UserGroup.fromJson(json[UsersManager.GROUPS][groupId], groupId);
+      groupsMap.putIfAbsent(groupId, () => userGroup);
     }
 
     Map<String, Group> groupsLeftMap = new Map<String, Group>();

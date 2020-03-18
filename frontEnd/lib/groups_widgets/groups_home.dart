@@ -14,6 +14,7 @@ import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
@@ -29,8 +30,8 @@ class _GroupsHomeState extends State<GroupsHome>
     with SingleTickerProviderStateMixin {
   final TextEditingController searchBarController = new TextEditingController();
   TabController tabController;
-  List<Group> searchGroups = new List<Group>();
-  List<Group> totalGroups = new List<Group>();
+  List<Object> searchGroups = new List<Object>();
+  List<UserGroup> totalGroups = new List<UserGroup>();
   List<Group> groupsLeft = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
@@ -59,7 +60,7 @@ class _GroupsHomeState extends State<GroupsHome>
         } else {
           setState(() {
             String searchInput = this.searchBarController.text;
-            List<Group> temp = new List<Group>();
+            List<UserGroup> temp = new List<UserGroup>();
             for (int i = 0; i < this.totalGroups.length; i++) {
               if (this
                   .totalGroups[i]
@@ -528,9 +529,9 @@ class _GroupsHomeState extends State<GroupsHome>
   void setGroupsLeftSort() {
     // don't need to update DB, separate method so there isn't a break in consistency
     if (this.groupsLeftSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(this.groupsLeft);
+      GroupsManager.sortLeftByAlphaDescending(this.groupsLeft);
     } else if (this.groupsLeftSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(this.groupsLeft);
+      GroupsManager.sortLeftByAlphaAscending(this.groupsLeft);
     }
   }
 

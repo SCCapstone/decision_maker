@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';
 import 'api_manager.dart';
@@ -24,6 +25,8 @@ class GroupsManager {
   static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
   static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
+  static final String MUTED = "Muted";
+  static final String EVENTS_UNSEEN = "EventsUnseen";
 
   static final String getGroupsAction = "getGroups";
   static final String deleteGroupAction = "deleteGroup";
@@ -148,8 +151,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> editGroup(Group group, File iconFile) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile) async {
+    ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = editGroupAction;
@@ -172,7 +175,8 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
-          // TODO return the group from the backend in the resultStatus
+          retVal.data =
+              new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Error saving group data (1).";
@@ -205,7 +209,6 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
-          // TODO get the group from the response and put it in the result status
           retVal.success = true;
         } else {
           retVal.errorMessage = "Error creating event (1).";
@@ -335,22 +338,32 @@ class GroupsManager {
     return retVal;
   }
 
-  static void sortByDateNewest(List<Group> groups) {
+  static void sortByDateNewest(List<UserGroup> groups) {
     groups.sort((a, b) => DateTime.parse(b.lastActivity)
         .compareTo(DateTime.parse(a.lastActivity)));
   }
 
-  static void sortByDateOldest(List<Group> groups) {
+  static void sortByDateOldest(List<UserGroup> groups) {
     groups.sort((a, b) => DateTime.parse(a.lastActivity)
         .compareTo(DateTime.parse(b.lastActivity)));
   }
 
-  static void sortByAlphaAscending(List<Group> groups) {
+  static void sortByAlphaAscending(List<UserGroup> groups) {
     groups.sort((a, b) =>
         a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
   }
 
-  static void sortByAlphaDescending(List<Group> groups) {
+  static void sortByAlphaDescending(List<UserGroup> groups) {
+    groups.sort((a, b) =>
+        b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
+  }
+
+  static void sortLeftByAlphaAscending(List<Group> groups) {
+    groups.sort((a, b) =>
+        a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
+  }
+
+  static void sortLeftByAlphaDescending(List<Group> groups) {
     groups.sort((a, b) =>
         b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
   }
