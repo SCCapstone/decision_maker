@@ -15,7 +15,7 @@ class AppSettings {
     return AppSettings(
         muted: mute,
         darkTheme: darkVal,
-        groupSort: int.parse(json[UsersManager.APP_SETTINGS_GROUP_SORT]));
+        groupSort: json[UsersManager.APP_SETTINGS_GROUP_SORT]);
   }
 
   @override
