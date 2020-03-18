@@ -58,11 +58,23 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               PopupMenuItem<int>(
                 value: Globals.alphabeticalSort,
-                child: Text(Globals.alphabeticalSortString),
+                child: Text(
+                  Globals.alphabeticalSortString,
+                  style: TextStyle(
+                      // if it is selected, underline it
+                      decoration: (this.sortVal == Globals.alphabeticalSort)
+                          ? TextDecoration.underline
+                          : null),
+                ),
               ),
               PopupMenuItem<int>(
                 value: Globals.alphabeticalReverseSort,
-                child: Text(Globals.alphabeticalReverseSortString),
+                child: Text(Globals.alphabeticalReverseSortString,
+                    style: TextStyle(
+                        // if it is selected, underline it
+                        decoration: (this.sortVal == Globals.alphabeticalReverseSort)
+                            ? TextDecoration.underline
+                            : null)),
               ),
             ],
           ),
