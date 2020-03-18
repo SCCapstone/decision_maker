@@ -62,9 +62,7 @@ class Event {
     // we always add 1 to the end times since the chron job runs on the minute
     DateTime pollBeginTemp =
         DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).toLocal().add(
-            new Duration(
-                minutes:
-                    (int.parse(json[EventsManager.CONSIDER_DURATION]) + 1)));
+            new Duration(minutes: (json[EventsManager.CONSIDER_DURATION] + 1)));
     /*
       Time in DB is in UTC, but dart parses by default as a local time. 
       So convert this local to UTC, then back to local to get the real local time.
@@ -78,7 +76,7 @@ class Event {
         pollBeginTemp.millisecond,
         pollBeginTemp.microsecond);
     DateTime pollEndTemp = pollBeginTemp.toLocal().add(new Duration(
-        minutes: (int.parse(json[EventsManager.VOTING_DURATION])) + 1));
+        minutes: (json[EventsManager.VOTING_DURATION] + 1)));
     DateTime pollEndUTC = DateTime.utc(
         pollEndTemp.year,
         pollEndTemp.month,
@@ -97,8 +95,8 @@ class Event {
             DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
         pollEnd: pollEndUTC.toLocal(),
         pollBegin: pollBeginUTC.toLocal(),
-        votingDuration: int.parse(json[EventsManager.VOTING_DURATION]),
-        considerDuration: int.parse(json[EventsManager.CONSIDER_DURATION]),
+        votingDuration: json[EventsManager.VOTING_DURATION],
+        considerDuration: json[EventsManager.CONSIDER_DURATION],
         optedIn: json[EventsManager.OPTED_IN],
         tentativeAlgorithmChoices:
             json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
