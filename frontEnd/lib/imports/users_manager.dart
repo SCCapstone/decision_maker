@@ -21,6 +21,7 @@ class UsersManager {
   static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
   static final String APP_SETTINGS_MUTED = "Muted";
   static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
+  static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   static final String GROUPS = "Groups";
   static final String CATEGORIES = "Categories";
   static final String OWNED_CATEGORIES = "OwnedCategories";

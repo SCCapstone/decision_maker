@@ -20,8 +20,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
 
   @override
   void initState() {
-    // TODO get sort method from user object
-    this.sortVal = Globals.alphabeticalSort;
+    this.sortVal = Globals.user.appSettings.categorySort;
     this.categories = new List<Category>();
     getCategories();
     super.initState();

@@ -517,10 +517,8 @@ class _GroupsHomeState extends State<GroupsHome>
       GroupsManager.sortByDateOldest(totalGroups);
     } else if (this.groupHomeSortVal == Globals.alphabeticalReverseSort) {
       GroupsManager.sortByAlphaDescending(this.totalGroups);
-      GroupsManager.sortByAlphaDescending(this.groupsLeft);
     } else if (this.groupHomeSortVal == Globals.alphabeticalSort) {
       GroupsManager.sortByAlphaAscending(this.totalGroups);
-      GroupsManager.sortByAlphaAscending(this.groupsLeft);
     }
     if (sendUpdate) {
       // blind send, don't care if it doesn't work since its just a sort value
@@ -553,13 +551,7 @@ class _GroupsHomeState extends State<GroupsHome>
     this.totalGroups.clear();
     this.groupsLeft.clear();
     for (String groupId in Globals.user.groups.keys) {
-      Group group = new Group(
-          groupId: groupId,
-          groupName: Globals.user.groups[groupId][GroupsManager.GROUP_NAME],
-          icon: Globals.user.groups[groupId][GroupsManager.ICON],
-          lastActivity: Globals.user.groups[groupId]
-              [GroupsManager.LAST_ACTIVITY]);
-      this.totalGroups.add(group);
+      this.totalGroups.add(Globals.user.groups[groupId]);
     }
     // get the groups left from the user object
     for (String groupId in Globals.user.groupsLeft.keys) {
