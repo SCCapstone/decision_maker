@@ -1,4 +1,9 @@
+import 'dart:collection';
+
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/member.dart';
 
 class Group {
   final String groupId;
@@ -6,9 +11,9 @@ class Group {
   final String icon;
   final String groupCreator;
   final String lastActivity;
-  final Map<String, dynamic> members;
-  final Map<String, dynamic> categories;
-  final Map<String, dynamic> events;
+  final Map<String, Member> members;
+  final Map<String, String> categories;
+  final Map<String, Event> events;
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
   final int nextEventId;
@@ -40,15 +45,44 @@ class Group {
       this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
+    Map<String, Event> events = new Map<String, Event>();
+    for (String eventId in json[GroupsManager.EVENTS].keys) {
+      Event event = new Event.fromJson(json[GroupsManager.EVENTS][eventId]);
+      events.putIfAbsent(eventId, () => event);
+    }
+    // sorting based on create time for now, most recently created at the top
+    List<String> sortedKeys = events.keys.toList(growable: false)
+      ..sort((k1, k2) =>
+          events[k2].createdDateTime.compareTo(events[k1].createdDateTime));
+    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
+        key: (k) => k, value: (k) => events[k]);
+    events = sortedMap.cast();
+
+    Map<String, Member> memberMap = new Map<String, Member>();
+    for (String username in json[GroupsManager.MEMBERS].keys) {
+      Member member = new Member(
+          username: username,
+          displayName: json[GroupsManager.MEMBERS][username]
+              [UsersManager.DISPLAY_NAME],
+          icon: json[GroupsManager.MEMBERS][username][UsersManager.ICON]);
+      memberMap.putIfAbsent(username, () => member);
+    }
+
+    Map<String, String> categoriesMap = new Map<String, String>();
+    for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
+      categoriesMap.putIfAbsent(categoryId,
+          () => json[GroupsManager.CATEGORIES][categoryId].toString());
+    }
+
     return Group(
         groupId: json[GroupsManager.GROUP_ID],
         groupName: json[GroupsManager.GROUP_NAME],
         icon: json[GroupsManager.ICON],
         groupCreator: json[GroupsManager.GROUP_CREATOR],
         lastActivity: json[GroupsManager.LAST_ACTIVITY],
-        members: json[GroupsManager.MEMBERS],
-        categories: json[GroupsManager.CATEGORIES],
-        events: json[GroupsManager.EVENTS],
+        members: memberMap,
+        categories: categoriesMap,
+        events: events,
         defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
         defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
         nextEventId: json[GroupsManager.NEXT_EVENT_ID]);
@@ -83,7 +117,7 @@ class Group {
       GroupsManager.LAST_ACTIVITY: this.lastActivity,
       GroupsManager.MEMBERS: this.members,
       GroupsManager.CATEGORIES: this.categories,
-      GroupsManager.EVENTS: this.events,
+      GroupsManager.EVENTS: this.events.toString(),
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
       GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
       GroupsManager.NEXT_EVENT_ID: this.nextEventId

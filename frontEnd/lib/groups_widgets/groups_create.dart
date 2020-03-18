@@ -222,21 +222,20 @@ class _CreateGroupState extends State<CreateGroup> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      Map<String, Map<String, String>> membersMap =
-          new Map<String, Map<String, String>>();
+      Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in displayedMembers) {
-        Map<String, String> memberInfo = new Map<String, String>();
-        memberInfo.putIfAbsent(
-            UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
-        membersMap.putIfAbsent(member.username, () => memberInfo);
+//        Map<String, String> memberInfo = new Map<String, String>();
+//        memberInfo.putIfAbsent(
+//            UsersManager.DISPLAY_NAME, () => member.displayName);
+//        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
+        membersMap.putIfAbsent(member.username, () => member);
       }
       // creator is always in the group of course
-      Map<String, String> memberInfo = new Map<String, String>();
-      memberInfo.putIfAbsent(
-          UsersManager.DISPLAY_NAME, () => Globals.user.displayName);
-      memberInfo.putIfAbsent(UsersManager.ICON, () => Globals.user.icon);
-      membersMap.putIfAbsent(Globals.username, () => memberInfo);
+//      Map<String, String> memberInfo = new Map<String, String>();
+//      memberInfo.putIfAbsent(
+//          UsersManager.DISPLAY_NAME, () => Globals.user.displayName);
+//      memberInfo.putIfAbsent(UsersManager.ICON, () => Globals.user.icon);
+      membersMap.putIfAbsent(Globals.username, () => new Member.fromUser(Globals.user));
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: groupName,

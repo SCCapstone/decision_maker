@@ -185,9 +185,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   }
 
   void getEvent() {
-    Map<String, Event> events =
-        GroupsManager.getGroupEvents(Globals.currentGroup);
-    this.event = events[widget.eventId];
+    this.event = Globals.currentGroup.events[widget.eventId];
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {

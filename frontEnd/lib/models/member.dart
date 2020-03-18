@@ -1,5 +1,6 @@
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/favorite.dart';
+import 'package:frontEnd/models/user.dart';
 
 class Member {
   final String username;
@@ -22,6 +23,13 @@ class Member {
         username: favorite.username,
         displayName: favorite.displayName,
         icon: favorite.icon);
+  }
+
+  factory Member.fromUser(User user) {
+    return Member(
+        username: user.username,
+        displayName: user.displayName,
+        icon: user.icon);
   }
 
   @override

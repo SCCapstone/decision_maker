@@ -73,8 +73,7 @@ class _GroupPageState extends State<GroupPage> {
                   child: RefreshIndicator(
                     child: EventsList(
                       group: Globals.currentGroup,
-                      events:
-                          GroupsManager.getGroupEvents(Globals.currentGroup),
+                      events: Globals.currentGroup.events,
                     ),
                     onRefresh: refreshList,
                   ),

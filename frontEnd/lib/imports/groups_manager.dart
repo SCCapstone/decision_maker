@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -334,21 +333,6 @@ class GroupsManager {
       retVal.errorMessage = "Failed to cast vote.";
     }
     return retVal;
-  }
-
-  static Map<String, Event> getGroupEvents(Group group) {
-    Map<String, Event> events = new Map<String, Event>();
-    for (String eventId in group.events.keys) {
-      Event event = new Event.fromJson(group.events[eventId]);
-      events.putIfAbsent(eventId, () => event);
-    }
-    // sorting based on create time for now, most recently created at the top
-    var sortedKeys = events.keys.toList(growable: false)
-      ..sort((k1, k2) =>
-          events[k2].createdDateTime.compareTo(events[k1].createdDateTime));
-    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
-        key: (k) => k, value: (k) => events[k]);
-    return sortedMap.cast();
   }
 
   static void sortByDateNewest(List<Group> groups) {
