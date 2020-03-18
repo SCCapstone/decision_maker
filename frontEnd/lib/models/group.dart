@@ -45,6 +45,7 @@ class Group {
       this.nextEventId);
 
   factory Group.fromJson(Map<String, dynamic> json) {
+    // map of eventId -> event
     Map<String, Event> events = new Map<String, Event>();
     for (String eventId in json[GroupsManager.EVENTS].keys) {
       Event event = new Event.fromJson(json[GroupsManager.EVENTS][eventId]);
@@ -57,7 +58,7 @@ class Group {
     LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
         key: (k) => k, value: (k) => events[k]);
     events = sortedMap.cast();
-
+    // map of username -> member
     Map<String, Member> memberMap = new Map<String, Member>();
     for (String username in json[GroupsManager.MEMBERS].keys) {
       Member member = new Member(
@@ -67,7 +68,7 @@ class Group {
           icon: json[GroupsManager.MEMBERS][username][UsersManager.ICON]);
       memberMap.putIfAbsent(username, () => member);
     }
-
+    // map of category id to category category name
     Map<String, String> categoriesMap = new Map<String, String>();
     for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
       categoriesMap.putIfAbsent(categoryId,
@@ -109,6 +110,7 @@ class Group {
   }
 
   Map asMap() {
+    // need this for encoding to work properly
     Map<String, dynamic> eventsMap = new Map<String, dynamic>();
     for (String eventId in this.events.keys) {
       eventsMap.putIfAbsent(eventId, () => this.events[eventId].asMap());

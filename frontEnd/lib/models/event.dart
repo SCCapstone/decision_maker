@@ -87,7 +87,7 @@ class Event {
         pollEndTemp.minute,
         pollEndTemp.millisecond,
         pollEndTemp.microsecond);
-
+    // map of username to user info (icon, displayName)
     Map<String, Map<String, String>> optInMap =
         new Map<String, Map<String, String>>();
     for (String username in json[EventsManager.OPTED_IN].keys) {
@@ -108,7 +108,7 @@ class Event {
           () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
               .toString());
     }
-
+    // map of username to user info (icon, displayName)
     Map<String, Map<String, String>> eventCreatorMap =
         new Map<String, Map<String, String>>();
     for (String username in json[EventsManager.EVENT_CREATOR].keys) {
@@ -121,7 +121,7 @@ class Event {
           () => json[EventsManager.EVENT_CREATOR][username][UsersManager.ICON]);
       eventCreatorMap.putIfAbsent(username, () => memberInfo);
     }
-
+    // map of choiceId -> map of username and corresponding vote of said user
     Map<String, Map<String, int>> votingNumMap =
         new Map<String, Map<String, int>>();
     for (String choiceNum in json[EventsManager.VOTING_NUMBERS].keys) {
