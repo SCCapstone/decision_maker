@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';
@@ -358,12 +359,12 @@ class GroupsManager {
         b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
   }
 
-  static void sortLeftByAlphaAscending(List<Group> groups) {
+  static void sortLeftByAlphaAscending(List<GroupLeft> groups) {
     groups.sort((a, b) =>
         a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
   }
 
-  static void sortLeftByAlphaDescending(List<Group> groups) {
+  static void sortLeftByAlphaDescending(List<GroupLeft> groups) {
     groups.sort((a, b) =>
         b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
   }

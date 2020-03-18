@@ -6,6 +6,7 @@ import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/user_group.dart';
 
 import 'app_settings.dart';
+import 'group_left.dart';
 
 class User {
   final String username;
@@ -14,7 +15,7 @@ class User {
   final AppSettings appSettings;
   final Map<String, UserGroup> groups;
   final Map<String, Map<String, String>> userRatings;
-  final Map<String, Group> groupsLeft;
+  final Map<String, GroupLeft> groupsLeft;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
 
@@ -49,14 +50,11 @@ class User {
       groupsMap.putIfAbsent(groupId, () => userGroup);
     }
 
-    Map<String, Group> groupsLeftMap = new Map<String, Group>();
+    Map<String, GroupLeft> groupsLeftMap = new Map<String, GroupLeft>();
     Map<String, dynamic> groupsLeftRaw = json[UsersManager.GROUPS_LEFT];
     for (String groupId in groupsLeftRaw.keys) {
-      Group group = new Group(
-          groupId: groupId,
-          groupName: groupsLeftRaw[groupId][GroupsManager.GROUP_NAME],
-          icon: groupsLeftRaw[groupId][GroupsManager.ICON]);
-      groupsLeftMap.putIfAbsent(groupId, () => group);
+      groupsLeftMap.putIfAbsent(groupId,
+          () => new GroupLeft.fromJson(groupsLeftRaw[groupId], groupId));
     }
 
     List<Favorite> favoriteList = new List<Favorite>();

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/models/user_group.dart';
@@ -148,6 +149,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           child: IconButton(
                             icon: Icon(Icons.keyboard_arrow_right),
                             onPressed: () {
+                              hideKeyboard(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -174,6 +176,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           child: IconButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
+                              hideKeyboard(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -236,7 +239,8 @@ class _CreateGroupState extends State<CreateGroup> {
           categories: selectedCategories,
           members: membersMap,
           defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration);
+          defaultConsiderDuration: considerDuration,
+          events: new Map<String, Event>());
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
