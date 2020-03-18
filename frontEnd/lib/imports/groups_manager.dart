@@ -106,8 +106,9 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> createNewGroup(Group group, File iconFile) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+  static Future<ResultStatus<Group>> createNewGroup(
+      Group group, File iconFile) async {
+    ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = createGroupAction;
@@ -131,6 +132,8 @@ class GroupsManager {
 
         if (responseItem.success) {
           retVal.success = true;
+          retVal.data =
+              new Group.fromJson(json.decode(responseItem.resultMessage));
         } else {
           retVal.errorMessage = "Error creating group (1).";
         }

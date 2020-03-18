@@ -247,12 +247,20 @@ class _CreateGroupState extends State<CreateGroup> {
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
-      ResultStatus resultStatus =
+      ResultStatus<Group> resultStatus =
           await GroupsManager.createNewGroup(group, icon);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
       if (resultStatus.success) {
+        // update the local user object with this new group returned from the DB
+        Group newGroup = new Group(
+            groupId: resultStatus.data.groupId,
+            groupName: resultStatus.data.groupName,
+            icon: resultStatus.data.icon,
+            lastActivity: resultStatus.data.lastActivity);
+        Globals.user.groups
+            .putIfAbsent(resultStatus.data.groupId, () => newGroup);
         Navigator.of(context).pop();
       } else {
         showErrorMessage("Error", resultStatus.errorMessage, context);

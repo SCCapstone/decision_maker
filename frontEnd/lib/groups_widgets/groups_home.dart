@@ -34,19 +34,22 @@ class _GroupsHomeState extends State<GroupsHome>
   List<Group> groupsLeft = new List<Group>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
-  int currentTab, sortVal;
+  int currentTab, groupHomeSortVal, groupsLeftSortVal;
   final int totalTabs = 2;
+  final int groupsHomeTab = 0;
+  final int groupsLeftTab = 1;
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   @override
   void initState() {
-    this.currentTab = 0;
+    this.groupsLeftSortVal = Globals.alphabeticalSort;
+    this.currentTab = this.groupsHomeTab;
     this.tabController = new TabController(length: this.totalTabs, vsync: this);
     this.tabController.addListener(handleTabChange);
     loadGroups();
     this.searchBarController.addListener(() {
-      if (this.currentTab == 0) {
+      if (this.currentTab == this.groupsHomeTab) {
         // in the group home tab
         if (this.searchBarController.text.isEmpty) {
           setState(() {
@@ -254,7 +257,7 @@ class _GroupsHomeState extends State<GroupsHome>
               onPressed: () {
                 // prevents quick flash of rows that appears when clicking search icon
                 this.searchGroups.clear();
-                if (this.tabController.index == 0) {
+                if (this.tabController.index == this.groupsHomeTab) {
                   this.searchGroups.addAll(this.totalGroups);
                 } else {
                   this.searchGroups.addAll(this.groupsLeft);
@@ -304,9 +307,7 @@ class _GroupsHomeState extends State<GroupsHome>
                   ),
                   Container(
                     height: MediaQuery.of(context).size.height * .04,
-                    child: Visibility(
-                      visible: this.currentTab == 0,
-                      child: PopupMenuButton<int>(
+                    child: PopupMenuButton<int>(
                         child: Icon(
                           Icons.sort,
                           size: MediaQuery.of(context).size.height * .04,
@@ -314,35 +315,68 @@ class _GroupsHomeState extends State<GroupsHome>
                         ),
                         tooltip: "Sort Groups",
                         onSelected: (int result) {
-                          if (this.sortVal != result) {
-                            // prevents useless updates if sort didn't change
-                            this.sortVal = result;
-                            setState(() {
-                              setSort(true);
-                            });
+                          if (this.currentTab == this.groupsHomeTab) {
+                            if (this.groupHomeSortVal != result) {
+                              // prevents useless updates if sort didn't change
+                              this.groupHomeSortVal = result;
+                              setState(() {
+                                setGroupsHomeSort(true);
+                              });
+                            }
+                          } else {
+                            if (this.groupsLeftSortVal != result) {
+                              // prevents useless updates if sort didn't change
+                              this.groupsLeftSortVal = result;
+                              setState(() {
+                                setGroupsLeftSort();
+                              });
+                            }
                           }
                         },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<int>>[
-                          PopupMenuItem<int>(
-                            value: Globals.dateNewestSort,
-                            child: Text(Globals.dateNewestSortString),
-                          ),
-                          PopupMenuItem<int>(
-                            value: Globals.dateOldestSort,
-                            child: Text(Globals.dateOldestSortString),
-                          ),
-                          PopupMenuItem<int>(
-                            value: Globals.alphabeticalSort,
-                            child: Text(Globals.alphabeticalSortString),
-                          ),
-                          PopupMenuItem<int>(
-                            value: Globals.alphabeticalReverseSort,
-                            child: Text(Globals.alphabeticalReverseSortString),
-                          ),
-                        ],
-                      ),
-                    ),
+                        itemBuilder: (BuildContext context) {
+                          if (this.currentTab == this.groupsLeftTab) {
+                            // if the current tab is groups left, don't show sort by date
+                            return <PopupMenuEntry<int>>[
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalSort,
+                                child: Text(Globals.alphabeticalSortString),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalReverseSort,
+                                child:
+                                    Text(Globals.alphabeticalReverseSortString),
+                              ),
+                            ];
+                          } else {
+                            return <PopupMenuEntry<int>>[
+                              // group home tab, so show the sort by dates
+                              PopupMenuItem<int>(
+                                value: Globals.dateNewestSort,
+                                child: Text(
+                                  Globals.dateNewestSortString,
+                                  style: TextStyle(
+                                      decoration: (this.groupHomeSortVal ==
+                                              Globals.dateNewestSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.dateOldestSort,
+                                child: Text(Globals.dateOldestSortString),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalSort,
+                                child: Text(Globals.alphabeticalSortString),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalReverseSort,
+                                child:
+                                    Text(Globals.alphabeticalReverseSortString),
+                              ),
+                            ];
+                          }
+                        }),
                   )
                 ],
               ),
@@ -413,7 +447,7 @@ class _GroupsHomeState extends State<GroupsHome>
           ],
         ),
         floatingActionButton: Visibility(
-          visible: (!this.searching && this.currentTab == 0),
+          visible: (!this.searching && this.currentTab == this.groupsHomeTab),
           child: FloatingActionButton(
             child: Icon(Icons.add),
             onPressed: () {
@@ -423,7 +457,7 @@ class _GroupsHomeState extends State<GroupsHome>
                 MaterialPageRoute(builder: (context) => CreateGroup()),
               ).then((val) {
                 // TODO figure out a better way to refresh without making unnecessary API calls
-                refreshList();
+                loadGroups();
               });
             },
           ),
@@ -438,19 +472,30 @@ class _GroupsHomeState extends State<GroupsHome>
     });
   }
 
-  void setSort(bool sendUpdate) {
-    if (sortVal == Globals.dateNewestSort) {
-      GroupsManager.sortByDateNewest(totalGroups);
-    } else if (sortVal == Globals.dateOldestSort) {
+  void setGroupsHomeSort(bool sendUpdate) {
+    if (this.groupHomeSortVal == Globals.dateNewestSort) {
+      GroupsManager.sortByDateNewest(this.totalGroups);
+    } else if (this.groupHomeSortVal == Globals.dateOldestSort) {
       GroupsManager.sortByDateOldest(totalGroups);
-    } else if (sortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(totalGroups);
-    } else if (sortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(totalGroups);
+    } else if (this.groupHomeSortVal == Globals.alphabeticalReverseSort) {
+      GroupsManager.sortByAlphaDescending(this.totalGroups);
+      GroupsManager.sortByAlphaDescending(this.groupsLeft);
+    } else if (this.groupHomeSortVal == Globals.alphabeticalSort) {
+      GroupsManager.sortByAlphaAscending(this.totalGroups);
+      GroupsManager.sortByAlphaAscending(this.groupsLeft);
     }
     if (sendUpdate) {
       // blind send, don't care if it doesn't work since its just a sort value
       // TODO make a backend method to accept specific settings since it is very verbose using current one
+    }
+  }
+
+  void setGroupsLeftSort() {
+    // don't need to update DB, separate method so there isn't a break in consistency
+    if (this.groupsLeftSortVal == Globals.alphabeticalReverseSort) {
+      GroupsManager.sortByAlphaDescending(this.groupsLeft);
+    } else if (this.groupsLeftSortVal == Globals.alphabeticalSort) {
+      GroupsManager.sortByAlphaAscending(this.groupsLeft);
     }
   }
 
@@ -486,8 +531,8 @@ class _GroupsHomeState extends State<GroupsHome>
           icon: Globals.user.groupsLeft[groupId][GroupsManager.ICON]);
       this.groupsLeft.add(group);
     }
-    this.sortVal = Globals.user.appSettings.groupSort;
-    setSort(false);
+    this.groupHomeSortVal = Globals.user.appSettings.groupSort;
+    setGroupsHomeSort(false);
   }
 
   void toggleSearch() {
