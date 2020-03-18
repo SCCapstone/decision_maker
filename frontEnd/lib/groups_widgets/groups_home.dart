@@ -339,12 +339,26 @@ class _GroupsHomeState extends State<GroupsHome>
                             return <PopupMenuEntry<int>>[
                               PopupMenuItem<int>(
                                 value: Globals.alphabeticalSort,
-                                child: Text(Globals.alphabeticalSortString),
+                                child: Text(
+                                  Globals.alphabeticalSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.groupsLeftSortVal ==
+                                              Globals.alphabeticalSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
                               ),
                               PopupMenuItem<int>(
                                 value: Globals.alphabeticalReverseSort,
-                                child:
-                                    Text(Globals.alphabeticalReverseSortString),
+                                child: Text(
+                                    Globals.alphabeticalReverseSortString,
+                                    style: TextStyle(
+                                        // if it is selected, underline it
+                                        decoration: (this.groupsLeftSortVal ==
+                                                Globals.alphabeticalReverseSort)
+                                            ? TextDecoration.underline
+                                            : null)),
                               ),
                             ];
                           } else {
@@ -355,6 +369,7 @@ class _GroupsHomeState extends State<GroupsHome>
                                 child: Text(
                                   Globals.dateNewestSortString,
                                   style: TextStyle(
+                                      // if it is selected, underline it
                                       decoration: (this.groupHomeSortVal ==
                                               Globals.dateNewestSort)
                                           ? TextDecoration.underline
@@ -363,16 +378,39 @@ class _GroupsHomeState extends State<GroupsHome>
                               ),
                               PopupMenuItem<int>(
                                 value: Globals.dateOldestSort,
-                                child: Text(Globals.dateOldestSortString),
+                                child: Text(
+                                  Globals.dateOldestSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.groupHomeSortVal ==
+                                              Globals.dateOldestSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
                               ),
                               PopupMenuItem<int>(
                                 value: Globals.alphabeticalSort,
-                                child: Text(Globals.alphabeticalSortString),
+                                child: Text(
+                                  Globals.alphabeticalSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.groupHomeSortVal ==
+                                              Globals.alphabeticalSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
                               ),
                               PopupMenuItem<int>(
                                 value: Globals.alphabeticalReverseSort,
-                                child:
-                                    Text(Globals.alphabeticalReverseSortString),
+                                child: Text(
+                                  Globals.alphabeticalReverseSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.groupHomeSortVal ==
+                                              Globals.alphabeticalReverseSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
                               ),
                             ];
                           }
