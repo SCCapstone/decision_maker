@@ -757,11 +757,14 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final Set<String> newMembers = newGroup.getMembers().keySet();
     final Set<String> addedUsernames = new HashSet<>(newMembers);
+    final Set<String> persistingUsernames = new HashSet<>(newMembers);
     final Set<String> removedUsernames = new HashSet<>();
 
     if (oldGroup != null) {
       final Set<String> oldMembers = oldGroup.getMembers().keySet();
       removedUsernames.addAll(oldMembers);
+
+      persistingUsernames.retainAll(oldMembers);
 
       // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
       addedUsernames.removeAll(oldMembers);
