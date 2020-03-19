@@ -440,8 +440,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
-          nextEventId: Globals.currentGroup.nextEventId);
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, icon);
@@ -472,8 +471,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: Globals.currentGroup.members,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
-          nextEventId: Globals.currentGroup.nextEventId);
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, icon);
@@ -662,8 +660,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration,
-          nextEventId: Globals.currentGroup.nextEventId);
+          defaultConsiderDuration: considerDuration);
 
       showLoadingDialog(context, "Saving...", true);
       ResultStatus<Group> resultStatus =

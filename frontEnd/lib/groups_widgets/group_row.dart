@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -16,7 +17,6 @@ class GroupRow extends StatefulWidget {
 }
 
 class _GroupRowState extends State<GroupRow> {
-
   @override
   void initState() {
     super.initState();
@@ -94,8 +94,9 @@ class _GroupRowState extends State<GroupRow> {
                 onTap: () {
                   // doing this to try and help users who have a hard time clicking the icon
                   setState(() {
-                    // TODO mute the group
                     this.widget.group.muted = !this.widget.group.muted;
+                    UsersManager.setUserGroupMute(
+                        this.widget.group.groupId, this.widget.group.muted);
                   });
                 },
                 child: Container(
@@ -119,9 +120,11 @@ class _GroupRowState extends State<GroupRow> {
                                 (this.widget.group.muted) ? "Unmute" : "Mute",
                             onPressed: () {
                               setState(() {
-                                // TODO mute the group
                                 this.widget.group.muted =
                                     !this.widget.group.muted;
+                                UsersManager.setUserGroupMute(
+                                    this.widget.group.groupId,
+                                    this.widget.group.muted);
                               });
                             },
                           ),
@@ -131,9 +134,11 @@ class _GroupRowState extends State<GroupRow> {
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  // TODO mute the group
                                   this.widget.group.muted =
                                       !this.widget.group.muted;
+                                  UsersManager.setUserGroupMute(
+                                      this.widget.group.groupId,
+                                      this.widget.group.muted);
                                 });
                               },
                               child: Row(

@@ -25,7 +25,6 @@ class GroupsManager {
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
-  static final String NEXT_EVENT_ID = "NextEventId";
   static final String EVENTS = "Events";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";

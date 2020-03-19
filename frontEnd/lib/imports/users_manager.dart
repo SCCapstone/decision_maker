@@ -219,11 +219,23 @@ class UsersManager {
     makeApiRequest(apiEndpoint, jsonRequestBody);
   }
 
-  static Future markEventAsSeen(final String groupId, final String eventId) async {
+  static Future markEventAsSeen(
+      final String groupId, final String eventId) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = "markEventAsSeen";
     jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
     jsonRequestBody[RequestFields.PAYLOAD][RequestFields.EVENT_ID] = eventId;
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody);
+  }
+
+  static Future setUserGroupMute(
+      final String groupId, final bool muteValue) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = "setUserGroupMute";
+    jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
+    jsonRequestBody[RequestFields.PAYLOAD][APP_SETTINGS_MUTED] = muteValue;
 
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody);

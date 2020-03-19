@@ -624,8 +624,7 @@ public class UsersManager extends DatabaseAccessManager {
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
 
         final String updateExpression =
-            "remove " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
-                + ".#eventId";
+            "remove " + GROUPS + ".#groupId." + EVENTS_UNSEEN + ".#eventId";
         final NameMap nameMap = new NameMap().with("#groupId", groupId).with("#eventId", eventId);
 
         final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
@@ -636,6 +635,45 @@ public class UsersManager extends DatabaseAccessManager {
         this.updateItem(updateItemSpec);
 
         resultStatus = new ResultStatus(true, "Event marked as seen successfully.");
+      } catch (final Exception e) {
+        resultStatus.resultMessage = "Exception inside of: " + classMethod;
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      }
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus setUserGroupMute(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "UsersManager.setUserGroupMute";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GroupsManager.GROUP_ID, APP_SETTINGS_MUTED);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
+        final Boolean muteValue = (Boolean) jsonMap.get(APP_SETTINGS_MUTED);
+
+        final String updateExpression =
+            "set " + GROUPS + ".#groupId." + APP_SETTINGS_MUTED + " = :mute";
+        final NameMap nameMap = new NameMap().with("#groupId", groupId);
+        final ValueMap valueMap = new ValueMap().withBoolean(":mute", muteValue);
+
+        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
+
+        this.updateItem(updateItemSpec);
+
+        resultStatus = new ResultStatus(true, "User group mute set successfully.");
       } catch (final Exception e) {
         resultStatus.resultMessage = "Exception inside of: " + classMethod;
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));

@@ -92,10 +92,14 @@ public class SnsAccessManager {
     return this.client.deleteEndpoint(deleteEndpointRequest);
   }
 
-  public PublishResult sendMessage(final String arn, final String message) {
-    PublishRequest publishRequest = new PublishRequest()
+  public PublishResult sendMessage(final String arn, final String title, final String body) {
+    final String jsonNotification = String.format(
+        "{\"GCM\": \"{ \\\"notification\\\": {\\\"title\\\": \\\"%s\\\", \\\"body\\\": \\\"%s\\\"}, \\\"data\\\": {\\\"click_action\\\": \\\"FLUTTER_NOTIFICATION_CLICK\\\", \\\"default\\\": \\\"default message\\\" } }\"}",
+        title, body);
+    final PublishRequest publishRequest = new PublishRequest()
         .withTargetArn(arn)
-        .withMessage(message);
+        .withMessage(jsonNotification);
+    publishRequest.setMessageStructure("json");
     return this.client.publish(publishRequest);
   }
 

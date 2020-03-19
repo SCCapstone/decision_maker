@@ -23,7 +23,6 @@ public class Group implements Model {
   private String groupCreator;
   private Integer defaultRsvpDuration;
   private Integer defaultVotingDuration;
-  private Integer nextEventId;
   private String lastActivity;
   private Map<String, Event> events;
   private boolean isOpen;
@@ -44,7 +43,6 @@ public class Group implements Model {
         this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
     this.setDefaultVotingDuration(
         this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
-    this.setNextEventId(this.getIntFromObject(jsonMap.get(GroupsManager.NEXT_EVENT_ID)));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
     this.setOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
 
@@ -72,7 +70,6 @@ public class Group implements Model {
     modelAsMap.putIfAbsent(GroupsManager.GROUP_CREATOR, this.groupCreator);
     modelAsMap.putIfAbsent(GroupsManager.DEFAULT_RSVP_DURATION, this.defaultRsvpDuration);
     modelAsMap.putIfAbsent(GroupsManager.DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
-    modelAsMap.putIfAbsent(GroupsManager.NEXT_EVENT_ID, this.nextEventId);
     modelAsMap.putIfAbsent(GroupsManager.LAST_ACTIVITY, this.lastActivity);
     modelAsMap.putIfAbsent(GroupsManager.IS_OPEN, this.isOpen);
     modelAsMap.putIfAbsent(GroupsManager.MEMBERS, this.getMembersMap());
@@ -158,7 +155,6 @@ public class Group implements Model {
         .groupCreator(this.groupCreator)
         .defaultRsvpDuration(this.defaultRsvpDuration)
         .defaultVotingDuration(this.defaultVotingDuration)
-        .nextEventId(this.nextEventId)
         .lastActivity(this.lastActivity)
         .members(this.members)
         .categories(this.categories)
