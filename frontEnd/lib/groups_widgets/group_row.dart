@@ -1,12 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
-import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 class GroupRow extends StatefulWidget {
-  final Group group;
+  final UserGroup group;
   final Function refreshGroups;
 
   GroupRow(this.group, {this.refreshGroups});

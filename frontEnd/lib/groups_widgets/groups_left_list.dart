@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontEnd/groups_widgets/group_left_row.dart';
-import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/group_left.dart';
 
 class GroupsLeftList extends StatefulWidget {
-  final List<Group> groupsLeft;
+  final List<GroupLeft> groupsLeft;
   final bool searching;
   final Function refreshGroups;
 

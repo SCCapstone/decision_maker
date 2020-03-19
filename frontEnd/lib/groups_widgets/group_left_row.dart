@@ -1,10 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 class GroupLeftRow extends StatefulWidget {
-  final Group group;
+  final GroupLeft group;
   final Function refreshGroups;
 
   GroupLeftRow(this.group, {this.refreshGroups});

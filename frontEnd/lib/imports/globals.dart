@@ -45,7 +45,7 @@ class Globals {
   static final int maxChoiceNameLength = 25;
   static final int minConsiderTime = 0;
   static final int maxConsiderTime = 9999;
-  static final int maxConsiderDigits = minVotingTime.toString().length;
+  static final int maxConsiderDigits = maxConsiderTime.toString().length;
   static final int minVotingTime = 0;
   static final int maxVotingTime = 9999;
   static final int maxVotingDigits = maxVotingTime.toString().length;

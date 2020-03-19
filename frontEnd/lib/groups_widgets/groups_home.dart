@@ -12,8 +12,9 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
-import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/user.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
@@ -29,9 +30,10 @@ class _GroupsHomeState extends State<GroupsHome>
     with SingleTickerProviderStateMixin {
   final TextEditingController searchBarController = new TextEditingController();
   TabController tabController;
-  List<Group> searchGroups = new List<Group>();
-  List<Group> totalGroups = new List<Group>();
-  List<Group> groupsLeft = new List<Group>();
+  List<UserGroup> searchGroups = new List<UserGroup>();
+  List<UserGroup> totalGroups = new List<UserGroup>();
+  List<GroupLeft> groupsLeft = new List<GroupLeft>();
+  List<GroupLeft> searchLeftGroups = new List<GroupLeft>();
   Icon searchIcon = new Icon(Icons.search);
   bool searching = false;
   int currentTab, groupHomeSortVal, groupsLeftSortVal;
@@ -59,7 +61,7 @@ class _GroupsHomeState extends State<GroupsHome>
         } else {
           setState(() {
             String searchInput = this.searchBarController.text;
-            List<Group> temp = new List<Group>();
+            List<UserGroup> temp = new List<UserGroup>();
             for (int i = 0; i < this.totalGroups.length; i++) {
               if (this
                   .totalGroups[i]
@@ -77,13 +79,13 @@ class _GroupsHomeState extends State<GroupsHome>
         // in the groups left tab
         if (this.searchBarController.text.isEmpty) {
           setState(() {
-            this.searchGroups.clear();
-            this.searchGroups.addAll(this.groupsLeft);
+            this.searchLeftGroups.clear();
+            this.searchLeftGroups.addAll(this.groupsLeft);
           });
         } else {
           setState(() {
             String searchInput = this.searchBarController.text;
-            List<Group> temp = new List<Group>();
+            List<GroupLeft> temp = new List<GroupLeft>();
             for (int i = 0; i < this.groupsLeft.length; i++) {
               if (this
                   .groupsLeft[i]
@@ -93,7 +95,7 @@ class _GroupsHomeState extends State<GroupsHome>
                 temp.add(this.groupsLeft[i]);
               }
             }
-            this.searchGroups = temp;
+            this.searchLeftGroups = temp;
             GroupsManager.sortByAlphaAscending(this.searchGroups);
           });
         }
@@ -257,10 +259,11 @@ class _GroupsHomeState extends State<GroupsHome>
               onPressed: () {
                 // prevents quick flash of rows that appears when clicking search icon
                 this.searchGroups.clear();
+                this.searchLeftGroups.clear();
                 if (this.tabController.index == this.groupsHomeTab) {
                   this.searchGroups.addAll(this.totalGroups);
                 } else {
-                  this.searchGroups.addAll(this.groupsLeft);
+                  this.searchLeftGroups.addAll(this.groupsLeft);
                 }
                 toggleSearch();
               },
@@ -468,7 +471,7 @@ class _GroupsHomeState extends State<GroupsHome>
                             onRefresh: refreshList,
                             child: GroupsLeftList(
                               groupsLeft: (this.searching)
-                                  ? this.searchGroups
+                                  ? this.searchLeftGroups
                                   : this.groupsLeft,
                               searching: this.searching,
                               refreshGroups: refreshList,
@@ -547,19 +550,8 @@ class _GroupsHomeState extends State<GroupsHome>
   }
 
   void loadGroups() {
-    this.totalGroups.clear();
-    this.groupsLeft.clear();
-    for (String groupId in Globals.user.groups.keys) {
-      this.totalGroups.add(Globals.user.groups[groupId]);
-    }
-    // get the groups left from the user object
-    for (String groupId in Globals.user.groupsLeft.keys) {
-      Group group = new Group(
-          groupId: groupId,
-          groupName: Globals.user.groupsLeft[groupId][GroupsManager.GROUP_NAME],
-          icon: Globals.user.groupsLeft[groupId][GroupsManager.ICON]);
-      this.groupsLeft.add(group);
-    }
+    this.totalGroups = Globals.user.groups.values.toList();
+    this.groupsLeft = Globals.user.groupsLeft.values.toList();
     this.groupHomeSortVal = Globals.user.appSettings.groupSort;
     setGroupsHomeSort(false);
     setGroupsLeftSort();

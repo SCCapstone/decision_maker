@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
+import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/utilities/validator.dart';
 
@@ -147,6 +149,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           child: IconButton(
                             icon: Icon(Icons.keyboard_arrow_right),
                             onPressed: () {
+                              hideKeyboard(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -173,6 +176,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           child: IconButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
+                              hideKeyboard(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -222,28 +226,21 @@ class _CreateGroupState extends State<CreateGroup> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
-      Map<String, Map<String, String>> membersMap =
-          new Map<String, Map<String, String>>();
+      Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in displayedMembers) {
-        Map<String, String> memberInfo = new Map<String, String>();
-        memberInfo.putIfAbsent(
-            UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
-        membersMap.putIfAbsent(member.username, () => memberInfo);
+        membersMap.putIfAbsent(member.username, () => member);
       }
       // creator is always in the group of course
-      Map<String, String> memberInfo = new Map<String, String>();
-      memberInfo.putIfAbsent(
-          UsersManager.DISPLAY_NAME, () => Globals.user.displayName);
-      memberInfo.putIfAbsent(UsersManager.ICON, () => Globals.user.icon);
-      membersMap.putIfAbsent(Globals.username, () => memberInfo);
+      membersMap.putIfAbsent(
+          Globals.username, () => new Member.fromUser(Globals.user));
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: groupName,
           categories: selectedCategories,
           members: membersMap,
           defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration);
+          defaultConsiderDuration: considerDuration,
+          events: new Map<String, Event>());
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
@@ -254,11 +251,13 @@ class _CreateGroupState extends State<CreateGroup> {
 
       if (resultStatus.success) {
         // update the local user object with this new group returned from the DB
-        Group newGroup = new Group(
+        UserGroup newGroup = new UserGroup(
             groupId: resultStatus.data.groupId,
             groupName: resultStatus.data.groupName,
             icon: resultStatus.data.icon,
-            lastActivity: resultStatus.data.lastActivity);
+            lastActivity: resultStatus.data.lastActivity,
+            muted: false,
+            eventsUnseen: new Map<String, bool>());
         Globals.user.groups
             .putIfAbsent(resultStatus.data.groupId, () => newGroup);
         Navigator.of(context).pop();

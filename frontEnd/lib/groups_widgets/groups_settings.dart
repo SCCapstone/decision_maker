@@ -67,9 +67,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     for (String username in Globals.currentGroup.members.keys) {
       Member member = new Member(
           username: username,
-          displayName: Globals.currentGroup.members[username]
-              [UsersManager.DISPLAY_NAME],
-          icon: Globals.currentGroup.members[username][UsersManager.ICON]);
+          displayName: Globals.currentGroup.members[username].displayName,
+          icon: Globals.currentGroup.members[username].icon);
       originalMembers.add(member); // preserve original members
       displayedMembers.add(member); // used to show group members in the popup
     }
@@ -427,14 +426,9 @@ class _GroupSettingsState extends State<GroupSettings> {
     bool changedMembers = !(oldMembers.containsAll(newMembers) &&
         oldMembers.length == newMembers.length);
     if (changedMembers) {
-      Map<String, Map<String, String>> membersMap =
-          new Map<String, Map<String, String>>();
+      Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in displayedMembers) {
-        Map<String, String> memberInfo = new Map<String, String>();
-        memberInfo.putIfAbsent(
-            UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
-        membersMap.putIfAbsent(member.username, () => memberInfo);
+        membersMap.putIfAbsent(member.username, () => member);
       }
 
       Group group = new Group(
@@ -448,9 +442,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
-      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
+      ResultStatus<Group> resultStatus =
+          await GroupsManager.editGroup(group, icon);
 
       if (resultStatus.success) {
+        Globals.currentGroup = resultStatus.data;
         originalMembers.clear();
         originalMembers.addAll(displayedMembers);
       } else {
@@ -478,9 +474,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           nextEventId: Globals.currentGroup.nextEventId);
 
-      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
+      ResultStatus<Group> resultStatus =
+          await GroupsManager.editGroup(group, icon);
 
       if (resultStatus.success) {
+        Globals.currentGroup = resultStatus.data;
         originalCategories.clear();
         originalCategories.addAll(selectedCategories);
       } else {
@@ -644,14 +642,9 @@ class _GroupSettingsState extends State<GroupSettings> {
     if (form.validate() && validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
       form.save();
-      Map<String, Map<String, String>> membersMap =
-          new Map<String, Map<String, String>>();
+      Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in displayedMembers) {
-        Map<String, String> memberInfo = new Map<String, String>();
-        memberInfo.putIfAbsent(
-            UsersManager.DISPLAY_NAME, () => member.displayName);
-        memberInfo.putIfAbsent(UsersManager.ICON, () => member.icon);
-        membersMap.putIfAbsent(member.username, () => memberInfo);
+        membersMap.putIfAbsent(member.username, () => member);
       }
 
       Group group = new Group(
@@ -666,11 +659,12 @@ class _GroupSettingsState extends State<GroupSettings> {
           nextEventId: Globals.currentGroup.nextEventId);
 
       showLoadingDialog(context, "Saving...", true);
-      ResultStatus resultStatus = await GroupsManager.editGroup(group, icon);
+      ResultStatus<Group> resultStatus =
+          await GroupsManager.editGroup(group, icon);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        Globals.currentGroup = group; // TODO grab the group from the result
+        Globals.currentGroup = resultStatus.data;
         setState(() {
           // reset everything and reflect changes made
           originalMembers.clear();

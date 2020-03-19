@@ -147,8 +147,8 @@ class _EditCategoryState extends State<EditCategory> {
                             maxLength: Globals.maxCategoryNameLength,
                             controller: this.categoryNameController,
                             validator: (value) {
-                              return validCategoryName(
-                                  value.trim(), Globals.user.ownedCategories);
+                              return validCategoryName(value.trim(),
+                                  Globals.user.ownedCategories, true);
                             },
                             textCapitalization: TextCapitalization.sentences,
                             style: TextStyle(fontSize: 20),
@@ -409,13 +409,12 @@ class _EditCategoryState extends State<EditCategory> {
       this.choiceRows.add(choice);
     }
     // populate the choices with the ratings
-    Map<String, dynamic> userRatings =
+    Map<String, String> userRatings =
         Globals.user.userRatings[widget.category.categoryId];
     if (userRatings != null) {
       for (String choiceId in this.labelControllers.keys) {
-        if (userRatings.containsKey(choiceId.toString())) {
-          this.ratesControllers[choiceId].text =
-              userRatings[choiceId.toString()].toString();
+        if (userRatings.containsKey(choiceId)) {
+          this.ratesControllers[choiceId].text = userRatings[choiceId];
         }
       }
     }
