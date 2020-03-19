@@ -125,8 +125,10 @@ class Group {
       membersMap.putIfAbsent(username, () => this.members[username].asMap());
     }
     Map<String, dynamic> membersLeftMap = new Map<String, dynamic>();
-    for (String username in this.membersLeft.keys) {
-      membersLeftMap.putIfAbsent(username, () => this.membersLeft[username]);
+    if (this.membersLeft != null) {
+      for (String username in this.membersLeft.keys) {
+        membersLeftMap.putIfAbsent(username, () => this.membersLeft[username]);
+      }
     }
     return {
       GroupsManager.GROUP_ID: this.groupId,
