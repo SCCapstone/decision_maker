@@ -352,12 +352,16 @@ class GroupsManager {
   }
 
   static void sortByAlphaAscending(List<GroupInterface> groups) {
-    groups.sort((a, b) =>
-        a.groupName.toUpperCase().compareTo(b.groupName.toUpperCase()));
+    groups.sort((a, b) => a
+        .getGroupName()
+        .toUpperCase()
+        .compareTo(b.getGroupName().toUpperCase()));
   }
 
   static void sortByAlphaDescending(List<GroupInterface> groups) {
-    groups.sort((a, b) =>
-        b.groupName.toUpperCase().compareTo(a.groupName.toUpperCase()));
+    groups.sort((a, b) => b
+        .getGroupName()
+        .toUpperCase()
+        .compareTo(a.getGroupName().toUpperCase()));
   }
 }

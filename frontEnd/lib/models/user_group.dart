@@ -1,7 +1,7 @@
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group_interface.dart';
 
-class UserGroup extends GroupInterface {
+class UserGroup implements GroupInterface {
   final String groupId;
   final String groupName;
   final String icon;
@@ -50,5 +50,10 @@ class UserGroup extends GroupInterface {
   String toString() {
     return "GroupName: $groupName GroupIcon: "
         "$icon LastActivity: $lastActivity Muted: $muted EventsUnsen: $eventsUnseen";
+  }
+
+  @override
+  String getGroupName() {
+    return groupName;
   }
 }

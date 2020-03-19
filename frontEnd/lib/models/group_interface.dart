@@ -1,3 +1,3 @@
-class GroupInterface{
-  String groupName;
+class GroupInterface {
+  String getGroupName() {}
 }

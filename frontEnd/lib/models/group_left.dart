@@ -1,7 +1,7 @@
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/models/group_interface.dart';
 
-class GroupLeft extends GroupInterface {
+class GroupLeft implements GroupInterface {
   final String groupId;
   final String groupName;
   final String icon;
@@ -33,5 +33,10 @@ class GroupLeft extends GroupInterface {
   @override
   String toString() {
     return "GroupId: $groupId GroupName: $groupName GroupIcon: $icon ";
+  }
+
+  @override
+  String getGroupName() {
+    return groupName;
   }
 }
