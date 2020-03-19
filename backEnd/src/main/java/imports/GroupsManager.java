@@ -751,8 +751,6 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonSetup(classMethod);
     boolean success = true;
 
-    final Set<String> usersToUpdate = new HashSet<>();
-
     NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
 
     final Set<String> newMembers = newGroup.getMembers().keySet();
@@ -769,74 +767,69 @@ public class GroupsManager extends DatabaseAccessManager {
       // Note: using removeAll on a HashSet has linear time complexity when another HashSet is passed in
       addedUsernames.removeAll(oldMembers);
       removedUsernames.removeAll(newMembers);
-
-      if (updatedEventId != null) {
-        usersToUpdate.addAll(newMembers);
-      } else if (newGroup.groupNameIsSet() && !newGroup.getGroupName()
-          .equals(oldGroup.getGroupName())) {
-        usersToUpdate.addAll(newMembers);
-      } else if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
-        usersToUpdate.addAll(newMembers);
-      } else if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
-          .equals(oldGroup.getLastActivity())) {
-        usersToUpdate.addAll(newMembers);
-      } else if (!oldMembers.equals(newMembers)) {
-        usersToUpdate.addAll(addedUsernames);
-      }
-    } else {
-      //this is a new group, every addedUsername needs to be updated
-      usersToUpdate.addAll(addedUsernames);
     }
 
-    String oldMemberUpdateExpression = "";
-    String newMemberUpdateExpression = "";
-    ValueMap oldMemberValueMap = new ValueMap();
-    ValueMap newMemberValueMap = new ValueMap();
+    String updateExpression;
+    ValueMap valueMap;
     UpdateItemSpec updateItemSpec;
 
     //update users with new group mapping based on which attributes were updated
-    if (!usersToUpdate.isEmpty()) {
-      if (addedUsernames.size() > 0) {
-        //if this is a new Group we need to create the entire map
-        newMemberUpdateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
-        newMemberValueMap.withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
+    if (persistingUsernames.size() > 0) {
+      //since this group already exists, we're just updating the mappings that have changed for existing users
+      //for simplicity in the code, we'll always update the group name
+      updateExpression =
+          "set " + UsersManager.GROUPS + ".#groupId." + GroupsManager.GROUP_NAME
+              + " = :groupName";
+      valueMap = new ValueMap().withString(":groupName", newGroup.getGroupName());
+
+      if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
+        updateExpression +=
+            ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
+                + " = :groupIcon";
+        valueMap.withString(":groupIcon", newGroup.getIcon());
       }
 
-      if (oldGroup != null) {
-        //since this group already exists, we're just updating the mappings that have changed for existing users
-        //for simplicity in the code, we'll always update the group name
-        oldMemberUpdateExpression =
-            "set " + UsersManager.GROUPS + ".#groupId." + GroupsManager.GROUP_NAME
-                + " = :groupName";
-        oldMemberValueMap.withString(":groupName", newGroup.getGroupName());
+      if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
+          .equals(oldGroup.getLastActivity())) {
+        updateExpression +=
+            ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
+                + " = :lastActivity";
+        valueMap.withString(":lastActivity", newGroup.getLastActivity());
+      }
 
-        if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
-          oldMemberUpdateExpression +=
-              ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.ICON
-                  + " = :groupIcon";
-          oldMemberValueMap.withString(":groupIcon", newGroup.getIcon());
-        }
-
-        if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
-            .equals(oldGroup.getLastActivity())) {
-          oldMemberUpdateExpression +=
-              ", " + UsersManager.GROUPS + ".#groupId." + GroupsManager.LAST_ACTIVITY
-                  + " = :lastActivity";
-          oldMemberValueMap.withString(":lastActivity", newGroup.getLastActivity());
-        }
-
-        if (updatedEventId != null) {
-          oldMemberUpdateExpression +=
-              ", " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
-                  + ".#eventId = :true";
-          nameMap.with("#eventId", updatedEventId);
-          oldMemberValueMap.withBoolean(":true", true);
-        }
+      if (updatedEventId != null) {
+        updateExpression +=
+            ", " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
+                + ".#eventId = :true";
+        nameMap.with("#eventId", updatedEventId);
+        valueMap.withBoolean(":true", true);
       }
 
       updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(newMemberUpdateExpression)
-          .withValueMap(newMemberValueMap)
+          .withUpdateExpression(updateExpression)
+          .withValueMap(valueMap)
+          .withNameMap(nameMap);
+
+      for (final String oldMember : persistingUsernames) {
+        try {
+          updateItemSpec
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+        } catch (Exception e) {
+          success = false;
+          metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+        }
+      }
+    }
+
+    if (addedUsernames.size() > 0) {
+      //if this is a new Group we need to create the entire map
+      updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
+      valueMap = new ValueMap().withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
+
+      updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withValueMap(valueMap)
           .withNameMap(nameMap);
 
       for (final String newMember : addedUsernames) {
@@ -849,34 +842,15 @@ public class GroupsManager extends DatabaseAccessManager {
           metrics.log(new ErrorDescriptor<>(newMember, classMethod, e));
         }
       }
-
-      updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(oldMemberUpdateExpression)
-          .withValueMap(oldMemberValueMap)
-          .withNameMap(nameMap);
-
-      for (final String oldMember : usersToUpdate) {
-        if (!addedUsernames.contains(oldMember)) { // this gets handled above
-          try {
-            updateItemSpec
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-          } catch (Exception e) {
-            success = false;
-            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
-          }
-        }
-      }
     }
 
     //update user objects of all of the users removed
-    String removedMemberUpdateExpression;
-
     if (!removedUsernames.isEmpty()) {
-      removedMemberUpdateExpression = "remove Groups.#groupId";
+      updateExpression = "remove Groups.#groupId";
       updateItemSpec = new UpdateItemSpec()
           .withNameMap(nameMap)
-          .withUpdateExpression(removedMemberUpdateExpression);
+          .withUpdateExpression(updateExpression);
+
       for (final String member : removedUsernames) {
         try {
           updateItemSpec
