@@ -220,6 +220,7 @@ class UsersManager {
   }
 
   static Future markEventAsSeen(final String groupId, final String eventId) async {
+    print("calling mark event as seen");
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = "markEventAsSeen";
     jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
