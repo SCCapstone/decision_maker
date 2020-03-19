@@ -16,13 +16,9 @@ class GroupRow extends StatefulWidget {
 }
 
 class _GroupRowState extends State<GroupRow> {
-  bool notificationsMuted;
-  int notificationNum;
 
   @override
   void initState() {
-    this.notificationsMuted = widget.group.muted;
-    this.notificationNum = widget.group.eventsUnseen.length;
     super.initState();
   }
 
@@ -99,7 +95,7 @@ class _GroupRowState extends State<GroupRow> {
                   // doing this to try and help users who have a hard time clicking the icon
                   setState(() {
                     // TODO mute the group
-                    this.notificationsMuted = !this.notificationsMuted;
+                    this.widget.group.muted = !this.widget.group.muted;
                   });
                 },
                 child: Container(
@@ -109,32 +105,35 @@ class _GroupRowState extends State<GroupRow> {
                   width: MediaQuery.of(context).size.width * .15,
                   child: Center(
                     child: Wrap(
-                        spacing: (this.notificationNum > 0) ? -25 : 0,
+                        spacing: (this.widget.group.eventsUnseen.length > 0)
+                            ? -25
+                            : 0,
                         direction: Axis.vertical,
                         children: <Widget>[
                           IconButton(
-                            icon: (this.notificationsMuted)
+                            icon: (this.widget.group.muted)
                                 ? Icon(Icons.notifications_off)
                                 : Icon(Icons.notifications),
                             color: Colors.blueAccent,
                             tooltip:
-                                (this.notificationsMuted) ? "Unmute" : "Mute",
+                                (this.widget.group.muted) ? "Unmute" : "Mute",
                             onPressed: () {
                               setState(() {
                                 // TODO mute the group
-                                this.notificationsMuted =
-                                    !this.notificationsMuted;
+                                this.widget.group.muted =
+                                    !this.widget.group.muted;
                               });
                             },
                           ),
                           Visibility(
-                            visible: (this.notificationNum > 0),
+                            visible:
+                                (this.widget.group.eventsUnseen.length > 0),
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {
                                   // TODO mute the group
-                                  this.notificationsMuted =
-                                      !this.notificationsMuted;
+                                  this.widget.group.muted =
+                                      !this.widget.group.muted;
                                 });
                               },
                               child: Row(
@@ -143,8 +142,14 @@ class _GroupRowState extends State<GroupRow> {
                                       padding: EdgeInsets.all(
                                           MediaQuery.of(context).size.height *
                                               .02)),
-                                  Text((this.notificationNum < 100)
-                                      ? this.notificationNum.toString()
+                                  Text((this.widget.group.eventsUnseen.length <
+                                          100)
+                                      ? this
+                                          .widget
+                                          .group
+                                          .eventsUnseen
+                                          .length
+                                          .toString()
                                       : "99+")
                                 ],
                               ),
