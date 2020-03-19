@@ -528,7 +528,8 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"),
+            Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -541,7 +542,8 @@ public class UsersManagerTest {
     doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"), "GroupId1", this.metrics);
+        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"),
+            Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));

@@ -562,23 +562,29 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus removeGroupFromUsers(final Set<String> users, final String groupId,
-      final Metrics metrics) {
+  public ResultStatus removeGroupFromUsers(final Set<String> members, final Set<String> membersLeft,
+      final String groupId, final Metrics metrics) {
     final String classMethod = "UsersManager.removeGroupFromUsers";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      final String updateExpression = "remove " + GROUPS + ".#groupId";
+      final String updateExpressionGroups = "remove " + GROUPS + ".#groupId";
+      final String updateExpressionGroupsLeft = "remove " + GROUPS_LEFT + ".#groupId";
       final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpression)
+          .withUpdateExpression(updateExpressionGroups)
           .withNameMap(nameMap);
 
-      for (String user : users) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), user);
+      for (String member : members) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
+        this.updateItem(updateItemSpec);
+      }
+      updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
+      for (String member : membersLeft) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
         this.updateItem(updateItemSpec);
       }
       resultStatus = new ResultStatus(true, "Group successfully removed from users table.");

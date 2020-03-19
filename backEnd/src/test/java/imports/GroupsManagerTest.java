@@ -187,7 +187,7 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
@@ -202,7 +202,7 @@ public class GroupsManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -214,7 +214,7 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_usersTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
@@ -229,7 +229,7 @@ public class GroupsManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -240,7 +240,7 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_categoriesTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new Item()
@@ -255,7 +255,7 @@ public class GroupsManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
