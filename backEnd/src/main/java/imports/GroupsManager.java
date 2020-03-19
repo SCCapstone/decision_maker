@@ -316,7 +316,6 @@ public class GroupsManager extends DatabaseAccessManager {
               .removeGroupFromCategories(categoryIds, groupId, metrics);
 
           if (removeFromUsersResult.success && removeFromCategoriesResult.success) {
-            //TODO can probably put this into a transaction
             DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), groupId);
 
@@ -720,7 +719,8 @@ public class GroupsManager extends DatabaseAccessManager {
           //Note: no need to check user's group muted settings since they're just being added
           if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "New Group!", "You have been added to new group: " + addedTo.getGroupName());
+                "New Group!", "You have been added to new group: " + addedTo.getGroupName(),
+                addedTo.getGroupId());
           }
         }
       } catch (Exception e) {
