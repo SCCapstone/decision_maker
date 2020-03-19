@@ -1,13 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:frontEnd/about_widgets/categories_info.dart';
 import 'package:frontEnd/about_widgets/events_info.dart';
 import 'package:frontEnd/about_widgets/general_info.dart';
 import 'package:frontEnd/about_widgets/groups_info.dart';
-import 'package:frontEnd/about_widgets/html_widgets.dart';
+import 'package:frontEnd/about_widgets/privacy_policy.dart';
 import 'package:frontEnd/about_widgets/settings_info.dart';
 import 'package:package_info/package_info.dart';
 
@@ -22,9 +19,6 @@ class _AboutPageState extends State<AboutPage> {
   String version;
   String buildNumber;
   bool loading;
-  final ScrollController scrollController = ScrollController();
-  final GlobalKey expansionTileKey = GlobalKey();
-  double previousOffset;
 
   @override
   void initState() {
@@ -55,7 +49,6 @@ class _AboutPageState extends State<AboutPage> {
           padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
           child: Scrollbar(
             child: ListView(
-              controller: this.scrollController,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(15.0, 8, 15.0, 8),
@@ -101,7 +94,10 @@ class _AboutPageState extends State<AboutPage> {
                           child: IconButton(
                             icon: Icon(Icons.keyboard_arrow_right),
                             onPressed: () {
-                              // TODO
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PrivacyPolicy()));
                             },
                           )),
                     ],
@@ -326,20 +322,5 @@ class _AboutPageState extends State<AboutPage> {
       this.version = packageInfo.version;
       this.buildNumber = packageInfo.buildNumber;
     });
-  }
-
-  void scrollToSelectedContent(
-      bool isExpanded, double previousOffset, GlobalKey myKey) {
-    final keyContext = myKey.currentContext;
-    // make sure that the widget is visible
-    if (keyContext != null) {
-      // find the height of the list view inside the expansion tile
-      final box = keyContext.findRenderObject() as RenderBox;
-      print(box.size.height);
-      this.scrollController.animateTo(
-          isExpanded ? (box.size.height) : previousOffset,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.linear);
-    }
   }
 }

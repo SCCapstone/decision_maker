@@ -1,7 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
-import 'html_widgets.dart';
+import 'about_descriptions.dart';
 
 class EventsInfo extends StatelessWidget {
   @override
@@ -19,7 +19,7 @@ class EventsInfo extends StatelessWidget {
               shrinkWrap: true,
               physics: ClampingScrollPhysics(),
               children: <Widget>[
-                HtmlWidgets.settings,
+                AboutDescriptions.events,
               ]),
         ),
       ),
