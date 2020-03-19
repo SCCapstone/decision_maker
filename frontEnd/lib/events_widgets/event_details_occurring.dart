@@ -16,11 +16,7 @@ class EventDetailsOccurring extends StatefulWidget {
   final String mode;
 
   EventDetailsOccurring({Key key, this.groupId, this.eventId, this.mode})
-      : super(key: key) {
-    if (Globals.user.groups[this.groupId].eventsUnseen[this.eventId] == true) {
-      UsersManager.markEventAsSeen(this.groupId, this.eventId);
-    }
-  }
+      : super(key: key);
 
   @override
   _EventDetailsOccurringState createState() =>
@@ -34,6 +30,12 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
 
   @override
   void initState() {
+    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
+        true) {
+      UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+    }
+
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =

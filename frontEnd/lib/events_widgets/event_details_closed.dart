@@ -13,11 +13,7 @@ class EventDetailsClosed extends StatefulWidget {
   final String groupId;
   final String eventId;
 
-  EventDetailsClosed({Key key, this.groupId, this.eventId}) : super(key: key) {
-    if (Globals.user.groups[this.groupId].eventsUnseen[this.eventId] == true) {
-      UsersManager.markEventAsSeen(this.groupId, this.eventId);
-    }
-  }
+  EventDetailsClosed({Key key, this.groupId, this.eventId}) : super(key: key);
 
   @override
   _EventDetailsClosedState createState() => new _EventDetailsClosedState();
@@ -30,6 +26,12 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
 
   @override
   void initState() {
+    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
+        true) {
+      UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+    }
+
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
