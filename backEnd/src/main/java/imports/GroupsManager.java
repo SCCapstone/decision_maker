@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import models.Event;
 import models.Group;
 import models.User;
@@ -498,14 +497,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  /**
-   * This method removes a user from a group, then updates both the user and group objects
-   * appropriately in order to indicate that the user has chosen to leave the group.
-   *
-   * @param jsonMap       The map containing the json request sent from the front end.
-   *                      Must contain the GroupId for the group the user is attempting to leave.
-   * @param metrics       Standard metrics object for profiling and logging
-   */
+  //TODO revisit this all together - was never implemented on the front end maybe?
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
