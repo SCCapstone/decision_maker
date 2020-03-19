@@ -14,8 +14,8 @@ public class JsonEncoders {
       outputString.append(JsonEncoders.convertMapToJson((Map) value));
     } else if (value instanceof String) {
       outputString.append(JsonEncoders.convertStringToJson((String) value));
-    } else if (value instanceof List) {
-      outputString.append(JsonEncoders.convertListToJson((List) value));
+    } else if (value instanceof Iterable) {
+      outputString.append(JsonEncoders.convertIterableToJson((Iterable) value));
     } else if (value instanceof Number || value instanceof Boolean) {
       outputString.append(value.toString());
     } else {
@@ -25,7 +25,7 @@ public class JsonEncoders {
     return outputString.toString();
   }
 
-  public static String convertListToJson(List value) {
+  public static String convertIterableToJson(Iterable value) {
     StringBuilder outputString = new StringBuilder();
 
     outputString.append("[");

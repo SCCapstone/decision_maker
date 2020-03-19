@@ -113,7 +113,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
                 .getTentativeAlgorithmChoices(event, metrics);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventTentativeChoices(groupId, eventId, tentativeChoices, group, metrics);
+                .setEventTentativeChoices(group, eventId, tentativeChoices, metrics);
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
@@ -129,7 +129,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             String result = this.getSelectedChoice(event, metrics);
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventSelectedChoice(groupId, eventId, result, group, metrics);
+                .setEventSelectedChoice(group, eventId, result, metrics);
 
             // now remove the entry from the pending events table since it has been fully processed now
             String updateExpression = "remove #groupEventKey";
@@ -187,7 +187,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
           final User user = new User(
               DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-          final Map<String, Integer> categoryChoiceRatings = user.getCategoryRatings().get(categoryId);
+          final Map<String, Integer> categoryChoiceRatings = user.getCategoryRatings()
+              .get(categoryId);
 
           for (String choiceId : choiceRatingsToSums.keySet()) {
             if (categoryChoiceRatings != null && categoryChoiceRatings.containsKey(choiceId)) {

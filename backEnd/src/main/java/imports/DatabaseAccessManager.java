@@ -18,6 +18,7 @@ import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import models.Model;
 
 public class DatabaseAccessManager {
@@ -73,6 +74,12 @@ public class DatabaseAccessManager {
   public Item getItemByPrimaryKey(final String primaryKey) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName)
         .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey));
+  }
+
+  public Map<String, Object> getMapByPrimaryKey(final String primaryKey)
+      throws NullPointerException {
+    return this.dynamoDb.getTable(this.tableName)
+        .getItem(new GetItemSpec().withPrimaryKey(this.primaryKeyIndex, primaryKey)).asMap();
   }
 
   public UpdateItemOutcome updateItem(final UpdateItemSpec updateItemSpec)
