@@ -17,6 +17,7 @@ import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
+import '../about_page.dart';
 import '../user_settings.dart';
 
 class GroupsHome extends StatefulWidget {
@@ -201,6 +202,15 @@ class _GroupsHomeState extends State<GroupsHome>
                         context,
                         MaterialPageRoute(
                             builder: (context) => UserSettings()));
+                  }),
+              ListTile(
+                  leading: Icon(Icons.help_outline),
+                  title: Text('About', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    // close the drawer menu when clicked
+                    Navigator.of(context).pop();
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => AboutPage()));
                   }),
               Expanded(
                 child: Align(
