@@ -12,9 +12,11 @@ import 'package:frontEnd/widgets/user_row.dart';
 class MembersPage extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<Member> originalMembers;
+  final List<String> membersLeft;
   final bool isCreating; // if creating don't have to bother with group creator
 
-  MembersPage(this.displayedMembers, this.originalMembers, this.isCreating);
+  MembersPage(this.displayedMembers, this.originalMembers, this.membersLeft,
+      this.isCreating);
 
   @override
   _MembersPageState createState() => _MembersPageState();
@@ -255,33 +257,46 @@ class _MembersPageState extends State<MembersPage> {
       displayedFavoritesRows
           .removeWhere((row) => row.username == user.username);
     }
+    for (String username in widget.membersLeft) {
+      // if favorite has previously left the group, don't show in the favorites section
+      displayedFavoritesRows.removeWhere((row) => row.username == username);
+    }
   }
 
   void addNewMember() async {
-    ResultStatus<User> resultStatus =
-        await UsersManager.getUserData(username: userController.text.trim());
-    if (resultStatus.success) {
-      User newMember = resultStatus.data;
-      widget.displayedMembers.add(new Member(
-          username: newMember.username,
-          displayName: newMember.displayName,
-          icon: newMember.icon));
-      displayedUserRows.add(new UserRow(
-          newMember.displayName,
-          newMember.username,
-          newMember.icon,
-          true,
-          false,
-          false, deleteUser: () {
-        removeMember(newMember.username);
-      }));
-    } else {
-      showErrorMessage("Error", "Cannot add: ${userController.text}.", context);
+    String username = userController.text.trim();
+    if (widget.membersLeft.contains(username)) {
+      showErrorMessage(
+          "Error",
+          "Cannot add $username because they have previously left this group.",
+          context);
       hideKeyboard(context);
+    } else {
+      ResultStatus<User> resultStatus =
+      await UsersManager.getUserData(username: username);
+      if (resultStatus.success) {
+        User newMember = resultStatus.data;
+        widget.displayedMembers.add(new Member(
+            username: newMember.username,
+            displayName: newMember.displayName,
+            icon: newMember.icon));
+        displayedUserRows.add(new UserRow(
+            newMember.displayName,
+            newMember.username,
+            newMember.icon,
+            true,
+            false,
+            false, deleteUser: () {
+          removeMember(newMember.username);
+        }));
+      } else {
+        showErrorMessage("Error", "Cannot add: ${userController.text}.", context);
+        hideKeyboard(context);
+      }
+      setState(() {
+        userController.clear();
+      });
     }
-    setState(() {
-      userController.clear();
-    });
   }
 
   void addMemberFromFavorites(Favorite memberToAdd) {

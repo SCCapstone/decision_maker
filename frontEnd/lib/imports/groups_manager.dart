@@ -22,6 +22,7 @@ class GroupsManager {
   static final String GROUP_CREATOR = "GroupCreator";
   static final String LAST_ACTIVITY = "LastActivity";
   static final String MEMBERS = "Members";
+  static final String MEMBERS_LEFT = "MembersLeft";
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";

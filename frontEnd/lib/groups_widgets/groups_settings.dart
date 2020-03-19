@@ -36,6 +36,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   bool owner;
   List<Member> originalMembers = new List<Member>();
   List<Member> displayedMembers = new List<Member>();
+  List<String> membersLeft = new List<String>();
   Map<String, String> selectedCategories =
       new Map<String, String>(); // map of categoryIds -> categoryName
   Map<String, String> originalCategories =
@@ -78,6 +79,9 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
       selectedCategories.putIfAbsent(
           catId, () => Globals.currentGroup.categories[catId]);
+    }
+    for (String username in Globals.currentGroup.membersLeft.keys) {
+      membersLeft.add(username);
     }
     groupName = Globals.currentGroup.groupName;
     votingDuration = Globals.currentGroup.defaultVotingDuration;
@@ -339,6 +343,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                         MembersPage(
                                                           displayedMembers,
                                                           originalMembers,
+                                                          membersLeft,
                                                           false,
                                                         ))).then((_) {
                                               saveMembers();
