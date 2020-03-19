@@ -62,7 +62,6 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String OPTED_IN = "OptedIn";
   public static final String VOTING_NUMBERS = "VotingNumbers";
   public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
-  public static final String NEXT_EVENT_ID = "NextEventId";
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
@@ -179,7 +178,6 @@ public class GroupsManager extends DatabaseAccessManager {
         newGroup.setGroupCreator(activeUser);
         newGroup.setOpen(false); // TODO get from 'required' request key (it's not required rn)
         newGroup.setMembersLeft(Collections.emptyMap());
-        newGroup.setNextEventId(1);
         newGroup.setEvents(Collections.emptyMap());
         newGroup.setLastActivity(lastActivity);
         this.putItem(newGroup);
@@ -362,7 +360,7 @@ public class GroupsManager extends DatabaseAccessManager {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
-        final String eventId = oldGroup.getNextEventId().toString();
+        final String eventId = UUID.randomUUID().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
@@ -380,12 +378,10 @@ public class GroupsManager extends DatabaseAccessManager {
           newEvent.setVotingNumbers(Collections.emptyMap());
 
           String updateExpression =
-              "set " + EVENTS + ".#eventId = :map, " + NEXT_EVENT_ID + " = :nextEventId, "
-                  + LAST_ACTIVITY + " = :lastActivity";
+              "set " + EVENTS + ".#eventId = :map, " + LAST_ACTIVITY + " = :lastActivity";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
               .withMap(":map", newEvent.asMap())
-              .withNumber(":nextEventId", oldGroup.getNextEventId() + 1)
               .withString(":lastActivity", lastActivity);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
