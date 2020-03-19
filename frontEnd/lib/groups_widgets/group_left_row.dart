@@ -3,12 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/group_left.dart';
-import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
-
-import 'groups_home.dart';
 
 class GroupLeftRow extends StatefulWidget {
   final GroupLeft group;
