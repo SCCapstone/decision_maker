@@ -21,6 +21,15 @@ class AppSettings {
         categorySort: json[UsersManager.APP_SETTINGS_CATEGORY_SORT]);
   }
 
+  Map asMap() {
+    return {
+      UsersManager.APP_SETTINGS_GROUP_SORT: groupSort,
+      UsersManager.APP_SETTINGS_CATEGORY_SORT: categorySort,
+      UsersManager.APP_SETTINGS_MUTED: muted,
+      UsersManager.APP_SETTINGS_DARK_THEME: darkTheme
+    };
+  }
+
   @override
   String toString() {
     return "Muted: $muted DarkTheme: $darkTheme GroupSort: "

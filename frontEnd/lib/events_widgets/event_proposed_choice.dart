@@ -28,7 +28,7 @@ class EventProposedChoice extends StatefulWidget {
 
 class _EventProposedChoiceState extends State<EventProposedChoice> {
   int currentVote;
-  Map<String, dynamic> voteMap = new Map<String, dynamic>();
+  Map<String, int> voteMap;
   static final int voteYes = 1;
   static final int voteNo = 0;
   static final int voteEmpty = -1;
@@ -37,8 +37,8 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   void initState() {
     this.currentVote = voteEmpty;
     this.voteMap = widget.event.votingNumbers[widget.choiceId];
-    if (this.voteMap.containsKey(Globals.username)) {
-      this.currentVote = int.parse(this.voteMap[Globals.username]);
+    if (this.voteMap != null && this.voteMap.containsKey(Globals.username)) {
+      this.currentVote = this.voteMap[Globals.username];
     }
     super.initState();
   }
@@ -103,9 +103,15 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   void tryVote(int voteVal) async {
     int previousVote = this.currentVote;
     // update changes locally so user doesn't have to fetch from DB to see new vote reflected
+    if (widget.event.votingNumbers[widget.choiceId] == null) {
+      widget.event.votingNumbers
+          .putIfAbsent(widget.choiceId, () => new Map<String, int>());
+    }
+
     widget.event.votingNumbers[widget.choiceId].update(
-        Globals.username, (existing) => voteVal.toString(),
-        ifAbsent: () => voteVal.toString());
+        Globals.username, (existing) => voteVal,
+        ifAbsent: () => voteVal);
+
     setState(() {
       this.currentVote = voteVal;
     });
@@ -120,8 +126,8 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
         this.currentVote = previousVote;
         // update changes locally so user doesn't have to fetch from DB to see new vote
         widget.event.votingNumbers[widget.choiceId].update(
-            Globals.username, (existing) => this.currentVote.toString(),
-            ifAbsent: () => this.currentVote.toString());
+            Globals.username, (existing) => this.currentVote,
+            ifAbsent: () => this.currentVote);
       });
     }
   }

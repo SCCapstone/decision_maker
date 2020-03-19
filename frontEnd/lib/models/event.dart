@@ -1,6 +1,8 @@
 import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 
+import 'member.dart';
+
 class Event {
   final String categoryId;
   final String categoryName;
@@ -11,10 +13,10 @@ class Event {
   final DateTime pollEnd;
   final int votingDuration;
   final int considerDuration;
-  final Map<String, dynamic> optedIn;
-  final Map<String, dynamic> tentativeAlgorithmChoices;
-  final Map<String, dynamic> votingNumbers;
-  final Map<String, dynamic> eventCreator;
+  final Map<String, Member> optedIn;
+  final Map<String, String> tentativeAlgorithmChoices;
+  final Map<String, Map<String, int>> votingNumbers;
+  final Map<String, Member> eventCreator;
   final String selectedChoice;
   final String eventStartDateTimeFormatted;
   final String pollBeginFormatted;
@@ -75,8 +77,9 @@ class Event {
         pollBeginTemp.minute,
         pollBeginTemp.millisecond,
         pollBeginTemp.microsecond);
-    DateTime pollEndTemp = pollBeginTemp.toLocal().add(new Duration(
-        minutes: (json[EventsManager.VOTING_DURATION] + 1)));
+    DateTime pollEndTemp = pollBeginTemp
+        .toLocal()
+        .add(new Duration(minutes: (json[EventsManager.VOTING_DURATION] + 1)));
     DateTime pollEndUTC = DateTime.utc(
         pollEndTemp.year,
         pollEndTemp.month,
@@ -85,6 +88,43 @@ class Event {
         pollEndTemp.minute,
         pollEndTemp.millisecond,
         pollEndTemp.microsecond);
+    // map of username to user info (Member)
+    Map<String, Member> optInMap = new Map<String, Member>();
+    for (String username in json[EventsManager.OPTED_IN].keys) {
+      Member member =
+          new Member.fromJson(json[EventsManager.OPTED_IN][username], username);
+      optInMap.putIfAbsent(username, () => member);
+    }
+
+    Map<String, String> choicesMap = new Map<String, String>();
+    for (String choiceId
+        in json[EventsManager.TENTATIVE_ALGORITHM_CHOICES].keys) {
+      choicesMap.putIfAbsent(
+          choiceId,
+          () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
+              .toString());
+    }
+
+    // map of username to user info (Member)
+    Map<String, Member> eventCreatorMap = new Map<String, Member>();
+    for (String username in json[EventsManager.EVENT_CREATOR].keys) {
+      Member member = new Member.fromJson(
+          json[EventsManager.EVENT_CREATOR][username], username);
+      eventCreatorMap.putIfAbsent(username, () => member);
+    }
+
+    // map of choiceId -> map of username and corresponding vote of said user
+    Map<String, Map<String, int>> votingNumMap =
+        new Map<String, Map<String, int>>();
+    for (String choiceNum in json[EventsManager.VOTING_NUMBERS].keys) {
+      for (String username
+          in json[EventsManager.VOTING_NUMBERS][choiceNum].keys) {
+        Map<String, int> voteInfo = new Map<String, int>();
+        voteInfo.putIfAbsent(username,
+            () => json[EventsManager.VOTING_NUMBERS][choiceNum][username]);
+        votingNumMap.putIfAbsent(choiceNum, () => voteInfo);
+      }
+    }
 
     return Event(
         categoryId: json[EventsManager.CATEGORY_ID],
@@ -97,12 +137,11 @@ class Event {
         pollBegin: pollBeginUTC.toLocal(),
         votingDuration: json[EventsManager.VOTING_DURATION],
         considerDuration: json[EventsManager.CONSIDER_DURATION],
-        optedIn: json[EventsManager.OPTED_IN],
-        tentativeAlgorithmChoices:
-            json[EventsManager.TENTATIVE_ALGORITHM_CHOICES],
+        optedIn: optInMap,
+        tentativeAlgorithmChoices: choicesMap,
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
-        votingNumbers: json[EventsManager.VOTING_NUMBERS],
-        eventCreator: json[EventsManager.EVENT_CREATOR],
+        votingNumbers: votingNumMap,
+        eventCreator: eventCreatorMap,
         eventStartDateTimeFormatted: Globals.formatter
             .format(DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME])),
         pollEndFormatted: Globals.formatter.format(pollEndUTC.toLocal()),
@@ -110,6 +149,22 @@ class Event {
   }
 
   Map asMap() {
+    // need this for encoding to work properly
+    Map<String, dynamic> optedInMap = new Map<String, dynamic>();
+    if (this.optedIn != null) {
+      for (String username in this.optedIn.keys) {
+        optedInMap.putIfAbsent(username, () => this.optedIn[username].asMap());
+      }
+    }
+
+    Map<String, dynamic> eventCreatorMap = new Map<String, dynamic>();
+    if (this.eventCreator != null) {
+      for (String username in this.eventCreator.keys) {
+        eventCreatorMap.putIfAbsent(
+            username, () => this.eventCreator[username].asMap());
+      }
+    }
+
     return {
       // Need the DateTime objects to be Strings when used in the API request
       // because json.encode can't encode DateTime objects.
@@ -122,10 +177,10 @@ class Event {
           this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.VOTING_DURATION: this.votingDuration,
       EventsManager.CONSIDER_DURATION: this.considerDuration,
-      EventsManager.OPTED_IN: this.optedIn,
+      EventsManager.OPTED_IN: optedInMap,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
       EventsManager.SELECTED_CHOICE: this.selectedChoice,
-      EventsManager.EVENT_CREATOR: this.eventCreator,
+      EventsManager.EVENT_CREATOR: eventCreatorMap,
       EventsManager.VOTING_NUMBERS: this.votingNumbers
     };
   }

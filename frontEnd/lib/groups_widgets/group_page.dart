@@ -73,8 +73,7 @@ class _GroupPageState extends State<GroupPage> {
                   child: RefreshIndicator(
                     child: EventsList(
                       group: Globals.currentGroup,
-                      events:
-                          GroupsManager.getGroupEvents(Globals.currentGroup),
+                      events: Globals.currentGroup.events,
                     ),
                     onRefresh: refreshList,
                   ),
@@ -93,7 +92,6 @@ class _GroupPageState extends State<GroupPage> {
             Navigator.push(context,
                     MaterialPageRoute(builder: (context) => CreateEvent()))
                 .then((_) {
-              // TODO figure out a better way to refresh without making unnecessary API calls
               this.refreshList();
             });
           },
