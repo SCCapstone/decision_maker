@@ -69,6 +69,14 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
+  private final Item deleteGroupItem = new Item()
+      .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
+      .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
+          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
+      .withMap(GroupsManager.MEMBERS_LEFT, ImmutableMap.of("username2",
+          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName2", UsersManager.ICON, "icon2")))
+      .withString(GroupsManager.GROUP_CREATOR, "ActiveUser");
+
   private final Map<String, Object> badInput = new HashMap<>();
 
   private final Map<String, Object> newEventBadInput = Maps
@@ -190,12 +198,7 @@ public class GroupsManagerTest {
         .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);
@@ -211,18 +214,13 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void deleteGroup_validInput_usersTableError_failureResult() {
+  public void deleteGroup_validInputUsersTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
         .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);
@@ -237,18 +235,13 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void deleteGroup_validInput_categoriesTableError_failureResult() {
+  public void deleteGroup_validInputCategoriesTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);

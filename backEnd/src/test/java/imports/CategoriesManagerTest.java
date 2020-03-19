@@ -560,7 +560,7 @@ public class CategoriesManagerTest {
   }
 
   @Test
-  public void removeGroupFromCategories_validInput_noCategories_successfulResult() {
+  public void removeGroupFromCategories_validInputNoCategories_successfulResult() {
     ResultStatus resultStatus = this.categoriesManager
         .removeGroupFromCategories(Sets.newHashSet(), "GroupId1", this.metrics);
 

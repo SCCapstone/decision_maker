@@ -582,10 +582,12 @@ public class UsersManager extends DatabaseAccessManager {
         updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
         this.updateItem(updateItemSpec);
       }
-      updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
-      for (String member : membersLeft) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
-        this.updateItem(updateItemSpec);
+      if (!membersLeft.isEmpty()) {
+        updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
+        for (String member : membersLeft) {
+          updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
+          this.updateItem(updateItemSpec);
+        }
       }
       resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
     } catch (Exception e) {
