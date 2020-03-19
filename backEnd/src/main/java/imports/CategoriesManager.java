@@ -334,8 +334,8 @@ public class CategoriesManager extends DatabaseAccessManager {
 
   public ResultStatus removeGroupFromCategories(Set<String> categoryIds, String groupId,
       Metrics metrics) {
-    final String className = "CategoriesManager.removeGroupFromCategories";
-    metrics.commonSetup(className);
+    final String classMethod = "CategoriesManager.removeGroupFromCategories";
+    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -358,8 +358,8 @@ public class CategoriesManager extends DatabaseAccessManager {
         resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
       }
     } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>(groupId, className, e));
-      resultStatus.resultMessage = "Exception inside of: " + className;
+      metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+      resultStatus.resultMessage = "Exception inside of: " + classMethod;
     }
 
     metrics.commonClose(resultStatus.success);

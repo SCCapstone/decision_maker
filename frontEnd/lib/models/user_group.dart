@@ -6,8 +6,9 @@ class UserGroup implements GroupInterface {
   final String groupName;
   final String icon;
   final String lastActivity;
-  final bool muted;
   final Map<String, bool> eventsUnseen;
+
+  bool muted;
 
   UserGroup(
       {this.groupName,

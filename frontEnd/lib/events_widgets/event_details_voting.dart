@@ -33,6 +33,12 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
 
   @override
   void initState() {
+    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
+        true) {
+      UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+    }
+    
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
