@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontEnd/about_widgets/about_page.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
@@ -17,7 +18,6 @@ import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-import '../about_page.dart';
 import '../user_settings.dart';
 
 class GroupsHome extends StatefulWidget {
