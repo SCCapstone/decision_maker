@@ -535,8 +535,8 @@ public class UsersManager extends DatabaseAccessManager {
 
   public ResultStatus removeOwnedCategory(final String username, final String categoryId,
       final Metrics metrics) {
-    final String className = "UsersManager.removeOwnedCategory";
-    metrics.commonSetup(className);
+    final String classMethod = "UsersManager.removeOwnedCategory";
+    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -554,7 +554,7 @@ public class UsersManager extends DatabaseAccessManager {
     } catch (Exception e) {
       metrics.log(
           new ErrorDescriptor<>(String.format("Username: %s, categoryId: %s", username, categoryId),
-              className, e));
+              classMethod, e));
       resultStatus.resultMessage = "Exception in manager";
     }
 
@@ -564,8 +564,8 @@ public class UsersManager extends DatabaseAccessManager {
 
   public ResultStatus removeGroupFromUsers(final Set<String> users, final String groupId,
       final Metrics metrics) {
-    final String className = "UsersManager.removeGroupFromUsers";
-    metrics.commonSetup(className);
+    final String classMethod = "UsersManager.removeGroupFromUsers";
+    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -584,8 +584,46 @@ public class UsersManager extends DatabaseAccessManager {
       resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
     } catch (Exception e) {
       metrics.log(
-          new ErrorDescriptor<>(groupId, className, e));
-      resultStatus.resultMessage = "Exception inside of: " + className;
+          new ErrorDescriptor<>(groupId, classMethod, e));
+      resultStatus.resultMessage = "Exception inside of: " + classMethod;
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus markEventAsSeen(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "UsersManager.markEventAsSeen";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GroupsManager.GROUP_ID, RequestFields.EVENT_ID);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
+        final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
+
+        final String updateExpression =
+            "remove " + UsersManager.GROUPS + ".#groupId." + UsersManager.EVENTS_UNSEEN
+                + ".#eventId";
+        final NameMap nameMap = new NameMap().with("#groupId", groupId).with("#eventId", eventId);
+
+        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap);
+
+        this.updateItem(updateItemSpec);
+
+        resultStatus = new ResultStatus(true, "Event marked as seen successfully.");
+      } catch (final Exception e) {
+        resultStatus.resultMessage = "Exception inside of: " + classMethod;
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      }
     }
 
     metrics.commonClose(resultStatus.success);

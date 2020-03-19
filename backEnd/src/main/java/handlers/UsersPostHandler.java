@@ -52,6 +52,8 @@ public class UsersPostHandler implements
           } else if (action.equals("unregisterPushEndpoint")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .unregisterPushEndpoint(payloadJsonMap, metrics);
+          } else if (action.equals("markEventAsSeen")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER.markEventAsSeen(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {

@@ -5,6 +5,7 @@ import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/user_tokens_manager.dart';
 import 'package:frontEnd/utilities/config.dart';
+import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -47,5 +48,5 @@ Future<ResultStatus<String>> makeApiRequest(
 }
 
 Map<String, dynamic> getEmptyApiRequest() {
-  return {"action": "", "payload": {}};
+  return {RequestFields.ACTION: "", RequestFields.PAYLOAD: {}};
 }

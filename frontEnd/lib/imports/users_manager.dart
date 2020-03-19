@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:frontEnd/imports/categories_manager.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/app_settings.dart';
@@ -213,6 +214,16 @@ class UsersManager {
   static Future unregisterPushEndpoint() async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = "unregisterPushEndpoint";
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody);
+  }
+
+  static Future markEventAsSeen(final String groupId, final String eventId) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = "markEventAsSeen";
+    jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
+    jsonRequestBody[RequestFields.PAYLOAD][RequestFields.EVENT_ID] = eventId;
 
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody);
