@@ -774,7 +774,7 @@ public class GroupsManager extends DatabaseAccessManager {
     UpdateItemSpec updateItemSpec;
 
     //update users with new group mapping based on which attributes were updated
-    if (persistingUsernames.size() > 0) {
+    if (oldGroup != null && persistingUsernames.size() > 0) {
       //since this group already exists, we're just updating the mappings that have changed for existing users
       //for simplicity in the code, we'll always update the group name
       updateExpression =
