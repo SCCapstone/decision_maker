@@ -645,7 +645,7 @@ public class UsersManager extends DatabaseAccessManager {
         final Boolean muteValue = (Boolean) jsonMap.get(APP_SETTINGS_MUTED);
 
         final String updateExpression =
-            "update " + GROUPS + ".#groupId." + APP_SETTINGS_MUTED + " :mute";
+            "set " + GROUPS + ".#groupId." + APP_SETTINGS_MUTED + " = :mute";
         final NameMap nameMap = new NameMap().with("#groupId", groupId);
         final ValueMap valueMap = new ValueMap().withBoolean(":mute", muteValue);
 
