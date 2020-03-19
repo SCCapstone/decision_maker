@@ -15,8 +15,11 @@ import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import models.Metadata;
+import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -92,10 +95,23 @@ public class SnsAccessManager {
     return this.client.deleteEndpoint(deleteEndpointRequest);
   }
 
-  public PublishResult sendMessage(final String arn, final String title, final String body, final String tag) {
-    final String jsonNotification = String.format(
-        "{\"GCM\": \"{ \\\"notification\\\": {\\\"title\\\": \\\"%s\\\", \\\"body\\\": \\\"%s\\\", \\\"tag\\\": \\\"%s\\\"}, \\\"data\\\": {\\\"click_action\\\": \\\"FLUTTER_NOTIFICATION_CLICK\\\", \\\"default\\\": \\\"default message\\\" } }\"}",
-        title, body, tag);
+  public PublishResult sendMessage(final String arn, final String title, final String body,
+      final String tag, final Metadata metadata) {
+    Map<String, Object> notification = ImmutableMap.of(
+        "notification", ImmutableMap.of(
+            "title", title,
+            "body", body,
+            "tag", tag
+        ),
+        "data", ImmutableMap.of(
+            "click_action", "FLUTTER_NOTIFICATION_CLICK",
+            "default", "default message",
+            "metadata", metadata.asMap()
+        )
+    );
+
+    final String jsonNotification =
+        "{\"GCM\": \"{" + JsonEncoders.convertObjectToJson(notification) + "}\"}";
     final PublishRequest publishRequest = new PublishRequest()
         .withTargetArn(arn)
         .withMessage(jsonNotification);

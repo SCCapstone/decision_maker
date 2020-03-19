@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.UUID;
 import models.Event;
 import models.Group;
+import models.Metadata;
 import models.User;
 import models.UserGroup;
 import utilities.ErrorDescriptor;
@@ -712,6 +713,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
     boolean success = true;
 
+    final Metadata metadata = new Metadata("addedToGroup", UserGroup.fromNewGroup(addedTo).asMap());
+
     for (String username : usernames) {
       try {
         final User user = new User(
@@ -722,7 +725,7 @@ public class GroupsManager extends DatabaseAccessManager {
           if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
                 "New Group!", "You have been added to new group: " + addedTo.getGroupName(),
-                addedTo.getGroupId());
+                addedTo.getGroupId(), metadata);
           }
         }
       } catch (Exception e) {
@@ -743,10 +746,16 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final Event updatedEvent = group.getEvents().get(eventId);
 
+    final Map<String, Object> payload = updatedEvent.asMap();
+    payload.putIfAbsent(GROUP_ID, group.getGroupId());
+    payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
+
+    final Metadata metadata = new Metadata("eventUpdated", payload);
+
     //assume the event just got created
     String eventChangeTitle = "New event!";
     String eventChangeBody =
-        "\"" + updatedEvent.getEventName() + "\" was created by: " + updatedEvent
+        "'" + updatedEvent.getEventName() + "' was created by: " + updatedEvent
             .getEventCreatorDisplayName();
 
     if (updatedEvent.getSelectedChoice() != null) {
@@ -767,7 +776,8 @@ public class GroupsManager extends DatabaseAccessManager {
         if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted() && !user.getGroups()
             .get(group.getGroupId()).isMuted()) {
           DatabaseManagers.SNS_ACCESS_MANAGER
-              .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody, eventId);
+              .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody, eventId,
+                  metadata);
         }
       } catch (Exception e) {
         success = false;
@@ -911,8 +921,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     if (updatedEventId != null) {
       try {
-        this.sendEventUpdatedNotification(newMembers, newGroup.getEvents().get(updatedEventId),
-            updatedEventId, metrics);
+        this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, metrics);
       } catch (Exception e) {
         success = false;
         metrics.log(new ErrorDescriptor<>(newMembers, classMethod, e));
