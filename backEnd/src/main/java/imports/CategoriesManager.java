@@ -332,6 +332,15 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method removes a given group from each category that is currently in the group.
+   *
+   * @param categoryIds   A set containing all of the categories currently in the group.
+   *                      Note that this can be an empty set, as groups are not required to have
+   *                      categories.
+   * @param groupId       The GroupId for the group to be removed from the categories table.
+   * @param metrics       Standard metrics object for profiling and logging
+   */
   public ResultStatus removeGroupFromCategories(Set<String> categoryIds, String groupId,
       Metrics metrics) {
     final String classMethod = "CategoriesManager.removeGroupFromCategories";

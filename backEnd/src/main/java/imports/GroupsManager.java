@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import models.Event;
 import models.Group;
 import models.User;
@@ -294,6 +295,13 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method deletes a group from the database.
+   *
+   * @param jsonMap       The map containing the json request sent from the front end.
+   *                      Must contain the GroupId for the group the user is attempting to delete.
+   * @param metrics       Standard metrics object for profiling and logging
+   */
   public ResultStatus deleteGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.deleteGroup";
     metrics.commonSetup(classMethod);
@@ -313,6 +321,7 @@ public class GroupsManager extends DatabaseAccessManager {
           Set<String> membersLeft = group.getMembersLeft().keySet();
           Set<String> categoryIds = group.getCategories().keySet();
 
+          // Remove the group from the users and categories tables
           ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
               .removeGroupFromUsers(members, membersLeft, groupId, metrics);
           ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
@@ -489,7 +498,14 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  //TODO revisit this all together - was never implemented on the front end maybe?
+  /**
+   * This method removes a user from a group, then updates both the user and group objects
+   * appropriately in order to indicate that the user has chosen to leave the group.
+   *
+   * @param jsonMap       The map containing the json request sent from the front end.
+   *                      Must contain the GroupId for the group the user is attempting to leave.
+   * @param metrics       Standard metrics object for profiling and logging
+   */
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
@@ -504,16 +520,15 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
         final String groupCreator = group.getGroupCreator();
-        final Map<String, Map<String, String>> membersMap = group.getMembersMap();
 
         if (!groupCreator.equals(activeUser)) {
           String updateExpression =
-              "remove " + MEMBERS + ".#username set " + MEMBERS_LEFT + ".#username = :memberMap";
+              "remove " + MEMBERS + ".#username set " + MEMBERS_LEFT + ".#username = :memberLeftMap";
 
           NameMap nameMap = new NameMap()
               .with("#username", activeUser);
           ValueMap valueMap = new ValueMap()
-              .withMap(":memberMap", membersMap.get(activeUser));
+              .withBoolean(":memberLeftMap",true);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -555,6 +570,88 @@ public class GroupsManager extends DatabaseAccessManager {
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Owner cannot leave group"));
             resultStatus.resultMessage = "Error: Owner cannot leave group.";
           }
+      } catch (Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+      }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found").toString());
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  /**
+   * This method inserts a user back into a group they had previously left.
+   *
+   * @param jsonMap       The map containing the json request sent from the front end.
+   *                      Must contain the GroupId for the group the user is attempting to rejoin.
+   * @param metrics       Standard metrics object for profiling and logging
+   */
+  public ResultStatus rejoinGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "GroupsManager.rejoinGroup";
+    metrics.commonSetup(classMethod);
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays.asList(GROUP_ID, RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
+
+        String updateExpression =
+            "remove " + MEMBERS_LEFT + ".#username set " + MEMBERS + ".#username = :memberMap";
+
+        NameMap nameMap = new NameMap()
+            .with("#username", activeUser);
+        ValueMap valueMap = new ValueMap()
+            .withMap(":memberMap", user.asMember().asMap());
+
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
+
+        this.updateItem(updateItemSpec);
+
+        // remove this group from the groupsLeft attribute in active user object
+        updateExpression = "remove " + UsersManager.GROUPS_LEFT + ".#groupId";
+        nameMap = new NameMap()
+            .with("#groupId", groupId);
+        updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+        // add this now rejoined group to the groups attribute in active user object
+        updateExpression =
+            "set " + UsersManager.GROUPS + ".#groupId = :groupMap";
+        valueMap = new ValueMap()
+            .withMap(":groupMap", new HashMap<String, Object>() {{
+              put(GROUP_NAME, group.getGroupName());
+              put(ICON, group.getIcon());
+              put(LAST_ACTIVITY, group.getLastActivity());
+              put(UsersManager.EVENTS_UNSEEN, Collections.emptyMap());
+              put(UsersManager.APP_SETTINGS_MUTED, false);
+            }});
+
+        updateItemSpec = new UpdateItemSpec()
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap)
+            .withNameMap(nameMap)
+            .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+        resultStatus = new ResultStatus(true, "Group rejoined successfully.");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";

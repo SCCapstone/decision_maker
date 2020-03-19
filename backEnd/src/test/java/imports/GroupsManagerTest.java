@@ -583,4 +583,22 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(2)).commonClose(false);
   }
+
+  /////////////////////////////endregion
+  // rejoinGroup tests //
+  /////////////////////////////region
+  @Test
+  public void rejoinGroup() {
+    ResultStatus resultStatus = this.groupsManager
+        .leaveGroup(this.badInput, metrics);
+    assertFalse(resultStatus.success);
+
+    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+
+    resultStatus = this.groupsManager.rejoinGroup(this.badInput, metrics);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
 }

@@ -562,6 +562,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method removes a given group from each user that is or was in the group.
+   *
+   * @param members       A set containing all of the members currently in the group.
+   * @param membersLeft   A set containing all of the members who have left the group.
+   * @param groupId       The GroupId for the group to be removed from the users table.
+   * @param metrics       Standard metrics object for profiling and logging
+   */
   public ResultStatus removeGroupFromUsers(final Set<String> members, final Set<String> membersLeft,
       final String groupId, final Metrics metrics) {
     final String classMethod = "UsersManager.removeGroupFromUsers";

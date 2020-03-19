@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/groups_widgets/group_categories.dart';
+import 'package:frontEnd/groups_widgets/groups_left_list.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -593,6 +594,12 @@ class _GroupSettingsState extends State<GroupSettings> {
 
     if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Globals.user.groupsLeft
+          .putIfAbsent(Globals.currentGroup.groupId, () => new GroupLeft(
+          groupId: Globals.currentGroup.groupId,
+          groupName: Globals.currentGroup.groupName,
+          icon: Globals.currentGroup.icon
+      ));
       Navigator.pushAndRemoveUntil(
           context,
           new MaterialPageRoute(
