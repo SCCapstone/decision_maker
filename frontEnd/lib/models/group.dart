@@ -15,7 +15,6 @@ class Group {
   final Map<String, Event> events;
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
-  final int nextEventId;
 
   Group(
       {this.groupId,
@@ -27,8 +26,7 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultConsiderDuration,
-      this.nextEventId});
+      this.defaultConsiderDuration});
 
   Group.debug(
       this.groupId,
@@ -40,8 +38,7 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultConsiderDuration,
-      this.nextEventId);
+      this.defaultConsiderDuration);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     // map of eventId -> event
@@ -83,8 +80,7 @@ class Group {
         categories: categoriesMap,
         events: events,
         defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
-        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
-        nextEventId: json[GroupsManager.NEXT_EVENT_ID]);
+        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION]);
   }
 
   @override
@@ -104,7 +100,7 @@ class Group {
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"
-        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultConsiderDuration NextEventId: $nextEventId";
+        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultConsiderDuration";
   }
 
   Map asMap() {
@@ -127,8 +123,7 @@ class Group {
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
-      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
-      GroupsManager.NEXT_EVENT_ID: this.nextEventId
+      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration
     };
   }
 }
