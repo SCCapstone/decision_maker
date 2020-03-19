@@ -16,7 +16,11 @@ class EventDetailsOccurring extends StatefulWidget {
   final String mode;
 
   EventDetailsOccurring({Key key, this.groupId, this.eventId, this.mode})
-      : super(key: key);
+      : super(key: key) {
+    if (Globals.user.groups[this.groupId].eventsUnseen[this.eventId] == true) {
+      UsersManager.markEventAsSeen(this.groupId, this.eventId);
+    }
+  }
 
   @override
   _EventDetailsOccurringState createState() =>

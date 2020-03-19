@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -20,7 +21,11 @@ class EventProposedChoice extends StatefulWidget {
       this.eventId,
       this.choiceName,
       this.choiceId})
-      : super(key: key);
+      : super(key: key) {
+    if (Globals.user.groups[this.groupId].eventsUnseen[this.eventId] == true) {
+      UsersManager.markEventAsSeen(this.groupId, this.eventId);
+    }
+  }
 
   @override
   _EventProposedChoiceState createState() => new _EventProposedChoiceState();
