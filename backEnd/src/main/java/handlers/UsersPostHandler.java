@@ -54,6 +54,8 @@ public class UsersPostHandler implements
                 .unregisterPushEndpoint(payloadJsonMap, metrics);
           } else if (action.equals("markEventAsSeen")) {
             resultStatus = DatabaseManagers.USERS_MANAGER.markEventAsSeen(payloadJsonMap, metrics);
+          } else if (action.equals("setUserGroupMute")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER.setUserGroupMute(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
