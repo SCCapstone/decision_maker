@@ -292,13 +292,6 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  /**
-   * This method deletes a group from the database.
-   *
-   * @param jsonMap       The map containing the json request sent from the front end.
-   *                      Must contain the GroupId for the group the user is attempting to delete.
-   * @param metrics       Standard metrics object for profiling and logging
-   */
   public ResultStatus deleteGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.deleteGroup";
     metrics.commonSetup(classMethod);
