@@ -21,10 +21,8 @@ class _GroupRowState extends State<GroupRow> {
 
   @override
   void initState() {
-    // TODO fetch whether group is muted from the user global object
-    this.notificationsMuted = false; // hard coded to show of functionality
-    // TODO fetch notification num from group mapping (list of event ids)
-    this.notificationNum = widget.group.eventsUnseen.length; // hard coded to show of functionality
+    this.notificationsMuted = widget.group.muted;
+    this.notificationNum = widget.group.eventsUnseen.length;
     super.initState();
   }
 
