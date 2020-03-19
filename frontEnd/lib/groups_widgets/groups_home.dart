@@ -107,8 +107,9 @@ class _GroupsHomeState extends State<GroupsHome>
 
     this.firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
-      final data = message['data'];
-      showErrorMessage("Notice", data['default'], context);
+      print("onMessage: $message");
+      final data = message['notification'];
+      showErrorMessage("Notice", data['body'], context);
       refreshList();
     }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");

@@ -720,7 +720,7 @@ public class GroupsManager extends DatabaseAccessManager {
           //Note: no need to check user's group muted settings since they're just being added
           if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "You have been added to new group: " + addedTo.getGroupName());
+                "New Group!", "You have been added to new group: " + addedTo.getGroupName());
           }
         }
       } catch (Exception e) {
