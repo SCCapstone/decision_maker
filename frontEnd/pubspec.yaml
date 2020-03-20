@@ -31,6 +31,8 @@ dependencies:
   provider: ^4.0.4
   firebase_messaging: ^6.0.9
   auto_size_text: ^2.1.0
+  package_info: ^0.4.0+16
+  flutter_html: ^0.11.1
 
 dev_dependencies:
   flutter_test:
