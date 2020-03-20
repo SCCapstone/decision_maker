@@ -392,7 +392,7 @@ public class GroupsManagerTest {
   ////////////////////////////////////////region
 
   ////////////////////////////endregion
-  // editInputIsValid tests //
+  // editGroupInputIsValid tests //
   ////////////////////////////region
 
   /////////////////////////////////endregion
@@ -409,8 +409,7 @@ public class GroupsManagerTest {
 //        .newEvent(this.newEventGoodInput, this.metrics);
 //    assertTrue(result.success);
 //  }
- //TODO fix these given the recent change to remove NextEventId from groups
-  /*
+/*
   @Test
   public void validEventInput_emptyString_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -463,8 +462,7 @@ public class GroupsManagerTest {
     result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
   }
-   */
-
+*/
   ///////////////////////////////////endregion
   // editInputHasPermissions tests //
   ///////////////////////////////////region

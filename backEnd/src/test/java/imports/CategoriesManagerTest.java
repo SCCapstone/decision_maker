@@ -560,17 +560,6 @@ public class CategoriesManagerTest {
   }
 
   @Test
-  public void removeGroupFromCategories_validInputNoCategories_successfulResult() {
-    ResultStatus resultStatus = this.categoriesManager
-        .removeGroupFromCategories(Sets.newHashSet(), "GroupId1", this.metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  @Test
   public void removeGroupFromCategories_validInputDbDiesDuringUpdate_failureResult() {
     doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
 

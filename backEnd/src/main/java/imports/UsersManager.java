@@ -565,10 +565,10 @@ public class UsersManager extends DatabaseAccessManager {
   /**
    * This method removes a given group from each user that is or was in the group.
    *
-   * @param members       A set containing all of the members currently in the group.
-   * @param membersLeft   A set containing all of the members who have left the group.
-   * @param groupId       The GroupId for the group to be removed from the users table.
-   * @param metrics       Standard metrics object for profiling and logging
+   * @param members     A set containing all of the members currently in the group.
+   * @param membersLeft A set containing all of the members who have left the group.
+   * @param groupId     The GroupId for the group to be removed from the users table.
+   * @param metrics     Standard metrics object for profiling and logging
    */
   public ResultStatus removeGroupFromUsers(final Set<String> members, final Set<String> membersLeft,
       final String groupId, final Metrics metrics) {
@@ -590,12 +590,10 @@ public class UsersManager extends DatabaseAccessManager {
         updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
         this.updateItem(updateItemSpec);
       }
-      if (!membersLeft.isEmpty()) {
-        updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
-        for (String member : membersLeft) {
-          updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
-          this.updateItem(updateItemSpec);
-        }
+      updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
+      for (String member : membersLeft) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
+        this.updateItem(updateItemSpec);
       }
       resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
     } catch (Exception e) {
