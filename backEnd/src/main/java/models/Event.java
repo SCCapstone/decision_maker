@@ -127,6 +127,32 @@ public class Event {
     return eventCreatorMap;
   }
 
+  //assuming that event creator is always a single element map
+  public String getEventCreatorUsername() {
+    String username = null;
+
+    if (this.eventCreator != null) {
+      for (final String key: this.eventCreator.keySet()) {
+        username = key;
+      }
+    }
+
+    return username;
+  }
+
+  //assuming that event creator is always a single element map
+  public String getEventCreatorDisplayName() {
+    String displayName = null;
+
+    if (this.eventCreator != null) {
+      for (final String key: this.eventCreator.keySet()) {
+        displayName = this.eventCreator.get(key).getDisplayName();
+      }
+    }
+
+    return displayName;
+  }
+
   private Integer getIntFromObject(final Object input) {
     if (input != null) {
       return Integer.parseInt(input.toString());

@@ -22,6 +22,7 @@ class GroupsManager {
   static final String GROUP_CREATOR = "GroupCreator";
   static final String LAST_ACTIVITY = "LastActivity";
   static final String MEMBERS = "Members";
+  static final String MEMBERS_LEFT = "MembersLeft";
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
@@ -35,6 +36,7 @@ class GroupsManager {
   static final String editGroupAction = "editGroup";
   static final String newEventAction = "newEvent";
   static final String leaveGroupAction = "leaveGroup";
+  static final String rejoinGroupAction = "rejoinGroup";
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
@@ -255,6 +257,39 @@ class GroupsManager {
           "Network error. Failed to leave group. Check internet connection.";
     } else {
       retVal.errorMessage = "Failed to leave group.";
+    }
+
+    return retVal;
+  }
+
+  static Future<ResultStatus> rejoinGroup(String groupId) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = rejoinGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.data);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Error rejoining the group (1).";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Error rejoining the group (2).";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+      "Network error. Failed to rejoin group. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Failed to rejoin group.";
     }
 
     return retVal;
