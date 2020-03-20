@@ -302,8 +302,7 @@ public class GroupsManagerTest {
 //  @Test
 //  public void newEvent_validInput_successfulResult() {
 //    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))).when(this.table)
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
@@ -359,8 +358,7 @@ public class GroupsManagerTest {
 //  @Test
 //  public void newEvent_missingMembersField_failureResult() {
 //    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap("NoMembers", ImmutableMap.of("user1", "name1"))
-//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//    doReturn(new Item().withMap("NoMembers", ImmutableMap.of("user1", "name1"))).when(this.table)
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
@@ -401,8 +399,7 @@ public class GroupsManagerTest {
 //  @Test
 //  public void validEventInput_validInput_successfulResult() {
 //    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-//        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))).when(this.table)
 //        .getItem(any(GetItemSpec.class));
 //
 //    ResultStatus result = this.groupsManager
@@ -413,8 +410,8 @@ public class GroupsManagerTest {
   @Test
   public void validEventInput_emptyString_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
+        .when(this.table)
         .getItem(any(GetItemSpec.class));
 
     this.newEventBadInput.put(GroupsManager.GROUP_ID, "");
@@ -432,9 +429,8 @@ public class GroupsManagerTest {
   @Test
   public void validEventInput_invalidVotingDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
+        .when(this.table).getItem(any(GetItemSpec.class));
 
     this.newEventBadInput.put(GroupsManager.VOTING_DURATION, -1);
     ResultStatus result = this.groupsManager
@@ -449,9 +445,8 @@ public class GroupsManagerTest {
   @Test
   public void validEventInput_invalidRsvpDuration_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))
-        .withBigInteger(GroupsManager.NEXT_EVENT_ID, BigInteger.ONE)).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
+        .when(this.table).getItem(any(GetItemSpec.class));
 
     this.newEventBadInput.put(GroupsManager.RSVP_DURATION, -1);
     ResultStatus result = this.groupsManager

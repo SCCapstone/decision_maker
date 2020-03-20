@@ -273,7 +273,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         }
       }
 
-      resultMessage = JsonEncoders.convertListToJson(categories);
+      resultMessage = JsonEncoders.convertIterableToJson(categories);
     }
 
     metrics.commonClose(success);
