@@ -124,7 +124,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
       if (newCategory.getChoices().size() < 1) {
         errorMessage = this.getUpdatedInvalidMessage(errorMessage,
-                "Error: category must have at least one choice.");
+            "Error: category must have at least one choice.");
       }
 
       for (String choiceLabel : newCategory.getChoices().values()) {
@@ -332,31 +332,34 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus removeGroupFromCategories(Set<String> categoryIds, String groupId,
-      Metrics metrics) {
+  /**
+   * This method removes a given group from each category that is currently in the group.
+   *
+   * @param categoryIds A set containing all of the categories currently in the group. Note that
+   *                    this can be an empty set, as groups are not required to have categories.
+   * @param groupId     The GroupId for the group to be removed from the categories table.
+   * @param metrics     Standard metrics object for profiling and logging
+   */
+  public ResultStatus removeGroupFromCategories(final Set<String> categoryIds, final String groupId,
+      final Metrics metrics) {
     final String classMethod = "CategoriesManager.removeGroupFromCategories";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      if (categoryIds.isEmpty()) {
-        resultStatus = new ResultStatus(true,
-            "Success: Group does not need to be removed from categories table.");
-      } else {
-        final String updateExpression = "remove " + GROUPS + ".#groupId";
-        final NameMap nameMap = new NameMap().with("#groupId", groupId);
+      final String updateExpression = "remove " + GROUPS + ".#groupId";
+      final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
-        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withUpdateExpression(updateExpression)
-            .withNameMap(nameMap);
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
 
-        for (String categoryId : categoryIds) {
-          updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
-          this.updateItem(updateItemSpec);
-        }
-        resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
+      for (String categoryId : categoryIds) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), categoryId);
+        this.updateItem(updateItemSpec);
       }
+      resultStatus = new ResultStatus(true, "Group successfully removed from categories table.");
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
       resultStatus.resultMessage = "Exception inside of: " + classMethod;

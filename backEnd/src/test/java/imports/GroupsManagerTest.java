@@ -69,6 +69,14 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
+  private final Item deleteGroupItem = new Item()
+      .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
+      .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
+          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
+      .withMap(GroupsManager.MEMBERS_LEFT, ImmutableMap.of("username2",
+          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName2", UsersManager.ICON, "icon2")))
+      .withString(GroupsManager.GROUP_CREATOR, "ActiveUser");
+
   private final Map<String, Object> badInput = new HashMap<>();
 
   private final Map<String, Object> newEventBadInput = Maps
@@ -187,22 +195,17 @@ public class GroupsManagerTest {
   public void deleteGroup_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -211,25 +214,20 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void deleteGroup_validInput_usersTableError_failureResult() {
+  public void deleteGroup_validInputUsersTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -237,25 +235,20 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void deleteGroup_validInput_categoriesTableError_failureResult() {
+  public void deleteGroup_validInputCategoriesTableError_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new Item()
-        .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-        .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-            ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-        .withString(GroupsManager.GROUP_CREATOR, "ActiveUser")).when(this.table)
-        .getItem(any(GetItemSpec.class));
+    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.groupsManager
         .deleteGroup(this.deleteGroupGoodInput, metrics);
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .removeGroupFromUsers(any(Set.class), any(String.class), any(Metrics.class));
+        .removeGroupFromUsers(any(Set.class), any(Set.class), any(String.class), any(Metrics.class));
     verify(this.categoriesManager, times(1))
         .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -399,7 +392,7 @@ public class GroupsManagerTest {
   ////////////////////////////////////////region
 
   ////////////////////////////endregion
-  // editInputIsValid tests //
+  // editGroupInputIsValid tests //
   ////////////////////////////region
 
   /////////////////////////////////endregion
@@ -416,7 +409,7 @@ public class GroupsManagerTest {
 //        .newEvent(this.newEventGoodInput, this.metrics);
 //    assertTrue(result.success);
 //  }
-
+/*
   @Test
   public void validEventInput_emptyString_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -469,7 +462,7 @@ public class GroupsManagerTest {
     result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
     assertFalse(result.success);
   }
-
+*/
   ///////////////////////////////////endregion
   // editInputHasPermissions tests //
   ///////////////////////////////////region
@@ -585,6 +578,24 @@ public class GroupsManagerTest {
     this.badInput.put(RequestFields.ACTIVE_USER, "testId");
 
     resultStatus = this.groupsManager.leaveGroup(this.badInput, metrics);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+
+  /////////////////////////////endregion
+  // rejoinGroup tests //
+  /////////////////////////////region
+  @Test
+  public void rejoinGroup_missingKeys_failureResult() {
+    ResultStatus resultStatus = this.groupsManager
+        .leaveGroup(this.badInput, metrics);
+    assertFalse(resultStatus.success);
+
+    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
+
+    resultStatus = this.groupsManager.rejoinGroup(this.badInput, metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));

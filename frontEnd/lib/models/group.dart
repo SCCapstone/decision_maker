@@ -11,6 +11,7 @@ class Group {
   final String groupCreator;
   final String lastActivity;
   final Map<String, Member> members;
+  final Map<String, bool> membersLeft;
   final Map<String, String> categories;
   final Map<String, Event> events;
   final int defaultVotingDuration;
@@ -23,6 +24,7 @@ class Group {
       this.groupCreator,
       this.lastActivity,
       this.members,
+      this.membersLeft,
       this.categories,
       this.events,
       this.defaultVotingDuration,
@@ -35,6 +37,7 @@ class Group {
       this.groupCreator,
       this.lastActivity,
       this.members,
+      this.membersLeft,
       this.categories,
       this.events,
       this.defaultVotingDuration,
@@ -63,6 +66,12 @@ class Group {
       memberMap.putIfAbsent(username, () => member);
     }
 
+    Map<String, bool> membersLeftMap = new Map<String, bool>();
+    for (String username in json[GroupsManager.MEMBERS_LEFT].keys) {
+      membersLeftMap.putIfAbsent(
+          username, () => json[GroupsManager.MEMBERS_LEFT][username]);
+    }
+
     // map of category id to category category name
     Map<String, String> categoriesMap = new Map<String, String>();
     for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
@@ -77,6 +86,7 @@ class Group {
         groupCreator: json[GroupsManager.GROUP_CREATOR],
         lastActivity: json[GroupsManager.LAST_ACTIVITY],
         members: memberMap,
+        membersLeft: membersLeftMap,
         categories: categoriesMap,
         events: events,
         defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
@@ -99,8 +109,9 @@ class Group {
   @override
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
-        "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members Categories: $categories Events: $events"
-        "DefaultVotingDuration: $defaultVotingDuration DefaultRsvpDuration: $defaultConsiderDuration";
+        "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members MembersLeft: $membersLeft"
+        "Categories: $categories Events: $events DefaultVotingDuration: $defaultVotingDuration"
+        "DefaultRsvpDuration: $defaultConsiderDuration";
   }
 
   Map asMap() {
@@ -113,6 +124,12 @@ class Group {
     for (String username in this.members.keys) {
       membersMap.putIfAbsent(username, () => this.members[username].asMap());
     }
+    Map<String, dynamic> membersLeftMap = new Map<String, dynamic>();
+    if (this.membersLeft != null) {
+      for (String username in this.membersLeft.keys) {
+        membersLeftMap.putIfAbsent(username, () => this.membersLeft[username]);
+      }
+    }
     return {
       GroupsManager.GROUP_ID: this.groupId,
       GroupsManager.GROUP_NAME: this.groupName,
@@ -120,6 +137,7 @@ class Group {
       GroupsManager.GROUP_CREATOR: this.groupCreator,
       GroupsManager.LAST_ACTIVITY: this.lastActivity,
       GroupsManager.MEMBERS: membersMap,
+      GroupsManager.MEMBERS_LEFT: membersLeftMap,
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,

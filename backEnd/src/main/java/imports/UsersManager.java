@@ -562,23 +562,37 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus removeGroupFromUsers(final Set<String> users, final String groupId,
-      final Metrics metrics) {
+  /**
+   * This method removes a given group from each user that is or was in the group.
+   *
+   * @param members     A set containing all of the members currently in the group.
+   * @param membersLeft A set containing all of the members who have left the group.
+   * @param groupId     The GroupId for the group to be removed from the users table.
+   * @param metrics     Standard metrics object for profiling and logging
+   */
+  public ResultStatus removeGroupFromUsers(final Set<String> members, final Set<String> membersLeft,
+      final String groupId, final Metrics metrics) {
     final String classMethod = "UsersManager.removeGroupFromUsers";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      final String updateExpression = "remove " + GROUPS + ".#groupId";
+      final String updateExpressionGroups = "remove " + GROUPS + ".#groupId";
+      final String updateExpressionGroupsLeft = "remove " + GROUPS_LEFT + ".#groupId";
       final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpression)
+          .withUpdateExpression(updateExpressionGroups)
           .withNameMap(nameMap);
 
-      for (String user : users) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), user);
+      for (String member : members) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
+        this.updateItem(updateItemSpec);
+      }
+      updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
+      for (String member : membersLeft) {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
         this.updateItem(updateItemSpec);
       }
       resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
