@@ -69,18 +69,11 @@ class _EventCardVotingState extends State<EventCardVoting> {
               ),
             ),
             AutoSizeText(
-              "Event Starts: ${widget.event.eventStartDateTimeFormatted}",
+              "Voting Ends\n${widget.event.pollEndFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
-              maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),
-            AutoSizeText(
-              "Voting Ends: ${widget.event.pollEndFormatted}",
-              style: TextStyle(fontSize: 20),
-              minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
             RaisedButton(
               child: Text("Vote"),
@@ -101,10 +94,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
         ),
       ),
       decoration: BoxDecoration(
-          border: Globals.user.groups[widget.groupId].eventsUnseen
-                  .containsKey(widget.eventId)
-              ? Border.all(width: 3.0, color: const Color(0xff5ce080))
-              : Border(bottom: BorderSide(color: getBorderColor()))),
+          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 

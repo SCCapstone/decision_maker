@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
@@ -136,8 +138,10 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                       title:
                           Text("Members considered (${this.userRows.length})"),
                       children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * .2,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
                           child: ListView(
                             shrinkWrap: true,
                             children: this.userRows.values.toList(),
@@ -231,6 +235,13 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
           () => UserRowEvents(this.event.optedIn[username].displayName,
               username, this.event.optedIn[username].icon));
     }
+    // sorting by alphabetical by displayname for now
+    List<String> sortedKeys = this.userRows.keys.toList(growable: false)
+      ..sort((k1, k2) =>
+          this.userRows[k1].displayName.compareTo(userRows[k2].displayName));
+    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
+        key: (k) => k, value: (k) => this.userRows[k]);
+    this.userRows = sortedMap.cast();
   }
 
   Future<Null> refreshList() async {

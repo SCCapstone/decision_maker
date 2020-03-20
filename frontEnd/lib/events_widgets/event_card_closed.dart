@@ -68,10 +68,10 @@ class _EventCardClosedState extends State<EventCardClosed> {
               ),
             ),
             AutoSizeText(
-              "Occurred: ${widget.event.eventStartDateTimeFormatted}",
+              "Occurred\n${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
-              maxLines: 1,
+              textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(

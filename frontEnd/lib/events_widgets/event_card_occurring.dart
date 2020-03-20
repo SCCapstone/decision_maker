@@ -70,11 +70,11 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
             ),
             AutoSizeText(
               (DateTime.now().isBefore(widget.event.eventStartDateTime))
-                  ? "Event starts: ${widget.event.eventStartDateTimeFormatted}"
-                  : "Started at: ${widget.event.eventStartDateTimeFormatted}",
+                  ? "Event Starts\n${widget.event.eventStartDateTimeFormatted}"
+                  : "Started At\n${widget.event.eventStartDateTimeFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
-              maxLines: 1,
+              textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(

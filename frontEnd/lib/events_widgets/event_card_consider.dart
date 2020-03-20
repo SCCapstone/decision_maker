@@ -69,17 +69,10 @@ class _EventCardConsiderState extends State<EventCardConsider> {
               ),
             ),
             AutoSizeText(
-              "Proposed Date: ${widget.event.eventStartDateTimeFormatted}",
+              "Consider By\n${widget.event.pollBeginFormatted}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            AutoSizeText(
-              "Consider By: ${widget.event.pollBeginFormatted}",
-              style: TextStyle(fontSize: 20),
-              minFontSize: 12,
-              maxLines: 1,
+              textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
