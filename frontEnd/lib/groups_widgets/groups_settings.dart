@@ -6,8 +6,8 @@ import 'package:frontEnd/groups_widgets/group_categories.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/member.dart';
 import 'package:frontEnd/utilities/validator.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -36,6 +36,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   bool owner;
   List<Member> originalMembers = new List<Member>();
   List<Member> displayedMembers = new List<Member>();
+  List<String> membersLeft = new List<String>();
   Map<String, String> selectedCategories =
       new Map<String, String>(); // map of categoryIds -> categoryName
   Map<String, String> originalCategories =
@@ -78,6 +79,9 @@ class _GroupSettingsState extends State<GroupSettings> {
           catId, () => Globals.currentGroup.categories[catId]);
       selectedCategories.putIfAbsent(
           catId, () => Globals.currentGroup.categories[catId]);
+    }
+    for (String username in Globals.currentGroup.membersLeft.keys) {
+      membersLeft.add(username);
     }
     groupName = Globals.currentGroup.groupName;
     votingDuration = Globals.currentGroup.defaultVotingDuration;
@@ -339,6 +343,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                         MembersPage(
                                                           displayedMembers,
                                                           originalMembers,
+                                                          membersLeft,
                                                           false,
                                                         ))).then((_) {
                                               saveMembers();
@@ -591,6 +596,12 @@ class _GroupSettingsState extends State<GroupSettings> {
 
     if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Globals.user.groupsLeft
+          .putIfAbsent(Globals.currentGroup.groupId, () => new GroupLeft(
+          groupId: Globals.currentGroup.groupId,
+          groupName: Globals.currentGroup.groupName,
+          icon: Globals.currentGroup.icon
+      ));
       Navigator.pushAndRemoveUntil(
           context,
           new MaterialPageRoute(

@@ -183,6 +183,7 @@ class _CreateGroupState extends State<CreateGroup> {
                                       builder: (context) => MembersPage(
                                             displayedMembers,
                                             displayedMembers,
+                                            new List<String>(),
                                             true,
                                           )));
                             },

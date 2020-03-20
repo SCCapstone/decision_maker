@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontEnd/about_widgets/about_page.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
@@ -202,6 +203,15 @@ class _GroupsHomeState extends State<GroupsHome>
                         context,
                         MaterialPageRoute(
                             builder: (context) => UserSettings()));
+                  }),
+              ListTile(
+                  leading: Icon(Icons.help_outline),
+                  title: Text('About', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    // close the drawer menu when clicked
+                    Navigator.of(context).pop();
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => AboutPage()));
                   }),
               Expanded(
                 child: Align(

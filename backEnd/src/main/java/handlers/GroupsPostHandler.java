@@ -52,6 +52,8 @@ public class GroupsPostHandler implements
             resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap, metrics);
           } else if (action.equals("leaveGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.leaveGroup(payloadJsonMap, metrics);
+          } else if (action.equals("rejoinGroup")) {
+            resultStatus = DatabaseManagers.GROUPS_MANAGER.rejoinGroup(payloadJsonMap, metrics);
           } else if (action.equals("voteForChoice")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {

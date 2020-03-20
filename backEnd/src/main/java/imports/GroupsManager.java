@@ -4,9 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -229,7 +227,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-        if (this.editInputIsValid(groupId, activeUser, oldGroup.getGroupCreator(), members,
+        if (this.editGroupInputIsValid(groupId, activeUser, oldGroup, members,
             defaultVotingDuration, defaultRsvpDuration)) {
 
           if (this.editInputHasPermissions(oldGroup, activeUser)) {
@@ -309,10 +307,12 @@ public class GroupsManager extends DatabaseAccessManager {
         final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
         if (activeUser.equals(group.getGroupCreator())) {
           Set<String> members = group.getMembers().keySet();
+          Set<String> membersLeft = group.getMembersLeft().keySet();
           Set<String> categoryIds = group.getCategories().keySet();
 
+          // Remove the group from the users and categories tables
           ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
-              .removeGroupFromUsers(members, groupId, metrics);
+              .removeGroupFromUsers(members, membersLeft, groupId, metrics);
           ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
               .removeGroupFromCategories(categoryIds, groupId, metrics);
 
@@ -499,66 +499,135 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        Item groupData = this.getItemByPrimaryKey(groupId);
+        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final String groupCreator = group.getGroupCreator();
 
-        if (groupData != null) {
-          Map<String, Object> groupDataMapped = groupData.asMap();
-          final String groupCreator = (String) groupDataMapped.get(GROUP_CREATOR);
-          if (!groupCreator.equals(activeUser)) {
-            String updateExpression = "remove " + MEMBERS + ".#username";
+        if (!groupCreator.equals(activeUser)) {
+          String updateExpression =
+              "remove " + MEMBERS + ".#username set " + MEMBERS_LEFT
+                  + ".#username = :memberLeftMap";
 
-            NameMap nameMap = new NameMap()
-                .with("#username", activeUser);
+          NameMap nameMap = new NameMap()
+              .with("#username", activeUser);
+          ValueMap valueMap = new ValueMap()
+              .withBoolean(":memberLeftMap", true);
 
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
-                .withUpdateExpression(updateExpression)
-                .withNameMap(nameMap);
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+              .withUpdateExpression(updateExpression)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap);
 
-            this.updateItem(updateItemSpec);
+          this.updateItem(updateItemSpec);
 
-            // remove this group from the group attribute in active user object
-            updateExpression = "remove " + UsersManager.GROUPS + ".#groupId";
-            nameMap = new NameMap()
-                .with("#groupId", groupId);
-            updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
-                .withUpdateExpression(updateExpression)
-                .withNameMap(nameMap)
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          // remove this group from the Groups attribute in active user object
+          // and add it to the GroupsLeft attribute
+          updateExpression =
+              "remove " + UsersManager.GROUPS + ".#groupId set " + UsersManager.GROUPS_LEFT
+                  + ".#groupId = :groupMap";
+          nameMap = new NameMap()
+              .with("#groupId", groupId);
+          valueMap = new ValueMap()
+              .withMap(":groupMap", new HashMap<String, Object>() {{
+                put(GROUP_NAME, group.getGroupName());
+                put(ICON, group.getIcon());
+              }});
+          updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap)
+              .withNameMap(nameMap)
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
 
-            // add this now left group to the groupsLeft attribute in active user object
-            updateExpression =
-                "set " + UsersManager.GROUPS_LEFT + ".#groupId = :groupMap";
-            ValueMap valueMap = new ValueMap()
-                .withMap(":groupMap", new HashMap<String, Object>() {{
-                  put(GROUP_NAME, groupDataMapped.get(GROUP_NAME));
-                  put(ICON, groupDataMapped.get(ICON));
-                }});
-
-            updateItemSpec = new UpdateItemSpec()
-                .withUpdateExpression(updateExpression)
-                .withValueMap(valueMap)
-                .withNameMap(nameMap)
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-
-            resultStatus = new ResultStatus(true, "Group left successfully.");
-          } else {
-            metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Owner cannot leave group"));
-            resultStatus.resultMessage = "Error: Owner cannot leave group.";
-          }
+          resultStatus = new ResultStatus(true, "Group left successfully.");
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Group not found"));
-          resultStatus.resultMessage = "Error: Group not found.";
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Owner cannot leave group"));
+          resultStatus.resultMessage = "Error: Owner cannot leave group.";
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found"));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  /**
+   * This method inserts a user back into a group they had previously left.
+   *
+   * @param jsonMap The map containing the json request sent from the front end. Must contain the
+   *                GroupId for the group the user is attempting to rejoin.
+   * @param metrics Standard metrics object for profiling and logging
+   */
+  public ResultStatus rejoinGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "GroupsManager.rejoinGroup";
+    metrics.commonSetup(classMethod);
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays.asList(GROUP_ID, RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
+
+        final Set<String> groupsLeftIds = user.getGroupsLeft().keySet();
+        final Set<String> membersLeftIds = group.getMembersLeft().keySet();
+        if (groupsLeftIds.contains(groupId) && membersLeftIds.contains(activeUser)) {
+          String updateExpression =
+              "remove " + MEMBERS_LEFT + ".#username set " + MEMBERS + ".#username = :memberMap";
+
+          NameMap nameMap = new NameMap()
+              .with("#username", activeUser);
+          ValueMap valueMap = new ValueMap()
+              .withMap(":memberMap", user.asMember().asMap());
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
+              .withUpdateExpression(updateExpression)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap);
+
+          this.updateItem(updateItemSpec);
+
+          // remove this group from the GroupsLeft attribute in active user object
+          // and add it to the Groups attribute
+          updateExpression =
+              "remove " + UsersManager.GROUPS_LEFT + ".#groupId set " + UsersManager.GROUPS
+                  + ".#groupId = :groupMap";
+          nameMap = new NameMap()
+              .with("#groupId", groupId);
+          valueMap = new ValueMap()
+              .withMap(":groupMap", UserGroup.fromNewGroup(group).asMap());
+          updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap)
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
+          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "Group rejoined successfully.");
+        } else {
+          metrics.log(
+              new ErrorDescriptor<>(jsonMap, classMethod,
+                  "User did not leave group, cannot rejoin"));
+          resultStatus.resultMessage = "Error: User did not leave this group, cannot rejoin.";
+        }
+      } catch (Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
+      }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -644,9 +713,11 @@ public class GroupsManager extends DatabaseAccessManager {
     return membersMap;
   }
 
-  private boolean editInputIsValid(final String groupId, final String activeUser,
-      final String groupCreator, final List<String> members, final Integer defaultVotingDuration,
+  private boolean editGroupInputIsValid(final String groupId, final String activeUser,
+      final Group oldGroup, final List<String> members, final Integer defaultVotingDuration,
       final Integer defaultRsvpDuration) {
+    final String groupCreator = oldGroup.getGroupCreator();
+    final Set<String> membersLeft = oldGroup.getMembersLeft().keySet();
     boolean isValid = true;
 
     if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(activeUser)) {
@@ -655,9 +726,13 @@ public class GroupsManager extends DatabaseAccessManager {
 
     boolean creatorInGroup = false;
     //you can't remove the creator (owner) from the group
+    //you can't add someone who has left the group
     for (String username : members) {
       if (groupCreator.equals(username)) {
         creatorInGroup = true;
+      }
+      if (membersLeft.contains(username)) {
+        isValid = false;
         break;
       }
     }
