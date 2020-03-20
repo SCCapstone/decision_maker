@@ -799,9 +799,37 @@ public class GroupsManager extends DatabaseAccessManager {
           //Note: no need to check user's group muted settings since they're just being added
           if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "New Group!", "You have been added to a new group: " + addedTo.getGroupName(),
-                addedTo.getGroupId(), metadata);
+                "Added to new group!", addedTo.getGroupName(), addedTo.getGroupId(), metadata);
           }
+        }
+      } catch (Exception e) {
+        success = false;
+        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+      }
+    }
+
+    metrics.commonClose(success);
+  }
+
+  private void sendRemovedFromGroupNotifications(final Set<String> usernames,
+      final Group removedFrom, final Metrics metrics) {
+    final String classMethod = "GroupsManager.sendRemovedFromGroupNotifications";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
+    final Metadata metadata = new Metadata("removedFromGroup",
+        ImmutableMap.of(GROUP_ID, removedFrom.getGroupName()));
+
+    for (String username : usernames) {
+      try {
+        final User user = new User(
+            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+
+        //Note: no need to check user's group muted settings since they're just being added
+        if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
+          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
+              "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(), metadata);
         }
       } catch (Exception e) {
         success = false;
@@ -827,21 +855,20 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final Metadata metadata = new Metadata("eventUpdated", payload);
 
+    String eventChangeTitle = "Event in " + group.getGroupName();
+
     //assume the event just got created
-    String eventChangeTitle = "New event!";
     String eventChangeBody =
-        "'" + updatedEvent.getEventName() + "' was created by: " + updatedEvent
+        "'" + updatedEvent.getEventName() + "' created by: " + updatedEvent
             .getEventCreatorDisplayName();
 
     if (updatedEvent.getSelectedChoice() != null) {
       //we just transitioned to a having a selected choice -> occurring
-      eventChangeTitle = updatedEvent.getSelectedChoice() + " Won!";
-      eventChangeBody = "Click to see event details";
+      eventChangeBody =
+          updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> we need to vote
-      eventChangeTitle = "Vote for " + updatedEvent.getEventName();
-      eventChangeBody =
-          updatedEvent.getEventName() + " is now voting in group " + group.getGroupName();
+      eventChangeBody = "Vote for " + updatedEvent.getEventName();
     } // else the event was indeed just created
 
     for (String username : usernames) {
@@ -993,6 +1020,16 @@ public class GroupsManager extends DatabaseAccessManager {
     } catch (final Exception e) {
       success = false;
       metrics.log(new ErrorDescriptor<>(addedUsernames, classMethod, e));
+    }
+
+    if (oldGroup != null) { // users can only be removed from the old group
+      try {
+        //blind send...
+        this.sendRemovedFromGroupNotifications(removedUsernames, oldGroup, metrics);
+      } catch (final Exception e) {
+        success = false;
+        metrics.log(new ErrorDescriptor<>(addedUsernames, classMethod, e));
+      }
     }
 
     if (updatedEventId != null) {
