@@ -794,8 +794,8 @@ public class GroupsManager extends DatabaseAccessManager {
    * @param oldGroup       The old group definition before the update. If this param is null, then
    *                       that signals that a new group is being created.
    * @param newGroup       The new group definition after the update.
-   * @param updatedEventId This is id an event that just changed states. Null means this method
-   *                       isn't being called from an event update.
+   * @param updatedEventId This is the event id of an event that just changed states. Null means
+   *                       this isn't being called from an event update.
    * @param metrics        Standard metrics object for profiling and logging
    */
   private void updateUsersTable(final Group oldGroup, final Group newGroup,
