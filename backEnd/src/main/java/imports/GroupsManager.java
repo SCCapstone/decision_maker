@@ -765,8 +765,9 @@ public class GroupsManager extends DatabaseAccessManager {
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> we need to vote
       eventChangeTitle = "Vote for " + updatedEvent.getEventName();
-      eventChangeBody = "You have " + updatedEvent.getVotingDuration() + " minutes to vote";
-    } // else we were right
+      eventChangeBody =
+          updatedEvent.getEventName() + " is now voting in group " + group.getGroupName();
+    } // else the event was indeed just created
 
     for (String username : usernames) {
       try {
