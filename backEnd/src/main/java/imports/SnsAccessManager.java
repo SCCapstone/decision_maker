@@ -111,7 +111,8 @@ public class SnsAccessManager {
     );
 
     final String jsonNotification =
-        "{\"GCM\": \"{" + JsonEncoders.convertObjectToJson(notification) + "}\"}";
+        "{\"GCM\": \"" + JsonEncoders.convertObjectToJson(notification) + "\"}";
+
     final PublishRequest publishRequest = new PublishRequest()
         .withTargetArn(arn)
         .withMessage(jsonNotification);

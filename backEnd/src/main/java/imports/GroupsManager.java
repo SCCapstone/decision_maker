@@ -724,7 +724,7 @@ public class GroupsManager extends DatabaseAccessManager {
           //Note: no need to check user's group muted settings since they're just being added
           if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "New Group!", "You have been added to new group: " + addedTo.getGroupName(),
+                "New Group!", "You have been added to a new group: " + addedTo.getGroupName(),
                 addedTo.getGroupId(), metadata);
           }
         }
@@ -760,12 +760,12 @@ public class GroupsManager extends DatabaseAccessManager {
 
     if (updatedEvent.getSelectedChoice() != null) {
       //we just transitioned to a having a selected choice -> occurring
-      eventChangeTitle = "Vote for " + updatedEvent.getEventName();
-      eventChangeBody = "You have " + updatedEvent.getVotingDuration() + " minutes to vote";
-    } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
-      //we just transitioned to getting tentative choices -> we need to vote
       eventChangeTitle = updatedEvent.getSelectedChoice() + " Won!";
       eventChangeBody = "Click to see event details";
+    } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
+      //we just transitioned to getting tentative choices -> we need to vote
+      eventChangeTitle = "Vote for " + updatedEvent.getEventName();
+      eventChangeBody = "You have " + updatedEvent.getVotingDuration() + " minutes to vote";
     } // else we were right
 
     for (String username : usernames) {
