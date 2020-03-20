@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_closed.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -8,8 +10,9 @@ class EventCardClosed extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshPage;
 
-  EventCardClosed(this.groupId, this.event, this.eventId);
+  EventCardClosed(this.groupId, this.event, this.eventId, this.refreshPage);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
@@ -25,14 +28,43 @@ class _EventCardClosedState extends State<EventCardClosed> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            AutoSizeText(
-              widget.event.eventName,
-              minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Container(
+              // height has to be here otherwise it shits the bed
+              height: 45,
+              child: Stack(
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.center,
+                    child: AutoSizeText(
+                      widget.event.eventName,
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: Globals.user.groups[widget.groupId].eventsUnseen
+                        .containsKey(widget.eventId),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        child: IconButton(
+                          icon: Icon(Icons.notification_important),
+                          color: Color(0xff5ce080),
+                          tooltip: "Mark seen",
+                          onPressed: () {
+                            markEventRead();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             AutoSizeText(
@@ -43,14 +75,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
               overflow: TextOverflow.ellipsis,
             ),
             AutoSizeText(
-              "Selected Choice: ${widget.event.selectedChoice}",
-              style: TextStyle(fontSize: 20),
-              minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            AutoSizeText(
-              "Total considered: ${widget.event.optedIn.length}",
+              widget.event.selectedChoice,
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
@@ -74,5 +99,16 @@ class _EventCardClosedState extends State<EventCardClosed> {
       decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
+  }
+
+  void markEventRead() {
+    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
+        true) {
+      UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+      setState(() {
+        widget.refreshPage();
+      });
+    }
   }
 }
