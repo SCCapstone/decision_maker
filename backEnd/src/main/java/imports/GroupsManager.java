@@ -546,7 +546,7 @@ public class GroupsManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
@@ -615,8 +615,8 @@ public class GroupsManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true, "Group rejoined successfully.");
         } else {
           metrics.log(
-              new ErrorDescriptor<>(jsonMap, classMethod, "User did not leave group, cannot rejoin")
-                  .toString());
+              new ErrorDescriptor<>(jsonMap, classMethod,
+                  "User did not leave group, cannot rejoin"));
           resultStatus.resultMessage = "Error: User did not leave this group, cannot rejoin.";
         }
       } catch (Exception e) {
@@ -624,7 +624,7 @@ public class GroupsManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
       }
     } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found").toString());
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
