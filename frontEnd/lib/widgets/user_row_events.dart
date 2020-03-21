@@ -21,14 +21,14 @@ class UserRowEvents extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              showUserImage(getIconUrl(icon), context);
+              showUserImage(getUserIconUrlStr(icon), context);
             },
             child: Container(
               height: MediaQuery.of(context).size.height * .2,
               width: MediaQuery.of(context).size.width * .15,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                      image: getIconUrl(icon), fit: BoxFit.cover)),
+                      image: getUserIconUrlStr(icon), fit: BoxFit.cover)),
             ),
           ),
           Expanded(
