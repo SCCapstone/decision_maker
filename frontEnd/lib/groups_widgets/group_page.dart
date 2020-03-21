@@ -1,8 +1,13 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/models/message.dart';
+import 'package:frontEnd/utilities/notifications/notification_handler.dart';
+import 'package:frontEnd/utilities/notifications/notification_service.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/events_widgets/events_list.dart';
@@ -23,11 +28,30 @@ class _GroupPageState extends State<GroupPage> {
   bool initialLoad = true;
   bool errorLoading = false;
   Widget errorWidget;
+  Stream<Message> notificationStream;
 
   @override
   void initState() {
+    notificationStream = NotificationHandler.instance.notificationsStream;
+    notificationStream.listen((message) {
+      if (message.action == NotificationService.eventUpdatedAction) {
+        String eventId = message.payload[EventsManager.EVENT_ID];
+        if (Globals.currentGroup != null &&
+            Globals.currentGroup.events.containsKey(eventId) &&
+            ModalRoute.of(context).isCurrent) {
+          // if the new event is part of the group that is currently loaded, refresh the group
+          refreshList();
+        }
+      }
+    });
     getGroup();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    print("disposing...");
+    super.dispose();
   }
 
   @override

@@ -5,7 +5,6 @@ import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group_interface.dart';
-import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/about_widgets/about_page.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
@@ -14,8 +15,11 @@ import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/models/group_left.dart';
+import 'package:frontEnd/models/message.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/models/user_group.dart';
+import 'package:frontEnd/utilities/notifications/notification_handler.dart';
+import 'package:frontEnd/utilities/notifications/notification_service.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
@@ -41,8 +45,8 @@ class _GroupsHomeState extends State<GroupsHome>
   final int totalTabs = 2;
   final int groupsHomeTab = 0;
   final int groupsLeftTab = 1;
-
-  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  Stream<Message> notificationStream;
+  NotificationService notificationService;
 
   @override
   void initState() {
@@ -102,23 +106,42 @@ class _GroupsHomeState extends State<GroupsHome>
         }
       }
     });
-    // set up notification listeners
-    Future<String> token = this.firebaseMessaging.getToken();
-    UsersManager.registerPushEndpoint(token);
-
-    this.firebaseMessaging.configure(
-        onMessage: (Map<String, dynamic> message) async {
-      print("onMessage: $message");
-      final data = message['notification'];
-      showErrorMessage("Notice", data['body'], context);
-      refreshList();
-    }, onLaunch: (Map<String, dynamic> message) async {
-      print("onLaunch: $message");
-    }, onResume: (Map<String, dynamic> message) async {
-      print("onResume: $message");
+    // set up notification listener
+    NotificationService.instance.start();
+    notificationStream = NotificationHandler.instance.notificationsStream;
+    notificationStream.listen((message) {
+      /*
+        For simplicity's sake, only the group home will show any of the toasts indicating a new notification.
+        Other widgets down the tree of the app will refresh depending on the action (such as a new event).
+       */
+      if (message.action == NotificationService.leaveGroupAction) {
+        String groupId = message.payload[GroupsManager.GROUP_ID];
+        if (Globals.currentGroup != null &&
+            Globals.currentGroup.groupId == groupId) {
+          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+          Navigator.pushAndRemoveUntil(
+              context,
+              new MaterialPageRoute(
+                  builder: (BuildContext context) => GroupsHome()),
+              (Route<dynamic> route) => false);
+        }
+      } else if (message.action == NotificationService.newGroupAction) {
+        Fluttertoast.showToast(
+            msg: "${message.title}\n${message.body}",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER);
+        if (ModalRoute.of(context).isCurrent) {
+          // only refresh if this widget is visible
+          refreshList();
+        }
+      } else {
+        // event updates
+        Fluttertoast.showToast(
+            msg: "${message.title}\n${message.body}",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER);
+      }
     });
-    this.firebaseMessaging.requestNotificationPermissions(
-        const IosNotificationSettings(sound: true, badge: true, alert: true));
 
     super.initState();
   }
@@ -549,6 +572,8 @@ class _GroupsHomeState extends State<GroupsHome>
   }
 
   Future<Null> refreshList() async {
+    print("refreshing");
+    print('TestWidget: ${ModalRoute.of(context).isCurrent}');
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
       Globals.user = resultStatus.data;

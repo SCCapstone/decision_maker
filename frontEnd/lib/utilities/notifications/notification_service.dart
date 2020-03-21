@@ -1,0 +1,64 @@
+import 'dart:convert';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/message.dart';
+
+import 'notification_handler.dart';
+
+class NotificationService {
+  static final String leaveGroupAction = "leaveGroupAction";
+  static final String newGroupAction = "newGroup";
+  static final String eventUpdatedAction = "eventUpdated";
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  bool initialized = false;
+
+  NotificationService._internal();
+
+  static final NotificationService instance = NotificationService._internal();
+
+  void start() {
+    if (!initialized) {
+      initializeNotifications();
+      initialized = true;
+    }
+  }
+
+  void initializeNotifications() {
+    Future<String> token = firebaseMessaging.getToken();
+    UsersManager.registerPushEndpoint(token);
+
+    firebaseMessaging.configure(
+        onMessage: _onMessage, onLaunch: _onLaunch, onResume: _onResume);
+    firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
+  }
+
+  Future<void> _onMessage(Map<String, dynamic> message) async {
+    final notification = message['notification'];
+    if (notification != null) {
+      final data = message['data'];
+      if (data != null) {
+        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
+        Message message = new Message(
+            title: notification['title'],
+            body: notification['body'],
+            action: metadata['action'],
+            payload: metadata['payload']);
+        NotificationHandler.instance.addNotification(message);
+      }
+    }
+    return null;
+  }
+
+  Future<void> _onLaunch(Map<String, dynamic> message) {
+    print("onLaunch $message");
+    return null;
+  }
+
+  Future<void> _onResume(Map<String, dynamic> message) {
+    print("onResume $message");
+    return null;
+  }
+}
