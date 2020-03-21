@@ -34,6 +34,7 @@ class _GroupPageState extends State<GroupPage> {
   void initState() {
     notificationStream = NotificationHandler.instance.notificationsStream;
     notificationStream.listen((message) {
+      print("page listener");
       if (message.action == NotificationService.eventUpdatedAction) {
         String eventId = message.payload[EventsManager.EVENT_ID];
         if (Globals.currentGroup != null &&

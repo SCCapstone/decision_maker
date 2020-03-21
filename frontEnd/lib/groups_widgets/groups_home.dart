@@ -110,6 +110,7 @@ class _GroupsHomeState extends State<GroupsHome>
     NotificationService.instance.start();
     notificationStream = NotificationHandler.instance.notificationsStream;
     notificationStream.listen((message) {
+      print("home listener");
       /*
         For simplicity's sake, only the group home will show any of the toasts indicating a new notification.
         Other widgets down the tree of the app will refresh depending on the action (such as a new event).
@@ -572,8 +573,6 @@ class _GroupsHomeState extends State<GroupsHome>
   }
 
   Future<Null> refreshList() async {
-    print("refreshing");
-    print('TestWidget: ${ModalRoute.of(context).isCurrent}');
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
       Globals.user = resultStatus.data;
