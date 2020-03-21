@@ -1,6 +1,10 @@
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/message.dart';
 
@@ -13,19 +17,23 @@ class NotificationService {
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   bool initialized = false;
+  BuildContext context;
+  Function refreshGroupsHome;
 
   NotificationService._internal();
 
   static final NotificationService instance = NotificationService._internal();
 
-  void start() {
+  void start(BuildContext context, Function refreshFunction) {
+    this.context = context;
+    this.refreshGroupsHome = refreshFunction;
     if (!initialized) {
-      initializeNotifications();
+      initializeNotifications(context);
       initialized = true;
     }
   }
 
-  void initializeNotifications() {
+  void initializeNotifications(BuildContext context) {
     Future<String> token = firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token);
 
@@ -53,7 +61,34 @@ class NotificationService {
   }
 
   Future<void> _onLaunch(Map<String, dynamic> message) {
-    print("onLaunch $message");
+    Message notification;
+    final notificationData = message['notification'];
+    if (notificationData != null) {
+      final data = message['data'];
+      if (data != null) {
+        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
+        notification = new Message(
+            title: notificationData['title'],
+            body: notificationData['body'],
+            action: metadata['action'],
+            payload: metadata['payload']);
+      }
+    }
+    if (notification != null) {
+      if (notification.action == newGroupAction) {
+        // take the user straight to the group they were added to if they click the notification
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: "TODO",
+                  )),
+        ).then((val) {
+          this.refreshGroupsHome();
+        });
+      }
+    }
     return null;
   }
 
