@@ -59,10 +59,52 @@ class _GroupPageState extends State<GroupPage> {
               },
             ),
           ],
-          bottom: PreferredSize(
-              preferredSize: Size(MediaQuery.of(context).size.width,
-                  MediaQuery.of(context).size.height * .045),
-              child: Container(
+//          bottom: PreferredSize(
+//              preferredSize: Size(MediaQuery.of(context).size.width,
+//                  MediaQuery.of(context).size.height * .045),
+//              child: Container(
+//                // height has to be here otherwise it shits the bed
+//                height: MediaQuery.of(context).size.height * .045,
+//                child: Stack(
+//                  children: <Widget>[
+//                    Align(
+//                      alignment: Alignment.center,
+//                      child: AutoSizeText(
+//                        "Events",
+//                        minFontSize: 12,
+//                        maxLines: 1,
+//                        overflow: TextOverflow.ellipsis,
+//                        textAlign: TextAlign.center,
+//                        style: TextStyle(
+//                          color: Colors.black,
+//                          fontSize: 22,
+//                          fontWeight: FontWeight.bold,
+//                        ),
+//                      ),
+//                    ),
+//                    Visibility(
+//                      visible: Globals
+//                          .user.groups[widget.groupId].eventsUnseen.isNotEmpty,
+//                      child: Align(
+//                        alignment: Alignment.centerRight,
+//                        child: Container(
+//                          child: RaisedButton(
+//                            child: Text("Mark all seen"),
+//                            onPressed: () {
+//                              markAllEventsSeen();
+//                            },
+//                          ),
+//                        ),
+//                      ),
+//                    ),
+//                  ],
+//                ),
+//              )),
+        ),
+        body: Center(
+          child: Column(
+            children: <Widget>[
+              Container(
                 // height has to be here otherwise it shits the bed
                 height: MediaQuery.of(context).size.height * .045,
                 child: Stack(
@@ -76,8 +118,8 @@ class _GroupPageState extends State<GroupPage> {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 22,
+                          decoration: TextDecoration.underline,
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -88,8 +130,10 @@ class _GroupPageState extends State<GroupPage> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(
-                          child: RaisedButton(
-                            child: Text("Mark all seen"),
+                          child: IconButton(
+                            icon: Icon(Icons.done_all),
+                            color: Color(0xff5ce080),
+                            tooltip: "Mark all seen",
                             onPressed: () {
                               markAllEventsSeen();
                             },
@@ -99,11 +143,7 @@ class _GroupPageState extends State<GroupPage> {
                     ),
                   ],
                 ),
-              )),
-        ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
+              ),
               Expanded(
                 child: Container(
                   height: MediaQuery.of(context).size.height * .80,
