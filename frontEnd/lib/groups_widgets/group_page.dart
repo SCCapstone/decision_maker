@@ -59,47 +59,6 @@ class _GroupPageState extends State<GroupPage> {
               },
             ),
           ],
-//          bottom: PreferredSize(
-//              preferredSize: Size(MediaQuery.of(context).size.width,
-//                  MediaQuery.of(context).size.height * .045),
-//              child: Container(
-//                // height has to be here otherwise it shits the bed
-//                height: MediaQuery.of(context).size.height * .045,
-//                child: Stack(
-//                  children: <Widget>[
-//                    Align(
-//                      alignment: Alignment.center,
-//                      child: AutoSizeText(
-//                        "Events",
-//                        minFontSize: 12,
-//                        maxLines: 1,
-//                        overflow: TextOverflow.ellipsis,
-//                        textAlign: TextAlign.center,
-//                        style: TextStyle(
-//                          color: Colors.black,
-//                          fontSize: 22,
-//                          fontWeight: FontWeight.bold,
-//                        ),
-//                      ),
-//                    ),
-//                    Visibility(
-//                      visible: Globals
-//                          .user.groups[widget.groupId].eventsUnseen.isNotEmpty,
-//                      child: Align(
-//                        alignment: Alignment.centerRight,
-//                        child: Container(
-//                          child: RaisedButton(
-//                            child: Text("Mark all seen"),
-//                            onPressed: () {
-//                              markAllEventsSeen();
-//                            },
-//                          ),
-//                        ),
-//                      ),
-//                    ),
-//                  ],
-//                ),
-//              )),
         ),
         body: Center(
           child: Column(
