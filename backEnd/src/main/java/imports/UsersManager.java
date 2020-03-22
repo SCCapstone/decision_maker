@@ -131,7 +131,10 @@ public class UsersManager extends DatabaseAccessManager {
 
           this.putItem(user);
 
+          //note: this needs to come after the put item as we don't need to store this info in the db
           user.withBoolean(FIRST_LOGIN, true);
+        } else {
+          user.withBoolean(FIRST_LOGIN, false);
         }
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
