@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -63,9 +64,45 @@ class _GroupPageState extends State<GroupPage> {
         body: Center(
           child: Column(
             children: <Widget>[
-              Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .015),
+              Container(
+                // height has to be here otherwise it overflows
+                height: MediaQuery.of(context).size.height * .045,
+                child: Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.center,
+                      child: AutoSizeText(
+                        "Events",
+                        minFontSize: 12,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          decoration: TextDecoration.underline,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: Globals
+                          .user.groups[widget.groupId].eventsUnseen.isNotEmpty,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          child: IconButton(
+                            icon: Icon(Icons.done_all),
+                            color: Color(0xff5ce080),
+                            tooltip: "Mark all seen",
+                            onPressed: () {
+                              markAllEventsSeen();
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                 child: Container(
@@ -74,6 +111,7 @@ class _GroupPageState extends State<GroupPage> {
                     child: EventsList(
                       group: Globals.currentGroup,
                       events: Globals.currentGroup.events,
+                      refreshPage: updatePage,
                     ),
                     onRefresh: refreshList,
                   ),
@@ -185,6 +223,19 @@ class _GroupPageState extends State<GroupPage> {
 
   Future<Null> refreshList() async {
     getGroup();
+    updatePage();
+  }
+
+  void updatePage() {
+    // this is here to allow the mark all seen button to disappear if marking the last event seen
     setState(() {});
+  }
+
+  void markAllEventsSeen() {
+    UsersManager.markAllEventsAsSeen(widget.groupId);
+    Globals.user.groups[widget.groupId].eventsUnseen.clear();
+    setState(() {
+      updatePage();
+    });
   }
 }

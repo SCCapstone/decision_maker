@@ -7,6 +7,7 @@ class AboutDescriptions {
       <h2>General Tips</h2>
       <p>Many pages are pull-to-refresh. That is, you can pull down at the top of the page to get the most up to date changes.</p>
       <p>Most images in the app allow you to click on them to get a zoomed in image.</p>
+      <p>If you ever are unsure of what a button does, try clicking it and holding down to get a description.</p>
     """);
 
   static Html settings = Html(data: """

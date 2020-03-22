@@ -64,6 +64,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         shrinkWrap: false,
                         itemCount: widget.displayedFavorites.length,
                         itemBuilder: (context, index) {
+                          // sorting by alphabetical by displayname for now
+                          widget.displayedFavorites.sort((a, b) => a.displayName
+                              .toLowerCase()
+                              .compareTo(b.displayName.toLowerCase()));
                           return UserRow(
                               widget.displayedFavorites[index].displayName,
                               widget.displayedFavorites[index].username,

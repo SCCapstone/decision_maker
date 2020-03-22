@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_proposed_choice.dart';
@@ -27,7 +29,7 @@ class EventDetailsVoting extends StatefulWidget {
 class _EventDetailsVotingState extends State<EventDetailsVoting> {
   final PageController pageController = new PageController();
   String eventCreator = "";
-  List<Widget> userRows = new List<Widget>();
+  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
   Map<String, String> choices = new Map<String, String>();
   Event event;
 
@@ -38,7 +40,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
     }
-    
+
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
@@ -142,11 +144,13 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     ExpansionTile(
                       title: Text("Considered (${this.event.optedIn.length})"),
                       children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * .2,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
                           child: ListView(
                             shrinkWrap: true,
-                            children: this.userRows,
+                            children: this.userRows.values.toList(),
                           ),
                         ),
                       ],
@@ -195,9 +199,18 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
-      userRows.add(UserRowEvents(this.event.optedIn[username].displayName,
-          username, this.event.optedIn[username].icon));
+      this.userRows.putIfAbsent(
+          username,
+          () => UserRowEvents(this.event.optedIn[username].displayName,
+              username, this.event.optedIn[username].icon));
     }
+    // sorting by alphabetical by displayname for now
+    List<String> sortedKeys = this.userRows.keys.toList(growable: false)
+      ..sort((k1, k2) =>
+          this.userRows[k1].displayName.compareTo(userRows[k2].displayName));
+    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
+        key: (k) => k, value: (k) => this.userRows[k]);
+    this.userRows = sortedMap.cast();
   }
 
   Future<Null> refreshList() async {
