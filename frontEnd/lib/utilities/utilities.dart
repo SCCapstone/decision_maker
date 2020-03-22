@@ -77,18 +77,6 @@ int getSortMethod(String sortString) {
   return retVal;
 }
 
-int boolToInt(bool val) {
-  if (val) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-bool intToBool(int val) {
-  return val == 1;
-}
-
 int convertHr24Format(int hour, bool am) {
   // converts from AM/PM hour to military time hour
   int formattedHr = 0;
@@ -107,14 +95,6 @@ int convertHr24Format(int hour, bool am) {
     }
   }
   return formattedHr;
-}
-
-int getHour(String time) {
-  return int.parse(time.substring(0, 2));
-}
-
-int getMinute(String time) {
-  return int.parse(time.substring(3, 5));
 }
 
 Color getBorderColor() {
