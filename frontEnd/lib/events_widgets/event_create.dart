@@ -530,6 +530,9 @@ class _CreateEventState extends State<CreateEvent> {
   }
 
   Future selectStartDate() async {
+    /*
+      Displays a GUI for selecting the month/day/year for the event start time
+     */
     hideKeyboard(context);
     DateTime selectedDate = await showDatePicker(
         context: context,
@@ -550,12 +553,13 @@ class _CreateEventState extends State<CreateEvent> {
   }
 
   Future selectStartTimePopup() async {
-    hideKeyboard(context);
     /*
+      Displays a GUI for selecting the hr/min for the event start time.
       The time picker requires an initial time. When the user first opens the page,
       there is no initial time (it's set to a sentinel value of -1) so we must provide
       some random initial time to the GUI. For now just using 0 for both the minutes and hrs.
      */
+    hideKeyboard(context);
     int initialHr;
     if (this.am) {
       initialHr = 0;
