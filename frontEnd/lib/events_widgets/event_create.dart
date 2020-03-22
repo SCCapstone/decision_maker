@@ -32,6 +32,7 @@ class _CreateEventState extends State<CreateEvent> {
   final formKey = GlobalKey<FormState>();
   final List<Category> categorySelected = new List<Category>();
 
+  Timer timer;
   String eventName;
   String votingDuration;
   String considerDuration;
@@ -45,7 +46,6 @@ class _CreateEventState extends State<CreateEvent> {
   DateTime votingStart;
   DateTime votingEnd;
   DateTime proposedEventDateTime;
-  Timer timer;
   int proposedHr;
   int proposedMin;
   int proposedYear;
@@ -629,7 +629,7 @@ class _CreateEventState extends State<CreateEvent> {
       int formattedHr = convertHr24Format(proposedHr, am);
       proposedEventDateTime = new DateTime(this.proposedYear,
           this.proposedMonth, this.proposedDay, formattedHr, proposedMin);
-      print(proposedEventDateTime);
+
       String errorMessage = "";
       if (DateTime.now().isAfter(proposedEventDateTime)) {
         errorMessage += "Start time must be after current time\n\n";
@@ -645,31 +645,28 @@ class _CreateEventState extends State<CreateEvent> {
       }
 
       if (errorMessage != "") {
-        showErrorMessage("Error", errorMessage, context);
+        showErrorMessage("Error", errorMessage.trim(), context);
       } else {
-        // TODO put together the date and time
+        Event event = new Event(
+            eventName: this.eventName.trim(),
+            categoryId: this.categorySelected.first.categoryId,
+            categoryName: this.categorySelected.first.categoryName,
+            createdDateTime:
+                DateTime.parse(DateTime.now().toString().substring(0, 19)),
+            eventStartDateTime: this.proposedEventDateTime,
+            votingDuration: int.parse(this.votingDuration),
+            considerDuration: int.parse(this.considerDuration));
 
-//        Event event = new Event(
-//            eventName: this.eventName.trim(),
-//            categoryId: this.categorySelected.first.categoryId,
-//            categoryName: this.categorySelected.first.categoryName,
-//            createdDateTime:
-//                DateTime.parse(DateTime.now().toString().substring(0, 19)),
-//            eventStartDateTime: DateTime.parse(
-//                this.eventStartDate + ' ' + this.eventStartTime + ':00'),
-//            votingDuration: int.parse(this.votingDuration),
-//            considerDuration: int.parse(this.considerDuration));
-//
-//        showLoadingDialog(context, "Creating event...", true);
-//        ResultStatus result =
-//            await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
-//        Navigator.of(context, rootNavigator: true).pop('dialog');
-//
-//        if (result.success) {
-//          Navigator.of(context).pop();
-//        } else {
-//          showErrorMessage("Error", result.errorMessage, context);
-//        }
+        showLoadingDialog(context, "Creating event...", true);
+        ResultStatus result =
+            await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+
+        if (result.success) {
+          Navigator.of(context).pop();
+        } else {
+          showErrorMessage("Error", result.errorMessage, context);
+        }
       }
     } else {
       setState(() => autoValidate = true);
