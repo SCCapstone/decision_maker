@@ -221,10 +221,9 @@ class _SignInState extends State<SignInPage> {
 
     final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
         '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
-    final cognitoUser = new CognitoUser(this.usernameController.text, userPool);
+    final cognitoUser = new CognitoUser(this.username, userPool);
     final authDetails = new AuthenticationDetails(
-        username: this.usernameController.text,
-        password: this.passwordController.text);
+        username: this.username, password: this.password);
     CognitoUserSession session;
     try {
       session = await cognitoUser.authenticateUser(authDetails);
@@ -256,13 +255,12 @@ class _SignInState extends State<SignInPage> {
     final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
         '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
     final userAttributes = [
-      new AttributeArg(name: 'email', value: this.emailController.text),
+      new AttributeArg(name: 'email', value: this.email),
     ];
 
     var data;
     try {
-      data = await userPool.signUp(
-          this.usernameController.text, this.passwordController.text,
+      data = await userPool.signUp(this.username, this.password,
           userAttributes: userAttributes);
       Navigator.of(context, rootNavigator: true)
           .pop('dialog'); // dismiss loading dialog

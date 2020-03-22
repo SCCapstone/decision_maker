@@ -16,6 +16,7 @@ class User {
   final Map<String, GroupLeft> groupsLeft;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
+  final bool firstLogin;
 
   User(
       {this.username,
@@ -26,7 +27,8 @@ class User {
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
-      this.icon});
+      this.icon,
+      this.firstLogin});
 
   User.debug(
       this.username,
@@ -37,7 +39,8 @@ class User {
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
-      this.icon);
+      this.icon,
+      this.firstLogin);
 
   factory User.fromJson(Map<String, dynamic> json) {
     Map<String, UserGroup> groupsMap = new Map<String, UserGroup>();
@@ -83,7 +86,10 @@ class User {
         userRatings.putIfAbsent(categoryId, () => categoryRatings);
       }
     }
-
+    bool firstLogin = false;
+    if (json.containsKey(UsersManager.FIRST_LOGIN)) {
+      firstLogin = json[UsersManager.FIRST_LOGIN];
+    }
     return User(
         username: json[UsersManager.USERNAME],
         displayName: json[UsersManager.DISPLAY_NAME],
@@ -93,7 +99,8 @@ class User {
         groupsLeft: groupsLeftMap,
         ownedCategories: categoryList,
         favorites: favoriteList,
-        icon: json[UsersManager.ICON]);
+        icon: json[UsersManager.ICON],
+        firstLogin: firstLogin);
   }
 
   Map asMap() {
@@ -125,6 +132,6 @@ class User {
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
         " GroupsLeft: $groupsLeft UserRatings: $userRatings OwnedCategories: $ownedCategories "
-        "Favorites: $favorites Icon: $icon";
+        "Favorites: $favorites Icon: $icon FirstLogin: $firstLogin";
   }
 }
