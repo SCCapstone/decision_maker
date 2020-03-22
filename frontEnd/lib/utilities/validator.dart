@@ -221,3 +221,37 @@ String validNewFavorite(String input, List<Favorite> favorites) {
   }
   return retVal;
 }
+
+String validHour(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    int hr = int.parse(input);
+    if (hr == 0) {
+      retVal = "Invalid";
+    }
+  } catch (e) {
+    if (input.isEmpty) {
+      retVal = "Empty.";
+    } else {
+      retVal = "Error.";
+    }
+  }
+  return retVal;
+}
+
+String validMinute(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    // don't need to check length since the textfield locks number 0<=n<=59
+    int.parse(input);
+  } catch (e) {
+    if (input.isEmpty) {
+      retVal = "Empty.";
+    } else {
+      retVal = "Error.";
+    }
+  }
+  return retVal;
+}

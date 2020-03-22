@@ -89,37 +89,24 @@ bool intToBool(int val) {
   return val == 1;
 }
 
-String convertDateToString(DateTime date) {
-  return date.toString().substring(0, 10);
-}
-
-String convertTimeToString(TimeOfDay time) {
-  return time.toString().substring(10, 15);
-}
-
-String convertTimeToStringFormatted(TimeOfDay time) {
-  String retVal = "";
-  if (time.hourOfPeriod == 0) {
-    // midnight and noon are given a value of zero
-    retVal += "12:";
+int convertHr24Format(int hour, bool am) {
+  // converts from AM/PM hour to military time hour
+  int formattedHr = 0;
+  if (am) {
+    if (hour == 12) {
+      formattedHr = 0;
+    } else {
+      formattedHr = hour;
+    }
   } else {
-    retVal += time.hourOfPeriod.toString() + ":";
+    // time is pm, if it's 12 then don't add 12 on to it
+    if (hour == 12) {
+      formattedHr = hour;
+    } else {
+      formattedHr = hour + 12;
+    }
   }
-  if (time.minute < 10) {
-    retVal += "0" + time.minute.toString();
-  } else {
-    retVal += time.minute.toString();
-  }
-  if (time.period == DayPeriod.am) {
-    retVal += " AM";
-  } else {
-    retVal += " PM";
-  }
-  return retVal;
-}
-
-String convertDateTimeToString(DateTime dateTime) {
-  return dateTime.toString().substring(0, 16);
+  return formattedHr;
 }
 
 int getHour(String time) {
@@ -132,26 +119,6 @@ int getMinute(String time) {
 
 Color getBorderColor() {
   return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
-}
-
-void showPopupMessage(String message, BuildContext context,
-    {Function callback}) {
-  if (context == null) {
-    return;
-  }
-
-  if (callback == null) {
-    callback = (_) => {};
-  }
-
-  showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Response status:"),
-          content: Text(message),
-        );
-      }).then(callback);
 }
 
 void showErrorMessage(
