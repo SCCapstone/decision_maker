@@ -788,7 +788,10 @@ public class GroupsManager extends DatabaseAccessManager {
 
     boolean success = true;
 
-    final Metadata metadata = new Metadata("addedToGroup", UserGroup.fromNewGroup(addedTo).asMap());
+    final Map<String, Object> payload = UserGroup.fromNewGroup(addedTo).asMap();
+    payload.putIfAbsent(GROUP_ID, addedTo.getGroupId());
+
+    final Metadata metadata = new Metadata("addedToGroup", payload);
 
     for (String username : usernames) {
       try {
@@ -853,7 +856,7 @@ public class GroupsManager extends DatabaseAccessManager {
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
     payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
-    final Metadata metadata = new Metadata("eventUpdated", payload);
+    String action = "eventCreated";
 
     String eventChangeTitle = "Event in " + group.getGroupName();
 
@@ -864,12 +867,16 @@ public class GroupsManager extends DatabaseAccessManager {
 
     if (updatedEvent.getSelectedChoice() != null) {
       //we just transitioned to a having a selected choice -> occurring
+      action = "eventChosen";
       eventChangeBody =
           updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> we need to vote
+      action = "eventVoting";
       eventChangeBody = "Vote for " + updatedEvent.getEventName();
     } // else the event was indeed just created
+
+    final Metadata metadata = new Metadata(action, payload);
 
     for (String username : usernames) {
       try {

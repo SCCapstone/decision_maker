@@ -89,7 +89,7 @@ class _CreateGroupState extends State<CreateGroup> {
                         image: DecorationImage(
                             fit: BoxFit.cover,
                             image: this.icon == null
-                                ? getIconUrl(null)
+                                ? getGroupIconUrlStr(null)
                                 : FileImage(this.icon))),
                     child: Container(
                       decoration: BoxDecoration(

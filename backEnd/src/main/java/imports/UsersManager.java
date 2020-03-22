@@ -3,7 +3,6 @@ package imports;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -45,6 +44,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String FAVORITE_OF = "FavoriteOf";
   public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
   public static final String EVENTS_UNSEEN = "EventsUnseen";
+  public static final String FIRST_LOGIN = "FirstLogin";
 
   public static final String DEFAULT_DISPLAY_NAME = "New User";
   public static final boolean DEFAULT_DARK_THEME = true;
@@ -130,6 +130,11 @@ public class UsersManager extends DatabaseAccessManager {
               .withMap(FAVORITE_OF, Collections.emptyMap());
 
           this.putItem(user);
+
+          //note: this needs to come after the put item as we don't need to store this info in the db
+          user.withBoolean(FIRST_LOGIN, true);
+        } else {
+          user.withBoolean(FIRST_LOGIN, false);
         }
 
         resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));

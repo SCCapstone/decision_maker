@@ -33,6 +33,15 @@ dependencies:
   auto_size_text: ^2.1.0
   package_info: ^0.4.0+16
   flutter_html: ^0.11.1
+  flutter_launcher_icons: ^0.7.4
+
+flutter_icons:
+  image_path: "assets/icon/pollAlphaBoarder.png"
+  android: true
+  #TODO figure this out
+  ios: false
+  adaptive_icon_background: "assets/icon/background.png"
+  adaptive_icon_foreground: "assets/icon/pollFg.png"
 
 dev_dependencies:
   flutter_test:
