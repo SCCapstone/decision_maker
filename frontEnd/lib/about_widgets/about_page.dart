@@ -58,8 +58,7 @@ class _AboutPageState extends State<AboutPage> {
                       children: <Widget>[
                         Expanded(
                           child: Image(
-                            // TODO put app icon here
-                            image: AssetImage('assets/images/placeholder.jpg'),
+                            image: AssetImage("assets/images/pollSplash.png"),
                             fit: BoxFit.cover,
                           ),
                         )
