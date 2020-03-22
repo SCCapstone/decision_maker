@@ -30,7 +30,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Container(
-              // height has to be here otherwise it shits the bed
+              // height has to be here otherwise it overflows
               height: 45,
               child: Stack(
                 children: <Widget>[

@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -64,7 +65,7 @@ class _GroupPageState extends State<GroupPage> {
           child: Column(
             children: <Widget>[
               Container(
-                // height has to be here otherwise it shits the bed
+                // height has to be here otherwise it overflows
                 height: MediaQuery.of(context).size.height * .045,
                 child: Stack(
                   children: <Widget>[
@@ -231,6 +232,10 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void markAllEventsSeen() {
-    // TODO mark all events as seen and then setState
+    UsersManager.markAllEventsAsSeen(widget.groupId);
+    Globals.user.groups[widget.groupId].eventsUnseen.clear();
+    setState(() {
+      updatePage();
+    });
   }
 }
