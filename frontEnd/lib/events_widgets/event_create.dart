@@ -137,6 +137,31 @@ class _CreateEventState extends State<CreateEvent> {
                       decoration: InputDecoration(
                           labelText: "Enter an event name", counterText: ""),
                     ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              showCategoriesPopup();
+                            },
+                            child: AutoSizeText(
+                              getCategoryButtonMessage(),
+                              minFontSize: 10,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add_circle_outline),
+                          iconSize: 40,
+                          onPressed: () {
+                            showCategoriesPopup();
+                          },
+                        )
+                      ],
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
@@ -289,31 +314,6 @@ class _CreateEventState extends State<CreateEvent> {
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .005),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              showCategoriesPopup();
-                            },
-                            child: AutoSizeText(
-                              getCategoryButtonMessage(),
-                              minFontSize: 10,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 24),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add_circle_outline),
-                          iconSize: 40,
-                          onPressed: () {
-                            showCategoriesPopup();
-                          },
-                        )
-                      ],
                     ),
                     Padding(
                       padding: EdgeInsets.all(
