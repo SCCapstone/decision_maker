@@ -185,6 +185,7 @@ class _CreateEventState extends State<CreateEvent> {
                             textInputAction: TextInputAction.next,
                             validator: validHour,
                             textAlign: TextAlign.center,
+                            enableInteractiveSelection: false,
                             maxLength: 2,
                             decoration: InputDecoration(
                                 hintText: "HH", counterText: ""),
@@ -217,7 +218,7 @@ class _CreateEventState extends State<CreateEvent> {
                                     proposedHr = int.parse(val);
                                   }
                                 } catch (e) {
-                                  // in case user is being cheeky and pastes a non number
+                                  // in case somehow a non number gets inputted
                                   hrController.clear();
                                   hrController.text = proposedHr.toString();
                                   FocusScope.of(context)
@@ -236,6 +237,7 @@ class _CreateEventState extends State<CreateEvent> {
                             controller: minController,
                             focusNode: minuteFocus,
                             validator: validMinute,
+                            enableInteractiveSelection: false,
                             maxLength: 2,
                             decoration: InputDecoration(
                                 hintText: "MM", counterText: ""),
@@ -257,7 +259,7 @@ class _CreateEventState extends State<CreateEvent> {
                                     proposedMin = int.parse(val);
                                   }
                                 } catch (e) {
-                                  // in case user is being cheeky and pastes a non number
+                                  // in case somehow a non number gets inputted
                                   minController.clear();
                                   minController.text = proposedMin.toString();
                                   hideKeyboard(context);
@@ -557,22 +559,19 @@ class _CreateEventState extends State<CreateEvent> {
       Displays a GUI for selecting the hr/min for the event start time.
       The time picker requires an initial time. When the user first opens the page,
       there is no initial time (it's set to a sentinel value of -1) so we must provide
-      some random initial time to the GUI. For now just using 0 for both the minutes and hrs.
+      some random initial time to the GUI. For now just using 1 hour past current time
      */
     hideKeyboard(context);
-    int initialHr;
-    if (this.am) {
-      initialHr = 0;
-    } else {
-      initialHr = 12;
-    }
+    DateTime initialTime = DateTime.now().add(Duration(hours: 1));
     final TimeOfDay selectedTime = await showTimePicker(
         context: context,
         initialTime: new TimeOfDay(
             hour: (this.proposedHr < 1)
-                ? initialHr
+                ? initialTime.hour
                 : convertHr24Format(proposedHr, am),
-            minute: (this.proposedMin < 1) ? 0 : this.proposedMin));
+            minute: (this.proposedMin < 1)
+                ? initialTime.minute
+                : this.proposedMin));
     if (selectedTime != null) {
       // would be null if user clicks cancel or clicks outside of the popup
       this.am = ((selectedTime.period == DayPeriod.am));
