@@ -1,19 +1,28 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:frontEnd/events_widgets/event_details_consider.dart';
+import 'package:frontEnd/events_widgets/event_details_occurring.dart';
+import 'package:frontEnd/events_widgets/event_details_voting.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
+import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
+import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
+import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/message.dart';
 
-import 'notification_handler.dart';
-
 class NotificationService {
-  static final String leaveGroupAction = "leaveGroupAction";
-  static final String newGroupAction = "newGroup";
-  static final String eventUpdatedAction = "eventUpdated";
+  static final String removedFromGroupAction = "removedFromGroup";
+  static final String addedToGroupAction = "addedToGroup";
+  static final String eventCreatedAction = "eventCreated";
+  static final String eventChosenAction = "eventChosen";
+  static final String eventVotingAction = "eventVoting";
+  static final StreamController<Message> messageBroadcaster = new StreamController.broadcast();
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   bool initialized = false;
@@ -31,6 +40,10 @@ class NotificationService {
       initializeNotifications(context);
       initialized = true;
     }
+  }
+
+  void closeStream(){
+    messageBroadcaster.close();
   }
 
   void initializeNotifications(BuildContext context) {
@@ -54,13 +67,13 @@ class NotificationService {
             body: notification['body'],
             action: metadata['action'],
             payload: metadata['payload']);
-        NotificationHandler.instance.addNotification(message);
+        messageBroadcaster.sink.add(message);
       }
     }
     return null;
   }
 
-  Future<void> _onLaunch(Map<String, dynamic> message) {
+  Future<void> _onLaunch(Map<String, dynamic> message) async {
     Message notification;
     final notificationData = message['notification'];
     if (notificationData != null) {
@@ -75,18 +88,88 @@ class NotificationService {
       }
     }
     if (notification != null) {
-      if (notification.action == newGroupAction) {
+      if (notification.action == addedToGroupAction) {
         // take the user straight to the group they were added to if they click the notification
         Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => GroupPage(
                     groupId: notification.payload[GroupsManager.GROUP_ID],
-                    groupName: "TODO",
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
                   )),
         ).then((val) {
           this.refreshGroupsHome();
         });
+      } else if (notification.action == eventCreatedAction) {
+        // take user straight to the consider event page
+        List<String> groupId = new List<String>();
+        groupId.add(notification.payload[GroupsManager.GROUP_ID]);
+        ResultStatus<List<Group>> status =
+            await GroupsManager.getGroups(groupIds: groupId);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          this.refreshGroupsHome();
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventDetailsConsider(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    eventId: notification.payload[EventsManager.EVENT_ID],
+                    mode: EventsManager.considerMode,
+                  )),
+        );
+        if (status.success) {
+          Globals.currentGroup = status.data.first;
+        }
+      } else if (notification.action == eventVotingAction) {
+        // take user straight to the consider event page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          this.refreshGroupsHome();
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventDetailsVoting(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    eventId: notification.payload[EventsManager.EVENT_ID],
+                    mode: EventsManager.votingMode,
+                  )),
+        );
+      } else if (notification.action == eventChosenAction) {
+        // take user straight to the consider event page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          this.refreshGroupsHome();
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => EventDetailsOccurring(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    eventId: notification.payload[EventsManager.EVENT_ID],
+                    mode: EventsManager.occurringMode,
+                  )),
+        );
       }
     }
     return null;

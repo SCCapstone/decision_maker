@@ -47,6 +47,7 @@ class _GroupsHomeState extends State<GroupsHome>
   final int groupsLeftTab = 1;
   Stream<Message> notificationStream;
   NotificationService notificationService;
+  StreamSubscription messageListener;
 
   @override
   void initState() {
@@ -108,13 +109,13 @@ class _GroupsHomeState extends State<GroupsHome>
     });
     // set up notification listener
     NotificationService.instance.start(context, refreshList);
-    notificationStream = NotificationHandler.instance.notificationsStream;
-    notificationStream.listen((message) {
+    messageListener =
+        NotificationService.messageBroadcaster.stream.listen((message) {
       /*
         For simplicity's sake, only the group home will show any of the toasts indicating a new notification.
         Other widgets down the tree of the app will refresh depending on the action (such as a new event).
        */
-      if (message.action == NotificationService.leaveGroupAction) {
+      if (message.action == NotificationService.removedFromGroupAction) {
         String groupId = message.payload[GroupsManager.GROUP_ID];
         if (Globals.currentGroup != null &&
             Globals.currentGroup.groupId == groupId) {
@@ -125,22 +126,26 @@ class _GroupsHomeState extends State<GroupsHome>
                   builder: (BuildContext context) => GroupsHome()),
               (Route<dynamic> route) => false);
         }
-      } else if (message.action == NotificationService.newGroupAction) {
+      } else if (message.action == NotificationService.addedToGroupAction) {
         Fluttertoast.showToast(
             msg: "${message.title}\n${message.body}",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.CENTER);
         if (ModalRoute.of(context).isCurrent) {
           // only refresh if this widget is visible
+          print("refreshing...");
           refreshList();
         }
       } else {
+        print("event updated...");
         // event updates
         Fluttertoast.showToast(
             msg: "${message.title}\n${message.body}",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.CENTER);
+        // TODO add the notification to the events unseen if it isn't already there
       }
+      print("Inside home trigger $message");
     });
 
     super.initState();
@@ -148,6 +153,8 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void dispose() {
+    this.messageListener.cancel();
+    this.notificationService.closeStream();
     tabController.dispose();
     searchBarController.dispose();
     super.dispose();

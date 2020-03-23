@@ -1,13 +1,11 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/models/message.dart';
-import 'package:frontEnd/utilities/notifications/notification_handler.dart';
 import 'package:frontEnd/utilities/notifications/notification_service.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -29,19 +27,22 @@ class _GroupPageState extends State<GroupPage> {
   bool initialLoad = true;
   bool errorLoading = false;
   Widget errorWidget;
-  Stream<Message> notificationStream;
+  StreamSubscription messageListener;
 
   @override
   void initState() {
-    notificationStream = NotificationHandler.instance.notificationsStream;
-    notificationStream.listen((message) {
-      print("page listener");
-      if (message.action == NotificationService.eventUpdatedAction) {
-        String eventId = message.payload[EventsManager.EVENT_ID];
+    messageListener =
+        NotificationService.messageBroadcaster.stream.listen((message) {
+      print("Inside group page trigger $message");
+      if (message.action == NotificationService.eventCreatedAction ||
+          message.action == NotificationService.eventVotingAction ||
+          message.action == NotificationService.eventChosenAction) {
+        String groupId = message.payload[GroupsManager.GROUP_ID];
         if (Globals.currentGroup != null &&
-            Globals.currentGroup.events.containsKey(eventId) &&
+            Globals.currentGroup.groupId == groupId &&
             ModalRoute.of(context).isCurrent) {
           // if the new event is part of the group that is currently loaded, refresh the group
+          print("about to refresh...");
           refreshList();
         }
       }
@@ -52,12 +53,14 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void dispose() {
+    messageListener.cancel();
     print("disposing...");
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("building...");
     if (initialLoad) {
       return groupLoading();
     } else if (errorLoading) {
@@ -81,7 +84,7 @@ class _GroupPageState extends State<GroupPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => GroupSettings()),
-                ).then((_) => GroupPage());
+                ).then((_) => refreshList());
               },
             ),
           ],
