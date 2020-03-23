@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
@@ -25,7 +27,7 @@ class EventDetailsOccurring extends StatefulWidget {
 
 class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   String eventCreator = "";
-  List<Widget> userRows = new List<Widget>();
+  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
   Event event;
 
   @override
@@ -136,11 +138,13 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     ExpansionTile(
                       title: Text("Considered (${this.event.optedIn.length})"),
                       children: <Widget>[
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * .2,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
                           child: ListView(
                             shrinkWrap: true,
-                            children: this.userRows,
+                            children: this.userRows.values.toList(),
                           ),
                         ),
                       ],
@@ -159,10 +163,19 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     this.event = Globals.currentGroup.events[widget.eventId];
 
     this.userRows.clear();
-    for (String username in event.optedIn.keys) {
-      this.userRows.add(UserRowEvents(this.event.optedIn[username].displayName,
-          username, this.event.optedIn[username].icon));
+    for (String username in this.event.optedIn.keys) {
+      this.userRows.putIfAbsent(
+          username,
+          () => UserRowEvents(this.event.optedIn[username].displayName,
+              username, this.event.optedIn[username].icon));
     }
+    // sorting by alphabetical by displayname for now
+    List<String> sortedKeys = this.userRows.keys.toList(growable: false)
+      ..sort((k1, k2) =>
+          this.userRows[k1].displayName.compareTo(userRows[k2].displayName));
+    LinkedHashMap sortedMap = new LinkedHashMap.fromIterable(sortedKeys,
+        key: (k) => k, value: (k) => this.userRows[k]);
+    this.userRows = sortedMap.cast();
   }
 
   Future<Null> refreshList() async {

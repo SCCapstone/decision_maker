@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontEnd/first_login.dart';
 import 'package:frontEnd/groups_widgets/groups_home.dart';
 import 'package:frontEnd/login_page.dart';
 import 'package:frontEnd/utilities/utilities.dart';
@@ -91,13 +92,23 @@ class MyApp extends StatelessWidget {
                       title: "Pocket Poll",
                     );
                   } else {
-                    return MaterialApp(
-                      home: GroupsHome(),
-                      theme: (Globals.user.appSettings.darkTheme)
-                          ? Globals.darkTheme
-                          : Globals.lightTheme,
-                      title: "Pocket Poll",
-                    );
+                    if (Globals.user.firstLogin) {
+                      return MaterialApp(
+                        home: FirstLogin(),
+                        theme: (Globals.user.appSettings.darkTheme)
+                            ? Globals.darkTheme
+                            : Globals.lightTheme,
+                        title: "Pocket Poll",
+                      );
+                    } else {
+                      return MaterialApp(
+                        home: GroupsHome(),
+                        theme: (Globals.user.appSettings.darkTheme)
+                            ? Globals.darkTheme
+                            : Globals.lightTheme,
+                        title: "Pocket Poll",
+                      );
+                    }
                   }
                 }
               }),

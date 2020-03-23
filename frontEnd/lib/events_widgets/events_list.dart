@@ -10,8 +10,10 @@ import 'package:frontEnd/models/group.dart';
 class EventsList extends StatefulWidget {
   final Map<String, Event> events;
   final Group group;
+  final Function refreshPage;
 
-  EventsList({Key key, this.group, this.events}) : super(key: key);
+  EventsList({Key key, this.group, this.events, this.refreshPage})
+      : super(key: key);
 
   @override
   _EventsListState createState() => _EventsListState();
@@ -20,7 +22,7 @@ class EventsList extends StatefulWidget {
 class _EventsListState extends State<EventsList> {
   @override
   Widget build(BuildContext context) {
-    if (widget.events.length == 0) {
+    if (widget.events.isEmpty) {
       return ListView(
         children: <Widget>[
           Padding(
@@ -39,17 +41,17 @@ class _EventsListState extends State<EventsList> {
         Widget eventCard;
         String eventMode = EventsManager.getEventMode(widget.events[eventId]);
         if (eventMode == EventsManager.considerMode) {
-          eventCard = new EventCardConsider(
-              widget.group.groupId, widget.events[eventId], eventId);
+          eventCard = new EventCardConsider(widget.group.groupId,
+              widget.events[eventId], eventId, widget.refreshPage);
         } else if (eventMode == EventsManager.votingMode) {
-          eventCard = new EventCardVoting(
-              widget.group.groupId, widget.events[eventId], eventId);
+          eventCard = new EventCardVoting(widget.group.groupId,
+              widget.events[eventId], eventId, widget.refreshPage);
         } else if (eventMode == EventsManager.occurringMode) {
-          eventCard = new EventCardOccurring(
-              widget.group.groupId, widget.events[eventId], eventId);
+          eventCard = new EventCardOccurring(widget.group.groupId,
+              widget.events[eventId], eventId, widget.refreshPage);
         } else if (eventMode == EventsManager.closedMode) {
-          eventCard = new EventCardClosed(
-              widget.group.groupId, widget.events[eventId], eventId);
+          eventCard = new EventCardClosed(widget.group.groupId,
+              widget.events[eventId], eventId, widget.refreshPage);
         }
         eventCards.add(eventCard);
       }

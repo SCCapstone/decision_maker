@@ -30,11 +30,17 @@ class UsersManager {
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
   static final String GROUPS_LEFT = "GroupsLeft";
+  static final String FIRST_LOGIN = "FirstLogin";
 
   static final String getUserDataAction = "getUserData";
   static final String updateSettingsAction = "updateUserSettings";
   static final String updateRatingsAction = "updateUserChoiceRatings";
   static final String getRatingsAction = "getUserRatings";
+  static final String registerPushEndpointAction = "registerPushEndpoint";
+  static final String unregisterPushEndpointAction = "unregisterPushEndpoint";
+  static final String markEventAsSeenAction = "markEventAsSeen";
+  static final String markAllEventsSeenAction = "markAllEventsSeen";
+  static final String setUserGroupMuteAction = "setUserGroupMute";
 
   static Future<ResultStatus<User>> getUserData({String username}) async {
     ResultStatus<User> retVal = new ResultStatus(success: false);
@@ -203,7 +209,7 @@ class UsersManager {
     String tokenAfter = await token;
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "registerPushEndpoint";
+    jsonRequestBody[RequestFields.ACTION] = registerPushEndpointAction;
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.DEVICE_TOKEN, () => tokenAfter);
 
@@ -213,7 +219,7 @@ class UsersManager {
 
   static Future unregisterPushEndpoint() async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "unregisterPushEndpoint";
+    jsonRequestBody[RequestFields.ACTION] = unregisterPushEndpointAction;
 
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -222,9 +228,18 @@ class UsersManager {
   static Future markEventAsSeen(
       final String groupId, final String eventId) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "markEventAsSeen";
+    jsonRequestBody[RequestFields.ACTION] = markEventAsSeenAction;
     jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
     jsonRequestBody[RequestFields.PAYLOAD][RequestFields.EVENT_ID] = eventId;
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody);
+  }
+
+  static Future markAllEventsAsSeen(final String groupId) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = markAllEventsSeenAction;
+    jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
 
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -233,7 +248,7 @@ class UsersManager {
   static Future setUserGroupMute(
       final String groupId, final bool muteValue) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "setUserGroupMute";
+    jsonRequestBody[RequestFields.ACTION] = setUserGroupMuteAction;
     jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
     jsonRequestBody[RequestFields.PAYLOAD][APP_SETTINGS_MUTED] = muteValue;
 

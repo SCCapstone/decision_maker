@@ -2,6 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_occurring.dart';
 import 'package:frontEnd/imports/events_manager.dart';
+import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
@@ -9,8 +11,9 @@ class EventCardOccurring extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshPage;
 
-  EventCardOccurring(this.groupId, this.event, this.eventId);
+  EventCardOccurring(this.groupId, this.event, this.eventId, this.refreshPage);
 
   @override
   _EventCardOccurringState createState() => new _EventCardOccurringState();
@@ -26,37 +29,60 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            AutoSizeText(
-              widget.event.eventName,
-              minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Container(
+              // height has to be here otherwise it overflows
+              height: 45,
+              child: Stack(
+                children: <Widget>[
+                  Align(
+                    alignment: Alignment.center,
+                    child: AutoSizeText(
+                      widget.event.eventName,
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: Globals.user.groups[widget.groupId].eventsUnseen
+                        .containsKey(widget.eventId),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        child: IconButton(
+                          icon: Icon(Icons.notification_important),
+                          color: Color(0xff5ce080),
+                          tooltip: "Mark seen",
+                          onPressed: () {
+                            markEventRead();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             AutoSizeText(
               (DateTime.now().isBefore(widget.event.eventStartDateTime))
-                  ? "Event starts: ${widget.event.eventStartDateTimeFormatted}"
-                  : "Started at: ${widget.event.eventStartDateTimeFormatted}",
+                  ? "Event Starts\n${widget.event.eventStartDateTimeFormatted}"
+                  : "Started At\n${widget.event.eventStartDateTimeFormatted}",
+              style: TextStyle(fontSize: 20),
+              minFontSize: 12,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+            AutoSizeText(
+              widget.event.selectedChoice,
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),
-            AutoSizeText(
-              "Selected Choice: ${widget.event.selectedChoice}",
-              style: TextStyle(fontSize: 20),
-              minFontSize: 12,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            AutoSizeText(
-              "Total considered: ${widget.event.optedIn.length}",
-              style: TextStyle(fontSize: 20),
-              minFontSize: 12,
-              maxLines: 1,
             ),
             RaisedButton(
               child: Text("View Results"),
@@ -78,5 +104,16 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
       decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
+  }
+
+  void markEventRead() {
+    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
+        true) {
+      UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+      setState(() {
+        widget.refreshPage();
+      });
+    }
   }
 }

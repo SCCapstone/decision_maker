@@ -27,13 +27,19 @@ void logOutUser(BuildContext context) {
 
 ImageProvider getUserIconUrl(User user) {
   return user.icon == null
-      ? AssetImage('assets/images/placeholder.jpg')
+      ? AssetImage("assets/images/defaultUser.png")
       : NetworkImage(Globals.imageUrl + user.icon);
 }
 
-ImageProvider getIconUrl(String icon) {
+ImageProvider getUserIconUrlStr(String icon) {
   return icon == null
-      ? AssetImage('assets/images/placeholder.jpg')
+      ? AssetImage("assets/images/defaultUser.png")
+      : NetworkImage(Globals.imageUrl + icon);
+}
+
+ImageProvider getGroupIconUrlStr(String icon) {
+  return icon == null
+      ? AssetImage("assets/images/defaultGroup.png")
       : NetworkImage(Globals.imageUrl + icon);
 }
 
