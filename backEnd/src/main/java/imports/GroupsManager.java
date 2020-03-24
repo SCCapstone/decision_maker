@@ -64,7 +64,6 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
-  public static final Integer INITIAL_EVENTS_PULLED = 25;
   public static final Integer EVENTS_BATCH_SIZE = 25;
 
   public GroupsManager() {
@@ -139,7 +138,7 @@ public class GroupsManager extends DatabaseAccessManager {
       eventsBatch = eventsBatch
           .entrySet()
           .stream()
-          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
+          .sorted((e1, e2) -> -1 * this.isEventXAfterY(e1.getValue(), e2.getValue()))
           .limit(oldestEvent - newestEvent)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
     } // else there are no events in this range and we return the empty map
@@ -1295,8 +1294,8 @@ public class GroupsManager extends DatabaseAccessManager {
       final Group group = new Group(this.getMapByPrimaryKey(groupId));
 
       if (group.getMembers().keySet().contains(activeUser)) {
-        final Map<String, Event> eventsBatch = this.getBatchOfEvents(group, batchNumber);
-        group.setEvents(eventsBatch); // we set on the group to use the group's getEventsMap method
+        //we set the events on the group so we can use the group's getEventsMap method
+        group.setEvents(this.getBatchOfEvents(group, batchNumber));
 
         resultStatus = new ResultStatus(true,
             JsonEncoders.convertObjectToJson(group.getEventsMap()));
