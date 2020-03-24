@@ -70,7 +70,7 @@ class _CreateEventState extends State<CreateEvent> {
     this.am = (TimeOfDay.now().hour + 1 < 12);
     // provide default values initially, this is never shown to the user however
     DateTime initialTime = DateTime.now().add(Duration(hours: 1));
-    this.proposedHr = initialTime.hour;
+    this.proposedHr = convertMilitaryHrToMeridian(initialTime.hour);
     this.proposedMin = initialTime.minute;
 
     // every 15 seconds refresh the calculated times

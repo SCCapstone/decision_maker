@@ -97,6 +97,19 @@ int convertMeridianHrToMilitary(int hour, bool am) {
   return formattedHr;
 }
 
+int convertMilitaryHrToMeridian(int hour) {
+  // converts from military time hour to AM/PM hour
+  int formattedHr;
+  if (hour == 0) {
+    formattedHr = 1;
+  } else if (hour > 12) {
+    formattedHr = hour - 12;
+  } else {
+    formattedHr = hour;
+  }
+  return formattedHr;
+}
+
 Color getBorderColor() {
   return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
 }
