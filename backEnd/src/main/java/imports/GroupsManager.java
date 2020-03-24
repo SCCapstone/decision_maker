@@ -120,7 +120,6 @@ public class GroupsManager extends DatabaseAccessManager {
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
     if (group.getEvents().size() > newestEvent) {
-      //we're at the last set of events - there isn't a full batch to be gotten
       //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
       if (group.getEvents().size() < oldestEvent) {
         oldestEvent = group.getEvents().size();
