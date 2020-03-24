@@ -182,7 +182,6 @@ class _CreateGroupState extends State<CreateGroup> {
                                   MaterialPageRoute(
                                       builder: (context) => MembersPage(
                                             displayedMembers,
-                                            displayedMembers,
                                             new List<String>(),
                                             true,
                                           )));
