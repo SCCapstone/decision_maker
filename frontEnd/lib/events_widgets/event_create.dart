@@ -208,7 +208,7 @@ class _CreateEventState extends State<CreateEvent> {
                             keyboardType: TextInputType.number,
                             controller: hrController,
                             textInputAction: TextInputAction.next,
-                            validator: validHour,
+                            validator: validMeridianHour,
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
                             maxLength: 2,
@@ -568,7 +568,7 @@ class _CreateEventState extends State<CreateEvent> {
         initialTime: new TimeOfDay(
             hour: (this.proposedHr < 1)
                 ? initialTime.hour
-                : convertHr24Format(proposedHr, am),
+                : convertMeridianHrToMilitary(proposedHr, am),
             minute: (this.proposedMin < 1)
                 ? initialTime.minute
                 : this.proposedMin));
@@ -629,7 +629,7 @@ class _CreateEventState extends State<CreateEvent> {
     if (form.validate()) {
       form.save();
       // convert the hour to military time
-      int formattedHr = convertHr24Format(proposedHr, am);
+      int formattedHr = convertMeridianHrToMilitary(proposedHr, am);
       proposedEventDateTime = new DateTime(this.proposedYear,
           this.proposedMonth, this.proposedDay, formattedHr, proposedMin);
 

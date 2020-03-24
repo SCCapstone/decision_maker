@@ -77,7 +77,7 @@ int getSortMethod(String sortString) {
   return retVal;
 }
 
-int convertHr24Format(int hour, bool am) {
+int convertMeridianHrToMilitary(int hour, bool am) {
   // converts from AM/PM hour to military time hour
   int formattedHr = 0;
   if (am) {

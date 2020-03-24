@@ -222,7 +222,16 @@ String validNewFavorite(String input, List<Favorite> favorites) {
   return retVal;
 }
 
-String validHour(String input) {
+String validMeridianHour(String input) {
+  /*
+    Note that this should ONLY be used when implementing a text field that auto corrects.
+    This is why we don't actually check for a valid hour (1-12) since when the text field
+    auto-corrects then the text field will still show an error.
+    E.g. if the user types in "22", the text field autocorrects to 2, but the form is trying
+    to validate using this function on "2".
+    Note 0 still has to be checked though because it is only one digit and won't be caught by the
+    auto-correct.
+   */
   input = input.trim(); // sanity check trim
   String retVal;
   try {
@@ -241,6 +250,13 @@ String validHour(String input) {
 }
 
 String validMinute(String input) {
+  /*
+    Note that this should ONLY be used when implementing a text field that auto corrects.
+    This is why we don't actually check for a valid minute (0-59) since when the text field
+    auto-corrects then the text field will still show an error.
+    E.g. if the user types in "66", the text field autocorrects to 6, but the form is trying
+    to validate using this function on "66"
+   */
   input = input.trim(); // sanity check trim
   String retVal;
   try {
