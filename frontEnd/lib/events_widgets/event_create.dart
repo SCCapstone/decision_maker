@@ -43,6 +43,7 @@ class _CreateEventState extends State<CreateEvent> {
   bool willConsider = true;
   bool willVote = true;
   bool am;
+  bool timeSet;
   DateTime votingStart;
   DateTime votingEnd;
   DateTime proposedEventDateTime;
@@ -68,9 +69,11 @@ class _CreateEventState extends State<CreateEvent> {
   void initState() {
     // if user is in PM or almost near PM show PM instead of AM
     this.am = (TimeOfDay.now().hour + 1 < 12);
-    // provide sentinel values initially, if the user clicks on the timer GUI these immediately get set to real values
-    this.proposedHr = -1;
-    this.proposedMin = -1;
+    // provide default values initially, this is never shown to the user however
+    this.timeSet = false;
+    DateTime initialTime = DateTime.now().add(Duration(hours: 1));
+    this.proposedHr = initialTime.hour;
+    this.proposedMin = initialTime.minute;
 
     // every 15 seconds refresh the calculated times
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => refreshTime());
@@ -235,12 +238,13 @@ class _CreateEventState extends State<CreateEvent> {
                                       proposedHr = 1;
                                       hrController.text = proposedHr.toString();
                                     } else {
-                                      proposedHr = int.parse(val);
+                                      proposedHr = int.parse(val.trim());
                                     }
                                     FocusScope.of(context)
                                         .requestFocus(minuteFocus);
                                   } else {
-                                    proposedHr = int.parse(val);
+                                    this.timeSet = true;
+                                    proposedHr = int.parse(val.trim());
                                   }
                                 } catch (e) {
                                   // in case somehow a non number gets inputted
@@ -278,10 +282,11 @@ class _CreateEventState extends State<CreateEvent> {
                                     hideKeyboard(context);
                                   } else if (newVal.toString().length == 2 ||
                                       val.length == 2) {
-                                    proposedMin = int.parse(val);
+                                    proposedMin = int.parse(val.trim());
                                     hideKeyboard(context);
                                   } else {
-                                    proposedMin = int.parse(val);
+                                    this.timeSet = true;
+                                    proposedMin = int.parse(val.trim());
                                   }
                                 } catch (e) {
                                   // in case somehow a non number gets inputted
@@ -626,7 +631,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   void validateInput() async {
     final form = formKey.currentState;
-    if (form.validate()) {
+    if (form.validate() && this.timeSet) {
       form.save();
       // convert the hour to military time
       int formattedHr = convertMeridianHrToMilitary(proposedHr, am);
