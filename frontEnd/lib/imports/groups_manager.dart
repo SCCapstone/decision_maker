@@ -29,7 +29,7 @@ class GroupsManager {
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
 
-  static final String getGroupsAction = "getGroups";
+  static final String getGroupAction = "getGroup";
   static final String deleteGroupAction = "deleteGroup";
   static final String createGroupAction = "createNewGroup";
   static final String editGroupAction = "editGroup";
@@ -39,16 +39,20 @@ class GroupsManager {
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
-  static Future<ResultStatus<List<Group>>> getGroups(
-      {List<String> groupIds}) async {
-    ResultStatus<List<Group>> retVal = new ResultStatus(success: false);
+  static Future<ResultStatus<Group>> getGroup(String groupId,
+      {int batchNumber}) async {
+    ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = getGroupsAction;
-    if (groupIds != null) {
-      jsonRequestBody[RequestFields.PAYLOAD]
-          .putIfAbsent(RequestFields.GROUP_IDS, () => groupIds);
+    jsonRequestBody[RequestFields.ACTION] = getGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+
+    if (batchNumber == null) {
+      batchNumber = 0;
     }
+
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -59,9 +63,9 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
+          retVal.data =
+              new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
-          retVal.data = responseJson.map((m) => new Group.fromJson(m)).toList();
         } else {
           retVal.errorMessage = "Failed to load groups";
         }
@@ -286,7 +290,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Failed to rejoin group. Check internet connection.";
+          "Network error. Failed to rejoin group. Check internet connection.";
     } else {
       retVal.errorMessage = "Failed to rejoin group.";
     }

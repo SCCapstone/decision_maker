@@ -74,43 +74,44 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics) {
+  public ResultStatus getGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.getGroups";
     metrics.commonSetup(classMethod);
 
-    boolean success = true;
-    String resultMessage = "";
-    List<String> groupIds = new ArrayList<>();
+    ResultStatus resultStatus = new ResultStatus();
 
-    if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
-      groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
-    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics);
-    } else {
-      success = false;
-      resultMessage = "Error: query key not defined.";
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
-    }
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GROUP_ID, RequestFields.BATCH_NUMBER);
 
-    //we should now have the groupIds that we are getting groups for
-    if (success) {
-      List<Map> groups = new ArrayList<>();
-      for (String groupId : groupIds) {
-        try {
-          final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
-          group.setEvents(this.getBatchOfEvents(group, 0));
-          groups.add(group.asMap());
-        } catch (Exception e) {
-          metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
+
+        //the user should not be able to retrieve info from the group if they are not a member
+        if (group.getMembers().containsKey(activeUser)) {
+          //we set the events on the group so we can use the group's getEventsMap method
+          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(group.asMap()));
+        } else {
+          resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
+      } catch (final Exception e) {
+        resultStatus.resultMessage = "Error: Unable to parse request.";
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
-
-      resultMessage = JsonEncoders.convertIterableToJson(groups);
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    metrics.commonClose(success);
-    return new ResultStatus(success, resultMessage);
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
