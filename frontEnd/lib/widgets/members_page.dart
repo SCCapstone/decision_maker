@@ -11,11 +11,10 @@ import 'package:frontEnd/widgets/user_row.dart';
 
 class MembersPage extends StatefulWidget {
   final List<Member> displayedMembers;
-  final List<Member> originalMembers;
   final List<String> membersLeft;
   final bool isCreating; // if creating don't have to bother with group creator
 
-  MembersPage(this.displayedMembers, this.originalMembers, this.membersLeft,
+  MembersPage(this.displayedMembers, this.membersLeft,
       this.isCreating);
 
   @override
@@ -91,11 +90,6 @@ class _MembersPageState extends State<MembersPage> {
                                 List<String> allUsers = new List<String>();
                                 for (Member user in widget.displayedMembers) {
                                   allUsers.add(user.username);
-                                }
-                                for (Member user in widget.originalMembers) {
-                                  if (!allUsers.contains(user.username)) {
-                                    allUsers.add(user.username);
-                                  }
                                 }
                                 return validNewUser(value.trim(), allUsers);
                               },
