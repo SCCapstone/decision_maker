@@ -43,7 +43,6 @@ class _CreateEventState extends State<CreateEvent> {
   bool willConsider = true;
   bool willVote = true;
   bool am;
-  bool timeSet;
   DateTime votingStart;
   DateTime votingEnd;
   DateTime proposedEventDateTime;
@@ -70,7 +69,6 @@ class _CreateEventState extends State<CreateEvent> {
     // if user is in PM or almost near PM show PM instead of AM
     this.am = (TimeOfDay.now().hour + 1 < 12);
     // provide default values initially, this is never shown to the user however
-    this.timeSet = false;
     DateTime initialTime = DateTime.now().add(Duration(hours: 1));
     this.proposedHr = initialTime.hour;
     this.proposedMin = initialTime.minute;
@@ -245,7 +243,6 @@ class _CreateEventState extends State<CreateEvent> {
                                     FocusScope.of(context)
                                         .requestFocus(minuteFocus);
                                   } else {
-                                    this.timeSet = true;
                                     proposedHr = int.parse(val.trim());
                                   }
                                 } catch (e) {
@@ -289,7 +286,6 @@ class _CreateEventState extends State<CreateEvent> {
                                     proposedMin = int.parse(val.trim());
                                     hideKeyboard(context);
                                   } else {
-                                    this.timeSet = true;
                                     proposedMin = int.parse(val.trim());
                                   }
                                 } catch (e) {
@@ -635,7 +631,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   void validateInput() async {
     final form = formKey.currentState;
-    if (form.validate() && this.timeSet) {
+    if (form.validate()) {
       form.save();
       // convert the hour to military time
       int formattedHr = convertMeridianHrToMilitary(proposedHr, am);
