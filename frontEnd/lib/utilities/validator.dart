@@ -227,7 +227,7 @@ String validMeridianHour(String input) {
   String retVal;
   try {
     int hr = int.parse(input);
-    if (hr == 0 || hr > 12) {
+    if (hr <= 0 || hr > 12) {
       retVal = "Invalid";
     }
   } catch (e) {
