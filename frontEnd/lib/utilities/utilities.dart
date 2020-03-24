@@ -77,81 +77,41 @@ int getSortMethod(String sortString) {
   return retVal;
 }
 
-int boolToInt(bool val) {
-  if (val) {
-    return 1;
+int convertMeridianHrToMilitary(int hour, bool am) {
+  // converts from AM/PM hour to military time hour
+  int formattedHr = 0;
+  if (am) {
+    if (hour == 12) {
+      formattedHr = 0;
+    } else {
+      formattedHr = hour;
+    }
   } else {
-    return 0;
+    // time is pm, if it's 12 then don't add 12 on to it
+    if (hour == 12) {
+      formattedHr = hour;
+    } else {
+      formattedHr = hour + 12;
+    }
   }
+  return formattedHr;
 }
 
-bool intToBool(int val) {
-  return val == 1;
-}
-
-String convertDateToString(DateTime date) {
-  return date.toString().substring(0, 10);
-}
-
-String convertTimeToString(TimeOfDay time) {
-  return time.toString().substring(10, 15);
-}
-
-String convertTimeToStringFormatted(TimeOfDay time) {
-  String retVal = "";
-  if (time.hourOfPeriod == 0) {
-    // midnight and noon are given a value of zero
-    retVal += "12:";
+int convertMilitaryHrToMeridian(int hour) {
+  // converts from military time hour to AM/PM hour
+  int formattedHr;
+  if (hour == 0) {
+    formattedHr = 12;
+  } else if (hour > 12) {
+    formattedHr = hour - 12;
   } else {
-    retVal += time.hourOfPeriod.toString() + ":";
+    formattedHr = hour;
   }
-  if (time.minute < 10) {
-    retVal += "0" + time.minute.toString();
-  } else {
-    retVal += time.minute.toString();
-  }
-  if (time.period == DayPeriod.am) {
-    retVal += " AM";
-  } else {
-    retVal += " PM";
-  }
-  return retVal;
-}
-
-String convertDateTimeToString(DateTime dateTime) {
-  return dateTime.toString().substring(0, 16);
-}
-
-int getHour(String time) {
-  return int.parse(time.substring(0, 2));
-}
-
-int getMinute(String time) {
-  return int.parse(time.substring(3, 5));
+  return formattedHr;
 }
 
 Color getBorderColor() {
   return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
-}
-
-void showPopupMessage(String message, BuildContext context,
-    {Function callback}) {
-  if (context == null) {
-    return;
-  }
-
-  if (callback == null) {
-    callback = (_) => {};
-  }
-
-  showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Response status:"),
-          content: Text(message),
-        );
-      }).then(callback);
 }
 
 void showErrorMessage(
