@@ -6,7 +6,7 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/utilities/notifications/notification_service.dart';
+import 'package:frontEnd/utilities/notification_service.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/events_widgets/events_list.dart';
@@ -33,7 +33,6 @@ class _GroupPageState extends State<GroupPage> {
   void initState() {
     messageListener =
         NotificationService.messageBroadcaster.stream.listen((message) {
-      print("Inside group page trigger $message");
       if (message.action == NotificationService.eventCreatedAction ||
           message.action == NotificationService.eventVotingAction ||
           message.action == NotificationService.eventChosenAction) {
@@ -42,10 +41,11 @@ class _GroupPageState extends State<GroupPage> {
             Globals.currentGroup.groupId == groupId &&
             ModalRoute.of(context).isCurrent) {
           // if the new event is part of the group that is currently loaded, refresh the group
-          print("about to refresh...");
           refreshList();
         }
       }
+    }, onDone: () {
+      messageListener.cancel();
     });
     getGroup();
     super.initState();
@@ -54,13 +54,11 @@ class _GroupPageState extends State<GroupPage> {
   @override
   void dispose() {
     messageListener.cancel();
-    print("disposing...");
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print("building...");
     if (initialLoad) {
       return groupLoading();
     } else if (errorLoading) {

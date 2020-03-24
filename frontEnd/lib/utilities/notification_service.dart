@@ -22,7 +22,8 @@ class NotificationService {
   static final String eventCreatedAction = "eventCreated";
   static final String eventChosenAction = "eventChosen";
   static final String eventVotingAction = "eventVoting";
-  static final StreamController<Message> messageBroadcaster = new StreamController.broadcast();
+  static final StreamController<Message> messageBroadcaster =
+      new StreamController.broadcast();
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   bool initialized = false;
@@ -42,7 +43,7 @@ class NotificationService {
     }
   }
 
-  void closeStream(){
+  void closeStream() {
     messageBroadcaster.close();
   }
 
@@ -101,11 +102,6 @@ class NotificationService {
           this.refreshGroupsHome();
         });
       } else if (notification.action == eventCreatedAction) {
-        // take user straight to the consider event page
-        List<String> groupId = new List<String>();
-        groupId.add(notification.payload[GroupsManager.GROUP_ID]);
-        ResultStatus<List<Group>> status =
-            await GroupsManager.getGroups(groupIds: groupId);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -116,20 +112,7 @@ class NotificationService {
         ).then((val) {
           this.refreshGroupsHome();
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => EventDetailsConsider(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    eventId: notification.payload[EventsManager.EVENT_ID],
-                    mode: EventsManager.considerMode,
-                  )),
-        );
-        if (status.success) {
-          Globals.currentGroup = status.data.first;
-        }
       } else if (notification.action == eventVotingAction) {
-        // take user straight to the consider event page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -140,17 +123,7 @@ class NotificationService {
         ).then((val) {
           this.refreshGroupsHome();
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => EventDetailsVoting(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    eventId: notification.payload[EventsManager.EVENT_ID],
-                    mode: EventsManager.votingMode,
-                  )),
-        );
       } else if (notification.action == eventChosenAction) {
-        // take user straight to the consider event page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -161,22 +134,25 @@ class NotificationService {
         ).then((val) {
           this.refreshGroupsHome();
         });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => EventDetailsOccurring(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    eventId: notification.payload[EventsManager.EVENT_ID],
-                    mode: EventsManager.occurringMode,
-                  )),
-        );
       }
     }
     return null;
   }
 
   Future<void> _onResume(Map<String, dynamic> message) {
-    print("onResume $message");
+    final notification = message['notification'];
+    if (notification != null) {
+      final data = message['data'];
+      if (data != null) {
+        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
+        Message message = new Message(
+            title: notification['title'],
+            body: notification['body'],
+            action: metadata['action'],
+            payload: metadata['payload']);
+        messageBroadcaster.sink.add(message);
+      }
+    }
     return null;
   }
 }

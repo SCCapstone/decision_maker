@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/about_widgets/about_page.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
@@ -18,8 +17,7 @@ import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/message.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/models/user_group.dart';
-import 'package:frontEnd/utilities/notifications/notification_handler.dart';
-import 'package:frontEnd/utilities/notifications/notification_service.dart';
+import 'package:frontEnd/utilities/notification_service.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
@@ -133,11 +131,9 @@ class _GroupsHomeState extends State<GroupsHome>
             gravity: ToastGravity.CENTER);
         if (ModalRoute.of(context).isCurrent) {
           // only refresh if this widget is visible
-          print("refreshing...");
           refreshList();
         }
       } else {
-        print("event updated...");
         // event updates
         Fluttertoast.showToast(
             msg: "${message.title}\n${message.body}",
@@ -145,7 +141,6 @@ class _GroupsHomeState extends State<GroupsHome>
             gravity: ToastGravity.CENTER);
         // TODO add the notification to the events unseen if it isn't already there
       }
-      print("Inside home trigger $message");
     });
 
     super.initState();
