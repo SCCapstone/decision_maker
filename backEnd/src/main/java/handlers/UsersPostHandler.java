@@ -56,6 +56,9 @@ public class UsersPostHandler implements
             resultStatus = DatabaseManagers.USERS_MANAGER.markEventAsSeen(payloadJsonMap, metrics);
           } else if (action.equals("setUserGroupMute")) {
             resultStatus = DatabaseManagers.USERS_MANAGER.setUserGroupMute(payloadJsonMap, metrics);
+          } else if (action.equals("markAllEventsSeen")) {
+            resultStatus = DatabaseManagers.USERS_MANAGER
+                .markAllEventsSeen(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
