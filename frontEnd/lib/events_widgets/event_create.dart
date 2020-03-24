@@ -21,64 +21,73 @@ class CreateEvent extends StatefulWidget {
 }
 
 class _CreateEventState extends State<CreateEvent> {
-  String eventName;
-  String votingDuration;
-  String considerDuration;
   final TextEditingController eventNameController = TextEditingController();
   final TextEditingController votingDurationController =
       TextEditingController();
   final TextEditingController considerDurationController =
       TextEditingController();
-
-  bool autoValidate = false;
+  final TextEditingController hrController = new TextEditingController();
+  final TextEditingController minController = new TextEditingController();
+  final int textFieldLength = 4;
   final formKey = GlobalKey<FormState>();
   final List<Category> categorySelected = new List<Category>();
-  DateTime currentDate = DateTime.now();
-  TimeOfDay currentTime = TimeOfDay.now();
 
-  // Using these strings both to display on the page and to eventually
-  // make the API request for making the event
-  String eventStartDate;
-  String eventStartTime;
+  Timer timer;
+  String eventName;
+  String votingDuration;
+  String considerDuration;
   String eventStartDateFormatted;
-  String eventStartTimeFormatted;
-
-  DateTime votingStart;
-  DateTime votingEnd;
-
-  final int textFieldLength = 4;
-  bool willConsider = true;
-  bool willVote = true;
   String considerButtonText;
   String voteButtonText;
-  Timer timer;
+  bool autoValidate = false;
+  bool willConsider = true;
+  bool willVote = true;
+  bool am;
+  DateTime votingStart;
+  DateTime votingEnd;
+  DateTime proposedEventDateTime;
+  int proposedHr;
+  int proposedMin;
+  int proposedYear;
+  int proposedMonth;
+  int proposedDay;
+  FocusNode minuteFocus = new FocusNode();
 
   @override
   void dispose() {
-    eventNameController.dispose();
-    votingDurationController.dispose();
-    considerDurationController.dispose();
-    timer?.cancel();
+    this.eventNameController.dispose();
+    this.votingDurationController.dispose();
+    this.considerDurationController.dispose();
+    this.hrController.dispose();
+    this.minController.dispose();
+    this.timer?.cancel();
     super.dispose();
   }
 
   @override
   void initState() {
+    // if user is in PM or almost near PM show PM instead of AM
+    this.am = (TimeOfDay.now().hour + 1 < 12);
+    // provide default values initially, this is never shown to the user however
+    DateTime initialTime = DateTime.now().add(Duration(hours: 1));
+    this.proposedHr = convertMilitaryHrToMeridian(initialTime.hour);
+    this.proposedMin = initialTime.minute;
+
     // every 15 seconds refresh the calculated times
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) => refreshTime());
-    eventStartDate = convertDateToString(currentDate);
-    eventStartTime = (currentTime.hour + 1).toString() + ":00";
-    if ((currentTime.hour + 1) < 10) {
-      eventStartTime = "0" + eventStartTime;
-    } else if ((currentTime.hour + 1) > 23) {
-      eventStartTime = "00:00";
-      eventStartDate =
-          convertDateToString(DateTime.now().add(Duration(days: 1)));
+
+    // if close to the end of the current day, then add one to the default proposed day
+    if ((TimeOfDay.now().hour + 1) > 23) {
+      proposedEventDateTime = DateTime.now().add(Duration(days: 1));
+    } else {
+      proposedEventDateTime = DateTime.now();
     }
+    proposedYear = proposedEventDateTime.year;
+    proposedMonth = proposedEventDateTime.month;
+    proposedDay = proposedEventDateTime.day;
     eventStartDateFormatted =
-        Globals.formatter.format(currentDate).substring(0, 10);
-    eventStartTimeFormatted = convertTimeToStringFormatted(
-        new TimeOfDay(hour: getHour(eventStartTime), minute: 0));
+        Globals.formatter.format(proposedEventDateTime).substring(0, 10);
+
     votingDurationController.text =
         Globals.currentGroup.defaultVotingDuration.toString();
     considerDurationController.text =
@@ -129,6 +138,31 @@ class _CreateEventState extends State<CreateEvent> {
                       decoration: InputDecoration(
                           labelText: "Enter an event name", counterText: ""),
                     ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              showCategoriesPopup();
+                            },
+                            child: AutoSizeText(
+                              getCategoryButtonMessage(),
+                              minFontSize: 10,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.add_circle_outline),
+                          iconSize: 40,
+                          onPressed: () {
+                            showCategoriesPopup();
+                          },
+                        )
+                      ],
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
@@ -144,34 +178,147 @@ class _CreateEventState extends State<CreateEvent> {
                           MediaQuery.of(context).size.height * .01),
                     ),
                     Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          RaisedButton(
-                              onPressed: () {
-                                selectStartDate(context);
-                              },
-                              child: Text(eventStartDateFormatted)),
-                          RaisedButton(
-                              onPressed: () {
-                                selectStartTime(context);
-                              },
-                              child: Text(eventStartTimeFormatted)),
-                        ]),
+                      children: <Widget>[
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              selectStartDate();
+                            },
+                            child: AutoSizeText(
+                              eventStartDateFormatted,
+                              maxLines: 1,
+                              minFontSize: 14,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 30),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.date_range),
+                          iconSize: 40,
+                          onPressed: () {
+                            selectStartDate();
+                          },
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            controller: hrController,
+                            textInputAction: TextInputAction.next,
+                            validator: (input) {
+                              return validMeridianHour(hrController.text);
+                            },
+                            textAlign: TextAlign.center,
+                            enableInteractiveSelection: false,
+                            maxLength: 2,
+                            decoration: InputDecoration(
+                                hintText: "HH", counterText: ""),
+                            onFieldSubmitted: (form) {
+                              // when user hits the next button on their keyboard, takes them to the minutes field
+                              FocusScope.of(context).requestFocus(minuteFocus);
+                            },
+                            onChanged: (val) {
+                              // as user types the hour is automatically saved, assuming it is valid
+                              if (val.isNotEmpty) {
+                                // this check needs to be here otherwise user can't backspace
+                                try {
+                                  int newVal = int.parse(val.trim());
+                                  if (newVal > 12) {
+                                    hrController.clear();
+                                    hrController.text = proposedHr.toString();
+                                    FocusScope.of(context)
+                                        .requestFocus(minuteFocus);
+                                  } else if (val.trim().length == 2) {
+                                    if (newVal == 0) {
+                                      // can't have 00 for hour in AM/PM format
+                                      proposedHr = 1;
+                                      hrController.text = proposedHr.toString();
+                                    } else {
+                                      proposedHr = int.parse(val.trim());
+                                    }
+                                    FocusScope.of(context)
+                                        .requestFocus(minuteFocus);
+                                  } else {
+                                    proposedHr = int.parse(val.trim());
+                                  }
+                                } catch (e) {
+                                  // in case somehow a non number gets inputted
+                                  hrController.clear();
+                                  hrController.text = proposedHr.toString();
+                                  FocusScope.of(context)
+                                      .requestFocus(minuteFocus);
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        Text(":"),
+                        Expanded(
+                          child: TextFormField(
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
+                            controller: minController,
+                            focusNode: minuteFocus,
+                            validator: (val) {
+                              return validMinute(minController.text);
+                            },
+                            enableInteractiveSelection: false,
+                            maxLength: 2,
+                            decoration: InputDecoration(
+                                hintText: "MM", counterText: ""),
+                            onChanged: (val) {
+                              // as user types the minute is automatically saved, assuming it is valid
+                              if (val.isNotEmpty) {
+                                // this needs to be here otherwise user can't backspace
+                                try {
+                                  int newVal = int.parse(val.trim());
+                                  if (newVal > 59) {
+                                    minController.clear();
+                                    minController.text = proposedMin.toString();
+                                    hideKeyboard(context);
+                                  } else if (newVal.toString().length == 2 ||
+                                      val.length == 2) {
+                                    proposedMin = int.parse(val.trim());
+                                    hideKeyboard(context);
+                                  } else {
+                                    proposedMin = int.parse(val.trim());
+                                  }
+                                } catch (e) {
+                                  // in case somehow a non number gets inputted
+                                  minController.clear();
+                                  minController.text = proposedMin.toString();
+                                  hideKeyboard(context);
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: RaisedButton(
+                            child: Text((this.am) ? "AM" : "PM"),
+                            onPressed: () {
+                              this.am = !this.am;
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.access_time),
+                          iconSize: 40,
+                          onPressed: () {
+                            selectStartTimePopup();
+                          },
+                        )
+                      ],
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    RaisedButton(
-                      child: AutoSizeText(
-                        getCategoryButtonMessage(),
-                        minFontSize: 10,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 15),
-                      ),
-                      onPressed: () {
-                        showCategoriesPopup();
-                      },
+                          MediaQuery.of(context).size.height * .005),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -347,7 +494,8 @@ class _CreateEventState extends State<CreateEvent> {
                   RaisedButton.icon(
                       onPressed: () {
                         if (categorySelected.isEmpty) {
-                          showPopupMessage("Select a category.", context);
+                          showErrorMessage(
+                              "Error", "Select a category.", context);
                         } else {
                           validateInput();
                         }
@@ -388,53 +536,61 @@ class _CreateEventState extends State<CreateEvent> {
     }
   }
 
-  Future selectStartDate(BuildContext context) async {
+  Future selectStartDate() async {
+    /*
+      Displays a GUI for selecting the month/day/year for the event start time
+     */
+    hideKeyboard(context);
     DateTime selectedDate = await showDatePicker(
         context: context,
-        initialDate: DateTime.parse(eventStartDate),
-        firstDate: new DateTime(currentDate.year),
-        lastDate: new DateTime(currentDate.year + 30));
-    DateTime currentDateMinusOneDay =
-        currentDate.subtract(new Duration(days: 1));
-    if ((selectedDate.isAfter(currentDateMinusOneDay))) {
-      eventStartDate = convertDateToString(selectedDate);
+        initialDate: proposedEventDateTime,
+        firstDate: DateTime.now().subtract(Duration(days: 1)),
+        lastDate: DateTime(DateTime.now().year + 50));
+    if (selectedDate != null) {
+      // would be null if user clicks cancel or clicks outside of the popup
+      this.proposedYear = selectedDate.year;
+      this.proposedMonth = selectedDate.month;
+      this.proposedDay = selectedDate.day;
+      this.proposedEventDateTime =
+          new DateTime(this.proposedYear, this.proposedMonth, this.proposedDay);
       eventStartDateFormatted =
           Globals.formatter.format(selectedDate).substring(0, 10);
       setState(() {});
-    } else {
-      showPopupMessage("Start date cannot be before today's date.", context);
     }
   }
 
-  Future selectStartTime(BuildContext context) async {
+  Future selectStartTimePopup() async {
+    /*
+      Displays a GUI for selecting the hr/min for the event start time.
+      The time picker requires an initial time. When the user first opens the page,
+      there is no initial time (it's set to a sentinel value of -1) so we must provide
+      some random initial time to the GUI. For now just using 1 hour past current time
+     */
+    hideKeyboard(context);
+    DateTime initialTime = DateTime.now().add(Duration(hours: 1));
     final TimeOfDay selectedTime = await showTimePicker(
         context: context,
         initialTime: new TimeOfDay(
-            hour: getHour(eventStartTime), minute: getMinute(eventStartTime)));
-    DateTime parsedStartDate = DateTime.parse(eventStartDate);
-    if (startTimeIsInvalid(parsedStartDate, selectedTime)) {
-      showPopupMessage("Start time must be after current time.", context);
-    } else {
-      eventStartTime = convertTimeToString(selectedTime);
-      eventStartTimeFormatted = convertTimeToStringFormatted(selectedTime);
-      setState(() {});
+            hour: (this.proposedHr < 1)
+                ? initialTime.hour
+                : convertMeridianHrToMilitary(proposedHr, am),
+            minute: (this.proposedMin < 1)
+                ? initialTime.minute
+                : this.proposedMin));
+    if (selectedTime != null) {
+      // would be null if user clicks cancel or clicks outside of the popup
+      this.am = ((selectedTime.period == DayPeriod.am));
+      this.proposedHr = selectedTime.hourOfPeriod;
+      if (this.proposedHr == 0) {
+        // if the user puts it to 12:00 AM the future will return 0 for the hour
+        this.proposedHr = 12;
+      }
+      this.proposedMin = selectedTime.minute;
+      setState(() {
+        this.hrController.text = this.proposedHr.toString();
+        this.minController.text = this.proposedMin.toString();
+      });
     }
-  }
-
-  bool startTimeIsInvalid(DateTime startDate, TimeOfDay startTime) {
-    /*
-      Check if the start time is on the earlier in the day than the current
-      time (in other words, same date as current day && earlier time means
-      the start time is invalid)
-     */
-    currentDate = DateTime.now();
-    currentTime = TimeOfDay.now();
-    return ((startDate.year == currentDate.year &&
-            startDate.month == currentDate.month &&
-            startDate.day == currentDate.day)) &&
-        ((startTime.hour < currentTime.hour) ||
-            (startTime.hour == currentTime.hour &&
-                startTime.minute < currentTime.minute));
   }
 
   String calculateVotingStartDateTime() {
@@ -477,19 +633,27 @@ class _CreateEventState extends State<CreateEvent> {
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
+      // convert the hour to military time
+      int formattedHr = convertMeridianHrToMilitary(proposedHr, am);
+      proposedEventDateTime = new DateTime(this.proposedYear,
+          this.proposedMonth, this.proposedDay, formattedHr, proposedMin);
+
       String errorMessage = "";
-      if (this.votingStart.isAfter(
-          DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
-        errorMessage +=
-            "Consider duration invalid: Consider time will end after the event starts\n\n";
+      if (DateTime.now().isAfter(proposedEventDateTime)) {
+        errorMessage += "Start time must be after current time\n\n";
+      } else {
+        if (this.votingStart.isAfter(proposedEventDateTime)) {
+          errorMessage +=
+              "Consider duration invalid: Consider time will end after the event starts\n\n";
+        }
+        if (this.votingEnd.isAfter(proposedEventDateTime)) {
+          errorMessage +=
+              "Voting duration invalid: Voting will end after the event starts";
+        }
       }
-      if (this.votingEnd.isAfter(
-          DateTime.parse(this.eventStartDate + " " + this.eventStartTime))) {
-        errorMessage +=
-            "Voting duration invalid: Voting will end after the event starts";
-      }
+
       if (errorMessage != "") {
-        showErrorMessage("Error", errorMessage, context);
+        showErrorMessage("Error", errorMessage.trim(), context);
       } else {
         Event event = new Event(
             eventName: this.eventName.trim(),
@@ -497,8 +661,7 @@ class _CreateEventState extends State<CreateEvent> {
             categoryName: this.categorySelected.first.categoryName,
             createdDateTime:
                 DateTime.parse(DateTime.now().toString().substring(0, 19)),
-            eventStartDateTime: DateTime.parse(
-                this.eventStartDate + ' ' + this.eventStartTime + ':00'),
+            eventStartDateTime: this.proposedEventDateTime,
             votingDuration: int.parse(this.votingDuration),
             considerDuration: int.parse(this.considerDuration));
 

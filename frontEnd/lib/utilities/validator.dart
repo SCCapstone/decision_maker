@@ -221,3 +221,39 @@ String validNewFavorite(String input, List<Favorite> favorites) {
   }
   return retVal;
 }
+
+String validMeridianHour(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    int hr = int.parse(input);
+    if (hr <= 0 || hr > 12) {
+      retVal = "Invalid";
+    }
+  } catch (e) {
+    if (input.isEmpty) {
+      retVal = "Empty.";
+    } else {
+      retVal = "Error.";
+    }
+  }
+  return retVal;
+}
+
+String validMinute(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    int min = int.parse(input);
+    if (min < 0 || min > 59) {
+      retVal = "Invalid";
+    }
+  } catch (e) {
+    if (input.isEmpty) {
+      retVal = "Empty.";
+    } else {
+      retVal = "Error.";
+    }
+  }
+  return retVal;
+}
