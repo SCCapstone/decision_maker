@@ -211,7 +211,9 @@ class _CreateEventState extends State<CreateEvent> {
                             keyboardType: TextInputType.number,
                             controller: hrController,
                             textInputAction: TextInputAction.next,
-                            validator: validMeridianHour,
+                            validator: (input) {
+                              return validMeridianHour(hrController.text);
+                            },
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
                             maxLength: 2,
@@ -265,7 +267,9 @@ class _CreateEventState extends State<CreateEvent> {
                             textInputAction: TextInputAction.done,
                             controller: minController,
                             focusNode: minuteFocus,
-                            validator: validMinute,
+                            validator: (val) {
+                              return validMinute(minController.text);
+                            },
                             enableInteractiveSelection: false,
                             maxLength: 2,
                             decoration: InputDecoration(
