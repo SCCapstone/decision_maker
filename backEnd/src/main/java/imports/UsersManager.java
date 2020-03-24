@@ -38,7 +38,7 @@ public class UsersManager extends DatabaseAccessManager {
   public static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   public static final String GROUPS = "Groups";
   public static final String GROUPS_LEFT = "GroupsLeft";
-  public static final String CATEGORIES = "Categories";
+  public static final String CATEGORY_RATINGS = "CategoryRatings";
   public static final String OWNED_CATEGORIES = "OwnedCategories";
   public static final String FAVORITES = "Favorites";
   public static final String FAVORITE_OF = "FavoriteOf";
@@ -122,7 +122,7 @@ public class UsersManager extends DatabaseAccessManager {
               .withString(DISPLAY_NAME, DEFAULT_DISPLAY_NAME)
               .withNull(ICON)
               .withMap(APP_SETTINGS, AppSettings.defaultSettings().asMap())
-              .withMap(CATEGORIES, Collections.emptyMap())
+              .withMap(CATEGORY_RATINGS, Collections.emptyMap())
               .withMap(OWNED_CATEGORIES, Collections.emptyMap())
               .withMap(GROUPS, Collections.emptyMap())
               .withMap(GROUPS_LEFT, Collections.emptyMap())
@@ -168,7 +168,9 @@ public class UsersManager extends DatabaseAccessManager {
         final Map<String, Object> ratings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        String updateExpression = "set " + CATEGORIES + ".#categoryId = :map";
+        //TODO add validation to this
+
+        String updateExpression = "set " + CATEGORY_RATINGS + ".#categoryId = :map";
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratings);
 
@@ -330,7 +332,9 @@ public class UsersManager extends DatabaseAccessManager {
         this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
             metrics);
 
-        Item updatedUser = this.getItemByPrimaryKey(activeUser);
+        final Item updatedUser = this.getItemByPrimaryKey(activeUser);
+        //anytime we return the active user we need to add this
+        updatedUser.withBoolean(FIRST_LOGIN, false);
 
         resultStatus = new ResultStatus(true,
             JsonEncoders.convertObjectToJson(updatedUser.asMap()));
@@ -681,6 +685,40 @@ public class UsersManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Exception inside of: " + classMethod;
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus markAllEventsSeen(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "UsersManager.markAllEventsSeen";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+      final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
+
+      //assume the user has this group mapping, otherwise this call shouldn't have been made
+
+      final String updateExpression = "set " + GROUPS + ".#groupId." + EVENTS_UNSEEN + " = :empty";
+      final ValueMap valueMap = new ValueMap().withMap(":empty", Collections.emptyMap());
+      final NameMap nameMap = new NameMap().with("#groupId", groupId);
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
+
+      this.updateItem(updateItemSpec);
+
+      resultStatus = new ResultStatus(true, "All events marked seen successfully.");
+    } catch (final Exception e) {
+      resultStatus.resultMessage = "Exception inside of: " + classMethod;
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);

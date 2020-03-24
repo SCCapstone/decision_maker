@@ -65,6 +65,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   public static final Integer MAX_DURATION = 10000;
   public static final Integer INITIAL_EVENTS_PULLED = 25;
+  public static final Integer EVENTS_BATCH_SIZE = 25;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -99,7 +100,7 @@ public class GroupsManager extends DatabaseAccessManager {
       for (String groupId : groupIds) {
         try {
           final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
-          this.limitNumberOfEvents(group, INITIAL_EVENTS_PULLED);
+          group.setEvents(this.getBatchOfEvents(group, 0));
           groups.add(group.asMap());
         } catch (Exception e) {
           metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
@@ -113,18 +114,37 @@ public class GroupsManager extends DatabaseAccessManager {
     return new ResultStatus(success, resultMessage);
   }
 
-  private void limitNumberOfEvents(final Group group, final Integer count) {
-    if (group.getEvents().size() > count) {
-      //we stream each key pair in the entrySet to be sorted, limited, then collected into a new map
-      Map<String, Event> sortedEvents = group.getEvents()
+  private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
+    Integer newestEvent = (batchNumber * EVENTS_BATCH_SIZE);
+    Integer oldestEvent = (batchNumber + 1) * EVENTS_BATCH_SIZE;
+
+    Map<String, Event> eventsBatch = new LinkedHashMap<>();
+
+    if (group.getEvents().size() > newestEvent) {
+      //we're at the last set of events - there isn't a full batch to be gotten
+      //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
+      if (group.getEvents().size() < oldestEvent) {
+        oldestEvent = group.getEvents().size();
+      }
+
+      //first we get all of the events up to the oldestEvent being asked for
+      eventsBatch = group.getEvents()
           .entrySet()
           .stream()
           .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(count)
+          .limit(oldestEvent)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
-      group.setEvents(sortedEvents);
-    }
+      //then we sort in the opposite direction asking for the appropriate number of events
+      eventsBatch = eventsBatch
+          .entrySet()
+          .stream()
+          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
+          .limit(oldestEvent - newestEvent)
+          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+    } // else there are no events in this range and we return the empty map
+
+    return eventsBatch;
   }
 
   private int isEventXAfterY(final Event x, final Event y) {
@@ -822,7 +842,7 @@ public class GroupsManager extends DatabaseAccessManager {
     boolean success = true;
 
     final Metadata metadata = new Metadata("removedFromGroup",
-        ImmutableMap.of(GROUP_ID, removedFrom.getGroupName()));
+        ImmutableMap.of(GROUP_ID, removedFrom.getGroupId()));
 
     for (String username : usernames) {
       try {
@@ -856,7 +876,7 @@ public class GroupsManager extends DatabaseAccessManager {
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
     payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
-    String action = "eventCreate";
+    String action = "eventCreated";
 
     String eventChangeTitle = "Event in " + group.getGroupName();
 
@@ -1255,6 +1275,37 @@ public class GroupsManager extends DatabaseAccessManager {
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
       resultStatus.resultMessage = "Error: Unable to parse request.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus getBatchOfEvents(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "GroupsManager.getBatchOfEvents";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+      final String groupId = (String) jsonMap.get(GROUP_ID);
+      final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+
+      final Group group = new Group(this.getMapByPrimaryKey(groupId));
+
+      if (group.getMembers().keySet().contains(activeUser)) {
+        final Map<String, Event> eventsBatch = this.getBatchOfEvents(group, batchNumber);
+        group.setEvents(eventsBatch); // we set on the group to use the group's getEventsMap method
+
+        resultStatus = new ResultStatus(true,
+            JsonEncoders.convertObjectToJson(group.getEventsMap()));
+      } else {
+        resultStatus.resultMessage = "Error: user is not a member of the group.";
+      }
+    } catch (final Exception e) {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      resultStatus.resultMessage = "Exception inside of: " + classMethod;
     }
 
     metrics.commonClose(resultStatus.success);
