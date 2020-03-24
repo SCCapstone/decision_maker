@@ -93,7 +93,6 @@ public class GroupsManager extends DatabaseAccessManager {
 
         //the user should not be able to retrieve info from the group if they are not a member
         if (group.getMembers().containsKey(activeUser)) {
-          //we set the events on the group so we can use the group's getEventsMap method
           group.setEvents(this.getBatchOfEvents(group, batchNumber));
 
           resultStatus = new ResultStatus(true,
