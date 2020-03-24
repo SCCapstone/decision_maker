@@ -25,7 +25,7 @@ class UsersManager {
   static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   static final String GROUPS = "Groups";
-  static final String USER_RATINGS = "Categories";
+  static final String USER_RATINGS = "CategoryRatings";
   static final String OWNED_CATEGORIES = "OwnedCategories";
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
