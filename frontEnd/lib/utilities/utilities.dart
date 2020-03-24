@@ -101,7 +101,7 @@ int convertMilitaryHrToMeridian(int hour) {
   // converts from military time hour to AM/PM hour
   int formattedHr;
   if (hour == 0) {
-    formattedHr = 1;
+    formattedHr = 12;
   } else if (hour > 12) {
     formattedHr = hour - 12;
   } else {
