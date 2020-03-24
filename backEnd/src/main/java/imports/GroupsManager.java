@@ -856,7 +856,7 @@ public class GroupsManager extends DatabaseAccessManager {
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
     payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
-    String action = "eventCreated";
+    String action = "eventCreate";
 
     String eventChangeTitle = "Event in " + group.getGroupName();
 
