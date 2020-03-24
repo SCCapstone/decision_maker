@@ -1257,7 +1257,9 @@ public class GroupsManager extends DatabaseAccessManager {
       final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
     metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
+
     try {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
@@ -1286,25 +1288,34 @@ public class GroupsManager extends DatabaseAccessManager {
 
     ResultStatus resultStatus = new ResultStatus();
 
-    try {
-      final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      final String groupId = (String) jsonMap.get(GROUP_ID);
-      final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GroupsManager.GROUP_ID, RequestFields.BATCH_NUMBER);
 
-      final Group group = new Group(this.getMapByPrimaryKey(groupId));
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
 
-      if (group.getMembers().keySet().contains(activeUser)) {
-        //we set the events on the group so we can use the group's getEventsMap method
-        group.setEvents(this.getBatchOfEvents(group, batchNumber));
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
 
-        resultStatus = new ResultStatus(true,
-            JsonEncoders.convertObjectToJson(group.getEventsMap()));
-      } else {
-        resultStatus.resultMessage = "Error: user is not a member of the group.";
+        //the user should not be able to retrieve info from the group if they are not a member
+        if (group.getMembers().containsKey(activeUser)) {
+          //we set the events on the group so we can use the group's getEventsMap method
+          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(group.getEventsMap()));
+        } else {
+          resultStatus.resultMessage = "Error: user is not a member of the group.";
+        }
+      } catch (final Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Exception inside of: " + classMethod;
       }
-    } catch (final Exception e) {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-      resultStatus.resultMessage = "Exception inside of: " + classMethod;
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);

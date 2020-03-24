@@ -646,6 +646,9 @@ public class UsersManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Exception inside of: " + classMethod;
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);
@@ -685,6 +688,9 @@ public class UsersManager extends DatabaseAccessManager {
         resultStatus.resultMessage = "Exception inside of: " + classMethod;
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);
@@ -696,29 +702,37 @@ public class UsersManager extends DatabaseAccessManager {
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GroupsManager.GROUP_ID);
 
-    try {
-      final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
 
-      //assume the user has this group mapping, otherwise this call shouldn't have been made
+        //assume the user has this group mapping, otherwise this call shouldn't have been made
 
-      final String updateExpression = "set " + GROUPS + ".#groupId." + EVENTS_UNSEEN + " = :empty";
-      final ValueMap valueMap = new ValueMap().withMap(":empty", Collections.emptyMap());
-      final NameMap nameMap = new NameMap().with("#groupId", groupId);
+        final String updateExpression =
+            "set " + GROUPS + ".#groupId." + EVENTS_UNSEEN + " = :empty";
+        final ValueMap valueMap = new ValueMap().withMap(":empty", Collections.emptyMap());
+        final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
-      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap)
-          .withValueMap(valueMap);
+        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
 
-      this.updateItem(updateItemSpec);
+        this.updateItem(updateItemSpec);
 
-      resultStatus = new ResultStatus(true, "All events marked seen successfully.");
-    } catch (final Exception e) {
-      resultStatus.resultMessage = "Exception inside of: " + classMethod;
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus = new ResultStatus(true, "All events marked seen successfully.");
+      } catch (final Exception e) {
+        resultStatus.resultMessage = "Exception inside of: " + classMethod;
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);
