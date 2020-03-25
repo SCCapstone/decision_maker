@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group_interface.dart';
 import 'package:frontEnd/models/user_group.dart';
@@ -310,8 +311,6 @@ class GroupsManager {
         .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(RequestFields.DISPLAY_NAME, () => Globals.username);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
