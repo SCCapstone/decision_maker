@@ -598,11 +598,12 @@ class _GroupSettingsState extends State<GroupSettings> {
               groupId: Globals.currentGroup.groupId,
               groupName: Globals.currentGroup.groupName,
               icon: Globals.currentGroup.icon));
-      Navigator.pushAndRemoveUntil(
-          context,
-          new MaterialPageRoute(
-              builder: (BuildContext context) => GroupsHome()),
-          (Route<dynamic> route) => false);
+      Navigator.of(context).popUntil((route) => route.isFirst);
+//      Navigator.pushAndRemoveUntil(
+//          context,
+//          new MaterialPageRoute(
+//              builder: (BuildContext context) => GroupsHome()),
+//          (Route<dynamic> route) => false);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }

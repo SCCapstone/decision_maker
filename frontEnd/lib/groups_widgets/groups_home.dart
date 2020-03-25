@@ -56,6 +56,7 @@ class _GroupsHomeState extends State<GroupsHome>
     this.tabController = new TabController(length: this.totalTabs, vsync: this);
     this.tabController.addListener(handleTabChange);
     loadGroups();
+    //region searchBar
     this.searchBarController.addListener(() {
       if (this.currentTab == this.groupsHomeTab) {
         // in the group home tab
@@ -107,15 +108,19 @@ class _GroupsHomeState extends State<GroupsHome>
         }
       }
     });
-
+    //endregion
     // set up notification listener
     Future<String> token = firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token);
-    firebaseMessaging.configure(
-      onMessage: _onMessage,
-      onLaunch: _onLaunch,
-      onResume: _onResume,
-    );
+    if (!Globals.fireBaseConfigured) {
+      firebaseMessaging.configure(
+        onMessage: _onMessage,
+        onLaunch: _onLaunch,
+        onResume: _onResume,
+      );
+      Globals.fireBaseConfigured = true;
+    }
+
     firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     super.initState();
@@ -219,6 +224,9 @@ class _GroupsHomeState extends State<GroupsHome>
                       title: Text('Log Out', style: TextStyle(fontSize: 16)),
                       onTap: () {
                         logOutUser(context);
+                        Globals.fireBaseConfigured = false;
+                        // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
+                        firebaseMessaging.deleteInstanceID();
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -612,17 +620,12 @@ class _GroupsHomeState extends State<GroupsHome>
         if (message.action == Globals.removedFromGroupAction) {
           String groupId = message.payload[GroupsManager.GROUP_ID];
           if (Globals.currentGroup == null) {
-            // this avoids the current page flashing for a second, don't need to push and remove if already on it
+            // this avoids the current page flashing for a second, don't need to pop if already here
             refreshList();
           } else if (Globals.currentGroup.groupId == groupId) {
             // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
             Globals.user.groups.remove(Globals.currentGroup.groupId);
-            Navigator.pushAndRemoveUntil(
-                context,
-                new MaterialPageRoute(
-                    builder: (BuildContext context) => GroupsHome()),
-                (Route<dynamic> route) => false);
-            Globals.currentGroup = null;
+            Navigator.of(context).popUntil((route) => route.isFirst);
           }
         } else if (message.action == Globals.addedToGroupAction) {
           if (ModalRoute.of(context).isCurrent) {
@@ -638,9 +641,11 @@ class _GroupsHomeState extends State<GroupsHome>
                 .putIfAbsent(eventId, () => true);
           }
           if (Globals.refreshGroupPage != null) {
+            // the refresh callback has been properly set, so refresh the group page
             Globals.refreshGroupPage();
           }
           if (ModalRoute.of(context).isCurrent) {
+            // only update groups home if it actually visible
             loadGroups();
             setState(() {});
           }

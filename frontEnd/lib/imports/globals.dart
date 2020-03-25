@@ -22,6 +22,7 @@ class Globals {
   static String alphabeticalReverseSortString = "Alphabetical (Z-A)";
   static String dateNewestSortString = "Date Modified (Newest)";
   static String dateOldestSortString = "Date Modified (Oldest)";
+  static bool fireBaseConfigured = false;
   static Function refreshGroupPage;
   static final String removedFromGroupAction = "removedFromGroup";
   static final String addedToGroupAction = "addedToGroup";

@@ -33,6 +33,7 @@ class _GroupPageState extends State<GroupPage> {
     getGroup();
     super.initState();
   }
+
   @override
   void dispose() {
     Globals.currentGroup = null;
@@ -94,8 +95,9 @@ class _GroupPageState extends State<GroupPage> {
                       ),
                     ),
                     Visibility(
-                      visible: Globals
-                          .user.groups[widget.groupId].eventsUnseen.isNotEmpty,
+                      visible: (Globals.user.groups[widget.groupId] != null &&
+                          Globals.user.groups[widget.groupId].eventsUnseen
+                              .isNotEmpty),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(

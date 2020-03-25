@@ -51,8 +51,9 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                     ),
                   ),
                   Visibility(
-                    visible: Globals.user.groups[widget.groupId].eventsUnseen
-                        .containsKey(widget.eventId),
+                    visible: (Globals.user.groups[widget.groupId] != null &&
+                        Globals.user.groups[widget.groupId].eventsUnseen
+                            .containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
