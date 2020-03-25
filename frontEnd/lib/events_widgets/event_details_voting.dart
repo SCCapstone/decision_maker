@@ -214,12 +214,10 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   }
 
   Future<Null> refreshList() async {
-    List<String> groupId = new List<String>();
-    groupId.add(widget.groupId);
-    ResultStatus<List<Group>> resultStatus =
-        await GroupsManager.getGroups(groupIds: groupId);
+    ResultStatus<Group> resultStatus =
+        await GroupsManager.getGroup(widget.groupId);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data.first;
+      Globals.currentGroup = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page

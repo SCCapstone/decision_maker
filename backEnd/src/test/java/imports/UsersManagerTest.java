@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
@@ -97,6 +96,23 @@ public class UsersManagerTest {
       .withMap(UsersManager.FAVORITE_OF, ImmutableMap.of(
           "favOf1", true
       ));
+
+  private final Map<String, Object> markEventAsSeenGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "activeUser",
+      GroupsManager.GROUP_ID, "groupId",
+      RequestFields.EVENT_ID, "eventId"
+  );
+
+  private final Map<String, Object> setUserGroupMuteGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "activeUser",
+      GroupsManager.GROUP_ID, "groupId",
+      UsersManager.APP_SETTINGS_MUTED, true
+  );
+
+  private final Map<String, Object> markAllEventsSeenGoodInput = ImmutableMap.of(
+    RequestFields.ACTIVE_USER, "activeUser",
+    GroupsManager.GROUP_ID, "groupId"
+  );
 
   @Mock
   private Table table;
@@ -509,19 +525,19 @@ public class UsersManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  //////////////////////////////endregion
-  // getUserAppSettings tests //
-  //////////////////////////////region
+  /////////////////////////////////////////////endregion
+  // createPlatformEndpointAndStoreArn tests //
+  /////////////////////////////////////////////region
 
-  /////////////////////////////////endregion
-  // getDefaultAppSettings tests //
-  /////////////////////////////////region
+  //////////////////////////////////endregion
+  // unregisterPushEndpoint tests //
+  //////////////////////////////////region
+
+  ///////////////////////////////endregion
+  // removeOwnedCategory tests //
+  ///////////////////////////////region
 
   ////////////////////////////////endregion
-  // checkAppSettingsVals tests //
-  ////////////////////////////////region
-
-  /////////////////////////////////endregion
   // removeGroupFromUsers tests //
   ////////////////////////////////region
   @Test
@@ -563,6 +579,126 @@ public class UsersManagerTest {
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  ///////////////////////////endregion
+  // markEventAsSeen tests //
+  ///////////////////////////region
+  @Test
+  public void markEventAsSeen_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .markEventAsSeen(markEventAsSeenGoodInput, this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void markEventAsSeen_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .markEventAsSeen(markEventAsSeenGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void markEventAsSeen_missingRequestKeys_failureResult() {
+    ResultStatus resultStatus = this.usersManager
+        .markEventAsSeen(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  ////////////////////////////endregion
+  // setUserGroupMute tests //
+  ////////////////////////////region
+  @Test
+  public void setUserGroupMute_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .setUserGroupMute(setUserGroupMuteGoodInput, this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void setUserGroupMute_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .setUserGroupMute(setUserGroupMuteGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void setUserGroupMute_missingRequestKeys_failureResult() {
+    ResultStatus resultStatus = this.usersManager
+        .setUserGroupMute(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  /////////////////////////////endregion
+  // markAllEventsSeen tests //
+  /////////////////////////////region
+  @Test
+  public void markAllEventsSeen_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .markAllEventsSeen(markAllEventsSeenGoodInput, this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void markAllEventsSeen_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .markAllEventsSeen(markAllEventsSeenGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void markAllEventsSeen_missingRequestKeys_failureResult() {
+    ResultStatus resultStatus = this.usersManager
+        .markAllEventsSeen(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
   }
 

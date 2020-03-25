@@ -280,7 +280,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                 .removeAt(Globals.maxCategoryCacheSize - 1);
           }
           // update local ratings
-          Globals.user.userRatings.update(
+          Globals.user.categoryRatings.update(
               newCategory.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
           Navigator.of(context).pop();

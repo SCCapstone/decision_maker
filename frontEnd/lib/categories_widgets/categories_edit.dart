@@ -409,12 +409,12 @@ class _EditCategoryState extends State<EditCategory> {
       this.choiceRows.add(choice);
     }
     // populate the choices with the ratings
-    Map<String, String> userRatings =
-        Globals.user.userRatings[widget.category.categoryId];
-    if (userRatings != null) {
+    Map<String, String> categoryRatings =
+        Globals.user.categoryRatings[widget.category.categoryId];
+    if (categoryRatings != null) {
       for (String choiceId in this.labelControllers.keys) {
-        if (userRatings.containsKey(choiceId)) {
-          this.ratesControllers[choiceId].text = userRatings[choiceId];
+        if (categoryRatings.containsKey(choiceId)) {
+          this.ratesControllers[choiceId].text = categoryRatings[choiceId];
         }
       }
     }
@@ -478,7 +478,7 @@ class _EditCategoryState extends State<EditCategory> {
           Globals.activeUserCategories.remove(this.category);
           Globals.activeUserCategories.add(this.category);
           // update local ratings in user object locally
-          Globals.user.userRatings.update(
+          Globals.user.categoryRatings.update(
               widget.category.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
 
@@ -497,7 +497,7 @@ class _EditCategoryState extends State<EditCategory> {
 
         if (resultStatus.success) {
           // update local ratings
-          Globals.user.userRatings.update(
+          Globals.user.categoryRatings.update(
               widget.category.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
           setState(() {

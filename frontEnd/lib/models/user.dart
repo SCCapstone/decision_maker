@@ -12,7 +12,7 @@ class User {
   String icon;
   final AppSettings appSettings;
   final Map<String, UserGroup> groups;
-  final Map<String, Map<String, String>> userRatings;
+  final Map<String, Map<String, String>> categoryRatings;
   final Map<String, GroupLeft> groupsLeft;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
@@ -23,7 +23,7 @@ class User {
       this.displayName,
       this.appSettings,
       this.groups,
-      this.userRatings,
+      this.categoryRatings,
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
@@ -35,7 +35,7 @@ class User {
       this.displayName,
       this.appSettings,
       this.groups,
-      this.userRatings,
+      this.categoryRatings,
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
@@ -73,17 +73,17 @@ class User {
           owner: json[UsersManager.USERNAME]));
     }
 
-    Map<String, Map<String, String>> userRatings =
+    Map<String, Map<String, String>> categoryRatingsMap =
         new Map<String, Map<String, String>>();
-    Map<String, dynamic> userRatingsRaw = json[UsersManager.USER_RATINGS];
-    if (userRatingsRaw != null) {
-      for (String categoryId in userRatingsRaw.keys) {
+    Map<String, dynamic> categoryRatingsRaw = json[UsersManager.CATEGORY_RATINGS];
+    if (categoryRatingsRaw != null) {
+      for (String categoryId in categoryRatingsRaw.keys) {
         Map<String, String> categoryRatings = new Map<String, String>();
-        for (String choiceId in userRatingsRaw[categoryId].keys) {
+        for (String choiceId in categoryRatingsRaw[categoryId].keys) {
           categoryRatings.putIfAbsent(
-              choiceId, () => userRatingsRaw[categoryId][choiceId].toString());
+              choiceId, () => categoryRatingsRaw[categoryId][choiceId].toString());
         }
-        userRatings.putIfAbsent(categoryId, () => categoryRatings);
+        categoryRatingsMap.putIfAbsent(categoryId, () => categoryRatings);
       }
     }
     bool firstLogin = false;
@@ -95,7 +95,7 @@ class User {
         displayName: json[UsersManager.DISPLAY_NAME],
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: groupsMap,
-        userRatings: userRatings,
+        categoryRatings: categoryRatingsMap,
         groupsLeft: groupsLeftMap,
         ownedCategories: categoryList,
         favorites: favoriteList,
@@ -121,7 +121,7 @@ class User {
       UsersManager.APP_SETTINGS: appSettings.asMap(),
       UsersManager.GROUPS: groupsMap,
       UsersManager.GROUPS_LEFT: groupsLeftMap,
-      UsersManager.USER_RATINGS: userRatings,
+      UsersManager.CATEGORY_RATINGS: categoryRatings,
       UsersManager.OWNED_CATEGORIES: ownedCategories,
       UsersManager.FAVORITES: favorites,
       UsersManager.ICON: icon
@@ -131,7 +131,7 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        " GroupsLeft: $groupsLeft UserRatings: $userRatings OwnedCategories: $ownedCategories "
+        " GroupsLeft: $groupsLeft CategoryRatings: $categoryRatings OwnedCategories: $ownedCategories "
         "Favorites: $favorites Icon: $icon FirstLogin: $firstLogin";
   }
 }
