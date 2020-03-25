@@ -4,10 +4,14 @@ import imports.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 
 @Data
+@AllArgsConstructor // needed for the clone method to work
+@Builder(toBuilder = true)
 public class Event {
 
   private String categoryId;
@@ -59,6 +63,23 @@ public class Event {
     modelAsMap.putIfAbsent(GroupsManager.VOTING_NUMBERS, this.votingNumbers);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_CREATOR, this.getEventCreatorMap());
     return modelAsMap;
+  }
+
+  public Event clone() {
+    return this.toBuilder()
+        .categoryId(this.categoryId)
+        .categoryName(this.categoryName)
+        .eventName(this.eventName)
+        .createdDateTime(this.createdDateTime)
+        .eventStartDateTime(this.eventStartDateTime)
+        .rsvpDuration(this.rsvpDuration)
+        .votingDuration(this.votingDuration)
+        .selectedChoice(this.selectedChoice)
+        .optedIn(this.optedIn)
+        .tentativeAlgorithmChoices(this.tentativeAlgorithmChoices)
+        .votingNumbers(this.votingNumbers)
+        .eventCreator(this.eventCreator)
+        .build();
   }
 
   public void setOptedInRawMap(final Map<String, Object> jsonMap) {
