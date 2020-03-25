@@ -338,7 +338,6 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                   builder: (context) =>
                                                       MembersPage(
                                                         displayedMembers,
-                                                        originalMembers,
                                                         membersLeft,
                                                         false,
                                                       ))).then((_) {

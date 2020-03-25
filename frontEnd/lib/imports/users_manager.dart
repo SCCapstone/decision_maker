@@ -25,7 +25,7 @@ class UsersManager {
   static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
   static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   static final String GROUPS = "Groups";
-  static final String USER_RATINGS = "Categories";
+  static final String CATEGORY_RATINGS = "CategoryRatings";
   static final String OWNED_CATEGORIES = "OwnedCategories";
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
@@ -35,7 +35,6 @@ class UsersManager {
   static final String getUserDataAction = "getUserData";
   static final String updateSettingsAction = "updateUserSettings";
   static final String updateRatingsAction = "updateUserChoiceRatings";
-  static final String getRatingsAction = "getUserRatings";
   static final String registerPushEndpointAction = "registerPushEndpoint";
   static final String unregisterPushEndpointAction = "unregisterPushEndpoint";
   static final String markEventAsSeenAction = "markEventAsSeen";
@@ -164,43 +163,6 @@ class UsersManager {
           "Network error. Unable to update user rating. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to update user rating.";
-    }
-    return retVal;
-  }
-
-  static Future<ResultStatus<Map<String, dynamic>>> getUserRatings(
-      String categoryId) async {
-    ResultStatus<Map<String, dynamic>> retVal =
-        new ResultStatus(success: false);
-
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = getRatingsAction;
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
-
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
-
-    if (response.success) {
-      Map<String, dynamic> body = jsonDecode(response.data);
-
-      try {
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        if (responseItem.success) {
-          retVal.success = true;
-          retVal.data = json.decode(responseItem.resultMessage);
-        } else {
-          retVal.errorMessage = "Error getting user ratings (1).";
-        }
-      } catch (e) {
-        retVal.errorMessage = "Error getting user ratings (2).";
-      }
-    } else if (response.networkError) {
-      retVal.errorMessage =
-          "Network error. Unable to get user ratings. Check internet connection.";
-    } else {
-      retVal.errorMessage = "Unable to get user ratings.";
     }
     return retVal;
   }

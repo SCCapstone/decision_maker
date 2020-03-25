@@ -38,8 +38,8 @@ public class GroupsPostHandler implements
 
           final String action = (String) jsonMap.get("action");
 
-          if (action.equals("getGroups")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.getGroups(payloadJsonMap, metrics);
+          if (action.equals("getGroup")) {
+            resultStatus = DatabaseManagers.GROUPS_MANAGER.getGroup(payloadJsonMap, metrics);
           } else if (action.equals("createNewGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap, metrics);
           } else if (action.equals("editGroup")) {
@@ -56,6 +56,9 @@ public class GroupsPostHandler implements
             resultStatus = DatabaseManagers.GROUPS_MANAGER.rejoinGroup(payloadJsonMap, metrics);
           } else if (action.equals("voteForChoice")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap, metrics);
+          } else if (action.equals("getBatchOfEvents")) {
+            resultStatus = DatabaseManagers.GROUPS_MANAGER
+                .handleGetBatchOfEvents(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {

@@ -64,7 +64,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
-  public static final Integer INITIAL_EVENTS_PULLED = 25;
+  public static final Integer EVENTS_BATCH_SIZE = 25;
 
   public GroupsManager() {
     super("groups", "GroupId", Regions.US_EAST_2);
@@ -74,57 +74,75 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
-  public ResultStatus getGroups(final Map<String, Object> jsonMap, final Metrics metrics) {
+  public ResultStatus getGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.getGroups";
     metrics.commonSetup(classMethod);
 
-    boolean success = true;
-    String resultMessage = "";
-    List<String> groupIds = new ArrayList<>();
+    ResultStatus resultStatus = new ResultStatus();
 
-    if (jsonMap.containsKey(RequestFields.GROUP_IDS)) {
-      groupIds = (List<String>) jsonMap.get(RequestFields.GROUP_IDS);
-    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics);
-    } else {
-      success = false;
-      resultMessage = "Error: query key not defined.";
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
-    }
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GROUP_ID, RequestFields.BATCH_NUMBER);
 
-    //we should now have the groupIds that we are getting groups for
-    if (success) {
-      List<Map> groups = new ArrayList<>();
-      for (String groupId : groupIds) {
-        try {
-          final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
-          this.limitNumberOfEvents(group, INITIAL_EVENTS_PULLED);
-          groups.add(group.asMap());
-        } catch (Exception e) {
-          metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
+
+        //the user should not be able to retrieve info from the group if they are not a member
+        if (group.getMembers().containsKey(activeUser)) {
+          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(group.asMap()));
+        } else {
+          resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
+      } catch (final Exception e) {
+        resultStatus.resultMessage = "Error: Unable to parse request.";
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
-
-      resultMessage = JsonEncoders.convertIterableToJson(groups);
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    metrics.commonClose(success);
-    return new ResultStatus(success, resultMessage);
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
-  private void limitNumberOfEvents(final Group group, final Integer count) {
-    if (group.getEvents().size() > count) {
-      //we stream each key pair in the entrySet to be sorted, limited, then collected into a new map
-      Map<String, Event> sortedEvents = group.getEvents()
+  private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
+    Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
+    Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
+
+    Map<String, Event> eventsBatch = new LinkedHashMap<>();
+
+    if (group.getEvents().size() > newestEventIndex) {
+      //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
+      if (group.getEvents().size() < oldestEventIndex) {
+        oldestEventIndex = group.getEvents().size();
+      }
+
+      //first we get all of the events up to the oldestEvent being asked for
+      eventsBatch = group.getEvents()
           .entrySet()
           .stream()
           .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(count)
+          .limit(oldestEventIndex)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
-      group.setEvents(sortedEvents);
-    }
+      //then we sort in the opposite direction asking for the appropriate number of events
+      eventsBatch = eventsBatch
+          .entrySet()
+          .stream()
+          .sorted((e1, e2) -> -1 * this.isEventXAfterY(e1.getValue(), e2.getValue()))
+          .limit(oldestEventIndex - newestEventIndex)
+          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+    } // else there are no events in this range and we return the empty map
+
+    return eventsBatch;
   }
 
   private int isEventXAfterY(final Event x, final Event y) {
@@ -822,7 +840,7 @@ public class GroupsManager extends DatabaseAccessManager {
     boolean success = true;
 
     final Metadata metadata = new Metadata("removedFromGroup",
-        ImmutableMap.of(GROUP_ID, removedFrom.getGroupName()));
+        ImmutableMap.of(GROUP_ID, removedFrom.getGroupId()));
 
     for (String username : usernames) {
       try {
@@ -1238,7 +1256,9 @@ public class GroupsManager extends DatabaseAccessManager {
       final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
     metrics.commonSetup(classMethod);
+
     ResultStatus resultStatus = new ResultStatus();
+
     try {
       final String updateExpression = "remove Categories.#categoryId";
       final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
@@ -1255,6 +1275,47 @@ public class GroupsManager extends DatabaseAccessManager {
     } catch (Exception e) {
       metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
       resultStatus.resultMessage = "Error: Unable to parse request.";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus handleGetBatchOfEvents(final Map<String, Object> jsonMap,
+      final Metrics metrics) {
+    final String classMethod = "GroupsManager.getBatchOfEvents";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, GroupsManager.GROUP_ID, RequestFields.BATCH_NUMBER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(GROUP_ID);
+        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
+
+        //the user should not be able to retrieve info from the group if they are not a member
+        if (group.getMembers().containsKey(activeUser)) {
+          //we set the events on the group so we can use the group's getEventsMap method
+          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(group.getEventsMap()));
+        } else {
+          resultStatus.resultMessage = "Error: user is not a member of the group.";
+        }
+      } catch (final Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Exception inside of: " + classMethod;
+      }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
     metrics.commonClose(resultStatus.success);

@@ -167,14 +167,12 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void getGroup() async {
-    List<String> groupId = new List<String>();
-    groupId.add(widget.groupId);
-    ResultStatus<List<Group>> status =
-        await GroupsManager.getGroups(groupIds: groupId);
+    ResultStatus<Group> status =
+        await GroupsManager.getGroup(widget.groupId);
     initialLoad = false;
     if (status.success) {
       errorLoading = false;
-      Globals.currentGroup = status.data.first;
+      Globals.currentGroup = status.data;
       setState(() {});
     } else {
       errorLoading = true;
