@@ -58,6 +58,7 @@ class NotificationService {
   }
 
   Future<void> _onMessage(Map<String, dynamic> message) async {
+    print("onMessage $message");
     final notification = message['notification'];
     if (notification != null) {
       final data = message['data'];

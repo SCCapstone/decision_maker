@@ -44,7 +44,6 @@ class _GroupsHomeState extends State<GroupsHome>
   final int groupsHomeTab = 0;
   final int groupsLeftTab = 1;
   Stream<Message> notificationStream;
-  NotificationService notificationService;
   StreamSubscription messageListener;
 
   @override
@@ -113,6 +112,7 @@ class _GroupsHomeState extends State<GroupsHome>
         For simplicity's sake, only the group home will show any of the toasts indicating a new notification.
         Other widgets down the tree of the app will refresh depending on the action (such as a new event).
        */
+      print(message);
       if (message.action == NotificationService.removedFromGroupAction) {
         String groupId = message.payload[GroupsManager.GROUP_ID];
         if (Globals.currentGroup != null &&
@@ -149,7 +149,7 @@ class _GroupsHomeState extends State<GroupsHome>
   @override
   void dispose() {
     this.messageListener.cancel();
-    this.notificationService.closeStream();
+    NotificationService.instance.closeStream();
     tabController.dispose();
     searchBarController.dispose();
     super.dispose();

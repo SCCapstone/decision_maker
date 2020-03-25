@@ -41,7 +41,9 @@ class _GroupPageState extends State<GroupPage> {
             Globals.currentGroup.groupId == groupId &&
             ModalRoute.of(context).isCurrent) {
           // if the new event is part of the group that is currently loaded, refresh the group
-          refreshList();
+          if(mounted){
+            refreshList();
+          }
         }
       }
     }, onDone: () {
