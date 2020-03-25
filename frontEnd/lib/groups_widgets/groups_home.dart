@@ -110,18 +110,18 @@ class _GroupsHomeState extends State<GroupsHome>
     });
     //endregion
     // set up notification listener
-    Future<String> token = firebaseMessaging.getToken();
+    Future<String> token = this.firebaseMessaging.getToken();
     UsersManager.registerPushEndpoint(token);
     if (!Globals.fireBaseConfigured) {
-      firebaseMessaging.configure(
-        onMessage: _onMessage,
-        onLaunch: _onLaunch,
-        onResume: _onResume,
-      );
+      this.firebaseMessaging.configure(
+            onMessage: _onMessage,
+            onLaunch: _onLaunch,
+            onResume: _onResume,
+          );
       Globals.fireBaseConfigured = true;
     }
 
-    firebaseMessaging.requestNotificationPermissions(
+    this.firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     super.initState();
   }

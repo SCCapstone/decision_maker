@@ -599,11 +599,6 @@ class _GroupSettingsState extends State<GroupSettings> {
               groupName: Globals.currentGroup.groupName,
               icon: Globals.currentGroup.icon));
       Navigator.of(context).popUntil((route) => route.isFirst);
-//      Navigator.pushAndRemoveUntil(
-//          context,
-//          new MaterialPageRoute(
-//              builder: (BuildContext context) => GroupsHome()),
-//          (Route<dynamic> route) => false);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }
