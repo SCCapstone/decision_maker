@@ -58,7 +58,7 @@ public class GroupsPostHandler implements
             resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap, metrics);
           } else if (action.equals("getBatchOfEvents")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER
-                .getBatchOfEvents(payloadJsonMap, metrics);
+                .handleGetBatchOfEvents(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {

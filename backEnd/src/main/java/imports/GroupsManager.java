@@ -114,15 +114,15 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
-    Integer newestEvent = (batchNumber * EVENTS_BATCH_SIZE);
-    Integer oldestEvent = (batchNumber + 1) * EVENTS_BATCH_SIZE;
+    Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
+    Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
-    if (group.getEvents().size() > newestEvent) {
+    if (group.getEvents().size() > newestEventIndex) {
       //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
-      if (group.getEvents().size() < oldestEvent) {
-        oldestEvent = group.getEvents().size();
+      if (group.getEvents().size() < oldestEventIndex) {
+        oldestEventIndex = group.getEvents().size();
       }
 
       //first we get all of the events up to the oldestEvent being asked for
@@ -130,7 +130,7 @@ public class GroupsManager extends DatabaseAccessManager {
           .entrySet()
           .stream()
           .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(oldestEvent)
+          .limit(oldestEventIndex)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
       //then we sort in the opposite direction asking for the appropriate number of events
@@ -138,7 +138,7 @@ public class GroupsManager extends DatabaseAccessManager {
           .entrySet()
           .stream()
           .sorted((e1, e2) -> -1 * this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(oldestEvent - newestEvent)
+          .limit(oldestEventIndex - newestEventIndex)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
     } // else there are no events in this range and we return the empty map
 
@@ -1281,7 +1281,8 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public ResultStatus getBatchOfEvents(final Map<String, Object> jsonMap, final Metrics metrics) {
+  public ResultStatus handleGetBatchOfEvents(final Map<String, Object> jsonMap,
+      final Metrics metrics) {
     final String classMethod = "GroupsManager.getBatchOfEvents";
     metrics.commonSetup(classMethod);
 
