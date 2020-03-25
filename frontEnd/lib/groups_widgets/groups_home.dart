@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/about_widgets/about_page.dart';
@@ -8,6 +10,7 @@ import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
 import 'package:frontEnd/groups_widgets/groups_left_list.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -17,10 +20,10 @@ import 'package:frontEnd/models/group_left.dart';
 import 'package:frontEnd/models/message.dart';
 import 'package:frontEnd/models/user.dart';
 import 'package:frontEnd/models/user_group.dart';
-import 'package:frontEnd/utilities/notification_service.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
 import '../user_settings.dart';
+import 'group_page.dart';
 
 class GroupsHome extends StatefulWidget {
   GroupsHome({Key key}) : super(key: key);
@@ -32,6 +35,8 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome>
     with SingleTickerProviderStateMixin {
   final TextEditingController searchBarController = new TextEditingController();
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+
   TabController tabController;
   List<UserGroup> searchGroups = new List<UserGroup>();
   List<UserGroup> totalGroups = new List<UserGroup>();
@@ -43,8 +48,6 @@ class _GroupsHomeState extends State<GroupsHome>
   final int totalTabs = 2;
   final int groupsHomeTab = 0;
   final int groupsLeftTab = 1;
-  Stream<Message> notificationStream;
-  StreamSubscription messageListener;
 
   @override
   void initState() {
@@ -104,52 +107,22 @@ class _GroupsHomeState extends State<GroupsHome>
         }
       }
     });
-    // set up notification listener
-    NotificationService.instance.start(context, refreshList);
-    messageListener =
-        NotificationService.messageBroadcaster.stream.listen((message) {
-      /*
-        For simplicity's sake, only the group home will show any of the toasts indicating a new notification.
-        Other widgets down the tree of the app will refresh depending on the action (such as a new event).
-       */
-      print(message);
-      if (message.action == NotificationService.removedFromGroupAction) {
-        String groupId = message.payload[GroupsManager.GROUP_ID];
-        if (Globals.currentGroup != null &&
-            Globals.currentGroup.groupId == groupId) {
-          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-          Navigator.pushAndRemoveUntil(
-              context,
-              new MaterialPageRoute(
-                  builder: (BuildContext context) => GroupsHome()),
-              (Route<dynamic> route) => false);
-        }
-      } else if (message.action == NotificationService.addedToGroupAction) {
-        Fluttertoast.showToast(
-            msg: "${message.title}\n${message.body}",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER);
-        if (ModalRoute.of(context).isCurrent) {
-          // only refresh if this widget is visible
-          refreshList();
-        }
-      } else {
-        // event updates
-        Fluttertoast.showToast(
-            msg: "${message.title}\n${message.body}",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER);
-        // TODO add the notification to the events unseen if it isn't already there
-      }
-    });
 
+    // set up notification listener
+    Future<String> token = firebaseMessaging.getToken();
+    UsersManager.registerPushEndpoint(token);
+    firebaseMessaging.configure(
+      onMessage: _onMessage,
+      onLaunch: _onLaunch,
+      onResume: _onResume,
+    );
+    firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
     super.initState();
   }
 
   @override
   void dispose() {
-    this.messageListener.cancel();
-    NotificationService.instance.closeStream();
     tabController.dispose();
     searchBarController.dispose();
     super.dispose();
@@ -617,5 +590,132 @@ class _GroupsHomeState extends State<GroupsHome>
     } else {
       return true;
     }
+  }
+
+  Future<void> _onMessage(Map<String, dynamic> message) async {
+    final notification = message['notification'];
+    if (notification != null) {
+      final data = message['data'];
+      if (data != null) {
+        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
+        Message message = new Message(
+            title: notification['title'],
+            body: notification['body'],
+            action: metadata['action'],
+            payload: metadata['payload']);
+
+        Fluttertoast.showToast(
+            msg: "${message.title}\n${message.body}",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER);
+
+        if (message.action == Globals.removedFromGroupAction) {
+          String groupId = message.payload[GroupsManager.GROUP_ID];
+          if (Globals.currentGroup == null) {
+            // this avoids the current page flashing for a second, don't need to push and remove if already on it
+            refreshList();
+          } else if (Globals.currentGroup.groupId == groupId) {
+            // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+            Globals.user.groups.remove(Globals.currentGroup.groupId);
+            Navigator.pushAndRemoveUntil(
+                context,
+                new MaterialPageRoute(
+                    builder: (BuildContext context) => GroupsHome()),
+                (Route<dynamic> route) => false);
+            Globals.currentGroup = null;
+          }
+        } else if (message.action == Globals.addedToGroupAction) {
+          if (ModalRoute.of(context).isCurrent) {
+            // only refresh if this widget is visible
+            refreshList();
+          }
+        } else {
+          // event updates
+          String groupId = message.payload[GroupsManager.GROUP_ID];
+          String eventId = message.payload[EventsManager.EVENT_ID];
+          if (Globals.user.groups[groupId] != null) {
+            Globals.user.groups[groupId].eventsUnseen
+                .putIfAbsent(eventId, () => true);
+          }
+          if (Globals.refreshGroupPage != null) {
+            Globals.refreshGroupPage();
+          }
+          if (ModalRoute.of(context).isCurrent) {
+            loadGroups();
+            setState(() {});
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  Future<void> _onLaunch(Map<String, dynamic> message) async {
+    Message notification;
+    final notificationData = message['notification'];
+    if (notificationData != null) {
+      final data = message['data'];
+      if (data != null) {
+        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
+        notification = new Message(
+            title: notificationData['title'],
+            body: notificationData['body'],
+            action: metadata['action'],
+            payload: metadata['payload']);
+      }
+    }
+    if (notification != null) {
+      if (notification.action == Globals.addedToGroupAction) {
+        // take the user straight to the group they were added to if they click the notification
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          refreshList();
+        });
+      } else if (notification.action == Globals.eventCreatedAction) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          refreshList();
+        });
+      } else if (notification.action == Globals.eventVotingAction) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          refreshList();
+        });
+      } else if (notification.action == Globals.eventChosenAction) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupPage(
+                    groupId: notification.payload[GroupsManager.GROUP_ID],
+                    groupName: notification.payload[GroupsManager.GROUP_NAME],
+                  )),
+        ).then((val) {
+          refreshList();
+        });
+      }
+    }
+    return null;
+  }
+
+  Future<void> _onResume(Map<String, dynamic> message) {
+    return null;
   }
 }

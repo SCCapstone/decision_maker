@@ -6,7 +6,6 @@ import 'package:frontEnd/imports/groups_manager.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/group.dart';
-import 'package:frontEnd/utilities/notification_service.dart';
 import 'groups_settings.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/events_widgets/events_list.dart';
@@ -27,35 +26,17 @@ class _GroupPageState extends State<GroupPage> {
   bool initialLoad = true;
   bool errorLoading = false;
   Widget errorWidget;
-  StreamSubscription messageListener;
 
   @override
   void initState() {
-    messageListener =
-        NotificationService.messageBroadcaster.stream.listen((message) {
-      if (message.action == NotificationService.eventCreatedAction ||
-          message.action == NotificationService.eventVotingAction ||
-          message.action == NotificationService.eventChosenAction) {
-        String groupId = message.payload[GroupsManager.GROUP_ID];
-        if (Globals.currentGroup != null &&
-            Globals.currentGroup.groupId == groupId &&
-            ModalRoute.of(context).isCurrent) {
-          // if the new event is part of the group that is currently loaded, refresh the group
-          if(mounted){
-            refreshList();
-          }
-        }
-      }
-    }, onDone: () {
-      messageListener.cancel();
-    });
+    Globals.refreshGroupPage = refreshList;
     getGroup();
     super.initState();
   }
-
   @override
   void dispose() {
-    messageListener.cancel();
+    Globals.currentGroup = null;
+    Globals.refreshGroupPage = null;
     super.dispose();
   }
 
@@ -139,7 +120,8 @@ class _GroupPageState extends State<GroupPage> {
                     child: EventsList(
                       group: Globals.currentGroup,
                       events: Globals.currentGroup.events,
-                      refreshPage: updatePage,
+                      refreshNotifications: updatePage,
+                      refreshPage: refreshList,
                     ),
                     onRefresh: refreshList,
                   ),
@@ -167,8 +149,7 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void getGroup() async {
-    ResultStatus<Group> status =
-        await GroupsManager.getGroup(widget.groupId);
+    ResultStatus<Group> status = await GroupsManager.getGroup(widget.groupId);
     initialLoad = false;
     if (status.success) {
       errorLoading = false;
@@ -248,8 +229,10 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   Future<Null> refreshList() async {
-    getGroup();
-    updatePage();
+    if (ModalRoute.of(context).isCurrent) {
+      getGroup();
+      updatePage();
+    }
   }
 
   void updatePage() {

@@ -10,9 +10,15 @@ import 'package:frontEnd/models/group.dart';
 class EventsList extends StatefulWidget {
   final Map<String, Event> events;
   final Group group;
+  final Function refreshNotifications;
   final Function refreshPage;
 
-  EventsList({Key key, this.group, this.events, this.refreshPage})
+  EventsList(
+      {Key key,
+      this.group,
+      this.events,
+      this.refreshNotifications,
+      this.refreshPage})
       : super(key: key);
 
   @override
@@ -41,17 +47,33 @@ class _EventsListState extends State<EventsList> {
         Widget eventCard;
         String eventMode = EventsManager.getEventMode(widget.events[eventId]);
         if (eventMode == EventsManager.considerMode) {
-          eventCard = new EventCardConsider(widget.group.groupId,
-              widget.events[eventId], eventId, widget.refreshPage);
+          eventCard = new EventCardConsider(
+              widget.group.groupId,
+              widget.events[eventId],
+              eventId,
+              widget.refreshNotifications,
+              widget.refreshPage);
         } else if (eventMode == EventsManager.votingMode) {
-          eventCard = new EventCardVoting(widget.group.groupId,
-              widget.events[eventId], eventId, widget.refreshPage);
+          eventCard = new EventCardVoting(
+              widget.group.groupId,
+              widget.events[eventId],
+              eventId,
+              widget.refreshNotifications,
+              widget.refreshPage);
         } else if (eventMode == EventsManager.occurringMode) {
-          eventCard = new EventCardOccurring(widget.group.groupId,
-              widget.events[eventId], eventId, widget.refreshPage);
+          eventCard = new EventCardOccurring(
+              widget.group.groupId,
+              widget.events[eventId],
+              eventId,
+              widget.refreshNotifications,
+              widget.refreshPage);
         } else if (eventMode == EventsManager.closedMode) {
-          eventCard = new EventCardClosed(widget.group.groupId,
-              widget.events[eventId], eventId, widget.refreshPage);
+          eventCard = new EventCardClosed(
+              widget.group.groupId,
+              widget.events[eventId],
+              eventId,
+              widget.refreshNotifications,
+              widget.refreshPage);
         }
         eventCards.add(eventCard);
       }

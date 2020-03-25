@@ -11,9 +11,11 @@ class EventCardConsider extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshNotifications;
   final Function refreshPage;
 
-  EventCardConsider(this.groupId, this.event, this.eventId, this.refreshPage);
+  EventCardConsider(this.groupId, this.event, this.eventId,
+      this.refreshNotifications, this.refreshPage);
 
   @override
   _EventCardConsiderState createState() => new _EventCardConsiderState();
@@ -93,7 +95,9 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                           groupId: widget.groupId,
                           eventId: widget.eventId,
                           mode: EventsManager.considerMode)),
-                );
+                ).then((_) {
+                  widget.refreshPage();
+                });
               },
             )
           ],
@@ -110,7 +114,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshPage();
+        widget.refreshNotifications();
       });
     }
   }

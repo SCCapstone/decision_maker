@@ -10,9 +10,11 @@ class EventCardClosed extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshNotifications;
   final Function refreshPage;
 
-  EventCardClosed(this.groupId, this.event, this.eventId, this.refreshPage);
+  EventCardClosed(this.groupId, this.event, this.eventId,
+      this.refreshNotifications, this.refreshPage);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
@@ -90,7 +92,9 @@ class _EventCardClosedState extends State<EventCardClosed> {
                   MaterialPageRoute(
                       builder: (context) => EventDetailsClosed(
                           groupId: widget.groupId, eventId: widget.eventId)),
-                );
+                ).then((_) {
+                  widget.refreshPage();
+                });
               },
             )
           ],
@@ -107,7 +111,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshPage();
+        widget.refreshNotifications();
       });
     }
   }

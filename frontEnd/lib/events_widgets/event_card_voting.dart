@@ -11,9 +11,11 @@ class EventCardVoting extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshNotifications;
   final Function refreshPage;
 
-  EventCardVoting(this.groupId, this.event, this.eventId, this.refreshPage);
+  EventCardVoting(this.groupId, this.event, this.eventId,
+      this.refreshNotifications, this.refreshPage);
 
   @override
   _EventCardVotingState createState() => new _EventCardVotingState();
@@ -87,7 +89,9 @@ class _EventCardVotingState extends State<EventCardVoting> {
                             eventId: widget.eventId,
                             mode: EventsManager.votingMode,
                           )),
-                );
+                ).then((_) {
+                  widget.refreshPage();
+                });
               },
             )
           ],
@@ -104,7 +108,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshPage();
+        widget.refreshNotifications();
       });
     }
   }
