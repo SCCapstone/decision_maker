@@ -873,6 +873,7 @@ public class GroupsManager extends DatabaseAccessManager {
     boolean success = true;
 
     final Event updatedEvent = group.getEvents().get(eventId);
+    final String updatedEventCreator = updatedEvent.getEventCreatorUsername();
 
     final Map<String, Object> payload = updatedEvent.asMap();
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
@@ -901,7 +902,7 @@ public class GroupsManager extends DatabaseAccessManager {
     final Metadata metadata = new Metadata(action, payload);
 
     for (String username : usernames) {
-      if (isNewEvent && username.equals(updatedEvent.getEventCreatorUsername())) {
+      if (!(isNewEvent && username.equals(updatedEventCreator))) {
         try {
           final User user = new User(
               DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
@@ -937,6 +938,11 @@ public class GroupsManager extends DatabaseAccessManager {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
+
+    String newEventCreator = null;
+    if (isNewEvent) {
+      newEventCreator = newGroup.getEvents().get(updatedEventId).getEventCreatorUsername();
+    }
 
     NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
 
@@ -993,13 +999,15 @@ public class GroupsManager extends DatabaseAccessManager {
           .withNameMap(nameMap);
 
       for (final String oldMember : persistingUsernames) {
-        try {
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-        } catch (Exception e) {
-          success = false;
-          metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+        if (!(isNewEvent && oldMember.equals(newEventCreator))) {
+          try {
+            updateItemSpec
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          } catch (Exception e) {
+            success = false;
+            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+          }
         }
       }
     }
