@@ -122,7 +122,7 @@ class _GroupPageState extends State<GroupPage> {
                     child: EventsList(
                       group: Globals.currentGroup,
                       events: Globals.currentGroup.events,
-                      refreshNotifications: updatePage,
+                      refreshEventsUnseen: updatePage,
                       refreshPage: refreshList,
                     ),
                     onRefresh: refreshList,

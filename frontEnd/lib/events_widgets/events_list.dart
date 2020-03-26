@@ -10,14 +10,14 @@ import 'package:frontEnd/models/group.dart';
 class EventsList extends StatefulWidget {
   final Map<String, Event> events;
   final Group group;
-  final Function refreshNotifications;
+  final Function refreshEventsUnseen;
   final Function refreshPage;
 
   EventsList(
       {Key key,
       this.group,
       this.events,
-      this.refreshNotifications,
+      this.refreshEventsUnseen,
       this.refreshPage})
       : super(key: key);
 
@@ -51,28 +51,28 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              widget.refreshNotifications,
+              widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.votingMode) {
           eventCard = new EventCardVoting(
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              widget.refreshNotifications,
+              widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.occurringMode) {
           eventCard = new EventCardOccurring(
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              widget.refreshNotifications,
+              widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.closedMode) {
           eventCard = new EventCardClosed(
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              widget.refreshNotifications,
+              widget.refreshEventsUnseen,
               widget.refreshPage);
         }
         eventCards.add(eventCard);

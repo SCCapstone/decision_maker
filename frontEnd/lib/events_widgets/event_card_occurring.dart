@@ -11,11 +11,11 @@ class EventCardOccurring extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
-  final Function refreshNotifications;
+  final Function refreshEventsUnseen;
   final Function refreshPage;
 
   EventCardOccurring(this.groupId, this.event, this.eventId,
-      this.refreshNotifications, this.refreshPage);
+      this.refreshEventsUnseen, this.refreshPage);
 
   @override
   _EventCardOccurringState createState() => new _EventCardOccurringState();
@@ -117,7 +117,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshNotifications();
+        widget.refreshEventsUnseen();
       });
     }
   }
