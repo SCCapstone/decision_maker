@@ -594,82 +594,63 @@ class _GroupsHomeState extends State<GroupsHome>
     // this allows for android users to press the back button when done searching and it will remove the search bar
     if (this.searching) {
       toggleSearch();
-      return false;
-    } else {
-      return true;
     }
+
+    return !this.searching;
   }
 
-  Future<void> _onMessage(Map<String, dynamic> message) async {
-    final notification = message['notification'];
-    if (notification != null) {
-      final data = message['data'];
-      if (data != null) {
-        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
-        Message message = new Message(
-            title: notification['title'],
-            body: notification['body'],
-            action: metadata['action'],
-            payload: metadata['payload']);
+  Future<void> _onMessage(Map<String, dynamic> notificationRaw) async {
+    try {
+      final Message notification = Message.fromJSON(notificationRaw);
 
-        Fluttertoast.showToast(
-            msg: "${message.title}\n${message.body}",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER);
+      Fluttertoast.showToast(
+          msg: "${notification.title}\n${notification.body}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER);
 
-        if (message.action == Globals.removedFromGroupAction) {
-          String groupId = message.payload[GroupsManager.GROUP_ID];
-          if (Globals.currentGroup == null) {
-            // this avoids the current page flashing for a second, don't need to pop if already here
-            refreshList();
-          } else if (Globals.currentGroup.groupId == groupId) {
-            // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-            Globals.user.groups.remove(Globals.currentGroup.groupId);
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-        } else if (message.action == Globals.addedToGroupAction) {
-          if (ModalRoute.of(context).isCurrent) {
-            // only refresh if this widget is visible
-            refreshList();
-          }
-        } else {
-          // event updates
-          String groupId = message.payload[GroupsManager.GROUP_ID];
-          String eventId = message.payload[EventsManager.EVENT_ID];
-          if (Globals.user.groups[groupId] != null) {
-            Globals.user.groups[groupId].eventsUnseen
-                .putIfAbsent(eventId, () => true);
-          }
-          if (Globals.refreshGroupPage != null) {
-            // the refresh callback has been properly set, so refresh the group page
-            Globals.refreshGroupPage();
-          }
-          if (ModalRoute.of(context).isCurrent) {
-            // only update groups home if it actually visible
-            loadGroups();
-            setState(() {});
-          }
+      if (notification.action == Globals.removedFromGroupAction) {
+        String groupId = notification.payload[GroupsManager.GROUP_ID];
+        if (Globals.currentGroup == null) {
+          // this avoids the current page flashing for a second, don't need to pop if already here
+          refreshList();
+        } else if (Globals.currentGroup.groupId == groupId) {
+          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+          Globals.user.groups.remove(Globals.currentGroup.groupId);
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else if (notification.action == Globals.addedToGroupAction) {
+        if (ModalRoute.of(context).isCurrent) {
+          // only refresh if this widget is visible
+          refreshList();
+        }
+      } else {
+        // event updates
+        String groupId = notification.payload[GroupsManager.GROUP_ID];
+        String eventId = notification.payload[EventsManager.EVENT_ID];
+        if (Globals.user.groups[groupId] != null) {
+          Globals.user.groups[groupId].eventsUnseen
+              .putIfAbsent(eventId, () => true);
+        }
+        if (Globals.refreshGroupPage != null) {
+          // the refresh callback has been properly set, so refresh the group page
+          Globals.refreshGroupPage();
+        }
+        if (ModalRoute.of(context).isCurrent) {
+          // only update groups home if it actually visible
+          loadGroups();
+          setState(() {});
         }
       }
+    } catch (e) {
+      //do nothing
     }
-    return null;
+    return;
   }
 
-  Future<void> _onLaunch(Map<String, dynamic> message) async {
-    Message notification;
-    final notificationData = message['notification'];
-    if (notificationData != null) {
-      final data = message['data'];
-      if (data != null) {
-        Map<String, dynamic> metadata = jsonDecode(data['metadata']);
-        notification = new Message(
-            title: notificationData['title'],
-            body: notificationData['body'],
-            action: metadata['action'],
-            payload: metadata['payload']);
-      }
-    }
-    if (notification != null) {
+  Future<void> _onLaunch(Map<String, dynamic> notificationRaw) async {
+    try {
+      final Message notification = Message.fromJSON(notificationRaw);
+
       if (notification.action == Globals.addedToGroupAction) {
         // take the user straight to the group they were added to if they click the notification
         Navigator.push(
@@ -716,6 +697,8 @@ class _GroupsHomeState extends State<GroupsHome>
           refreshList();
         });
       }
+    } catch (e) {
+      //do nothing
     }
     return null;
   }
