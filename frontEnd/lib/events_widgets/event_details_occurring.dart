@@ -135,19 +135,22 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
-                    ExpansionTile(
-                      title: Text("Considered (${this.event.optedIn.length})"),
-                      children: <Widget>[
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * .2,
+                    Visibility (
+                      visible: this.event.optedIn.length > 0,
+                      child: ExpansionTile(
+                        title: Text("Considered (${this.event.optedIn.length})"),
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: MediaQuery.of(context).size.height * .2,
+                            ),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
+                            ),
                           ),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: this.userRows.values.toList(),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),

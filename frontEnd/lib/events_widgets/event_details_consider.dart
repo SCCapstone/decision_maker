@@ -134,20 +134,23 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 16)),
-                    ExpansionTile(
-                      title:
-                          Text("Members considered (${this.userRows.length})"),
-                      children: <Widget>[
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * .2,
+                    Visibility(
+                      visible: this.userRows.length > 0,
+                      child: ExpansionTile(
+                        title:
+                        Text("Members considered (${this.userRows.length})"),
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: MediaQuery.of(context).size.height * .2,
+                            ),
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
+                            ),
                           ),
-                          child: ListView(
-                            shrinkWrap: true,
-                            children: this.userRows.values.toList(),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
