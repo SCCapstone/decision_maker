@@ -429,7 +429,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-          //when rsvp is <= 0 updateUsersTable will get called by setEventTentativeChoices
+          //when rsvp is not greater than 0, updateUsersTable gets called by setEventTentativeChoices
           if (newEvent.getRsvpDuration() > 0) {
             this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
           }
