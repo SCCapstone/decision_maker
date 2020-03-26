@@ -248,8 +248,6 @@ class _GroupPageState extends State<GroupPage> {
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen.clear();
-    setState(() {
-      updatePage();
-    });
+    updatePage();
   }
 }
