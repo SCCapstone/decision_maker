@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import javafx.beans.binding.ObjectExpression;
 import models.Event;
 import models.Group;
 import models.Metadata;
