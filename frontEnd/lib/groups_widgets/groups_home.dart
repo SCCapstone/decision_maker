@@ -651,41 +651,15 @@ class _GroupsHomeState extends State<GroupsHome>
     try {
       final Message notification = Message.fromJSON(notificationRaw);
 
-      if (notification.action == Globals.addedToGroupAction) {
+      final List<String> actionsThatOpenGroupPage = [
+        Globals.addedToGroupAction,
+        Globals.eventCreatedAction,
+        Globals.eventVotingAction,
+        Globals.eventChosenAction
+      ];
+
+      if (actionsThatOpenGroupPage.contains(notification.action)) {
         // take the user straight to the group they were added to if they click the notification
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GroupPage(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    groupName: notification.payload[GroupsManager.GROUP_NAME],
-                  )),
-        ).then((val) {
-          refreshList();
-        });
-      } else if (notification.action == Globals.eventCreatedAction) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GroupPage(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    groupName: notification.payload[GroupsManager.GROUP_NAME],
-                  )),
-        ).then((val) {
-          refreshList();
-        });
-      } else if (notification.action == Globals.eventVotingAction) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GroupPage(
-                    groupId: notification.payload[GroupsManager.GROUP_ID],
-                    groupName: notification.payload[GroupsManager.GROUP_NAME],
-                  )),
-        ).then((val) {
-          refreshList();
-        });
-      } else if (notification.action == Globals.eventChosenAction) {
         Navigator.push(
           context,
           MaterialPageRoute(
