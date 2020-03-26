@@ -230,12 +230,14 @@ class _GroupPageState extends State<GroupPage> {
         ));
   }
 
-  refreshList() {
+  Future<void> refreshList() async {
     if (ModalRoute.of(context).isCurrent) {
       // only refresh if this page is actually visible
       getGroup();
       updatePage();
     }
+
+    return;
   }
 
   void updatePage() {

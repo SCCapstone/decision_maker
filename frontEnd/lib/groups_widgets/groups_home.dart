@@ -700,10 +700,10 @@ class _GroupsHomeState extends State<GroupsHome>
     } catch (e) {
       //do nothing
     }
-    return null;
+    return;
   }
 
-  Future<void> _onResume(Map<String, dynamic> message) {
-    return null;
+  Future<void> _onResume(Map<String, dynamic> message) async {
+    return;
   }
 }
