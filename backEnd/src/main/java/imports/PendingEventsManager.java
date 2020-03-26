@@ -97,23 +97,31 @@ public class PendingEventsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GroupsManager.GROUP_ID);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String scannerId = (String) jsonMap.get(SCANNER_ID);
+        final Boolean isNewEvent = (jsonMap.containsKey(RequestFields.NEW_EVENT)
+            && (Boolean) jsonMap.get(RequestFields.NEW_EVENT));
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
           final Group group = new Group(groupData.asMap());
           final Event event = group.getEvents().get(eventId);
+          final Event updatedEvent = event.clone();
 
           if (event.getTentativeAlgorithmChoices().isEmpty()) {
             //we need to:
             //  run the algorithm
             //  update the event object
             //  update the pending events table with the new data time for the end of voting
+            final Map<String, Object> tentativeChoices;
+            if (event.getVotingDuration() > 0) {
+              tentativeChoices = this.getTentativeAlgorithmChoices(event, 3, metrics);
+            } else {
+              tentativeChoices = this.getTentativeAlgorithmChoices(event, 1, metrics);
+              updatedEvent.setSelectedChoice(tentativeChoices.keySet().toArray()[0].toString());
+            }
 
-            final Map<String, Object> tentativeChoices = this
-                .getTentativeAlgorithmChoices(event, metrics);
-
+            updatedEvent.setTentativeAlgorithmChoices(tentativeChoices);
             DatabaseManagers.GROUPS_MANAGER
-                .setEventTentativeChoices(group, eventId, tentativeChoices, metrics);
+                .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
 
             //this overwrites the old mapping
             ResultStatus updatePendingEvent = this
@@ -126,10 +134,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
           } else {
             //we need to loop over the voting results and figure out the yes percentage of votes for the choices
             //set the selected choice as the one with the highest percent
-            String result = this.getSelectedChoice(event, metrics);
+            updatedEvent.setSelectedChoice(this.getSelectedChoice(event, metrics));
 
             DatabaseManagers.GROUPS_MANAGER
-                .setEventSelectedChoice(group, eventId, result, metrics);
+                .updateEvent(group, eventId, updatedEvent, false, metrics);
 
             // now remove the entry from the pending events table since it has been fully processed now
             String updateExpression = "remove #groupEventKey";
@@ -162,7 +170,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   private Map<String, Object> getTentativeAlgorithmChoices(final Event event,
-      final Metrics metrics) {
+      final Integer numberOfChoices, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
 
@@ -204,7 +212,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
       }
 
       //user ratings have been summed, get the top X now
-      while (returnValue.size() < 3 && choiceRatingsToSums.size() > 0) {
+      while (returnValue.size() < numberOfChoices && choiceRatingsToSums.size() > 0) {
         final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
 
         //we add to the return map and remove the max from the choice rating map
@@ -268,6 +276,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
       final Integer pollDuration, final Metrics metrics) {
+    if (pollDuration <= 0) {
+      return new ResultStatus(true, "No insert needed");
+    }
+
     final String classMethod = "PendingEventsManager.addPendingEvent";
     metrics.commonSetup(classMethod);
 

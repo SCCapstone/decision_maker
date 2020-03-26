@@ -201,7 +201,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         //old group being null signals we're creating a new group
         //updatedEventId being null signals this isn't an event update
-        this.updateUsersTable(null, newGroup, null, metrics);
+        this.updateUsersTable(null, newGroup, null, false, metrics);
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
@@ -283,7 +283,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
             //update mappings in users and categories tables
             final Group newGroup = new Group(this.getMapByPrimaryKey(groupId));
-            this.updateUsersTable(oldGroup, newGroup, null, metrics);
+            this.updateUsersTable(oldGroup, newGroup, null, false, metrics);
             this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
                 oldGroup.getGroupName(), groupName);
 
@@ -416,19 +416,22 @@ public class GroupsManager extends DatabaseAccessManager {
                 .addPendingEvent(groupId, eventId, newEvent.getRsvpDuration(), metrics);
           } else {
             //this will set potential algo choices and create the entry for voting duration timeout
-            final Map<String, Object> processPendingEventInput = ImmutableMap
-                .of(GROUP_ID, groupId, RequestFields.EVENT_ID, eventId,
-                    PendingEventsManager.SCANNER_ID,
-                    DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey());
+            final Map<String, Object> processPendingEventInput = ImmutableMap.of(
+                GROUP_ID, groupId,
+                RequestFields.EVENT_ID, eventId,
+                PendingEventsManager.SCANNER_ID,
+                DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey(),
+                RequestFields.NEW_EVENT, true
+            );
             final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .processPendingEvent(processPendingEventInput, metrics);
           }
 
           final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-          //when rsvp is <= 0 updateUsersTable will get called by setEventTentativeChoices
+          //when rsvp is not greater than 0, updateUsersTable gets called by setEventTentativeChoices
           if (newEvent.getRsvpDuration() > 0) {
-            this.updateUsersTable(oldGroup, newGroup, eventId, metrics);
+            this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
           }
 
           resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
@@ -862,13 +865,14 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private void sendEventUpdatedNotification(final Set<String> usernames,
-      final Group group, final String eventId, final Metrics metrics) {
+      final Group group, final String eventId, final Boolean isNewEvent, final Metrics metrics) {
     final String classMethod = "GroupsManager.sendEventUpdatedNotification";
     metrics.commonSetup(classMethod);
 
     boolean success = true;
 
     final Event updatedEvent = group.getEvents().get(eventId);
+    final String updatedEventCreator = updatedEvent.getEventCreatorUsername();
 
     final Map<String, Object> payload = updatedEvent.asMap();
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
@@ -897,19 +901,21 @@ public class GroupsManager extends DatabaseAccessManager {
     final Metadata metadata = new Metadata(action, payload);
 
     for (String username : usernames) {
-      try {
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+      if (!(isNewEvent && username.equals(updatedEventCreator))) {
+        try {
+          final User user = new User(
+              DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-        if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted() && !user.getGroups()
-            .get(group.getGroupId()).isMuted()) {
-          DatabaseManagers.SNS_ACCESS_MANAGER
-              .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody, eventId,
-                  metadata);
+          if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted() && !user.getGroups()
+              .get(group.getGroupId()).isMuted()) {
+            DatabaseManagers.SNS_ACCESS_MANAGER
+                .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody, eventId,
+                    metadata);
+          }
+        } catch (Exception e) {
+          success = false;
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
-      } catch (Exception e) {
-        success = false;
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
@@ -927,10 +933,15 @@ public class GroupsManager extends DatabaseAccessManager {
    * @param metrics        Standard metrics object for profiling and logging
    */
   private void updateUsersTable(final Group oldGroup, final Group newGroup,
-      final String updatedEventId, final Metrics metrics) {
+      final String updatedEventId, final Boolean isNewEvent, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateUsersTable";
     metrics.commonSetup(classMethod);
     boolean success = true;
+
+    String newEventCreator = null;
+    if (isNewEvent) {
+      newEventCreator = newGroup.getEvents().get(updatedEventId).getEventCreatorUsername();
+    }
 
     NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
 
@@ -987,13 +998,15 @@ public class GroupsManager extends DatabaseAccessManager {
           .withNameMap(nameMap);
 
       for (final String oldMember : persistingUsernames) {
-        try {
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-        } catch (Exception e) {
-          success = false;
-          metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+        if (!(isNewEvent && oldMember.equals(newEventCreator))) {
+          try {
+            updateItemSpec
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          } catch (Exception e) {
+            success = false;
+            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+          }
         }
       }
     }
@@ -1059,7 +1072,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
     if (updatedEventId != null) {
       try {
-        this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, metrics);
+        this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, isNewEvent,
+            metrics);
       } catch (Exception e) {
         success = false;
         metrics.log(new ErrorDescriptor<>(newMembers, classMethod, e));
@@ -1124,60 +1138,9 @@ public class GroupsManager extends DatabaseAccessManager {
     }
   }
 
-  public ResultStatus setEventTentativeChoices(final Group oldGroup, final String eventId,
-      final Map<String, Object> tentativeChoices, final Metrics metrics) {
-    final String classMethod = "GroupsManager.setEventTentativeChoices";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    try {
-      final Map<String, Object> votingNumbersSetup = this
-          .getVotingNumbersSetup(tentativeChoices);
-
-      final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
-          .format(this.getDateTimeFormatter());
-
-      //update the event
-      String updateExpression =
-          "set " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
-              + LAST_ACTIVITY + " = :currentDate, " + EVENTS + ".#eventId." + VOTING_NUMBERS
-              + " = :votingNumbers";
-      NameMap nameMap = new NameMap().with("#eventId", eventId);
-      ValueMap valueMap = new ValueMap()
-          .withMap(":tentativeChoices", tentativeChoices)
-          .withMap(":votingNumbers", votingNumbersSetup)
-          .withString(":currentDate", lastActivity);
-
-      UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(GROUP_ID, oldGroup.getGroupId())
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap)
-          .withValueMap(valueMap);
-
-      this.updateItem(updateItemSpec);
-
-      final Group newGroup = oldGroup.clone();
-      newGroup.setLastActivity(lastActivity);
-      newGroup.getEvents().get(eventId).setTentativeAlgorithmChoices(tentativeChoices);
-
-      this.updateUsersTable(oldGroup, newGroup, eventId, metrics);
-
-      resultStatus = new ResultStatus(true, "Tentative algorithm choices set.");
-    } catch (Exception e) {
-      resultStatus.resultMessage = "Error setting tentative algorithm choices";
-      metrics.log(new ErrorDescriptor<>(
-          String.format("GroupId: %s, EventId: %s", oldGroup.getGroupId(), eventId),
-          classMethod, e));
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  private Map<String, Object> getVotingNumbersSetup(
-      final Map<String, Object> tentativeAlgorithmChoices) {
-    final Map<String, Object> votingNumbers = new HashMap<>();
+  private Map<String, Map> getVotingNumbersSetup(
+      final Map<String, String> tentativeAlgorithmChoices) {
+    final Map<String, Map> votingNumbers = new HashMap<>();
 
     //we're filling a map keyed by choiceId with empty maps
     for (String choiceId : tentativeAlgorithmChoices.keySet()) {
@@ -1187,47 +1150,64 @@ public class GroupsManager extends DatabaseAccessManager {
     return votingNumbers;
   }
 
-  public ResultStatus setEventSelectedChoice(final Group oldGroup, final String eventId,
-      final String result, final Metrics metrics) {
-    final String classMethod = "GroupsManager.setEventSelectedChoice";
+  public ResultStatus updateEvent(final Group oldGroup, final String eventId,
+      final Event updatedEvent, final Boolean isNewEvent, final Metrics metrics) {
+    final String classMethod = "GroupsManager.updateEvent";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     try {
+      final Event oldEvent = oldGroup.getEvents().get(eventId);
+
       final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
           .format(this.getDateTimeFormatter());
 
-      //update the event
-      String updateExpression =
-          "set " + EVENTS + ".#eventId." + SELECTED_CHOICE + " = :selectedChoice, " + LAST_ACTIVITY
-              + " = :currentDate";
-      NameMap nameMap = new NameMap().with("#eventId", eventId);
-      ValueMap valueMap = new ValueMap().withString(":selectedChoice", result)
-          .withString(":currentDate", lastActivity);
+      String updateExpression = "set " + LAST_ACTIVITY + " = :currentDate";
+      ValueMap valueMap = new ValueMap().withString(":currentDate", lastActivity);
+      NameMap nameMap = new NameMap();
 
-      UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(GROUP_ID, oldGroup.getGroupId())
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap)
-          .withValueMap(valueMap);
+      if (oldEvent.getTentativeAlgorithmChoices().isEmpty() && !updatedEvent
+          .getTentativeAlgorithmChoices().isEmpty()) {
+        updateExpression +=
+            ", " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
+                + EVENTS + ".#eventId." + VOTING_NUMBERS + " = :votingNumbers";
+        nameMap.with("#eventId", eventId);
+        valueMap.withMap(":tentativeChoices", updatedEvent.getTentativeAlgorithmChoices())
+            .withMap(":votingNumbers",
+                this.getVotingNumbersSetup(updatedEvent.getTentativeAlgorithmChoices()));
+      }
 
-      DatabaseManagers.GROUPS_MANAGER.updateItem(updateItemSpec);
+      if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
+        updateExpression += ", " + EVENTS + ".#eventId." + SELECTED_CHOICE + " = :selectedChoice";
+        nameMap.with("#eventId", eventId);
+        valueMap.withString(":selectedChoice", updatedEvent.getSelectedChoice());
+      }
 
-      this.updateItem(updateItemSpec);
+      if (nameMap.containsKey("#eventId")) {
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(GROUP_ID, oldGroup.getGroupId())
+            .withUpdateExpression(updateExpression)
+            .withNameMap(nameMap)
+            .withValueMap(valueMap);
 
-      final Group newGroup = oldGroup.clone();
-      newGroup.setLastActivity(lastActivity);
-      newGroup.getEvents().get(eventId).setSelectedChoice(result);
+        this.updateItem(updateItemSpec);
 
-      this.updateUsersTable(oldGroup, newGroup, eventId, metrics);
-    } catch (Exception e) {
-      resultStatus.resultMessage = "Error setting selected choice";
-      metrics.log(new ErrorDescriptor<>(
-          String.format("GroupId: %s, EventId: %s", oldGroup.getGroupId(), eventId),
-          classMethod, e));
+        final Group newGroup = oldGroup.clone();
+        newGroup.setLastActivity(lastActivity);
+        newGroup.getEvents().put(eventId, updatedEvent);
+
+        this.updateUsersTable(oldGroup, newGroup, eventId, isNewEvent, metrics);
+
+        resultStatus = new ResultStatus(true, "Event updated successfully.");
+      } else {
+        // this method shouldn't get called if there is nothing to update
+        throw new Exception("Nothing to update");
+      }
+    } catch (final Exception e) {
+      metrics.log(new ErrorDescriptor<>(oldGroup.asMap(), classMethod, e));
+      resultStatus.resultMessage = "Exception in " + classMethod;
     }
-
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
