@@ -85,6 +85,7 @@ public class CategoriesManager extends DatabaseAccessManager {
                 + updatedUsersTableResult.resultMessage;
           }
         } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
@@ -100,7 +101,6 @@ public class CategoriesManager extends DatabaseAccessManager {
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
-
 
   private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
     final String classMethod = "CategoryManager.newCategoryIsValid";
@@ -221,6 +221,7 @@ public class CategoriesManager extends DatabaseAccessManager {
             resultStatus.applyResultStatus(updatedUsersTableResult);
           }
         } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
