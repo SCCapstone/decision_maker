@@ -24,12 +24,13 @@ class EventCardVoting extends StatefulWidget {
 class _EventCardVotingState extends State<EventCardVoting> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .27,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * .27,
+      ),
+      child: Container(
+        child: ListView(
+          shrinkWrap: true,
           children: <Widget>[
             Container(
               // height has to be here otherwise it overflows
@@ -78,28 +79,38 @@ class _EventCardVotingState extends State<EventCardVoting> {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-            RaisedButton(
-              child: Text("Vote"),
-              color: Colors.green,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EventDetailsVoting(
-                            groupId: widget.groupId,
-                            eventId: widget.eventId,
-                            mode: EventsManager.votingMode,
-                          )),
-                ).then((_) {
-                  widget.refreshPage();
-                });
-              },
-            )
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
+            Center(
+              child: RaisedButton(
+                child: Text("Vote"),
+                color: Colors.green,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDetailsVoting(
+                              groupId: widget.groupId,
+                              eventId: widget.eventId,
+                              mode: EventsManager.votingMode,
+                            )),
+                  ).then((_) {
+                    widget.refreshPage();
+                  });
+                },
+              ),
+            ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
           ],
         ),
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: getBorderColor()))),
       ),
-      decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 
