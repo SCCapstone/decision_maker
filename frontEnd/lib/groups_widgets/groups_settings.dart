@@ -598,11 +598,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               groupId: Globals.currentGroup.groupId,
               groupName: Globals.currentGroup.groupName,
               icon: Globals.currentGroup.icon));
-      Navigator.pushAndRemoveUntil(
-          context,
-          new MaterialPageRoute(
-              builder: (BuildContext context) => GroupsHome()),
-          (Route<dynamic> route) => false);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }
@@ -616,11 +612,7 @@ class _GroupSettingsState extends State<GroupSettings> {
 
     if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
-      Navigator.pushAndRemoveUntil(
-          context,
-          new MaterialPageRoute(
-              builder: (BuildContext context) => GroupsHome()),
-          (Route<dynamic> route) => false);
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, context);
     }

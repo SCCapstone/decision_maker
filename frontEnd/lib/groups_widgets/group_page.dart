@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -27,8 +29,16 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void initState() {
+    Globals.refreshGroupPage = refreshList;
     getGroup();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    Globals.currentGroup = null;
+    Globals.refreshGroupPage = null;
+    super.dispose();
   }
 
   @override
@@ -56,7 +66,7 @@ class _GroupPageState extends State<GroupPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => GroupSettings()),
-                ).then((_) => GroupPage());
+                ).then((_) => refreshList());
               },
             ),
           ],
@@ -85,8 +95,9 @@ class _GroupPageState extends State<GroupPage> {
                       ),
                     ),
                     Visibility(
-                      visible: Globals
-                          .user.groups[widget.groupId].eventsUnseen.isNotEmpty,
+                      visible: (Globals.user.groups[widget.groupId] != null &&
+                          Globals.user.groups[widget.groupId].eventsUnseen
+                              .isNotEmpty),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(
@@ -111,7 +122,8 @@ class _GroupPageState extends State<GroupPage> {
                     child: EventsList(
                       group: Globals.currentGroup,
                       events: Globals.currentGroup.events,
-                      refreshPage: updatePage,
+                      refreshEventsUnseen: updatePage,
+                      refreshPage: refreshList,
                     ),
                     onRefresh: refreshList,
                   ),
@@ -139,8 +151,7 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void getGroup() async {
-    ResultStatus<Group> status =
-        await GroupsManager.getGroup(widget.groupId);
+    ResultStatus<Group> status = await GroupsManager.getGroup(widget.groupId);
     initialLoad = false;
     if (status.success) {
       errorLoading = false;
@@ -219,9 +230,14 @@ class _GroupPageState extends State<GroupPage> {
         ));
   }
 
-  Future<Null> refreshList() async {
-    getGroup();
-    updatePage();
+  Future<void> refreshList() async {
+    if (ModalRoute.of(context).isCurrent) {
+      // only refresh if this page is actually visible
+      getGroup();
+      updatePage();
+    }
+
+    return;
   }
 
   void updatePage() {
@@ -232,8 +248,6 @@ class _GroupPageState extends State<GroupPage> {
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen.clear();
-    setState(() {
-      updatePage();
-    });
+    updatePage();
   }
 }

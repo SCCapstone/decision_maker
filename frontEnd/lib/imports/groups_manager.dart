@@ -3,14 +3,12 @@ import 'dart:io';
 
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group_interface.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';
 import 'api_manager.dart';
-import 'globals.dart';
 
 class GroupsManager {
   static final String apiEndpoint = "groupsendpoint";
@@ -68,16 +66,16 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Failed to load groups";
+          retVal.errorMessage = "Failed to load group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Failed to load groups $e";
+        retVal.errorMessage = "Failed to load group $e";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to load groups from the database. Check internet connection.";
+          "Network error. Failed to load group from the database. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to load groups from the database.";
+      retVal.errorMessage = "Failed to load group from the database.";
     }
     return retVal;
   }
