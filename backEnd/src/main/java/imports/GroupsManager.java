@@ -1232,7 +1232,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public ResultStatus removeCategoryFromGroups(final List<String> groupIds, final String categoryId,
+  public ResultStatus removeCategoryFromGroups(final Set<String> groupIds, final String categoryId,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
     metrics.commonSetup(classMethod);

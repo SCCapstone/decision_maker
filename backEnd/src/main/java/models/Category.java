@@ -4,9 +4,7 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import imports.CategoriesManager;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Setter;
 
 @Data
 public class Category implements Model {
@@ -15,10 +13,8 @@ public class Category implements Model {
   private String categoryName;
   private String owner;
   private Integer nextChoiceNo;
-
-  @Setter(AccessLevel.NONE)
+  private Integer version;
   private Map<String, String> choices;
-  @Setter(AccessLevel.NONE)
   private Map<String, String> groups;
 
   public Category(final Map<String, Object> jsonMap) {
@@ -26,8 +22,9 @@ public class Category implements Model {
     this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
     this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
+    this.setVersion(this.getIntFromObject(jsonMap.get(CategoriesManager.VERSION)));
     this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
-    this.setGroups((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
+    this.setGroupsRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
   }
 
   public Item asItem() {
@@ -61,11 +58,7 @@ public class Category implements Model {
     }
   }
 
-  public void setChoices(final Map<String, String> choices) {
-    this.choices = choices;
-  }
-
-  public void setGroups(final Map<String, Object> jsonMap) {
+  public void setGroupsRawMap(final Map<String, Object> jsonMap) {
     this.groups = null;
     if (jsonMap != null) {
       this.groups = new HashMap<>();
