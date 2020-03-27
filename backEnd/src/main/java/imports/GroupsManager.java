@@ -117,6 +117,7 @@ public class GroupsManager extends DatabaseAccessManager {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
+    //linked hash maps maintain order whereas normal hash maps do not
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
     if (group.getEvents().size() > newestEventIndex) {
@@ -125,7 +126,7 @@ public class GroupsManager extends DatabaseAccessManager {
         oldestEventIndex = group.getEvents().size();
       }
 
-      //first we get all of the events up to the oldestEvent being asked for
+      //first we get all of the events up to the oldestEvent being asked for in order
       eventsBatch = group.getEvents()
           .entrySet()
           .stream()
@@ -133,13 +134,20 @@ public class GroupsManager extends DatabaseAccessManager {
           .limit(oldestEventIndex)
           .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
-      //then we sort in the opposite direction asking for the appropriate number of events
-      eventsBatch = eventsBatch
-          .entrySet()
-          .stream()
-          .sorted((e1, e2) -> -1 * this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(oldestEventIndex - newestEventIndex)
-          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+      //then we sort in the opposite direction and get the appropriate number of events
+      final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
+      Collections.reverse(reverseOrderKeys);
+
+      Map<String, Event> temp = new HashMap<>();
+      for (String eventId: reverseOrderKeys) {
+        temp.put(eventId, eventsBatch.get(eventId));
+
+        if (temp.size() >= oldestEventIndex - newestEventIndex) {
+          break;
+        }
+      }
+
+      eventsBatch = temp;
     } // else there are no events in this range and we return the empty map
 
     return eventsBatch;
