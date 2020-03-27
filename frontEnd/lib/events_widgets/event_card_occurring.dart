@@ -26,10 +26,11 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * .27,
+        maxHeight: MediaQuery.of(context).size.height * .6,
       ),
       child: Container(
         child: ListView(
+          physics: ClampingScrollPhysics(),
           shrinkWrap: true,
           children: <Widget>[
             Container(
