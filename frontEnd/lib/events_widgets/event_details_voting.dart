@@ -150,9 +150,11 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                             constraints: BoxConstraints(
                               maxHeight: MediaQuery.of(context).size.height * .2,
                             ),
-                            child: ListView(
-                              shrinkWrap: true,
-                              children: this.userRows.values.toList(),
+                            child: Scrollbar(
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: this.userRows.values.toList(),
+                              ),
                             ),
                           ),
                         ],
