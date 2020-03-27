@@ -27,6 +27,7 @@ class GroupsManager {
   static final String EVENTS = "Events";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
+  static final int BATCH_SIZE = 25;
 
   static final String getGroupAction = "getGroup";
   static final String deleteGroupAction = "deleteGroup";
@@ -156,8 +157,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Group>> editGroup(
-      Group group, File iconFile) async {
+  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile,
+      {int batchNumber}) async {
     ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -172,6 +173,13 @@ class GroupsManager {
 
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
+
+    if (batchNumber == null) {
+      batchNumber = 0;
+    }
+
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);

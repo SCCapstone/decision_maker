@@ -1,10 +1,10 @@
 import 'package:frontEnd/models/event.dart';
 
 class EventsManager {
-  static final String votingMode = "Voting";
-  static final String considerMode = "Consider";
-  static final String occurringMode = "Ocurring";
-  static final String closedMode = "Closed";
+  static final int votingMode = 4; // highest priority for sorting
+  static final int considerMode = 3;
+  static final int occurringMode = 2;
+  static final int closedMode = 1; // lowest priority for sorting
   static final String EVENT_ID = "EventId";
   static final String CATEGORY_ID = "CategoryId";
   static final String CATEGORY_NAME = "CategoryName";
@@ -21,11 +21,11 @@ class EventsManager {
   static final String VOTING_NUMBERS = "VotingNumbers";
   static final String EVENT_CREATOR = "EventCreator";
 
-  static String getEventMode(Event event) {
+  static int getEventMode(Event event) {
     DateTime timeNow = DateTime.now();
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
         hours: 24)); // assumption that after 24 hours the event is done
-    String retVal;
+    int retVal;
     if (event.tentativeAlgorithmChoices.isEmpty) {
       retVal = considerMode;
     } else if (event.selectedChoice == null) {

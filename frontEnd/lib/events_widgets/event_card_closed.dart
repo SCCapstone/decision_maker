@@ -4,20 +4,32 @@ import 'package:frontEnd/events_widgets/event_details_closed.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/event_card_interface.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-class EventCardClosed extends StatefulWidget {
+class EventCardClosed extends StatefulWidget implements EventCardInterface {
   final String groupId;
   final Event event;
   final String eventId;
   final Function refreshEventsUnseen;
   final Function refreshPage;
+  final int eventMode;
 
-  EventCardClosed(this.groupId, this.event, this.eventId,
+  EventCardClosed(this.groupId, this.event, this.eventId, this.eventMode,
       this.refreshEventsUnseen, this.refreshPage);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
+
+  @override
+  int getEventMode() {
+    return this.eventMode;
+  }
+
+  @override
+  Event getEvent() {
+    return this.event;
+  }
 }
 
 class _EventCardClosedState extends State<EventCardClosed> {

@@ -16,6 +16,7 @@ class Group {
   final Map<String, Event> events;
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
+  int currentBatchNum = 0;
 
   Group(
       {this.groupId,
