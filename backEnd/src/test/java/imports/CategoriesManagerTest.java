@@ -24,8 +24,8 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +50,7 @@ public class CategoriesManagerTest {
     put(RequestFields.ACTIVE_USER, "ActiveUser");
   }};
 
+  //Notice: Do not change this variable definition unless you want to break and fix tests
   private final Item newCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
       (ImmutableMap.of("catId", "catName", "catId2", "catName2")));
 
@@ -60,6 +61,18 @@ public class CategoriesManagerTest {
           put("catId" + (new Integer(i)).toString(), "catName" + (new Integer(i)).toString());
         }
       }});
+
+  //Notice: Do not change this variable definition unless you want to break and fix tests
+  private final Item editCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+      (ImmutableMap.of("catId", "catName", "CategoryId", "CategoryName")));
+
+  private final Item editCategoryOldCategory = new Item()
+      .withString(CategoriesManager.CATEGORY_ID, "CategoryId")
+      .withString(CategoriesManager.CATEGORY_NAME, "CategoryName")
+      .withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label", "0", "label"))
+      .withInt(CategoriesManager.NEXT_CHOICE_NO, 1)
+      .withInt(CategoriesManager.VERSION, 1)
+      .withString(CategoriesManager.OWNER, "ActiveUser");
 
   private final Map<String, Object> editCategoryGoodInput = Maps.newHashMap(ImmutableMap.of(
       CategoriesManager.CATEGORY_ID, "CategoryId",
@@ -123,7 +136,8 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
-    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -142,7 +156,8 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
-    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -161,7 +176,7 @@ public class CategoriesManagerTest {
   @Test
   public void addNewCategory_validInputBadUserGet_failureResult() {
     doThrow(NullPointerException.class).when(this.usersManager)
-        .getItemByPrimaryKey(any(String.class));
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -179,7 +194,8 @@ public class CategoriesManagerTest {
   public void addNewCategory_invalidInput_failureResult() {
     this.newCategoryGoodInput.put(CategoriesManager.CHOICES, Collections.emptyMap());
 
-    doReturn(newCategoryInvalidUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(newCategoryInvalidUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -199,7 +215,8 @@ public class CategoriesManagerTest {
     this.newCategoryGoodInput.put(CategoriesManager.CHOICES, ImmutableMap.of("0", ""));
     this.newCategoryGoodInput.put(CategoriesManager.CATEGORY_NAME, "");
 
-    doReturn(newCategoryInvalidUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(newCategoryInvalidUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -216,7 +233,8 @@ public class CategoriesManagerTest {
   @Test
   public void addNewCategory_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(newCategoryGoodUser).when(this.usersManager).getItemByPrimaryKey(any(String.class));
+    doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
 
     ResultStatus resultStatus = this.categoriesManager.addNewCategory(this.newCategoryGoodInput,
         this.metrics);
@@ -236,24 +254,11 @@ public class CategoriesManagerTest {
         this.metrics);
     assertFalse(resultStatus.success);
 
-    this.badInput.put(CategoriesManager.CATEGORY_NAME, "testName");
-    resultStatus = this.categoriesManager
-        .addNewCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-    this.badInput.put(CategoriesManager.CHOICES, "testChoices");
-    resultStatus = this.categoriesManager
-        .addNewCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-    this.badInput.put(RequestFields.USER_RATINGS, "userRatings");
-    resultStatus = this.categoriesManager
-        .addNewCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-
     verify(this.usersManager, times(0))
         .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
-    verify(this.metrics, times(4)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   ////////////////////////
@@ -261,11 +266,12 @@ public class CategoriesManagerTest {
   ////////////////////////
 
   @Test
-  public void editCategory_validInput_successfulResult() {
+  public void editCategory_validInputCategoryNameChange_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withString(CategoriesManager.OWNER, "ActiveUser"))
-        .when(this.table)
-        .getItem(any(GetItemSpec.class));
+    this.editCategoryOldCategory.withString(CategoriesManager.CATEGORY_NAME, "NewName");
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
@@ -275,19 +281,186 @@ public class CategoriesManagerTest {
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
         eq(true), any(Metrics.class));
-    verify(this.dynamoDB, times(2)).getTable(
-        any(String.class)); // the db is hit twice, but only once by the dependency being tested
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.metrics, times(2)).commonClose(true);
   }
 
   @Test
-  public void editCategory_validInputBadUsers_failureResult() {
+  public void editCategory_validInputChoiceLabelChange_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withString(CategoriesManager.OWNER, "ActiveUser"))
-        .when(this.table)
-        .getItem(any(GetItemSpec.class));
+    this.editCategoryOldCategory
+        .withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label", "0", "newLabel"));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void editCategory_validInputRemoveAndAddLabel_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    this.editCategoryOldCategory
+        .withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label", "8", "newLabel"));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void editCategory_validInputDeleteChoice_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    this.editCategoryOldCategory.withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label"));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void editCategory_validInputNoCategoryChanges_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(true);
+  }
+
+  @Test
+  public void editCategory_invalidInputUserDoesNotOwnCategory_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    this.editCategoryOldCategory.withString(CategoriesManager.OWNER, "differentUser");
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+
+  @Test
+  public void editCategory_invalidInputDuplicateCategoryName_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    this.editCategoryGoodInput.put(CategoriesManager.CATEGORY_ID, "catId");
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+
+  @Test
+  public void editCategory_invalidInputEmptyCategoryNameOrEmptyChoices_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    this.editCategoryGoodInput.put(CategoriesManager.CATEGORY_NAME, "");
+    this.editCategoryGoodInput.put(CategoriesManager.CHOICES, Collections.emptyMap());
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+
+  @Test
+  public void editCategory_invalidInputEmptyChoiceLabel_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
+    this.editCategoryGoodInput.put(CategoriesManager.CHOICES, ImmutableMap.of("id", ""));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
+  }
+
+  @Test
+  public void editCategory_validInputNoCategoryChangesBadUsers_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
+        .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
 
@@ -297,11 +470,26 @@ public class CategoriesManagerTest {
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
         eq(true), any(Metrics.class));
-    //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
-    verify(this.dynamoDB, times(2)).getTable(
-        any(String.class)); // the db is hit twice, but only once by the dependency being tested\
-    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void editCategory_validInputNoCategoryChangesBadUsers2_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
+    doReturn(null).when(this.usersManager).getMapByPrimaryKey(any(String.class));
+
+    ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
+        this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
+        eq(true), any(Metrics.class));
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(2)).commonClose(false);
   }
 
   @Test
@@ -324,24 +512,11 @@ public class CategoriesManagerTest {
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
     assertFalse(resultStatus.success);
 
-    this.badInput.put(CategoriesManager.CATEGORY_ID, "testId");
-    resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-    this.badInput.put(CategoriesManager.CATEGORY_NAME, "testName");
-    resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-    this.badInput.put(CategoriesManager.CHOICES, "testChoices");
-    resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-    this.badInput.put(RequestFields.USER_RATINGS, "testRatings");
-    resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
-    assertFalse(resultStatus.success);
-
     verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
         any(Boolean.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
-    verify(this.metrics, times(5)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   ////////////////////////
@@ -473,7 +648,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.groupsManager, times(1))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
+        .removeCategoryFromGroups(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -490,8 +665,8 @@ public class CategoriesManagerTest {
         .deleteCategory(this.deleteCategoryGoodInput, metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
+    verify(this.groupsManager, times(1))
+        .removeCategoryFromGroups(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -508,7 +683,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
+        .removeCategoryFromGroups(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -523,7 +698,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.groupsManager, times(0))
-        .removeCategoryFromGroups(any(List.class), any(String.class), any(Metrics.class));
+        .removeCategoryFromGroups(any(Set.class), any(String.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).deleteItem(any(DeleteItemSpec.class));
   }
