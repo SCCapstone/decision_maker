@@ -50,6 +50,7 @@ public class CategoriesManagerTest {
     put(RequestFields.ACTIVE_USER, "ActiveUser");
   }};
 
+  //Notice: Do not change this variable definition unless you want to break and fix tests
   private final Item newCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
       (ImmutableMap.of("catId", "catName", "catId2", "catName2")));
 
@@ -60,6 +61,10 @@ public class CategoriesManagerTest {
           put("catId" + (new Integer(i)).toString(), "catName" + (new Integer(i)).toString());
         }
       }});
+
+  //Notice: Do not change this variable definition unless you want to break and fix tests
+  private final Item editCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+      (ImmutableMap.of("catId", "catName", "CategoryId", "CategoryName")));
 
   private final Item editCategoryOldCategory = new Item()
       .withString(CategoriesManager.CATEGORY_ID, "CategoryId")
@@ -265,7 +270,7 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     this.editCategoryOldCategory.withString(CategoriesManager.CATEGORY_NAME, "NewName");
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
@@ -288,7 +293,7 @@ public class CategoriesManagerTest {
     this.editCategoryOldCategory
         .withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label", "0", "newLabel"));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
@@ -311,7 +316,7 @@ public class CategoriesManagerTest {
     this.editCategoryOldCategory
         .withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label", "8", "newLabel"));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
@@ -333,7 +338,7 @@ public class CategoriesManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     this.editCategoryOldCategory.withMap(CategoriesManager.CHOICES, ImmutableMap.of("-1", "label"));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
@@ -354,7 +359,7 @@ public class CategoriesManagerTest {
   public void editCategory_validInputNoCategoryChanges_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
@@ -393,9 +398,9 @@ public class CategoriesManagerTest {
   public void editCategory_invalidInputDuplicateCategoryName_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
-    this.editCategoryGoodInput.put(CategoriesManager.CATEGORY_NAME, "catName");
+    this.editCategoryGoodInput.put(CategoriesManager.CATEGORY_ID, "catId");
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
@@ -413,7 +418,7 @@ public class CategoriesManagerTest {
   public void editCategory_invalidInputEmptyCategoryNameOrEmptyChoices_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     this.editCategoryGoodInput.put(CategoriesManager.CATEGORY_NAME, "");
     this.editCategoryGoodInput.put(CategoriesManager.CHOICES, Collections.emptyMap());
@@ -434,7 +439,7 @@ public class CategoriesManagerTest {
   public void editCategory_invalidInputEmptyChoiceLabel_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     this.editCategoryGoodInput.put(CategoriesManager.CHOICES, ImmutableMap.of("id", ""));
 
@@ -454,7 +459,7 @@ public class CategoriesManagerTest {
   public void editCategory_validInputNoCategoryChangesBadUsers_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(this.editCategoryOldCategory).when(this.table).getItem(any(GetItemSpec.class));
-    doReturn(this.newCategoryGoodUser.asMap()).when(this.usersManager)
+    doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
         .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));

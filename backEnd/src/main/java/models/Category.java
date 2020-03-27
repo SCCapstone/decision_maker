@@ -43,6 +43,7 @@ public class Category implements Model {
     modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.categoryName);
     modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.owner);
     modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.nextChoiceNo);
+    modelAsMap.putIfAbsent(CategoriesManager.VERSION, this.version);
     modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.choices);
     modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.groups);
     return modelAsMap;

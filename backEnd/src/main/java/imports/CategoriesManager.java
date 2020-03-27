@@ -101,6 +101,7 @@ public class CategoriesManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+
   private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
     final String classMethod = "CategoryManager.newCategoryIsValid";
     metrics.commonSetup(classMethod);
@@ -273,8 +274,12 @@ public class CategoriesManager extends DatabaseAccessManager {
       if (oldCategory.getOwner().equals(activeUser)) {
         final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
-        for (String categoryName : user.getOwnedCategories().values()) {
-          if (categoryName.equals(editCategory.getCategoryName())) {
+        for (String categoryId : user.getOwnedCategories().keySet()) {
+          //this is an update and the name might not have changed so we have to see if a different
+          //category has this same name
+          final String ownedCategoryName = user.getOwnedCategories().get(categoryId);
+          if (ownedCategoryName.equals(editCategory.getCategoryName())
+              && !categoryId.equals(editCategory.getCategoryId())) {
             errorMessage = this.getUpdatedInvalidMessage(errorMessage,
                 "Error: user can not own two categories with the same name.");
             break;
