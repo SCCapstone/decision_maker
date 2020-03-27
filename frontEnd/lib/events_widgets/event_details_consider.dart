@@ -154,6 +154,15 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                         ],
                       ),
                     ),
+                    Visibility(
+                        visible: this.event.optedIn.length <= 0,
+                        child: AutoSizeText("No members currently being considered",
+                          minFontSize: 12,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16),
+                        )
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),

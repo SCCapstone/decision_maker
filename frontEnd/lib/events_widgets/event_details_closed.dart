@@ -133,7 +133,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 16)),
-                      Visibility (
+                      Visibility(
                         visible: this.event.optedIn.length > 0,
                         child: ExpansionTile(
                           title: Text("Considered (${this.event.optedIn.length})"),
@@ -151,6 +151,15 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                             ),
                           ],
                         ),
+                      ),
+                      Visibility(
+                        visible: this.event.optedIn.length <= 0,
+                        child: AutoSizeText("No members considered",
+                          minFontSize: 12,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16),
+                        )
                       ),
                     ],
                   ),
