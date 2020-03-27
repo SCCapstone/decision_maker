@@ -22,6 +22,13 @@ class Globals {
   static String alphabeticalReverseSortString = "Alphabetical (Z-A)";
   static String dateNewestSortString = "Date Modified (Newest)";
   static String dateOldestSortString = "Date Modified (Oldest)";
+  static bool fireBaseConfigured = false;
+  static Function refreshGroupPage;
+  static final String removedFromGroupAction = "removedFromGroup";
+  static final String addedToGroupAction = "addedToGroup";
+  static final String eventCreatedAction = "eventCreated";
+  static final String eventChosenAction = "eventChosen";
+  static final String eventVotingAction = "eventVoting";
 
   // validation variables
   static final int maxCategoryCacheSize = 10;

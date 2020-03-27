@@ -11,9 +11,11 @@ class EventCardConsider extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshEventsUnseen;
   final Function refreshPage;
 
-  EventCardConsider(this.groupId, this.event, this.eventId, this.refreshPage);
+  EventCardConsider(this.groupId, this.event, this.eventId,
+      this.refreshEventsUnseen, this.refreshPage);
 
   @override
   _EventCardConsiderState createState() => new _EventCardConsiderState();
@@ -22,12 +24,14 @@ class EventCardConsider extends StatefulWidget {
 class _EventCardConsiderState extends State<EventCardConsider> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .27,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * .6,
+      ),
+      child: Container(
+        child: ListView(
+          physics: ClampingScrollPhysics(),
+          shrinkWrap: true,
           children: <Widget>[
             Container(
               // height has to be here otherwise it overflows
@@ -49,8 +53,9 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                     ),
                   ),
                   Visibility(
-                    visible: Globals.user.groups[widget.groupId].eventsUnseen
-                        .containsKey(widget.eventId),
+                    visible: (Globals.user.groups[widget.groupId] != null &&
+                        Globals.user.groups[widget.groupId].eventsUnseen
+                            .containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
@@ -75,32 +80,49 @@ class _EventCardConsiderState extends State<EventCardConsider> {
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
             AutoSizeText(
               "Current Considered: ${widget.event.optedIn.length}",
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
-            RaisedButton(
-              child: Text("Consider"),
-              color: Colors.green,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EventDetailsConsider(
-                          groupId: widget.groupId,
-                          eventId: widget.eventId,
-                          mode: EventsManager.considerMode)),
-                );
-              },
-            )
+            Padding(
+              padding:
+              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
+            Center(
+              child: RaisedButton(
+                child: Text("Consider"),
+                color: Colors.green,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDetailsConsider(
+                            groupId: widget.groupId,
+                            eventId: widget.eventId,
+                            mode: EventsManager.considerMode)),
+                  ).then((_) {
+                    widget.refreshPage();
+                  });
+                },
+              ),
+            ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
           ],
         ),
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: getBorderColor()))),
       ),
-      decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 
@@ -110,7 +132,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshPage();
+        widget.refreshEventsUnseen();
       });
     }
   }

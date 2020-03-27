@@ -41,8 +41,6 @@ class _GroupRowState extends State<GroupRow> {
                               groupName: widget.group.groupName,
                             )),
                   ).then((val) {
-                    Globals.currentGroup = null;
-                    // TODO figure out a better way to refresh without making unnecessary API calls
                     this.widget.refreshGroups();
                   });
                 },
@@ -69,8 +67,6 @@ class _GroupRowState extends State<GroupRow> {
                                 groupName: widget.group.groupName,
                               )),
                     ).then((val) {
-                      Globals.currentGroup = null;
-                      // TODO figure out a better way to refresh without making unnecessary API calls
                       this.widget.refreshGroups();
                     });
                   },

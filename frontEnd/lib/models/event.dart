@@ -117,13 +117,13 @@ class Event {
     Map<String, Map<String, int>> votingNumMap =
         new Map<String, Map<String, int>>();
     for (String choiceNum in json[EventsManager.VOTING_NUMBERS].keys) {
+      Map<String, int> voteInfo = new Map<String, int>();
       for (String username
           in json[EventsManager.VOTING_NUMBERS][choiceNum].keys) {
-        Map<String, int> voteInfo = new Map<String, int>();
         voteInfo.putIfAbsent(username,
             () => json[EventsManager.VOTING_NUMBERS][choiceNum][username]);
-        votingNumMap.putIfAbsent(choiceNum, () => voteInfo);
       }
+      votingNumMap.putIfAbsent(choiceNum, () => voteInfo);
     }
 
     return Event(

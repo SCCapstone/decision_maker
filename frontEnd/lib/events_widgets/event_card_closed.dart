@@ -10,9 +10,11 @@ class EventCardClosed extends StatefulWidget {
   final String groupId;
   final Event event;
   final String eventId;
+  final Function refreshEventsUnseen;
   final Function refreshPage;
 
-  EventCardClosed(this.groupId, this.event, this.eventId, this.refreshPage);
+  EventCardClosed(this.groupId, this.event, this.eventId,
+      this.refreshEventsUnseen, this.refreshPage);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
@@ -21,12 +23,14 @@ class EventCardClosed extends StatefulWidget {
 class _EventCardClosedState extends State<EventCardClosed> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * .27,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * .6,
+      ),
+      child: Container(
+        child: ListView(
+          physics: ClampingScrollPhysics(),
+          shrinkWrap: true,
           children: <Widget>[
             Container(
               // height has to be here otherwise it overflows
@@ -48,8 +52,9 @@ class _EventCardClosedState extends State<EventCardClosed> {
                     ),
                   ),
                   Visibility(
-                    visible: Globals.user.groups[widget.groupId].eventsUnseen
-                        .containsKey(widget.eventId),
+                    visible: (Globals.user.groups[widget.groupId] != null &&
+                        Globals.user.groups[widget.groupId].eventsUnseen
+                            .containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
@@ -74,30 +79,47 @@ class _EventCardClosedState extends State<EventCardClosed> {
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
             AutoSizeText(
               widget.event.selectedChoice,
               style: TextStyle(fontSize: 20),
               minFontSize: 12,
               maxLines: 1,
+              textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
             ),
-            RaisedButton(
-              child: Text("View Results"),
-              color: Colors.grey,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => EventDetailsClosed(
-                          groupId: widget.groupId, eventId: widget.eventId)),
-                );
-              },
-            )
+            Padding(
+              padding:
+              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
+            Center(
+              child: RaisedButton(
+                child: Text("View Results"),
+                color: Colors.grey,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EventDetailsClosed(
+                            groupId: widget.groupId, eventId: widget.eventId)),
+                  ).then((_) {
+                    widget.refreshPage();
+                  });
+                },
+              ),
+            ),
+            Padding(
+              padding:
+              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+            ),
           ],
         ),
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: getBorderColor()))),
       ),
-      decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
   }
 
@@ -107,7 +129,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {
-        widget.refreshPage();
+        widget.refreshEventsUnseen();
       });
     }
   }
