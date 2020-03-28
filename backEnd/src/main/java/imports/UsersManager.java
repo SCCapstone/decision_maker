@@ -271,7 +271,8 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
-        Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
+        AppSettings newAppSettings = new AppSettings(
+            (Map<String, Object>) jsonMap.get(APP_SETTINGS));
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
@@ -280,7 +281,7 @@ public class UsersManager extends DatabaseAccessManager {
         //as long as this remains a small group of settings, I think it's okay to always overwrite
         //this does imply that the entire appSettings array is sent from the front end though
         String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
-        ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings);
+        ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings.asMap());
 
         String updateGroupsExpression = null;
         ValueMap groupsValueMap = new ValueMap();

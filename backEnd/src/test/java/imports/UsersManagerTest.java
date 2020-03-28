@@ -52,9 +52,10 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
       UsersManager.FAVORITES, ImmutableList.of("fav1")
@@ -63,9 +64,10 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserSettingsGoodInputWithIcon = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
       UsersManager.ICON, ImmutableList.of(1, 2, 3),
@@ -75,9 +77,10 @@ public class UsersManagerTest {
   private final Item userItem = new Item()
       .withString(RequestFields.ACTIVE_USER, "ActiveUser")
       .withMap(UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ))
       .withString(UsersManager.DISPLAY_NAME, "DisplayName")
       .withString(UsersManager.ICON, "Icon")
