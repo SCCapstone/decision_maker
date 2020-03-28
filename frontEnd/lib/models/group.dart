@@ -16,6 +16,7 @@ class Group {
   final Map<String, Event> events;
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
+  final int totalNumberOfEvents;
   int currentBatchNum = 0;
 
   Group(
@@ -29,7 +30,8 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultConsiderDuration});
+      this.defaultConsiderDuration,
+      this.totalNumberOfEvents});
 
   Group.debug(
       this.groupId,
@@ -42,7 +44,8 @@ class Group {
       this.categories,
       this.events,
       this.defaultVotingDuration,
-      this.defaultConsiderDuration);
+      this.defaultConsiderDuration,
+      this.totalNumberOfEvents);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     // map of eventId -> event
@@ -91,7 +94,8 @@ class Group {
         categories: categoriesMap,
         events: events,
         defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
-        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION]);
+        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
+        totalNumberOfEvents: json[GroupsManager.TOTAL_NUMBER_OF_EVENTS]);
   }
 
   @override
@@ -112,7 +116,7 @@ class Group {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members MembersLeft: $membersLeft"
         "Categories: $categories Events: $events DefaultVotingDuration: $defaultVotingDuration"
-        "DefaultRsvpDuration: $defaultConsiderDuration";
+        "DefaultRsvpDuration: $defaultConsiderDuration TotalNumberOfEvents $totalNumberOfEvents";
   }
 
   Map asMap() {
@@ -142,7 +146,8 @@ class Group {
       GroupsManager.CATEGORIES: this.categories,
       GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
-      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration
+      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
+      GroupsManager.TOTAL_NUMBER_OF_EVENTS: this.totalNumberOfEvents
     };
   }
 }

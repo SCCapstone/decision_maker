@@ -14,9 +14,8 @@ class EventCardOccurring extends StatefulWidget implements EventCardInterface {
   final String eventId;
   final Function refreshEventsUnseen;
   final Function refreshPage;
-  final int eventMode;
 
-  EventCardOccurring(this.groupId, this.event, this.eventId, this.eventMode,
+  EventCardOccurring(this.groupId, this.event, this.eventId,
       this.refreshEventsUnseen, this.refreshPage);
 
   @override
@@ -24,7 +23,7 @@ class EventCardOccurring extends StatefulWidget implements EventCardInterface {
 
   @override
   int getEventMode() {
-    return this.eventMode;
+    return EventsManager.occurringMode;
   }
 
   @override
@@ -108,7 +107,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
             ),
             Padding(
               padding:
-              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
             ),
             Center(
               child: RaisedButton(

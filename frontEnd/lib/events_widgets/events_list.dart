@@ -57,7 +57,6 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              EventsManager.considerMode,
               widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.votingMode) {
@@ -65,7 +64,6 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              EventsManager.votingMode,
               widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.occurringMode) {
@@ -73,7 +71,6 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              EventsManager.occurringMode,
               widget.refreshEventsUnseen,
               widget.refreshPage);
         } else if (eventMode == EventsManager.closedMode) {
@@ -81,7 +78,6 @@ class _EventsListState extends State<EventsList> {
               widget.group.groupId,
               widget.events[eventId],
               eventId,
-              EventsManager.closedMode,
               widget.refreshEventsUnseen,
               widget.refreshPage);
         }
@@ -101,12 +97,19 @@ class _EventsListState extends State<EventsList> {
                 : -1;
           } else if (a.getEventMode() == EventsManager.votingMode) {
             return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
-          } else {
-            // put events with oldest occurring dates at the end
+          } else if (a.getEventMode() == EventsManager.occurringMode) {
             return b
                     .getEvent()
                     .eventStartDateTime
                     .isBefore(a.getEvent().eventStartDateTime)
+                ? 1
+                : -1;
+          } else {
+            // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
+            return a
+                    .getEvent()
+                    .eventStartDateTime
+                    .isBefore(b.getEvent().eventStartDateTime)
                 ? 1
                 : -1;
           }
@@ -114,7 +117,9 @@ class _EventsListState extends State<EventsList> {
       });
 
       List<Widget> widgetList = new List<Widget>.from(eventCards);
-      if (widget.events.keys.length >= GroupsManager.BATCH_SIZE) {
+      int numEventsForBatch =
+          (Globals.currentGroup.currentBatchNum + 1) * GroupsManager.BATCH_SIZE;
+      if (Globals.currentGroup.totalNumberOfEvents - numEventsForBatch > 0) {
         // there are more events to show, so put a next button and a back one if not on the first batch
         Row buttonRow = new Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -130,8 +135,12 @@ class _EventsListState extends State<EventsList> {
                 child: Text("Back"),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width * .02),
+            Visibility(
+              visible: Globals.currentGroup.currentBatchNum > 0,
+              child: Padding(
+                padding:
+                    EdgeInsets.all(MediaQuery.of(context).size.width * .02),
+              ),
             ),
             RaisedButton(
               onPressed: () {

@@ -14,9 +14,8 @@ class EventCardConsider extends StatefulWidget implements EventCardInterface {
   final String eventId;
   final Function refreshEventsUnseen;
   final Function refreshPage;
-  final int eventMode;
 
-  EventCardConsider(this.groupId, this.event, this.eventId, this.eventMode,
+  EventCardConsider(this.groupId, this.event, this.eventId,
       this.refreshEventsUnseen, this.refreshPage);
 
   @override
@@ -24,7 +23,7 @@ class EventCardConsider extends StatefulWidget implements EventCardInterface {
 
   @override
   int getEventMode() {
-    return this.eventMode;
+    return EventsManager.considerMode;
   }
 
   @override

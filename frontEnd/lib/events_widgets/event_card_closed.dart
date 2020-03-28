@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/events_widgets/event_details_closed.dart';
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
@@ -13,9 +14,8 @@ class EventCardClosed extends StatefulWidget implements EventCardInterface {
   final String eventId;
   final Function refreshEventsUnseen;
   final Function refreshPage;
-  final int eventMode;
 
-  EventCardClosed(this.groupId, this.event, this.eventId, this.eventMode,
+  EventCardClosed(this.groupId, this.event, this.eventId,
       this.refreshEventsUnseen, this.refreshPage);
 
   @override
@@ -23,7 +23,7 @@ class EventCardClosed extends StatefulWidget implements EventCardInterface {
 
   @override
   int getEventMode() {
-    return this.eventMode;
+    return EventsManager.closedMode;
   }
 
   @override
@@ -105,7 +105,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
             ),
             Padding(
               padding:
-              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
             ),
             Center(
               child: RaisedButton(
@@ -125,7 +125,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
             ),
             Padding(
               padding:
-              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
             ),
           ],
         ),

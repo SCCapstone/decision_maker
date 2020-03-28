@@ -27,6 +27,7 @@ class GroupsManager {
   static final String EVENTS = "Events";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
+  static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
   static final int BATCH_SIZE = 25;
 
   static final String getGroupAction = "getGroup";
