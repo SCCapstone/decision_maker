@@ -1,5 +1,7 @@
 package imports;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -16,6 +18,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import models.AppSettings;
 import models.User;
@@ -168,27 +172,50 @@ public class UsersManager extends DatabaseAccessManager {
         final Map<String, Object> ratings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        //TODO add validation to this
+        final Optional<String> errorMessage = this.userRatingsIsValid(ratings);
+        if (!errorMessage.isPresent()) {
+          final Map<String, Integer> ratingsMapConverted = ratings.entrySet().stream()
+              .collect(toMap(
+                  Entry::getKey,
+                  (e) -> Integer.parseInt(e.getValue().toString()),
+                  (e1, e2) -> e2,
+                  HashMap::new));
 
-        String updateExpression = "set " + CATEGORY_RATINGS + ".#categoryId = :map";
-        NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-        ValueMap valueMap = new ValueMap().withMap(":map", ratings);
+          final User user = new User(this.getMapByPrimaryKey(activeUser));
+          if (user.getCategoryRatings().containsKey(categoryId)) {
+            //we need to apply the existing ratings to the updated ratings
+            final Map<String, Integer> categoryRatings = user.getCategoryRatings().get(categoryId);
+            for (final String choiceId : categoryRatings.keySet()) {
+              if (!ratingsMapConverted.containsKey(choiceId)) {
+                //we only put it if it ins't there; if it is there, they're overwriting it
+                ratingsMapConverted.put(choiceId, categoryRatings.get(choiceId));
+              }
+            }
+          }
 
-        if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
-          final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
-          updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
-          valueMap.withString(":categoryName", categoryName);
+          String updateExpression = "set " + CATEGORY_RATINGS + ".#categoryId = :map";
+          NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+          ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
+
+          if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+            final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
+            updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
+            valueMap.withString(":categoryName", categoryName);
+          }
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withNameMap(nameMap)
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.updateItem(updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "User ratings updated successfully!");
+        } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withNameMap(nameMap)
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
-
-        this.updateItem(updateItemSpec);
-
-        resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
@@ -201,6 +228,25 @@ public class UsersManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private Optional<String> userRatingsIsValid(final Map<String, Object> ratings) {
+    String errorMessage = null;
+
+    try {
+      for (final String choiceId : ratings.keySet()) {
+        final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
+
+        if (rating < 0 || rating > 5) {
+          errorMessage = "Error: invalid rating value.";
+          break;
+        }
+      }
+    } catch (final Exception e) {
+      errorMessage = "Error: Invalid ratings map.";
+    }
+
+    return Optional.ofNullable(errorMessage);
   }
 
   public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {

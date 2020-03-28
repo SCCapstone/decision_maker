@@ -45,7 +45,7 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "validActiveUser",
       CategoriesManager.CATEGORY_ID, "CategoryId1",
-      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5"),
+      RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", "5"),
       CategoriesManager.CATEGORY_NAME, "TestName"
   );
 
@@ -110,8 +110,8 @@ public class UsersManagerTest {
   );
 
   private final Map<String, Object> markAllEventsSeenGoodInput = ImmutableMap.of(
-    RequestFields.ACTIVE_USER, "activeUser",
-    GroupsManager.GROUP_ID, "groupId"
+      RequestFields.ACTIVE_USER, "activeUser",
+      GroupsManager.GROUP_ID, "groupId"
   );
 
   @Mock
@@ -320,13 +320,16 @@ public class UsersManagerTest {
   @Test
   public void updateUserChoiceRatings_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORY_RATINGS, Collections.emptyMap()))
+        .when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
         .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -358,7 +361,7 @@ public class UsersManagerTest {
     ResultStatus resultStatus = this.usersManager
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
-            RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5)),
             false, this.metrics);
 
     assertFalse(resultStatus.success);
