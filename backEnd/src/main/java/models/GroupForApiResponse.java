@@ -1,5 +1,6 @@
 package models;
 
+import imports.DatabaseManagers;
 import java.util.Map;
 import lombok.Data;
 
@@ -9,9 +10,16 @@ public class GroupForApiResponse extends Group {
 
   public static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
 
+  public GroupForApiResponse(final Group group, final Integer batchNumber) {
+    super(group.asMap());
+    this.totalNumberOfEvents = group.getEvents().size();
+    this.setEvents(DatabaseManagers.GROUPS_MANAGER.getBatchOfEvents(this, batchNumber));
+  }
+
   public GroupForApiResponse(final Group group) {
     super(group.asMap());
     this.totalNumberOfEvents = group.getEvents().size();
+    this.setEvents(DatabaseManagers.GROUPS_MANAGER.getBatchOfEvents(this, 0));
   }
 
   @Override

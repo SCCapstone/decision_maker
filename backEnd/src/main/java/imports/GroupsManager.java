@@ -96,10 +96,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
         //the user should not be able to retrieve info from the group if they are not a member
         if (group.getMembers().containsKey(activeUser)) {
-          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+          final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(group,
+              batchNumber);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(new GroupForApiResponse(group).asMap()));
+              JsonEncoders.convertObjectToJson(groupForApiResponse.asMap()));
         } else {
           resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
@@ -116,7 +117,7 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
+  public Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
