@@ -12,6 +12,8 @@ import com.amazonaws.util.StringUtils;
 import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -382,6 +384,50 @@ public class GroupsManager extends DatabaseAccessManager {
     }
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  public ResultStatus createRandomEvent(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "GroupsManager.newEvent";
+    metrics.commonSetup(classMethod);
+    ResultStatus resultStatus = new ResultStatus();
+
+    if (jsonMap.size() == 1 && jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
+      final java.util.Random rand = new java.util.Random();
+
+      jsonMap.putIfAbsent(EVENT_NAME, this.randomIdentifier());
+      jsonMap.putIfAbsent(CATEGORY_ID, "4c27a381-cff9-4ed5-9020-41dc0f0f70c5");
+      jsonMap.putIfAbsent(CATEGORY_NAME, "version changes for real");
+      jsonMap.putIfAbsent(RSVP_DURATION, rand.nextInt(600));
+      jsonMap.putIfAbsent(VOTING_DURATION, rand.nextInt(600));
+      jsonMap.putIfAbsent(GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48");
+
+      final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+      jsonMap.putIfAbsent(EVENT_START_DATE_TIME, now.format(this.getDateTimeFormatter()));
+      jsonMap.putIfAbsent(UTC_EVENT_START_SECONDS,
+          now.plus(rand.nextInt(72), ChronoUnit.HOURS).toEpochSecond(ZoneOffset.UTC));
+
+      resultStatus = this.newEvent(jsonMap, metrics);
+    } else {
+      resultStatus.resultMessage = "bad request";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public String randomIdentifier() {
+    final java.util.Random rand = new java.util.Random();
+    final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
+
+    StringBuilder builder = new StringBuilder();
+    int length = rand.nextInt(5) + 5;
+    for (int i = 0; i < length; i++) {
+      builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
+    }
+
+    return builder.toString();
   }
 
   public ResultStatus newEvent(final Map<String, Object> jsonMap, final Metrics metrics) {

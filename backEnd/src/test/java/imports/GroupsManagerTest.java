@@ -310,17 +310,18 @@ public class GroupsManagerTest {
 //    verify(this.metrics, times(1)).commonClose(false);
 //  }
 
-  @Test
-  public void newEvent_noDbConnection_failureResult() {
-    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+//  @Test
+//  public void newEvent_noDbConnection_failureResult() {
+//    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+//
+//    ResultStatus resultStatus = this.groupsManager
+//        .newEvent(this.newEventGoodInput, this.metrics);
+//
+//    assertFalse(resultStatus.success);
+//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
 
-    ResultStatus resultStatus = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
   //////////////////////////endregion
   // optInOutOfEvent tests //
   //////////////////////////region

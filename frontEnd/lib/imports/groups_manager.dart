@@ -206,6 +206,7 @@ class GroupsManager {
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = newEventAction;
+    jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(
         EventsManager.UTC_EVENT_START_SECONDS,
