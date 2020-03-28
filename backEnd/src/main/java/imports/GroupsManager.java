@@ -390,8 +390,8 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME,
-            EVENT_START_DATE_TIME, VOTING_DURATION, RSVP_DURATION, GROUP_ID);
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, RSVP_DURATION,
+            EVENT_START_DATE_TIME, VOTING_DURATION, GROUP_ID, UTC_EVENT_START_SECONDS);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
