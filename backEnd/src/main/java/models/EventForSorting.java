@@ -16,8 +16,8 @@ public class EventForSorting extends Event {
   public static final Integer PRIORITY_VOTING = 4;
   public static final Integer PRIORITY_CONSIDERING = 3;
   public static final Integer PRIORITY_OCCURRING = 2;
-  public static final Integer PRIORITY_CLOSED_STARTING_AFTER_NOW = 1;
-  public static final Integer PRIORITY_CLOSED_STARTED_BEFORE_NOW = 0;
+  public static final Integer PRIORITY_FUTURE = 1;
+  public static final Integer PRIORITY_PAST = 0;
 
   //we pass in 'now' so that if numerous of these are being created, that time doesn't change
   public EventForSorting(final Event event, final LocalDateTime now) {
@@ -61,13 +61,14 @@ public class EventForSorting extends Event {
       return 1;
     } else {
       if (this.priority.equals(PRIORITY_VOTING)) {
-        //this return -1 if this voting end is before other's voting end
-        return this.votingEnds.compareTo(other.getVotingEnds());
+        return this.votingEnds.isBefore(other.getVotingEnds()) ? -1 : 1;
       } else if (this.priority.equals(PRIORITY_CONSIDERING)) {
-        //this return -1 if this voting start is before other's voting start
-        return this.votingStarts.compareTo(other.getVotingStarts());
-      } else { // occurring and closed starting before/after now are all based on event start
-        return this.eventStart.compareTo(other.getEventStart());
+        return this.votingStarts.isBefore(other.getVotingStarts()) ? -1 : 1;
+      } else if (this.priority.equals(PRIORITY_PAST)) {
+        //NOTE: this one uses isAfter, we want the oldest ones on top
+        return this.eventStart.isAfter(other.getEventStart()) ? -1 : 1;
+      } else { // occurring and future
+        return this.eventStart.isBefore(other.getVotingStarts()) ? -1 : 1;
       }
     }
   }
@@ -85,9 +86,9 @@ public class EventForSorting extends Event {
       if (now.isBefore(now) && now.isAfter(yesterday)) { // is occurring?
         this.priority = PRIORITY_OCCURRING;
       } else if (this.eventStart.isAfter(now)) {
-        this.priority = PRIORITY_CLOSED_STARTING_AFTER_NOW;
+        this.priority = PRIORITY_FUTURE;
       } else {
-        this.priority = PRIORITY_CLOSED_STARTED_BEFORE_NOW;
+        this.priority = PRIORITY_PAST;
       }
     } else if (this.getTentativeAlgorithmChoices().isEmpty()) {
       // selected choice null and tentative empty = considering
