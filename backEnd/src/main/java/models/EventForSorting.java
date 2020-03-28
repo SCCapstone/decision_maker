@@ -40,19 +40,15 @@ public class EventForSorting extends Event {
   }
 
   /**
-   * We define priority first by precedence of action and second by the required action time Voting
-   * is the most urgent action so it has the highest precedence Between two events in voting,
-   * whichever vote ends first is more pressing Considers is the next most urgent action so it has
-   * the second highest precedence Same between two considering as with voting Next we have two
-   * items that have finished polling - they have a selected choice If 'now' is within 24hrs of the
-   * event, the event is "occurring" and should come before those events that are past 24hrs and are
-   * "closed"
+   * We define priority first by precedence of action and second by the required action time. Voting
+   * is the most urgent action so it has the highest precedence. Between two events in voting,
+   * whichever vote ends first is more pressing. Consider is the next most urgent action so it has
+   * the second highest precedence. Same between two considering as with voting. Next we have two
+   * items that have finished polling - they have a selected choice. If 'now' is within 24hrs of the
+   * event, the event is "occurring". After that we have events in the past.
    * <p>
-   * In addition, events that are behind 'now' come after those that are before 'now'.
-   * <p>
-   * Events are ordered by their closeness to 'now' so and event occurring tomorrow comes before one
-   * occurring in two days, and both of these come before one that happened yesterday based on the
-   * above rule
+   * Events are ordered by their closeness to 'now' so an events in the future are ordered youngest
+   * to oldest. In contrast, events occurring in the past are ordered oldest to youngest.
    */
   public int compareTo(final EventForSorting other) {
     if (this.priority > other.getPriority()) {
@@ -74,8 +70,8 @@ public class EventForSorting extends Event {
   }
 
   /**
-   * Priority values are as follows: 4 - voting 3 - considering 2 - occurring 1 - closed and starts
-   * after 'now' 0 - closed and started before 'now'
+   * Priority values are as follows: 4 - voting 3 - considering 2 - occurring 1 - the event is in
+   * the future 'now' 0 - the event is in the past by more than occurring
    *
    * @param now - The current time that we are determining this priority at.
    */
