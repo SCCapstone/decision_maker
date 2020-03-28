@@ -16,8 +16,7 @@ public class EventForSorting extends Event {
   public static final Integer PRIORITY_VOTING = 4;
   public static final Integer PRIORITY_CONSIDERING = 3;
   public static final Integer PRIORITY_OCCURRING = 2;
-  public static final Integer PRIORITY_FUTURE = 1;
-  public static final Integer PRIORITY_PAST = 0;
+  public static final Integer PRIORITY_CLOSED = 1;
 
   //we pass in 'now' so that if numerous of these are being created, that time doesn't change
   public EventForSorting(final Event event, final LocalDateTime now) {
@@ -45,10 +44,12 @@ public class EventForSorting extends Event {
    * whichever vote ends first is more pressing. Consider is the next most urgent action so it has
    * the second highest precedence. Same between two considering as with voting. Next we have two
    * items that have finished polling - they have a selected choice. If 'now' is within 24hrs of the
-   * event, the event is "occurring". After that we have events in the past.
+   * event, the event is "occurring". After that we have events that are closed.
    * <p>
    * Events are ordered by their closeness to 'now' so an events in the future are ordered youngest
    * to oldest. In contrast, events occurring in the past are ordered oldest to youngest.
+   * <p>
+   * Always return -1 when 'this' object should be ordered in front of the 'other' object (else 1)
    */
   public int compareTo(final EventForSorting other) {
     if (this.priority > other.getPriority()) {
@@ -60,18 +61,17 @@ public class EventForSorting extends Event {
         return this.votingEnds.isBefore(other.getVotingEnds()) ? -1 : 1;
       } else if (this.priority.equals(PRIORITY_CONSIDERING)) {
         return this.votingStarts.isBefore(other.getVotingStarts()) ? -1 : 1;
-      } else if (this.priority.equals(PRIORITY_PAST)) {
+      } else if (this.priority.equals(PRIORITY_CLOSED)) {
         //NOTE: this one uses isAfter, we want the oldest ones on top
         return this.eventStart.isAfter(other.getEventStart()) ? -1 : 1;
-      } else { // occurring and future
+      } else { // occurring
         return this.eventStart.isBefore(other.getVotingStarts()) ? -1 : 1;
       }
     }
   }
 
   /**
-   * Priority values are as follows: 4 - voting 3 - considering 2 - occurring 1 - the event is in
-   * the future 'now' 0 - the event is in the past by more than occurring
+   * Priority values are as follows: 4 - voting, 3 - considering, 2 - occurring, 1 - closed
    *
    * @param now - The current time that we are determining this priority at.
    */
@@ -79,18 +79,16 @@ public class EventForSorting extends Event {
     if (this.getSelectedChoice() != null) {
       //we are either in 0, 1, or 2
       final LocalDateTime yesterday = now.minus(1, ChronoUnit.DAYS);
-      if (now.isBefore(now) && now.isAfter(yesterday)) { // is occurring?
+      if (this.eventStart.isAfter(yesterday)) {
         this.priority = PRIORITY_OCCURRING;
-      } else if (this.eventStart.isAfter(now)) {
-        this.priority = PRIORITY_FUTURE;
       } else {
-        this.priority = PRIORITY_PAST;
+        this.priority = PRIORITY_CLOSED;
       }
     } else if (this.getTentativeAlgorithmChoices().isEmpty()) {
-      // selected choice null and tentative empty = considering
+      // selected choice null and tentative empty => considering
       this.priority = PRIORITY_CONSIDERING;
     } else {
-      // selected choice null and tentative not empty = voting
+      // selected choice null and tentative not empty => voting
       this.priority = PRIORITY_VOTING;
     }
   }
