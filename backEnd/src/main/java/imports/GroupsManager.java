@@ -349,6 +349,10 @@ public class GroupsManager extends DatabaseAccessManager {
             this.deleteItem(deleteItemSpec);
 
             resultStatus = new ResultStatus(true, "Group deleted successfully!");
+
+            //blind attempt to delete the group's icon
+            //if it fails we'll get a notification and we can manually delete if necessary
+            DatabaseManagers.S3_ACCESS_MANAGER.deleteImage(group.getIcon(), metrics);
           } else {
             resultStatus = removeFromUsersResult.applyResultStatus(removeFromCategoriesResult);
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, resultStatus.resultMessage));
