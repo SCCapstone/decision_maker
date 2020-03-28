@@ -13,10 +13,10 @@ class MembersPage extends StatefulWidget {
   final List<Member> displayedMembers;
   final List<String> membersLeft;
   final bool isCreating; // if creating don't have to bother with group creator
-  final bool isEditing;
+  final bool canEdit;
 
   MembersPage(this.displayedMembers, this.membersLeft,
-      this.isCreating, this.isEditing);
+      this.isCreating, this.canEdit);
 
   @override
   _MembersPageState createState() => _MembersPageState();
@@ -41,7 +41,7 @@ class _MembersPageState extends State<MembersPage> {
       if (!widget.isCreating) {
         // can't delete yourself or the group creator
         displayDelete = user.username != Globals.currentGroup.groupCreator &&
-            user.username != Globals.username;
+            user.username != Globals.username && widget.canEdit;
         displayOwner = user.username == Globals.currentGroup.groupCreator;
       }
       UserRow userRow = new UserRow(user.displayName, user.username, user.icon,
@@ -67,7 +67,7 @@ class _MembersPageState extends State<MembersPage> {
           onWillPop: handleBackPress,
           child: Scaffold(
             appBar: AppBar(
-              title: (widget.isEditing)
+              title: (widget.canEdit || widget.isCreating)
                 ? Text("Add/Remove Members")
                 : Text("View Members"),
               leading: IconButton(
@@ -82,7 +82,7 @@ class _MembersPageState extends State<MembersPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Visibility(
-                    visible: widget.isEditing,
+                    visible: widget.canEdit || widget.isCreating,
                     child: Row(
                       children: <Widget>[
                         Visibility(

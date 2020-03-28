@@ -10,9 +10,9 @@ import 'package:frontEnd/widgets/category_row_group.dart';
 class GroupCategories extends StatefulWidget {
   final Map<String, String>
       selectedCategories; // map of categoryIds -> categoryName
-  final bool isEditing;
+  final bool canEdit;
 
-  GroupCategories({this.selectedCategories, this.isEditing});
+  GroupCategories({this.selectedCategories, this.canEdit});
 
   @override
   _GroupCategoriesState createState() => _GroupCategoriesState();
@@ -41,7 +41,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
       return Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: (widget.isEditing)
+          title: (widget.canEdit)
               ? Text(
                   "Add Categories",
                   style: TextStyle(
@@ -62,7 +62,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
             Visibility(
-              visible: groupCategoryRows.isEmpty && ownedCategoryRows.isEmpty && !widget.isEditing,
+              visible: groupCategoryRows.isEmpty && ownedCategoryRows.isEmpty && !widget.canEdit,
               child: AutoSizeText(
                 "There are no categories currently associated with this group. "
                     "Ask the creator of the group (@${Globals.currentGroup.groupCreator}) to add some!",
@@ -82,7 +82,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               )
             ),
             Visibility(
-              visible: ownedCategoryRows.isEmpty && widget.isEditing,
+              visible: ownedCategoryRows.isEmpty && widget.canEdit,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     MediaQuery.of(context).size.width * .07,
@@ -134,7 +134,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               ),
             ),
             Visibility(
-              visible: (groupCategoryRows.isNotEmpty && widget.isEditing),
+              visible: (groupCategoryRows.isNotEmpty && widget.canEdit),
               child: Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .05),
@@ -175,7 +175,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     return Scaffold(
         appBar: AppBar(
             centerTitle: false,
-            title: (widget.isEditing)
+            title: (widget.canEdit)
                 ? Text(
               "Add Categories",
               style: TextStyle(
@@ -195,7 +195,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     return Scaffold(
         appBar: AppBar(
             centerTitle: false,
-            title: (widget.isEditing)
+            title: (widget.canEdit)
                 ? Text(
               "Add Categories",
               style: TextStyle(
@@ -250,18 +250,18 @@ class _GroupCategoriesState extends State<GroupCategories> {
             category,
             widget.selectedCategories.keys.contains(category.categoryId),
             true,
-            widget.isEditing,
+            widget.canEdit,
             onSelect: () => selectCategory(category),
           ));
         } else if (Globals.user.ownedCategories.contains(category)) {
           // separate the categories the user owns
-          if (widget.isEditing ||
+          if (widget.canEdit ||
               category.groups.containsKey(Globals.currentGroup.groupId)) {
             ownedCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
                 false,
-                widget.isEditing,
+                widget.canEdit,
                 onSelect: () => selectCategory(category)));
           }
         }

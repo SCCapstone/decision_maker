@@ -318,7 +318,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                       GroupCategories(
                                                         selectedCategories:
                                                             selectedCategories,
-                                                        isEditing: canEdit,
+                                                        canEdit: canEdit,
                                                       ))).then((_) {
                                             saveCategories();
                                           });
@@ -462,7 +462,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
           defaultConsiderDuration:
-              Globals.currentGroup.defaultConsiderDuration);
+              Globals.currentGroup.defaultConsiderDuration,
+          isOpen: Globals.currentGroup.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, icon);
@@ -494,7 +495,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
           defaultConsiderDuration:
-              Globals.currentGroup.defaultConsiderDuration);
+              Globals.currentGroup.defaultConsiderDuration,
+          isOpen: Globals.currentGroup.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, icon);

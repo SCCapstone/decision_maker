@@ -273,7 +273,8 @@ class _CreateGroupState extends State<CreateGroup> {
           members: membersMap,
           defaultVotingDuration: votingDuration,
           defaultConsiderDuration: considerDuration,
-          events: new Map<String, Event>());
+          events: new Map<String, Event>(),
+          isOpen: isOpen);
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog
