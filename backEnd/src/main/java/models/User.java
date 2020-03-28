@@ -1,5 +1,6 @@
 package models;
 
+import exceptions.InvalidAttributeValueException;
 import imports.UsersManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class User {
   @Setter(AccessLevel.NONE)
   private Map<String, Favorite> favorites;
 
-  public User(final Map<String, Object> jsonMap) {
+  public User(final Map<String, Object> jsonMap) throws InvalidAttributeValueException {
     this.setUsername((String) jsonMap.get(UsersManager.USERNAME));
     this.setDisplayName((String) jsonMap.get(UsersManager.DISPLAY_NAME));
     this.setIcon((String) jsonMap.get(UsersManager.ICON));
