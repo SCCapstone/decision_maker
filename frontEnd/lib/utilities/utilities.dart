@@ -212,3 +212,7 @@ void changeTheme(BuildContext context) {
       Provider.of<ThemeNotifier>(context, listen: false);
   themeNotifier.setTheme(selectedTheme);
 }
+
+int getUtcSecondsSinceEpoch(final DateTime dateTime) {
+  return (dateTime.millisecondsSinceEpoch / 1000).ceil();
+}

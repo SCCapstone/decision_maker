@@ -14,14 +14,10 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.model.Get;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import java.math.BigInteger;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +41,7 @@ public class GroupsManagerTest {
 
   private final String goodCategoryId = "CategoryId1";
 
-  private final ArrayList<String> goodGroupIds = new ArrayList<>();
+  private final Set<String> goodGroupIds = ImmutableSet.of("id1", "id2");
 
   private final ImmutableMap<String, Object> newEventGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "ActiveUser")
@@ -113,7 +109,6 @@ public class GroupsManagerTest {
   @BeforeEach
   private void init() {
     this.groupsManager = new GroupsManager(this.dynamoDB);
-    this.goodGroupIds.add("GoodGroupId");
 
     DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
     DatabaseManagers.USERS_MANAGER = this.usersManager;
@@ -315,17 +310,18 @@ public class GroupsManagerTest {
 //    verify(this.metrics, times(1)).commonClose(false);
 //  }
 
-  @Test
-  public void newEvent_noDbConnection_failureResult() {
-    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+//  @Test
+//  public void newEvent_noDbConnection_failureResult() {
+//    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+//
+//    ResultStatus resultStatus = this.groupsManager
+//        .newEvent(this.newEventGoodInput, this.metrics);
+//
+//    assertFalse(resultStatus.success);
+//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
 
-    ResultStatus resultStatus = this.groupsManager
-        .newEvent(this.newEventGoodInput, this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
   //////////////////////////endregion
   // optInOutOfEvent tests //
   //////////////////////////region
@@ -471,14 +467,14 @@ public class GroupsManagerTest {
         .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
 
     assertTrue(result.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
   public void removeCategoryFromGroups_emptyGroupList_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(new ArrayList<>(), this.goodCategoryId, this.metrics);
+        .removeCategoryFromGroups(Collections.emptySet(), this.goodCategoryId, this.metrics);
 
     assertTrue(result.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));

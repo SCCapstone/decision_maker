@@ -21,7 +21,8 @@ public class ResultStatus {
   }
 
   public ResultStatus applyResultStatus(ResultStatus otherStatus) {
-    return new ResultStatus(this.success && otherStatus.success,
-        this.resultMessage + "\n\n" + otherStatus.resultMessage);
+    this.success = this.success && otherStatus.success;
+    this.resultMessage += "\n\n" + otherStatus.resultMessage;
+    return this;
   }
 }

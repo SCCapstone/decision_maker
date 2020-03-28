@@ -25,7 +25,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import models.Event;
+import models.EventForSorting;
 import models.Group;
+import models.GroupForApiResponse;
 import models.Metadata;
 import models.User;
 import models.UserGroup;
@@ -56,6 +58,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENT_CREATOR = "EventCreator";
   public static final String CREATED_DATE_TIME = "CreatedDateTime";
   public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String UTC_EVENT_START_SECONDS = "UtcEventStartSeconds";
   public static final String VOTING_DURATION = "VotingDuration";
   public static final String RSVP_DURATION = "RsvpDuration";
   public static final String OPTED_IN = "OptedIn";
@@ -93,10 +96,11 @@ public class GroupsManager extends DatabaseAccessManager {
 
         //the user should not be able to retrieve info from the group if they are not a member
         if (group.getMembers().containsKey(activeUser)) {
-          group.setEvents(this.getBatchOfEvents(group, batchNumber));
+          final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(group,
+              batchNumber);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(group.asMap()));
+              JsonEncoders.convertObjectToJson(groupForApiResponse.asMap()));
         } else {
           resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
@@ -113,10 +117,11 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
+  public Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
+    //linked hash maps maintain order whereas normal hash maps do not
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
     if (group.getEvents().size() > newestEventIndex) {
@@ -125,33 +130,47 @@ public class GroupsManager extends DatabaseAccessManager {
         oldestEventIndex = group.getEvents().size();
       }
 
-      //first we get all of the events up to the oldestEvent being asked for
-      eventsBatch = group.getEvents()
-          .entrySet()
-          .stream()
-          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(oldestEventIndex)
-          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+      final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
 
-      //then we sort in the opposite direction asking for the appropriate number of events
-      eventsBatch = eventsBatch
+      //first of all we convert the map to be events for sorting before we sort
+      //this way we don't have to do all of the sorting setup for every comparison in the sort
+      //if setting up sorting params takes n time and sorting takes m times, then doing
+      //this first leads to n + m complexity vs n * m complexity if we calculated every comparison
+      Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
           .entrySet()
           .stream()
-          .sorted((e1, e2) -> -1 * this.isEventXAfterY(e1.getValue(), e2.getValue()))
-          .limit(oldestEventIndex - newestEventIndex)
-          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+          .collect(toMap(
+              Entry::getKey,
+              (e) -> new EventForSorting(e.getValue(), now),
+              (e1, e2) -> e2,
+              LinkedHashMap::new));
+
+      //then we sort all of the events up to the oldestEvent being asked for
+      eventsBatch = searchingEventsBatch
+          .entrySet()
+          .stream()
+          .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
+          .limit(oldestEventIndex)
+          .collect(toMap(Entry::getKey, (e) -> (Event) e.getValue(), (e1, e2) -> e2,
+              LinkedHashMap::new));
+
+      //then we sort in the opposite direction and get the appropriate number of events
+      final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
+      Collections.reverse(reverseOrderKeys);
+
+      Map<String, Event> temp = new HashMap<>();
+      for (String eventId : reverseOrderKeys) {
+        temp.put(eventId, eventsBatch.get(eventId));
+
+        if (temp.size() >= oldestEventIndex - newestEventIndex) {
+          break;
+        }
+      }
+
+      eventsBatch = temp;
     } // else there are no events in this range and we return the empty map
 
     return eventsBatch;
-  }
-
-  private int isEventXAfterY(final Event x, final Event y) {
-    final LocalDateTime xCreationDate = LocalDateTime
-        .parse(x.getCreatedDateTime(), this.getDateTimeFormatter());
-    final LocalDateTime yCreationDate = LocalDateTime
-        .parse(y.getCreatedDateTime(), this.getDateTimeFormatter());
-
-    return yCreationDate.compareTo(xCreationDate);
   }
 
   public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
@@ -205,7 +224,8 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
+        resultStatus = new ResultStatus(true,
+            JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -288,7 +308,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 oldGroup.getGroupName(), groupName);
 
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(newGroup.asMap()));
+                JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
           } else {
             resultStatus.resultMessage = "Invalid request, missing permissions";
           }
@@ -341,6 +361,10 @@ public class GroupsManager extends DatabaseAccessManager {
             this.deleteItem(deleteItemSpec);
 
             resultStatus = new ResultStatus(true, "Group deleted successfully!");
+
+            //blind attempt to delete the group's icon
+            //if it fails we'll get a notification and we can manually delete if necessary
+            DatabaseManagers.S3_ACCESS_MANAGER.deleteImage(group.getIcon(), metrics);
           } else {
             resultStatus = removeFromUsersResult.applyResultStatus(removeFromCategoriesResult);
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, resultStatus.resultMessage));
@@ -371,8 +395,8 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME,
-            EVENT_START_DATE_TIME, VOTING_DURATION, RSVP_DURATION, GROUP_ID);
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, RSVP_DURATION,
+            EVENT_START_DATE_TIME, VOTING_DURATION, GROUP_ID, UTC_EVENT_START_SECONDS);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -434,7 +458,8 @@ public class GroupsManager extends DatabaseAccessManager {
             this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
           }
 
-          resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
         } else {
           metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid request, bad input"));
           resultStatus.resultMessage = "Invalid request, bad input.";
@@ -494,7 +519,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(group.asMap()));
+        resultStatus = new ResultStatus(true,
+            JsonEncoders.convertObjectToJson(new GroupForApiResponse(group).asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
@@ -1233,7 +1259,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
   // This function is called when a category is deleted and updates each item in the groups table
   // that was linked to the category accordingly.
-  public ResultStatus removeCategoryFromGroups(final List<String> groupIds, final String categoryId,
+  public ResultStatus removeCategoryFromGroups(final Set<String> groupIds, final String categoryId,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
     metrics.commonSetup(classMethod);

@@ -45,16 +45,17 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "validActiveUser",
       CategoriesManager.CATEGORY_ID, "CategoryId1",
-      RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5"),
+      RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", "5"),
       CategoriesManager.CATEGORY_NAME, "TestName"
   );
 
   private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
       UsersManager.FAVORITES, ImmutableList.of("fav1")
@@ -63,9 +64,10 @@ public class UsersManagerTest {
   private final Map<String, Object> updateUserSettingsGoodInputWithIcon = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
       UsersManager.ICON, ImmutableList.of(1, 2, 3),
@@ -75,9 +77,10 @@ public class UsersManagerTest {
   private final Item userItem = new Item()
       .withString(RequestFields.ACTIVE_USER, "ActiveUser")
       .withMap(UsersManager.APP_SETTINGS, ImmutableMap.of(
-          UsersManager.APP_SETTINGS_DARK_THEME, 1,
+          UsersManager.APP_SETTINGS_DARK_THEME, true,
           UsersManager.APP_SETTINGS_GROUP_SORT, 0,
-          UsersManager.APP_SETTINGS_MUTED, 0
+          UsersManager.APP_SETTINGS_CATEGORY_SORT, 1,
+          UsersManager.APP_SETTINGS_MUTED, false
       ))
       .withString(UsersManager.DISPLAY_NAME, "DisplayName")
       .withString(UsersManager.ICON, "Icon")
@@ -110,8 +113,8 @@ public class UsersManagerTest {
   );
 
   private final Map<String, Object> markAllEventsSeenGoodInput = ImmutableMap.of(
-    RequestFields.ACTIVE_USER, "activeUser",
-    GroupsManager.GROUP_ID, "groupId"
+      RequestFields.ACTIVE_USER, "activeUser",
+      GroupsManager.GROUP_ID, "groupId"
   );
 
   @Mock
@@ -320,13 +323,16 @@ public class UsersManagerTest {
   @Test
   public void updateUserChoiceRatings_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(new Item().withMap(UsersManager.CATEGORY_RATINGS, Collections.emptyMap()))
+        .when(this.table).getItem(any(GetItemSpec.class));
 
     ResultStatus resultStatus = this.usersManager
         .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
     verify(this.metrics, times(1)).commonClose(true);
   }
 
@@ -358,7 +364,7 @@ public class UsersManagerTest {
     ResultStatus resultStatus = this.usersManager
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
-            RequestFields.USER_RATINGS, ImmutableMap.of("1", "1", "2", "5")),
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5)),
             false, this.metrics);
 
     assertFalse(resultStatus.success);

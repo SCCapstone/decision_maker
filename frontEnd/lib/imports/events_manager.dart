@@ -11,6 +11,7 @@ class EventsManager {
   static final String EVENT_NAME = "EventName";
   static final String CREATED_DATE_TIME = "CreatedDateTime";
   static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  static final String UTC_EVENT_START_SECONDS = "UtcEventStartSeconds";
   static final String TYPE = "Type";
   static final String VOTING_DURATION = "VotingDuration";
   static final String CONSIDER_DURATION = "RsvpDuration";
