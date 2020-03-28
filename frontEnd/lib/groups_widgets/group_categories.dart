@@ -10,8 +10,9 @@ import 'package:frontEnd/widgets/category_row_group.dart';
 class GroupCategories extends StatefulWidget {
   final Map<String, String>
       selectedCategories; // map of categoryIds -> categoryName
+  final bool isEditing;
 
-  GroupCategories({this.selectedCategories});
+  GroupCategories({this.selectedCategories, this.isEditing});
 
   @override
   _GroupCategoriesState createState() => _GroupCategoriesState();
@@ -40,11 +41,19 @@ class _GroupCategoriesState extends State<GroupCategories> {
       return Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: Text(
-            "Add Categories",
-            style: TextStyle(
-                fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
-          ),
+          title: (widget.isEditing)
+              ? Text(
+                  "Add Categories",
+                  style: TextStyle(
+                      fontSize:
+                          DefaultTextStyle.of(context).style.fontSize * 0.5),
+                )
+              : Text(
+                  "View Categories",
+                  style: TextStyle(
+                      fontSize:
+                          DefaultTextStyle.of(context).style.fontSize * 0.5),
+                ),
         ),
         body: Column(
           children: <Widget>[
@@ -52,14 +61,28 @@ class _GroupCategoriesState extends State<GroupCategories> {
               padding:
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
-            AutoSizeText(
-              "My Categories",
-              minFontSize: 15,
-              maxLines: 1,
-              style: TextStyle(fontSize: 26),
+            Visibility(
+              visible: groupCategoryRows.isEmpty && ownedCategoryRows.isEmpty && !widget.isEditing,
+              child: AutoSizeText(
+                "There are no categories currently associated with this group. "
+                    "Ask the creator of the group (@${Globals.currentGroup.groupCreator}) to add some!",
+                minFontSize: 15,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 20),
+              ),
             ),
             Visibility(
-              visible: ownedCategoryRows.isEmpty,
+              visible: ownedCategoryRows.isNotEmpty,
+              child: AutoSizeText(
+                "My Categories",
+                minFontSize: 15,
+                maxLines: 1,
+                style: TextStyle(fontSize: 26),
+              )
+            ),
+            Visibility(
+              visible: ownedCategoryRows.isEmpty && widget.isEditing,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     MediaQuery.of(context).size.width * .07,
@@ -111,7 +134,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               ),
             ),
             Visibility(
-              visible: (groupCategoryRows.isNotEmpty),
+              visible: (groupCategoryRows.isNotEmpty && widget.isEditing),
               child: Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .05),
@@ -141,7 +164,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             Padding(
               padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
-            )
+            ),
           ],
         ),
       );
@@ -152,10 +175,18 @@ class _GroupCategoriesState extends State<GroupCategories> {
     return Scaffold(
         appBar: AppBar(
             centerTitle: false,
-            title: Text(
+            title: (widget.isEditing)
+                ? Text(
               "Add Categories",
               style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
+                  fontSize:
+                  DefaultTextStyle.of(context).style.fontSize * 0.5),
+            )
+                : Text(
+              "View Categories",
+              style: TextStyle(
+                  fontSize:
+                  DefaultTextStyle.of(context).style.fontSize * 0.5),
             )),
         body: Center(child: CircularProgressIndicator()));
   }
@@ -164,10 +195,18 @@ class _GroupCategoriesState extends State<GroupCategories> {
     return Scaffold(
         appBar: AppBar(
             centerTitle: false,
-            title: Text(
+            title: (widget.isEditing)
+                ? Text(
               "Add Categories",
               style: TextStyle(
-                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
+                  fontSize:
+                  DefaultTextStyle.of(context).style.fontSize * 0.5),
+            )
+                : Text(
+              "View Categories",
+              style: TextStyle(
+                  fontSize:
+                  DefaultTextStyle.of(context).style.fontSize * 0.5),
             )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
@@ -211,15 +250,20 @@ class _GroupCategoriesState extends State<GroupCategories> {
             category,
             widget.selectedCategories.keys.contains(category.categoryId),
             true,
+            widget.isEditing,
             onSelect: () => selectCategory(category),
           ));
         } else if (Globals.user.ownedCategories.contains(category)) {
           // separate the categories the user owns
-          ownedCategoryRows.add(new CategoryRowGroup(
-              category,
-              widget.selectedCategories.keys.contains(category.categoryId),
-              false,
-              onSelect: () => selectCategory(category)));
+          if (widget.isEditing ||
+              category.groups.containsKey(Globals.currentGroup.groupId)) {
+            ownedCategoryRows.add(new CategoryRowGroup(
+                category,
+                widget.selectedCategories.keys.contains(category.categoryId),
+                false,
+                widget.isEditing,
+                onSelect: () => selectCategory(category)));
+          }
         }
       }
       setState(() {});

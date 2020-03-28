@@ -28,6 +28,8 @@ class _GroupSettingsState extends State<GroupSettings> {
   bool validGroupIcon = true;
   bool editing = false;
   bool newIcon = false;
+  bool isOpen;
+  bool canEdit;
   File icon;
   String groupName;
   String currentGroupIcon;
@@ -87,6 +89,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     votingDuration = Globals.currentGroup.defaultVotingDuration;
     considerDuration = Globals.currentGroup.defaultConsiderDuration;
     currentGroupIcon = Globals.currentGroup.icon;
+    isOpen = Globals.currentGroup.isOpen;
+    canEdit = owner || (isOpen && !owner);
 
     groupNameController.text = groupName;
     votingDurationController.text = votingDuration.toString();
@@ -139,6 +143,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                       Column(
                         children: [
                           TextFormField(
+                            enabled: canEdit,
                             maxLength: Globals.maxGroupNameLength,
                             controller: groupNameController,
                             validator: validGroupName,
@@ -179,13 +184,16 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 decoration: BoxDecoration(
                                     color: Colors.grey.withOpacity(0.7),
                                     shape: BoxShape.circle),
-                                child: IconButton(
-                                  icon: Icon(Icons.edit),
-                                  color: Colors.blueAccent,
-                                  onPressed: () {
-                                    getImage();
-                                  },
-                                ),
+                                child: Visibility(
+                                  visible: canEdit,
+                                  child: IconButton(
+                                    icon: Icon(Icons.edit),
+                                    color: Colors.blueAccent,
+                                    onPressed: () {
+                                      getImage();
+                                    },
+                                  ),
+                                )
                               ),
                             ),
                           ),
@@ -213,6 +221,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
+                                      enabled: canEdit,
                                       maxLength: Globals.maxConsiderDigits,
                                       keyboardType: TextInputType.number,
                                       validator: (value) {
@@ -255,6 +264,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
+                                      enabled: canEdit,
                                       maxLength: Globals.maxVotingDigits,
                                       keyboardType: TextInputType.number,
                                       validator: (value) {
@@ -286,7 +296,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: AutoSizeText(
-                                      "Select categories for group",
+                                      (canEdit)
+                                      ? "Select categories for group"
+                                      : "View categories in group",
                                       minFontSize: 14,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -306,6 +318,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                       GroupCategories(
                                                         selectedCategories:
                                                             selectedCategories,
+                                                        isEditing: canEdit,
                                                       ))).then((_) {
                                             saveCategories();
                                           });
@@ -319,7 +332,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: AutoSizeText(
-                                      "Add/Remove members",
+                                      (canEdit)
+                                      ? "Add/Remove members"
+                                      : "View members",
                                       minFontSize: 14,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -330,7 +345,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: IconButton(
-                                        icon: Icon(Icons.add),
+                                        icon: (canEdit)
+                                          ? Icon(Icons.add)
+                                          : Icon(Icons.keyboard_arrow_right),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
@@ -340,6 +357,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                         displayedMembers,
                                                         membersLeft,
                                                         false,
+                                                        canEdit
                                                       ))).then((_) {
                                             saveMembers();
                                           });
@@ -367,9 +385,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                                             MediaQuery.of(context).size.width *
                                                 .20,
                                         child: IconButton(
-                                          icon: Icon(Icons.lock),
+                                          icon: (this.isOpen)
+                                              ? Icon(Icons.lock_open)
+                                              : Icon(Icons.lock),
                                           onPressed: () {
-                                            // TODO lock group if owner
+                                            setState(() {
+                                              this.isOpen = !this.isOpen;
+                                              enableAutoValidation();
+                                            });
                                           },
                                         )),
                                   ],
@@ -623,6 +646,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
         considerDuration != Globals.currentGroup.defaultConsiderDuration ||
         groupName != Globals.currentGroup.groupName ||
+        isOpen != Globals.currentGroup.isOpen ||
         newIcon) {
       setState(() {
         editing = true;
@@ -652,7 +676,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration);
+          defaultConsiderDuration: considerDuration,
+          isOpen: isOpen);
 
       showLoadingDialog(context, "Saving...", true);
       ResultStatus<Group> resultStatus =

@@ -27,6 +27,7 @@ class GroupsManager {
   static final String EVENTS = "Events";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
+  static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
   static final String deleteGroupAction = "deleteGroup";

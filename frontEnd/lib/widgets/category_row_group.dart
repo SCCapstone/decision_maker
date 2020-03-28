@@ -10,9 +10,10 @@ class CategoryRowGroup extends StatefulWidget {
   final VoidCallback onSelect;
   final bool groupCategory;
   final bool selected;
+  final bool isEditing;
 
   CategoryRowGroup(this.category, this.selected, this.groupCategory,
-      {this.onSelect});
+      this.isEditing, {this.onSelect});
 
   @override
   _CategoryRowGroupState createState() => new _CategoryRowGroupState();
@@ -44,14 +45,23 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Checkbox(
-            value: selectVal,
-            onChanged: (bool value) {
-              this.widget.onSelect();
-              setState(() {
-                selectVal = value;
-              });
-            },
+          Visibility(
+            visible: widget.isEditing,
+            child: Checkbox(
+              value: selectVal,
+              onChanged: (bool value) {
+                this.widget.onSelect();
+                setState(() {
+                  selectVal = value;
+                });
+              },
+            ),
+          ),
+          Visibility(
+            visible: !widget.isEditing,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+            ),
           ),
           Expanded(
               child: AutoSizeText(

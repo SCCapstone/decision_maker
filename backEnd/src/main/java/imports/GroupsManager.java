@@ -169,7 +169,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION, IS_OPEN);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -201,7 +201,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Group newGroup = new Group(jsonMap);
         newGroup.setGroupId(newGroupId);
         newGroup.setGroupCreator(activeUser);
-        newGroup.setOpen(false); // TODO get from 'required' request key (it's not required rn)
         newGroup.setMembersLeft(Collections.emptyMap());
         newGroup.setEvents(Collections.emptyMap());
         newGroup.setLastActivity(lastActivity);
@@ -233,7 +232,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION, IS_OPEN);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -245,6 +244,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
+        final boolean isOpen = (boolean) jsonMap.get(IS_OPEN);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         //TODO update the categories passed in to be a list of ids, then create categories map
@@ -264,13 +264,14 @@ public class GroupsManager extends DatabaseAccessManager {
             String updateExpression =
                 "set " + GROUP_NAME + " = :name, " + MEMBERS + " = :members, " + CATEGORIES
                     + " = :categories, " + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
-                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration";
+                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration, " + IS_OPEN + " = :isOpen";
             ValueMap valueMap = new ValueMap()
                 .withString(":name", groupName)
                 .withMap(":members", membersMapped)
                 .withMap(":categories", categories)
                 .withInt(":defaultVotingDuration", defaultVotingDuration)
-                .withInt(":defaultRsvpDuration", defaultRsvpDuration);
+                .withInt(":defaultRsvpDuration", defaultRsvpDuration)
+                .withBoolean(":isOpen", isOpen);
 
             //assumption - currently we aren't allowing user's to clear a group's image once set
             String newIconFileName = null;
@@ -797,15 +798,17 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputHasPermissions(final Group oldGroup, final String activeUser) {
-    //the group creator is not changed or it is changed and the active user is the current creator
     boolean hasPermission = true;
 
-    //the below if is always false because of how groupCreator is getting set in edit group
-    //for testing lets let all users be able to edit the group and we can touch base on this after beta
-//    if (!dbGroupDataMap.get(GROUP_CREATOR).equals(groupCreator) && !dbGroupDataMap
-//        .get(GROUP_CREATOR).equals(activeUser)) {
-//      hasPermission = false;
-//    }
+    if (oldGroup.isOpen()) {
+      if (!oldGroup.getMembers().containsKey(activeUser)) {
+        hasPermission = false;
+      }
+    } else {
+      if (!oldGroup.getGroupCreator().equals(activeUser)) {
+        hasPermission = false;
+      }
+    }
 
     return hasPermission;
   }
