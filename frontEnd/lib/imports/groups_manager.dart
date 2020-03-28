@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
@@ -8,6 +9,7 @@ import 'package:frontEnd/models/group_interface.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'api_manager.dart';
 
 class GroupsManager {
@@ -206,6 +208,9 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = newEventAction;
     jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(
+        EventsManager.UTC_EVENT_START_SECONDS,
+        () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
