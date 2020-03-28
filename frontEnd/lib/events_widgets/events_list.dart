@@ -117,9 +117,9 @@ class _EventsListState extends State<EventsList> {
       });
 
       List<Widget> widgetList = new List<Widget>.from(eventCards);
-      int numEventsForBatch =
+      int numEvents =
           (Globals.currentGroup.currentBatchNum + 1) * GroupsManager.BATCH_SIZE;
-      if (Globals.currentGroup.totalNumberOfEvents - numEventsForBatch > 0) {
+      if (Globals.currentGroup.totalNumberOfEvents - numEvents > 0) {
         // there are more events to show, so put a next button and a back one if not on the first batch
         Row buttonRow = new Row(
           mainAxisAlignment: MainAxisAlignment.center,
