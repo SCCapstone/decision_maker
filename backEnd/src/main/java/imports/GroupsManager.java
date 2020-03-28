@@ -24,7 +24,10 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import models.Event;
+import models.EventForSorting;
 import models.Group;
 import models.Metadata;
 import models.User;
@@ -56,6 +59,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String EVENT_CREATOR = "EventCreator";
   public static final String CREATED_DATE_TIME = "CreatedDateTime";
   public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String UTC_EVENT_START_SECONDS = "UtcEventStartSeconds";
   public static final String VOTING_DURATION = "VotingDuration";
   public static final String RSVP_DURATION = "RsvpDuration";
   public static final String OPTED_IN = "OptedIn";
@@ -126,20 +130,36 @@ public class GroupsManager extends DatabaseAccessManager {
         oldestEventIndex = group.getEvents().size();
       }
 
-      //first we get all of the events up to the oldestEvent being asked for in order
-      eventsBatch = group.getEvents()
+      final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+
+      //first of all we convert the map to be events for sorting before we sort
+      //this way we don't have to do all of the sorting setup for every comparison in the sort
+      //if setting up sorting params takes n time and sorting takes m times, then doing
+      //this first leads to n + m complexity vs n * m complexity if we calculated every comparison
+      Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
           .entrySet()
           .stream()
-          .sorted((e1, e2) -> this.isEventXAfterY(e1.getValue(), e2.getValue()))
+          .collect(toMap(
+              Entry::getKey,
+              (e) -> new EventForSorting(e.getValue(), now),
+              (e1, e2) -> e2,
+              LinkedHashMap::new));
+
+      //then we sort all of the events up to the oldestEvent being asked for
+      eventsBatch = searchingEventsBatch
+          .entrySet()
+          .stream()
+          .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
           .limit(oldestEventIndex)
-          .collect(toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+          .collect(toMap(Entry::getKey, (e) -> (Event) e.getValue(), (e1, e2) -> e2,
+              LinkedHashMap::new));
 
       //then we sort in the opposite direction and get the appropriate number of events
       final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
       Collections.reverse(reverseOrderKeys);
 
       Map<String, Event> temp = new HashMap<>();
-      for (String eventId: reverseOrderKeys) {
+      for (String eventId : reverseOrderKeys) {
         temp.put(eventId, eventsBatch.get(eventId));
 
         if (temp.size() >= oldestEventIndex - newestEventIndex) {
@@ -151,15 +171,6 @@ public class GroupsManager extends DatabaseAccessManager {
     } // else there are no events in this range and we return the empty map
 
     return eventsBatch;
-  }
-
-  private int isEventXAfterY(final Event x, final Event y) {
-    final LocalDateTime xCreationDate = LocalDateTime
-        .parse(x.getCreatedDateTime(), this.getDateTimeFormatter());
-    final LocalDateTime yCreationDate = LocalDateTime
-        .parse(y.getCreatedDateTime(), this.getDateTimeFormatter());
-
-    return yCreationDate.compareTo(xCreationDate);
   }
 
   public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {

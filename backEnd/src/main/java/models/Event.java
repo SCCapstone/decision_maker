@@ -7,9 +7,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
 public class Event {
@@ -19,6 +21,7 @@ public class Event {
   private String eventName;
   private String createdDateTime;
   private String eventStartDateTime;
+  private Integer utcEventStartSeconds;
   private Integer rsvpDuration;
   private Integer votingDuration;
   private String selectedChoice;
@@ -37,6 +40,8 @@ public class Event {
     this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
+    this.setUtcEventStartSeconds(
+        this.getIntFromObject(jsonMap.get(GroupsManager.UTC_EVENT_START_SECONDS)));
     this.setRsvpDuration(this.getIntFromObject(jsonMap.get(GroupsManager.RSVP_DURATION)));
     this.setVotingDuration(this.getIntFromObject(jsonMap.get(GroupsManager.VOTING_DURATION)));
     this.setSelectedChoice((String) jsonMap.get(GroupsManager.SELECTED_CHOICE));
@@ -55,6 +60,7 @@ public class Event {
     modelAsMap.putIfAbsent(GroupsManager.EVENT_NAME, this.eventName);
     modelAsMap.putIfAbsent(GroupsManager.CREATED_DATE_TIME, this.createdDateTime);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_START_DATE_TIME, this.eventStartDateTime);
+    modelAsMap.putIfAbsent(GroupsManager.UTC_EVENT_START_SECONDS, this.utcEventStartSeconds);
     modelAsMap.putIfAbsent(GroupsManager.RSVP_DURATION, this.rsvpDuration);
     modelAsMap.putIfAbsent(GroupsManager.VOTING_DURATION, this.votingDuration);
     modelAsMap.putIfAbsent(GroupsManager.SELECTED_CHOICE, this.selectedChoice);
@@ -72,6 +78,7 @@ public class Event {
         .eventName(this.eventName)
         .createdDateTime(this.createdDateTime)
         .eventStartDateTime(this.eventStartDateTime)
+        .utcEventStartSeconds(this.utcEventStartSeconds)
         .rsvpDuration(this.rsvpDuration)
         .votingDuration(this.votingDuration)
         .selectedChoice(this.selectedChoice)
@@ -133,12 +140,15 @@ public class Event {
     if (jsonMap != null) {
       this.eventCreator = new HashMap<>();
       for (String username : jsonMap.keySet()) {
-        this.eventCreator.putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
+        this.eventCreator
+            .putIfAbsent(username, new Member((Map<String, Object>) jsonMap.get(username)));
       }
     }
   }
 
-  public void setEventCreator(final Map<String, Member> memberMap) { this.eventCreator = memberMap; }
+  public void setEventCreator(final Map<String, Member> memberMap) {
+    this.eventCreator = memberMap;
+  }
 
   public Map<String, Map<String, String>> getEventCreatorMap() {
     final Map<String, Map<String, String>> eventCreatorMap = new HashMap<>();
@@ -153,7 +163,7 @@ public class Event {
     String username = null;
 
     if (this.eventCreator != null) {
-      for (final String key: this.eventCreator.keySet()) {
+      for (final String key : this.eventCreator.keySet()) {
         username = key;
       }
     }
@@ -166,7 +176,7 @@ public class Event {
     String displayName = null;
 
     if (this.eventCreator != null) {
-      for (final String key: this.eventCreator.keySet()) {
+      for (final String key : this.eventCreator.keySet()) {
         displayName = this.eventCreator.get(key).getDisplayName();
       }
     }
