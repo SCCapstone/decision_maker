@@ -59,9 +59,6 @@ public class GroupsPostHandler implements
           } else if (action.equals("getBatchOfEvents")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER
                 .handleGetBatchOfEvents(payloadJsonMap, metrics);
-          } else if (action.equals("createRandomEvent")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER
-                .createRandomEvent(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
             resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
           } else {
