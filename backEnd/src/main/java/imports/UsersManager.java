@@ -475,6 +475,8 @@ public class UsersManager extends DatabaseAccessManager {
          2 - Reverse Alphabetical
          3 - Date (oldest first)
       */
+      // User on front end can't update both settings at the same time, so
+      // checking groupSort first since it's likely to be more commonly used
       if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
         Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
         if (groupSort < 0 || groupSort > 3) {
