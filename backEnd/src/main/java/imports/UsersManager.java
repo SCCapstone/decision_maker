@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +56,8 @@ public class UsersManager extends DatabaseAccessManager {
   public static final boolean DEFAULT_MUTED = false;
   public static final int DEFAULT_GROUP_SORT = 0;
   public static final int DEFAULT_CATEGORY_SORT = 1;
+
+  public static final int MAX_DISPLAY_NAME_LENGTH = 40;
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -238,15 +241,28 @@ public class UsersManager extends DatabaseAccessManager {
         final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
 
         if (rating < 0 || rating > 5) {
-          errorMessage = "Error: invalid rating value.";
+          errorMessage = this
+              .getUpdatedInvalidMessage(errorMessage, "Error: invalid rating value.");
           break;
         }
       }
     } catch (final Exception e) {
-      errorMessage = "Error: Invalid ratings map.";
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage, "Error: invalid ratings map.");
     }
 
     return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedInvalidMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {
@@ -276,7 +292,8 @@ public class UsersManager extends DatabaseAccessManager {
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
-        if (newDisplayName.length() > 0) {
+        final Optional<String> errorMessage = this.userSettingsIsValid(newDisplayName);
+        if (!errorMessage.isPresent()) {
           User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
           //as long as this remains a small group of settings, I think it's okay to always overwrite
@@ -388,10 +405,13 @@ public class UsersManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true,
               JsonEncoders.convertObjectToJson(updatedUser.asMap()));
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Display name cannot be empty"));
-          resultStatus.resultMessage = "Error: Display name cannot be empty";
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
-      } catch (Exception e) {
+      } catch (final InvalidAttributeValueException iae) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, iae));
+        resultStatus.resultMessage = iae.getMessage();
+      } catch (final Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
@@ -402,6 +422,22 @@ public class UsersManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  public Optional<String> userSettingsIsValid(final String displayName) {
+    String errorMessage = null;
+
+    if (displayName.length() <= 0) {
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage, "Error: Display name cannot be empty.");
+    } else if (displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage,
+              "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH
+                  + "characters.");
+    }
+
+    return Optional.ofNullable(errorMessage);
   }
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
