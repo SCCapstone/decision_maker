@@ -63,7 +63,7 @@ public class Group implements Model {
   }
 
   public Map<String, Object> asMap() {
-    Map<String, Object> modelAsMap = new HashMap<>();
+    final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(GroupsManager.GROUP_ID, this.groupId);
     modelAsMap.putIfAbsent(GroupsManager.GROUP_NAME, this.groupName);
     modelAsMap.putIfAbsent(GroupsManager.ICON, this.icon);

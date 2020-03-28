@@ -27,6 +27,7 @@ import java.util.UUID;
 import models.Event;
 import models.EventForSorting;
 import models.Group;
+import models.GroupForApiResponse;
 import models.Metadata;
 import models.User;
 import models.UserGroup;
@@ -98,7 +99,7 @@ public class GroupsManager extends DatabaseAccessManager {
           group.setEvents(this.getBatchOfEvents(group, batchNumber));
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(group.asMap()));
+              JsonEncoders.convertObjectToJson(new GroupForApiResponse(group).asMap()));
         } else {
           resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
@@ -222,7 +223,8 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
             newGroup.getGroupName());
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
+        resultStatus = new ResultStatus(true,
+            JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -305,7 +307,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 oldGroup.getGroupName(), groupName);
 
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(newGroup.asMap()));
+                JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
           } else {
             resultStatus.resultMessage = "Invalid request, missing permissions";
           }
@@ -451,7 +453,8 @@ public class GroupsManager extends DatabaseAccessManager {
             this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
           }
 
-          resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(newGroup.asMap()));
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
         } else {
           metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid request, bad input"));
           resultStatus.resultMessage = "Invalid request, bad input.";
@@ -511,7 +514,8 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(group.asMap()));
+        resultStatus = new ResultStatus(true,
+            JsonEncoders.convertObjectToJson(new GroupForApiResponse(group).asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
