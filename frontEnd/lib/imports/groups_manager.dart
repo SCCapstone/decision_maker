@@ -133,8 +133,6 @@ class GroupsManager {
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
 
-    print(jsonRequestBody);
-
     if (response.success) {
       try {
         Map<String, dynamic> body = jsonDecode(response.data);
