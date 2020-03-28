@@ -276,115 +276,121 @@ public class UsersManager extends DatabaseAccessManager {
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
-        User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
+        if (newDisplayName.length() > 0) {
+          User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
-        //as long as this remains a small group of settings, I think it's okay to always overwrite
-        //this does imply that the entire appSettings array is sent from the front end though
-        String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
-        ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings.asMap());
+          //as long as this remains a small group of settings, I think it's okay to always overwrite
+          //this does imply that the entire appSettings array is sent from the front end though
+          String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
+          ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings.asMap());
 
-        String updateGroupsExpression = null;
-        ValueMap groupsValueMap = new ValueMap();
-        NameMap groupsNameMap = new NameMap();
+          String updateGroupsExpression = null;
+          ValueMap groupsValueMap = new ValueMap();
+          NameMap groupsNameMap = new NameMap();
 
-        String updateFavoritesOfExpression = null;
-        ValueMap favoritesOfValueMap = new ValueMap();
-        NameMap favoritesOfNameMap = new NameMap();
+          String updateFavoritesOfExpression = null;
+          ValueMap favoritesOfValueMap = new ValueMap();
+          NameMap favoritesOfNameMap = new NameMap();
 
-        //determine if the display name/icon have changed
-        if (!oldUser.getDisplayName().equals(newDisplayName)) {
-          updateUserExpression += ", " + DISPLAY_NAME + " = :name";
-          userValueMap.withString(":name", newDisplayName);
+          //determine if the display name/icon have changed
+          if (!oldUser.getDisplayName().equals(newDisplayName)) {
+            updateUserExpression += ", " + DISPLAY_NAME + " = :name";
+            userValueMap.withString(":name", newDisplayName);
 
-          updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
-          groupsValueMap.withString(":displayName", newDisplayName);
-          groupsNameMap.with("#username", activeUser);
+            updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+                GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
+            groupsValueMap.withString(":displayName", newDisplayName);
+            groupsNameMap.with("#username", activeUser);
 
-          updateFavoritesOfExpression = this
-              .getUpdateString(updateFavoritesOfExpression,
-                  FAVORITES + ".#username." + DISPLAY_NAME,
-                  ":displayName");
-          favoritesOfValueMap.withString(":displayName", newDisplayName);
-          favoritesOfNameMap.with("#username", activeUser);
-        }
+            updateFavoritesOfExpression = this
+                .getUpdateString(updateFavoritesOfExpression,
+                    FAVORITES + ".#username." + DISPLAY_NAME,
+                    ":displayName");
+            favoritesOfValueMap.withString(":displayName", newDisplayName);
+            favoritesOfNameMap.with("#username", activeUser);
+          }
 
-        //ICON is an optional api payload key, if present it's assumed it has the contents of a new file for upload
-        if (jsonMap.containsKey(ICON)) {
-          List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
+          //ICON is an optional api payload key, if present it's assumed it has the contents of a new file for upload
+          if (jsonMap.containsKey(ICON)) {
+            List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
 
-          //try to create the file in s3, if no filename returned, throw exception
-          String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER.uploadImage(newIcon, metrics)
-              .orElseThrow(Exception::new);
+            //try to create the file in s3, if no filename returned, throw exception
+            String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+                .uploadImage(newIcon, metrics)
+                .orElseThrow(Exception::new);
 
-          updateUserExpression += ", " + ICON + " = :icon";
-          userValueMap.withString(":icon", newIconFileName);
+            updateUserExpression += ", " + ICON + " = :icon";
+            userValueMap.withString(":icon", newIconFileName);
 
-          updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
-          groupsValueMap.withString(":icon", newIconFileName);
-          groupsNameMap.with("#username2", activeUser);
+            updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+                GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
+            groupsValueMap.withString(":icon", newIconFileName);
+            groupsNameMap.with("#username2", activeUser);
 
-          updateFavoritesOfExpression = this
-              .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
-                  ":icon");
-          favoritesOfValueMap.withString(":icon", newIconFileName);
-          favoritesOfNameMap.with("#username2", activeUser);
-        }
+            updateFavoritesOfExpression = this
+                .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
+                    ":icon");
+            favoritesOfValueMap.withString(":icon", newIconFileName);
+            favoritesOfNameMap.with("#username2", activeUser);
+          }
 
-        UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withUpdateExpression(updateUserExpression)
-            .withValueMap(userValueMap);
+          UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression(updateUserExpression)
+              .withValueMap(userValueMap);
 
-        this.updateItem(updateUserItemSpec);
+          this.updateItem(updateUserItemSpec);
 
-        if (updateGroupsExpression != null) {
-          UpdateItemSpec updateGroupItemSpec;
+          if (updateGroupsExpression != null) {
+            UpdateItemSpec updateGroupItemSpec;
 
-          for (String groupId : oldUser.getGroups().keySet()) {
-            try {
-              updateGroupItemSpec = new UpdateItemSpec()
-                  .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
-                  .withUpdateExpression(updateGroupsExpression)
-                  .withValueMap(groupsValueMap)
-                  .withNameMap(groupsNameMap);
+            for (String groupId : oldUser.getGroups().keySet()) {
+              try {
+                updateGroupItemSpec = new UpdateItemSpec()
+                    .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
+                    .withUpdateExpression(updateGroupsExpression)
+                    .withValueMap(groupsValueMap)
+                    .withNameMap(groupsNameMap);
 
-              DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
-            } catch (Exception e) {
-              metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+                DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
+              } catch (Exception e) {
+                metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+              }
             }
           }
-        }
 
-        if (updateFavoritesOfExpression != null) {
-          UpdateItemSpec updateFavoritesOfItemSpec;
+          if (updateFavoritesOfExpression != null) {
+            UpdateItemSpec updateFavoritesOfItemSpec;
 
-          //all of the users that this user is a favorite of need to be updated
-          for (String username : oldUser.getGroups().keySet()) {
-            try {
-              updateFavoritesOfItemSpec = new UpdateItemSpec()
-                  .withPrimaryKey(this.getPrimaryKeyIndex(), username)
-                  .withUpdateExpression(updateFavoritesOfExpression)
-                  .withValueMap(favoritesOfValueMap)
-                  .withNameMap(favoritesOfNameMap);
+            //all of the users that this user is a favorite of need to be updated
+            for (String username : oldUser.getGroups().keySet()) {
+              try {
+                updateFavoritesOfItemSpec = new UpdateItemSpec()
+                    .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+                    .withUpdateExpression(updateFavoritesOfExpression)
+                    .withValueMap(favoritesOfValueMap)
+                    .withNameMap(favoritesOfNameMap);
 
-              this.updateItem(updateFavoritesOfItemSpec);
-            } catch (Exception e) {
-              metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+                this.updateItem(updateFavoritesOfItemSpec);
+              } catch (Exception e) {
+                metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+              }
             }
           }
+
+          this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
+              metrics);
+
+          final Item updatedUser = this.getItemByPrimaryKey(activeUser);
+          //anytime we return the active user we need to add this
+          updatedUser.withBoolean(FIRST_LOGIN, false);
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(updatedUser.asMap()));
+        } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Display name cannot be empty"));
+          resultStatus.resultMessage = "Error: Display name cannot be empty";
         }
-
-        this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
-            metrics);
-
-        final Item updatedUser = this.getItemByPrimaryKey(activeUser);
-        //anytime we return the active user we need to add this
-        updatedUser.withBoolean(FIRST_LOGIN, false);
-
-        resultStatus = new ResultStatus(true,
-            JsonEncoders.convertObjectToJson(updatedUser.asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
