@@ -46,7 +46,7 @@ public class EventForSorting extends Event {
    * items that have finished polling - they have a selected choice. If 'now' is within 24hrs of the
    * event, the event is "occurring". After that we have events that are closed.
    * <p>
-   * Events are ordered by their closeness to 'now' so an events in the future are ordered youngest
+   * Events are ordered by their closeness to 'now', so events in the future are ordered youngest
    * to oldest. In contrast, events occurring in the past are ordered oldest to youngest.
    * <p>
    * Always return -1 when 'this' object should be ordered in front of the 'other' object (else 1)
@@ -77,7 +77,7 @@ public class EventForSorting extends Event {
    */
   private void setPriorityFromOwnProperties(final LocalDateTime now) {
     if (this.getSelectedChoice() != null) {
-      //we are either in 0, 1, or 2
+      //the event is finalized - it has a selected choice
       final LocalDateTime yesterday = now.minus(1, ChronoUnit.DAYS);
       if (this.eventStart.isAfter(yesterday)) {
         this.priority = PRIORITY_OCCURRING;
