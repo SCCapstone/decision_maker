@@ -1,6 +1,7 @@
 package models;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import lombok.Data;
@@ -12,6 +13,7 @@ public class EventForSorting extends Event {
   private LocalDateTime votingStarts;
   private LocalDateTime votingEnds;
   private Integer priority;
+  private boolean isPending;
 
   public static final Integer PRIORITY_VOTING = 4;
   public static final Integer PRIORITY_CONSIDERING = 3;
@@ -32,6 +34,22 @@ public class EventForSorting extends Event {
     this.votingEnds = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
 
     this.setPriorityFromOwnProperties(now);
+  }
+
+  //use this one when the now doesn't matter (aka when we just want to know if the event is pending)
+  public EventForSorting(final Event event) {
+    super(event.asMap());
+
+    Integer eventStartSeconds = this.getUtcEventStartSeconds();
+    this.eventStart = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
+
+    eventStartSeconds += this.getRsvpDuration() * 60; // 60 seconds in a minute
+    this.votingStarts = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
+
+    eventStartSeconds += this.getVotingDuration() * 60; // 60 seconds in a minute
+    this.votingEnds = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
+
+    this.setPriorityFromOwnProperties(LocalDateTime.now(ZoneId.of("UTC")));
   }
 
   private LocalDateTime getLocalDateTimeFromEpochSeconds(final Integer seconds) {
@@ -84,12 +102,15 @@ public class EventForSorting extends Event {
       } else {
         this.priority = PRIORITY_CLOSED;
       }
+      this.isPending = false;
     } else if (this.getTentativeAlgorithmChoices().isEmpty()) {
       // selected choice null and tentative empty => considering
       this.priority = PRIORITY_CONSIDERING;
+      this.isPending = true;
     } else {
       // selected choice null and tentative not empty => voting
       this.priority = PRIORITY_VOTING;
+      this.isPending = true;
     }
   }
 
