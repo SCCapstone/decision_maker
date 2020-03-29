@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:add_2_calendar/add_2_calendar.dart' as calendar;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
@@ -194,6 +195,27 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton.icon(
+              icon: Icon(Icons.date_range),
+              label: Text("Add to My Calendar"),
+              onPressed: () {
+                calendar.Event calendarEvent = calendar.Event(
+                  title: event.eventName,
+                  startDate: event.eventStartDateTime,
+                  endDate: event.eventStartDateTime.add(Duration(hours: 1)),
+                  allDay: false,
+                );
+                calendar.Add2Calendar.addEvent2Cal(calendarEvent);
+              },
             ),
           ],
         ),
