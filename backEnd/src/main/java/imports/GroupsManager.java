@@ -1039,11 +1039,13 @@ public class GroupsManager extends DatabaseAccessManager {
                 "set " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
             final ValueMap valueMapEventCreator = new ValueMap()
                 .withString(":lastActivity", newGroup.getLastActivity());
+            final NameMap nameMapEventCreator = new NameMap()
+                .with("#groupId", newGroup.getGroupId());
             final UpdateItemSpec updateItemSpecEventCreator = new UpdateItemSpec()
                 .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember)
                 .withUpdateExpression(updateExpressionEventCreator)
                 .withValueMap(valueMapEventCreator)
-                .withNameMap(nameMap);
+                .withNameMap(nameMapEventCreator);
 
             DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpecEventCreator);
           } catch (final Exception e) {
