@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import models.Category;
 import models.Event;
 import models.Group;
@@ -386,7 +385,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
     int i = 0;
     String groupEventKey;
-    for (final String eventId: eventIds) {
+    for (final String eventId : eventIds) {
       //this will create distinct name maps for every key we need to remove
       groupEventKey = "#groupEventKey" + i;
       if (i == 0) {

@@ -64,8 +64,8 @@ public class EventForSorting extends Event {
    * items that have finished polling - they have a selected choice. If 'now' is within 24hrs of the
    * event, the event is "occurring". After that we have events that are closed.
    * <p>
-   * Events are ordered by their closeness to 'now', so events in the future are ordered youngest
-   * to oldest. In contrast, events occurring in the past are ordered oldest to youngest.
+   * Events are ordered by their closeness to 'now', so events in the future are ordered youngest to
+   * oldest. In contrast, events occurring in the past are ordered oldest to youngest.
    * <p>
    * Always return -1 when 'this' object should be ordered in front of the 'other' object (else 1)
    */
