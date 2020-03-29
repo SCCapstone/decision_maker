@@ -32,9 +32,17 @@ public class EventWithCategoryChoices extends Event {
     return modelAsMap;
   }
 
+  public Map<String, Object> asEventMap() {
+    return super.asMap();
+  }
+
   @Override
   public void setCategoryFields(final Category category) {
     super.setCategoryFields(category);
     this.setCategoryChoices(category.getChoices());
+  }
+
+  public void specific() {
+
   }
 }

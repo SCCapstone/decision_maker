@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.Set;
 import models.Category;
 import models.Event;
+import models.EventWithCategoryChoices;
 import models.Group;
+import models.GroupWithCategoryChoices;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
@@ -103,8 +105,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          final Group group = new Group(groupData.asMap());
-          final Event event = group.getEvents().get(eventId);
+          final GroupWithCategoryChoices group = new GroupWithCategoryChoices(groupData.asMap());
+          final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
           final Event updatedEvent = event.clone();
 
           if (event.getTentativeAlgorithmChoices().isEmpty()) {
@@ -170,7 +172,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Object> getTentativeAlgorithmChoices(final Event event,
+  private Map<String, Object> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
       final Integer numberOfChoices, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
@@ -179,14 +181,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final Map<String, Object> returnValue = new HashMap<>();
 
     try {
-      String categoryId = event.getCategoryId();
+      final String categoryId = event.getCategoryId();
 
-      Category category = new Category(
-          DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
+      //we need to make sure the event's category choices are setup
+      if (event.getCategoryChoices() == null) {
+        final Category category = new Category(
+            DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
+        event.setCategoryChoices(category.getChoices());
+      }
 
       //build an array of user choice rating sums, start will all the current choice ids in the category
       final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
-      for (String choiceId : category.getChoices().keySet()) {
+      for (String choiceId : event.getCategoryChoices().keySet()) {
         choiceRatingsToSums.putIfAbsent(choiceId, 0);
       }
 
@@ -217,7 +223,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
 
         //we add to the return map and remove the max from the choice rating map
-        returnValue.putIfAbsent(maxChoiceId, category.getChoices().get(maxChoiceId));
+        returnValue.putIfAbsent(maxChoiceId, event.getCategoryChoices().get(maxChoiceId));
         choiceRatingsToSums.remove(maxChoiceId);
       }
     } catch (Exception e) {

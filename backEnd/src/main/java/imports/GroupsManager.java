@@ -447,7 +447,7 @@ public class GroupsManager extends DatabaseAccessManager {
           } else {
             //if it's not going to wait for consider time, don't add the category choices on the
             //event object by casting the newEvent back to a 'normal' Event object
-            valueMap.withMap(":map", ((Event) newEvent).asMap());
+            valueMap.withMap(":map", newEvent.asEventMap());
           }
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
