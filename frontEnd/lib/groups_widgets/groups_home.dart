@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/about_widgets/about_page.dart';
+import 'package:frontEnd/about_widgets/user_manual.dart';
 import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/groups_widgets//groups_list.dart';
 import 'package:frontEnd/groups_widgets/groups_create.dart';
@@ -206,6 +207,15 @@ class _GroupsHomeState extends State<GroupsHome>
                         context,
                         MaterialPageRoute(
                             builder: (context) => UserSettings()));
+                  }),
+              ListTile(
+                  leading: Icon(Icons.accessibility),
+                  title: Text('User Manual', style: TextStyle(fontSize: 16)),
+                  onTap: () {
+                    // close the drawer menu when clicked
+                    Navigator.of(context).pop();
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => UserManual()));
                   }),
               ListTile(
                   leading: Icon(Icons.help_outline),

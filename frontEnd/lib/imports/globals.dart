@@ -61,6 +61,13 @@ class Globals {
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://www.shiftadmin.com";
   static String imageUrl =
       "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
+  static final String termsUrl =
+      "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/terms_conditions.html";
+  static final String privacyPolicyUrl =
+      "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/privacy_policy.html";
+  static final String flutterUrl = "https://flutter.dev/";
+  static final String awsUrl = "https://aws.amazon.com/";
+
   static ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
       primarySwatch: Colors.green,
