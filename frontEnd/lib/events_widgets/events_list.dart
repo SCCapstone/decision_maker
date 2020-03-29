@@ -119,55 +119,43 @@ class _EventsListState extends State<EventsList> {
       List<Widget> widgetList = new List<Widget>.from(eventCards);
       int numEvents =
           (Globals.currentGroup.currentBatchNum + 1) * GroupsManager.BATCH_SIZE;
-      if (Globals.currentGroup.totalNumberOfEvents - numEvents > 0) {
-        // there are more events to show, so put a next button and a back one if not on the first batch
-        Row buttonRow = new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // only show back button if not on the first batch
-            Visibility(
-              visible: Globals.currentGroup.currentBatchNum > 0,
-              child: RaisedButton(
-                onPressed: () {
-                  Globals.currentGroup.currentBatchNum -= 1;
-                  widget.getNextBatch();
-                },
-                child: Text("Back"),
-              ),
-            ),
-            Visibility(
-              visible: Globals.currentGroup.currentBatchNum > 0,
-              child: Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.width * .02),
-              ),
-            ),
-            RaisedButton(
-              onPressed: () {
-                Globals.currentGroup.currentBatchNum += 1;
-                widget.getNextBatch();
-              },
-              child: Text("Next"),
-            )
-          ],
-        );
-        widgetList.add(buttonRow);
-      } else if (Globals.currentGroup.currentBatchNum != 0) {
-        // need to always have a previous button if not on the first page
-        Row buttonRow = new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton(
+
+      Row buttonRow = new Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          // back button must be on every batch except the first
+          Visibility(
+            visible: Globals.currentGroup.currentBatchNum > 0,
+            child: RaisedButton(
               onPressed: () {
                 Globals.currentGroup.currentBatchNum -= 1;
                 widget.getNextBatch();
               },
               child: Text("Back"),
             ),
-          ],
-        );
-        widgetList.add(buttonRow);
-      }
+          ),
+          Visibility(
+            visible: Globals.currentGroup.currentBatchNum > 0 &&
+                Globals.currentGroup.totalNumberOfEvents - numEvents > 0,
+            child: Padding(
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width * .02),
+            ),
+          ),
+          // next button only present when there are more events to show
+          Visibility(
+            visible: Globals.currentGroup.totalNumberOfEvents - numEvents > 0,
+            child: RaisedButton(
+              onPressed: () {
+                Globals.currentGroup.currentBatchNum += 1;
+                widget.getNextBatch();
+              },
+              child: Text("Next"),
+            ),
+          )
+        ],
+      );
+      widgetList.add(buttonRow);
+
       return Scrollbar(
           child: ListView.builder(
         shrinkWrap: true,
