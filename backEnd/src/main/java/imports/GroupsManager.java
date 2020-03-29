@@ -445,8 +445,6 @@ public class GroupsManager extends DatabaseAccessManager {
           if (newEvent.getRsvpDuration() > 0) {
             valueMap.withMap(":map", newEvent.asMap());
           } else {
-            //if it's not going to wait for consider time, don't add the category choices on the
-            //event object by casting the newEvent back to a 'normal' Event object
             valueMap.withMap(":map", newEvent.asEventMap());
           }
 

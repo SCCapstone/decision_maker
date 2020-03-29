@@ -95,6 +95,7 @@ public class Event {
   }
 
   public void setCategoryFields(final Category category) {
+    this.categoryId = category.getCategoryId();
     this.categoryName = category.getCategoryName();
     this.categoryVersion = category.getVersion();
   }

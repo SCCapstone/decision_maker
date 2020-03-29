@@ -190,7 +190,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         event.setCategoryChoices(category.getChoices());
       }
 
-      //build an array of user choice rating sums, start will all the current choice ids in the category
+      //build an array of user choice rating sums, start with all the current choice ids in the category
       final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
       for (String choiceId : event.getCategoryChoices().keySet()) {
         choiceRatingsToSums.putIfAbsent(choiceId, 0);
