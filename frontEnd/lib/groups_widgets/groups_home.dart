@@ -594,9 +594,10 @@ class _GroupsHomeState extends State<GroupsHome>
     // this allows for android users to press the back button when done searching and it will remove the search bar
     if (this.searching) {
       toggleSearch();
+      return false;
+    } else {
+      return true;
     }
-
-    return !this.searching;
   }
 
   Future<void> _onMessage(Map<String, dynamic> notificationRaw) async {

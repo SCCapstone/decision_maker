@@ -23,7 +23,7 @@ class GroupPage extends StatefulWidget {
 }
 
 class _GroupPageState extends State<GroupPage> {
-  bool initialLoad = true;
+  bool loading = true;
   bool errorLoading = false;
   Widget errorWidget;
 
@@ -43,7 +43,7 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (initialLoad) {
+    if (loading) {
       return groupLoading();
     } else if (errorLoading) {
       return errorWidget;
@@ -124,6 +124,7 @@ class _GroupPageState extends State<GroupPage> {
                       events: Globals.currentGroup.events,
                       refreshEventsUnseen: updatePage,
                       refreshPage: refreshList,
+                      getNextBatch: getNextBatch,
                     ),
                     onRefresh: refreshList,
                   ),
@@ -151,11 +152,16 @@ class _GroupPageState extends State<GroupPage> {
   }
 
   void getGroup() async {
-    ResultStatus<Group> status = await GroupsManager.getGroup(widget.groupId);
-    initialLoad = false;
+    int batchNum = (Globals.currentGroup == null)
+        ? 0
+        : Globals.currentGroup.currentBatchNum;
+    ResultStatus<Group> status =
+        await GroupsManager.getGroup(widget.groupId, batchNumber: batchNum);
+    loading = false;
     if (status.success) {
       errorLoading = false;
       Globals.currentGroup = status.data;
+      Globals.currentGroup.currentBatchNum = batchNum;
       setState(() {});
     } else {
       errorLoading = true;
@@ -243,6 +249,13 @@ class _GroupPageState extends State<GroupPage> {
   void updatePage() {
     // this is here to allow the mark all seen button to disappear if marking the last event seen
     setState(() {});
+  }
+
+  void getNextBatch() {
+    setState(() {
+      loading = true;
+    });
+    getGroup();
   }
 
   void markAllEventsSeen() {

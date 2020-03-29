@@ -16,7 +16,7 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 class EventDetailsConsider extends StatefulWidget {
   final String groupId;
   final String eventId;
-  final String mode;
+  final int mode;
 
   EventDetailsConsider({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);

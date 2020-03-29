@@ -17,7 +17,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 class EventDetailsVoting extends StatefulWidget {
   final String groupId;
   final String eventId;
-  final String mode;
+  final int mode;
 
   EventDetailsVoting({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);

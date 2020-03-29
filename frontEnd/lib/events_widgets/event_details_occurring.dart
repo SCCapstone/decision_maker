@@ -15,7 +15,7 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 class EventDetailsOccurring extends StatefulWidget {
   final String groupId;
   final String eventId;
-  final String mode;
+  final int mode;
 
   EventDetailsOccurring({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);
