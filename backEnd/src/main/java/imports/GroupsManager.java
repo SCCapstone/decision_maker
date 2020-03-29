@@ -245,7 +245,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, GROUP_ID, GROUP_NAME, MEMBERS, CATEGORIES,
-            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION);
+            DEFAULT_VOTING_DURATION, DEFAULT_RSVP_DURATION, RequestFields.BATCH_NUMBER);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -257,6 +257,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(CATEGORIES);
         final Integer defaultVotingDuration = (Integer) jsonMap.get(DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
+        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         //TODO update the categories passed in to be a list of ids, then create categories map
@@ -308,7 +309,8 @@ public class GroupsManager extends DatabaseAccessManager {
                 oldGroup.getGroupName(), groupName);
 
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+                JsonEncoders
+                    .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
           } else {
             resultStatus.resultMessage = "Invalid request, missing permissions";
           }
@@ -517,10 +519,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         this.updateItem(updateItemSpec);
 
-        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
-
-        resultStatus = new ResultStatus(true,
-            JsonEncoders.convertObjectToJson(new GroupForApiResponse(group).asMap()));
+        resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
@@ -533,7 +532,6 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  //TODO revisit this all together - was never implemented on the front end maybe?
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
@@ -1030,7 +1028,27 @@ public class GroupsManager extends DatabaseAccessManager {
             updateItemSpec
                 .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
             DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-          } catch (Exception e) {
+          } catch (final Exception e) {
+            success = false;
+            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+          }
+        } else if (isNewEvent) {
+          // this means the oldMember is the event creator, we should only update the last activity
+          try {
+            final String updateExpressionEventCreator =
+                "set " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
+            final ValueMap valueMapEventCreator = new ValueMap()
+                .withString(":lastActivity", newGroup.getLastActivity());
+            final NameMap nameMapEventCreator = new NameMap()
+                .with("#groupId", newGroup.getGroupId());
+            final UpdateItemSpec updateItemSpecEventCreator = new UpdateItemSpec()
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember)
+                .withUpdateExpression(updateExpressionEventCreator)
+                .withValueMap(valueMapEventCreator)
+                .withNameMap(nameMapEventCreator);
+
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpecEventCreator);
+          } catch (final Exception e) {
             success = false;
             metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
           }
