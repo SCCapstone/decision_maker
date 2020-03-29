@@ -532,7 +532,6 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  //TODO revisit this all together - was never implemented on the front end maybe?
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
@@ -1029,7 +1028,25 @@ public class GroupsManager extends DatabaseAccessManager {
             updateItemSpec
                 .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
             DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-          } catch (Exception e) {
+          } catch (final Exception e) {
+            success = false;
+            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+          }
+        } else if (isNewEvent) {
+          // this means the oldMember is the event creator, we should only update the last activity
+          try {
+            final String updateExpressionEventCreator =
+                "set " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
+            final ValueMap valueMapEventCreator = new ValueMap()
+                .withString(":lastActivity", newGroup.getLastActivity());
+            final UpdateItemSpec updateItemSpecEventCreator = new UpdateItemSpec()
+                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember)
+                .withUpdateExpression(updateExpressionEventCreator)
+                .withValueMap(valueMapEventCreator)
+                .withNameMap(nameMap);
+
+            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpecEventCreator);
+          } catch (final Exception e) {
             success = false;
             metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
           }
