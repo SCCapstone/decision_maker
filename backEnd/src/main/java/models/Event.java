@@ -1,5 +1,6 @@
 package models;
 
+import imports.CategoriesManager;
 import imports.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ public class Event {
 
   private String categoryId;
   private String categoryName;
+  private Integer categoryVersion;
   private String eventName;
   private String createdDateTime;
   private String eventStartDateTime;
@@ -37,6 +39,7 @@ public class Event {
   public Event(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(GroupsManager.CATEGORY_ID));
     this.setCategoryName((String) jsonMap.get(GroupsManager.CATEGORY_NAME));
+    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(CategoriesManager.VERSION)));
     this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
@@ -57,6 +60,7 @@ public class Event {
     final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(GroupsManager.CATEGORY_ID, this.categoryId);
     modelAsMap.putIfAbsent(GroupsManager.CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(CategoriesManager.VERSION, this.categoryVersion);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_NAME, this.eventName);
     modelAsMap.putIfAbsent(GroupsManager.CREATED_DATE_TIME, this.createdDateTime);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_START_DATE_TIME, this.eventStartDateTime);
@@ -75,6 +79,7 @@ public class Event {
     return this.toBuilder()
         .categoryId(this.categoryId)
         .categoryName(this.categoryName)
+        .categoryVersion(this.categoryVersion)
         .eventName(this.eventName)
         .createdDateTime(this.createdDateTime)
         .eventStartDateTime(this.eventStartDateTime)
@@ -87,6 +92,11 @@ public class Event {
         .votingNumbers(this.votingNumbers)
         .eventCreator(this.eventCreator)
         .build();
+  }
+
+  public void setCategoryFields(final Category category) {
+    this.categoryName = category.getCategoryName();
+    this.categoryVersion = category.getVersion();
   }
 
   public void setOptedInRawMap(final Map<String, Object> jsonMap) {
