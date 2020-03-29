@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import models.Event;
 import models.EventForSorting;
 import models.Group;
@@ -351,9 +352,9 @@ public class GroupsManager extends DatabaseAccessManager {
           Set<String> categoryIds = group.getCategories().keySet();
 
           // Remove the group from the users and categories tables
-          ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
+          final ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
               .removeGroupFromUsers(members, membersLeft, groupId, metrics);
-          ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
+          final ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
               .removeGroupFromCategories(categoryIds, groupId, metrics);
 
           if (removeFromUsersResult.success && removeFromCategoriesResult.success) {
@@ -364,9 +365,15 @@ public class GroupsManager extends DatabaseAccessManager {
 
             resultStatus = new ResultStatus(true, "Group deleted successfully!");
 
-            //blind attempt to delete the group's icon
-            //if it fails we'll get a notification and we can manually delete if necessary
+            //blind attempt to delete the group's icon and pending events
+            //if either fail, we'll get a notification and we can manually delete if necessary
             DatabaseManagers.S3_ACCESS_MANAGER.deleteImage(group.getIcon(), metrics);
+
+            final Set<String> pendingEventIds = group.getEvents().entrySet().stream()
+                .filter((e) -> (new EventForSorting(e.getValue()).isPending()))
+                .map(Entry::getKey).collect(Collectors.toSet());
+            DatabaseManagers.PENDING_EVENTS_MANAGER
+                .deleteAllPendingGroupEvents(groupId, pendingEventIds, metrics);
           } else {
             resultStatus = removeFromUsersResult.applyResultStatus(removeFromCategoriesResult);
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, resultStatus.resultMessage));
