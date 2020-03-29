@@ -5,9 +5,10 @@ import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/event_card_interface.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-class EventCardVoting extends StatefulWidget {
+class EventCardVoting extends StatefulWidget implements EventCardInterface {
   final String groupId;
   final Event event;
   final String eventId;
@@ -19,6 +20,16 @@ class EventCardVoting extends StatefulWidget {
 
   @override
   _EventCardVotingState createState() => new _EventCardVotingState();
+
+  @override
+  int getEventMode() {
+    return EventsManager.votingMode;
+  }
+
+  @override
+  Event getEvent() {
+    return this.event;
+  }
 }
 
 class _EventCardVotingState extends State<EventCardVoting> {

@@ -5,9 +5,10 @@ import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
+import 'package:frontEnd/models/event_card_interface.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 
-class EventCardOccurring extends StatefulWidget {
+class EventCardOccurring extends StatefulWidget implements EventCardInterface {
   final String groupId;
   final Event event;
   final String eventId;
@@ -19,6 +20,16 @@ class EventCardOccurring extends StatefulWidget {
 
   @override
   _EventCardOccurringState createState() => new _EventCardOccurringState();
+
+  @override
+  int getEventMode() {
+    return EventsManager.occurringMode;
+  }
+
+  @override
+  Event getEvent() {
+    return this.event;
+  }
 }
 
 class _EventCardOccurringState extends State<EventCardOccurring> {
@@ -96,7 +107,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
             ),
             Padding(
               padding:
-              EdgeInsets.all(MediaQuery.of(context).size.height * .006),
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .006),
             ),
             Center(
               child: RaisedButton(
