@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:frontEnd/imports/events_manager.dart';
 import 'package:frontEnd/imports/response_item.dart';
 import 'package:frontEnd/imports/result_status.dart';
 import 'package:frontEnd/models/event.dart';
@@ -8,6 +9,7 @@ import 'package:frontEnd/models/group_interface.dart';
 import 'package:frontEnd/models/user_group.dart';
 import 'package:frontEnd/utilities/request_fields.dart';
 import 'package:frontEnd/models/group.dart';
+import 'package:frontEnd/utilities/utilities.dart';
 import 'api_manager.dart';
 
 class GroupsManager {
@@ -27,6 +29,8 @@ class GroupsManager {
   static final String EVENTS = "Events";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
+  static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
+  static final int BATCH_SIZE = 25;
   static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
@@ -157,8 +161,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Group>> editGroup(
-      Group group, File iconFile) async {
+  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile,
+      {int batchNumber}) async {
     ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -173,6 +177,13 @@ class GroupsManager {
 
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
+
+    if (batchNumber == null) {
+      batchNumber = 0;
+    }
+
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -207,6 +218,9 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = newEventAction;
     jsonRequestBody[RequestFields.PAYLOAD] = event.asMap();
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(
+        EventsManager.UTC_EVENT_START_SECONDS,
+        () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);

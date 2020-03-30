@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:add_2_calendar/add_2_calendar.dart' as calendar;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/events_manager.dart';
@@ -15,7 +16,7 @@ import 'package:frontEnd/widgets/user_row_events.dart';
 class EventDetailsOccurring extends StatefulWidget {
   final String groupId;
   final String eventId;
-  final String mode;
+  final int mode;
 
   EventDetailsOccurring({Key key, this.groupId, this.eventId, this.mode})
       : super(key: key);
@@ -138,11 +139,13 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     Visibility(
                       visible: this.event.optedIn.length > 0,
                       child: ExpansionTile(
-                        title: Text("Considered (${this.event.optedIn.length})"),
+                        title:
+                            Text("Considered (${this.event.optedIn.length})"),
                         children: <Widget>[
                           ConstrainedBox(
                             constraints: BoxConstraints(
-                              maxHeight: MediaQuery.of(context).size.height * .2,
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * .2,
                             ),
                             child: Scrollbar(
                               child: ListView(
@@ -156,16 +159,37 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                     ),
                     Visibility(
                         visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText("No members considered",
+                        child: AutoSizeText(
+                          "No members considered",
                           minFontSize: 12,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 16),
-                        )
-                    ),
+                        )),
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton.icon(
+              icon: Icon(Icons.date_range),
+              label: Text("Add to My Calendar"),
+              onPressed: () {
+                calendar.Event calendarEvent = calendar.Event(
+                  title: event.eventName,
+                  startDate: event.eventStartDateTime,
+                  endDate: event.eventStartDateTime.add(Duration(hours: 1)),
+                  allDay: false,
+                );
+                calendar.Add2Calendar.addEvent2Cal(calendarEvent);
+              },
             ),
           ],
         ),

@@ -3,14 +3,17 @@ package imports;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.collect.ImmutableList;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.Metrics;
+import utilities.ResultStatus;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
@@ -66,6 +70,54 @@ public class S3AccessManagerTest {
     assertFalse(result.isPresent());
     verify(this.s3Client, times(1)).putObject(any(PutObjectRequest.class));
     verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  ///////////////////////
+  // deleteImage tests //
+  ///////////////////////region
+
+  @Test
+  public void deleteImage_validInput_successfulResult() {
+    ResultStatus resultStatus = this.s3AccessManager.deleteImage("fileName", this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.s3Client, times(1)).deleteObject(any(DeleteObjectRequest.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
+  public void deleteImage_validInputNullFileName_successfulResult() {
+    ResultStatus resultStatus = this.s3AccessManager.deleteImage(null, this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.s3Client, times(0)).deleteObject(any(DeleteObjectRequest.class));
+    verify(this.metrics, times(0)).commonClose(any(Boolean.class));
+  }
+
+  @Test
+  public void deleteImage_validInputS3Fails_failureResult() {
+    doThrow(AmazonServiceException.class).when(this.s3Client)
+        .deleteObject(any(DeleteObjectRequest.class));
+
+    ResultStatus resultStatus = this.s3AccessManager.deleteImage("fileName", this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.s3Client, times(1)).deleteObject(any(DeleteObjectRequest.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  /////////////////////////////
+  // imageBucketExists tests //
+  /////////////////////////////region
+
+  @Test
+  public void imageBucketExists_validInput_successfulResult() {
+    doReturn(true).when(this.s3Client).doesBucketExistV2(any(String.class));
+
+    Boolean result = this.s3AccessManager.imageBucketExists();
+
+    assertTrue(result);
+    verify(this.s3Client, times(1)).doesBucketExistV2(any(String.class));
   }
 
   //endregion

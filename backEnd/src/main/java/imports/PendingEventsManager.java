@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import models.Category;
 import models.Event;
 import models.Group;
@@ -366,6 +367,53 @@ public class PendingEventsManager extends DatabaseAccessManager {
     }
 
     metrics.commonClose(success);
+  }
+
+  public ResultStatus deleteAllPendingGroupEvents(final String groupId, final Set<String> eventIds,
+      final Metrics metrics) {
+    if (eventIds.isEmpty()) {
+      return new ResultStatus(true, "No events to delete");
+    }
+
+    final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    StringBuilder updateExpression = new StringBuilder();
+    final NameMap nameMap = new NameMap();
+
+    int i = 0;
+    String groupEventKey;
+    for (final String eventId : eventIds) {
+      //this will create distinct name maps for every key we need to remove
+      groupEventKey = "#groupEventKey" + i;
+      if (i == 0) {
+        updateExpression.append("remove ").append(groupEventKey);
+        nameMap.with(groupEventKey, groupId + DELIM + eventId);
+      } else {
+        updateExpression.append(", ").append(groupEventKey);
+        nameMap.with(groupEventKey, groupId + DELIM + eventId);
+      }
+      i++;
+    }
+
+    final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+        .withUpdateExpression(updateExpression.toString())
+        .withNameMap(nameMap);
+
+    final int numberOfPartitions = Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY));
+    for (i = 1; i <= numberOfPartitions; i++) {
+      try {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), Integer.valueOf(i).toString());
+        this.updateItem(updateItemSpec);
+      } catch (final Exception e) {
+        metrics.log(new ErrorDescriptor<>(i, classMethod, e));
+      }
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   public String getPartitionKey() throws NullPointerException, NumberFormatException {
