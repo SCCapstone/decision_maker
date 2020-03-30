@@ -1,12 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/about_widgets/categories_info.dart';
-import 'package:frontEnd/about_widgets/events_info.dart';
-import 'package:frontEnd/about_widgets/general_info.dart';
-import 'package:frontEnd/about_widgets/groups_info.dart';
-import 'package:frontEnd/about_widgets/privacy_policy.dart';
-import 'package:frontEnd/about_widgets/settings_info.dart';
+import 'package:frontEnd/imports/globals.dart';
 import 'package:package_info/package_info.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -75,32 +71,52 @@ class _AboutPageState extends State<AboutPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Expanded(
-                        child: AutoSizeText(
-                          "View Privacy Policy & Licensing Info",
-                          minFontSize: 12,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                      Container(
-                          width: MediaQuery.of(context).size.width * .20,
-                          child: IconButton(
-                            icon: Icon(Icons.keyboard_arrow_right),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => PrivacyPolicy()));
-                            },
-                          )),
-                    ],
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .01),
+                ),
+                InkWell(
+                  child: Center(
+                    child: AutoSizeText(
+                      "Click here to view our privacy policy.",
+                      maxLines: 1,
+                      minFontSize: 14,
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 20,
+                          decoration: TextDecoration.underline),
+                    ),
                   ),
+                  onTap: () async {
+                    if (await canLaunch(Globals.privacyPolicyUrl)) {
+                      await launch(Globals.privacyPolicyUrl);
+                    } else {
+                      throw 'Could not launch ${Globals.privacyPolicyUrl}';
+                    }
+                  },
+                ),
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .008),
+                ),
+                InkWell(
+                  child: Center(
+                    child: AutoSizeText(
+                      "Click here to view our terms and conditions.",
+                      maxLines: 1,
+                      minFontSize: 14,
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 20,
+                          decoration: TextDecoration.underline),
+                    ),
+                  ),
+                  onTap: () async {
+                    if (await canLaunch(Globals.termsUrl)) {
+                      await launch(Globals.termsUrl);
+                    } else {
+                      throw 'Could not launch ${Globals.termsUrl}';
+                    }
+                  },
                 ),
                 Padding(
                   padding:
@@ -108,200 +124,65 @@ class _AboutPageState extends State<AboutPage> {
                 ),
                 Center(
                   child: AutoSizeText(
-                    "App Info and Help",
-                    style: TextStyle(
-                        fontSize: 30, decoration: TextDecoration.underline),
-                    minFontSize: 14,
+                    "Built Using",
+                    minFontSize: 12,
                     maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
-                Wrap(
-                  runSpacing: -10,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => GeneralInfo()));
-                              },
-                              child: AutoSizeText(
-                                "General",
-                                minFontSize: 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: IconButton(
-                                icon: Icon(Icons.keyboard_arrow_right),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => GeneralInfo()));
-                                },
-                              )),
-                        ],
-                      ),
+                InkWell(
+                  child: Center(
+                    child: AutoSizeText(
+                      "Flutter",
+                      maxLines: 1,
+                      minFontSize: 14,
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 20,
+                          decoration: TextDecoration.underline),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => SettingsInfo()));
-                              },
-                              child: AutoSizeText(
-                                "User Settings",
-                                minFontSize: 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: IconButton(
-                                icon: Icon(Icons.keyboard_arrow_right),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              SettingsInfo()));
-                                },
-                              )),
-                        ],
-                      ),
+                  ),
+                  onTap: () async {
+                    if (await canLaunch(Globals.flutterUrl)) {
+                      await launch(Globals.flutterUrl);
+                    } else {
+                      throw 'Could not launch ${Globals.flutterUrl}';
+                    }
+                  },
+                ),
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .01),
+                ),
+                Center(
+                  child: AutoSizeText(
+                    "Hosted On",
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+                InkWell(
+                  child: Center(
+                    child: AutoSizeText(
+                      "Amazon Web Services (AWS)",
+                      maxLines: 1,
+                      minFontSize: 14,
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 20,
+                          decoration: TextDecoration.underline),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            CategoriesInfo()));
-                              },
-                              child: AutoSizeText(
-                                "Categories",
-                                minFontSize: 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: IconButton(
-                                icon: Icon(Icons.keyboard_arrow_right),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              CategoriesInfo()));
-                                },
-                              )),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => GroupsInfo()));
-                              },
-                              child: AutoSizeText(
-                                "Groups",
-                                minFontSize: 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: IconButton(
-                                icon: Icon(Icons.keyboard_arrow_right),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => GroupsInfo()));
-                                },
-                              )),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EventsInfo()));
-                              },
-                              child: AutoSizeText(
-                                "Events",
-                                minFontSize: 12,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            ),
-                          ),
-                          Container(
-                              width: MediaQuery.of(context).size.width * .20,
-                              child: IconButton(
-                                icon: Icon(Icons.keyboard_arrow_right),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => EventsInfo()));
-                                },
-                              )),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                  onTap: () async {
+                    if (await canLaunch(Globals.awsUrl)) {
+                      await launch(Globals.awsUrl);
+                    } else {
+                      throw 'Could not launch ${Globals.awsUrl}';
+                    }
+                  },
                 ),
               ],
             ),

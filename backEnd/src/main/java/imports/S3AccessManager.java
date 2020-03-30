@@ -4,6 +4,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.io.ByteArrayInputStream;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
+import utilities.ResultStatus;
 
 public class S3AccessManager {
 
@@ -70,6 +72,32 @@ public class S3AccessManager {
 
     metrics.commonClose(fileName != null);
     return Optional.ofNullable(fileName);
+  }
+
+  public ResultStatus deleteImage(final String fileName, final Metrics metrics) {
+    if (fileName == null) {
+      return new ResultStatus(true, "No image to delete");
+    }
+
+    final String classMethod = "S3AccessManager.deleteImage";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final DeleteObjectRequest deleteObjectRequest = new DeleteObjectRequest(S3_IMAGE_BUCKET,
+          fileName);
+
+      this.s3Client.deleteObject(deleteObjectRequest);
+
+      resultStatus = new ResultStatus(true, "Image deleted successfully.");
+    } catch (final Exception e) {
+      metrics.log(new ErrorDescriptor<>(fileName, classMethod, e));
+      resultStatus.resultMessage = "Error deleting image";
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   public Boolean imageBucketExists() {

@@ -18,9 +18,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import models.Category;
 import models.Event;
+import models.EventWithCategoryChoices;
 import models.Group;
+import models.GroupWithCategoryChoices;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
@@ -102,8 +105,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
         final Item groupData = DatabaseManagers.GROUPS_MANAGER.getItemByPrimaryKey(groupId);
         if (groupData != null) { // if null, assume the group was deleted
-          final Group group = new Group(groupData.asMap());
-          final Event event = group.getEvents().get(eventId);
+          final GroupWithCategoryChoices group = new GroupWithCategoryChoices(groupData.asMap());
+          final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
           final Event updatedEvent = event.clone();
 
           if (event.getTentativeAlgorithmChoices().isEmpty()) {
@@ -169,7 +172,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Object> getTentativeAlgorithmChoices(final Event event,
+  private Map<String, Object> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
       final Integer numberOfChoices, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
@@ -178,14 +181,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final Map<String, Object> returnValue = new HashMap<>();
 
     try {
-      String categoryId = event.getCategoryId();
+      final String categoryId = event.getCategoryId();
 
-      Category category = new Category(
-          DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
+      //we need to make sure the event's category choices are setup
+      if (event.getCategoryChoices() == null) {
+        final Category category = new Category(
+            DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
+        event.setCategoryChoices(category.getChoices());
+      }
 
-      //build an array of user choice rating sums, start will all the current choice ids in the category
+      //build an array of user choice rating sums, start with all the current choice ids in the category
       final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
-      for (String choiceId : category.getChoices().keySet()) {
+      for (String choiceId : event.getCategoryChoices().keySet()) {
         choiceRatingsToSums.putIfAbsent(choiceId, 0);
       }
 
@@ -216,7 +223,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
         final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
 
         //we add to the return map and remove the max from the choice rating map
-        returnValue.putIfAbsent(maxChoiceId, category.getChoices().get(maxChoiceId));
+        returnValue.putIfAbsent(maxChoiceId, event.getCategoryChoices().get(maxChoiceId));
         choiceRatingsToSums.remove(maxChoiceId);
       }
     } catch (Exception e) {
@@ -366,6 +373,53 @@ public class PendingEventsManager extends DatabaseAccessManager {
     }
 
     metrics.commonClose(success);
+  }
+
+  public ResultStatus deleteAllPendingGroupEvents(final String groupId, final Set<String> eventIds,
+      final Metrics metrics) {
+    if (eventIds.isEmpty()) {
+      return new ResultStatus(true, "No events to delete");
+    }
+
+    final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    StringBuilder updateExpression = new StringBuilder();
+    final NameMap nameMap = new NameMap();
+
+    int i = 0;
+    String groupEventKey;
+    for (final String eventId : eventIds) {
+      //this will create distinct name maps for every key we need to remove
+      groupEventKey = "#groupEventKey" + i;
+      if (i == 0) {
+        updateExpression.append("remove ").append(groupEventKey);
+        nameMap.with(groupEventKey, groupId + DELIM + eventId);
+      } else {
+        updateExpression.append(", ").append(groupEventKey);
+        nameMap.with(groupEventKey, groupId + DELIM + eventId);
+      }
+      i++;
+    }
+
+    final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+        .withUpdateExpression(updateExpression.toString())
+        .withNameMap(nameMap);
+
+    final int numberOfPartitions = Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY));
+    for (i = 1; i <= numberOfPartitions; i++) {
+      try {
+        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), Integer.valueOf(i).toString());
+        this.updateItem(updateItemSpec);
+      } catch (final Exception e) {
+        metrics.log(new ErrorDescriptor<>(i, classMethod, e));
+      }
+    }
+
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   public String getPartitionKey() throws NullPointerException, NumberFormatException {

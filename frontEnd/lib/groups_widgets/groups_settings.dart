@@ -654,13 +654,16 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultVotingDuration: votingDuration,
           defaultConsiderDuration: considerDuration);
 
+      int batchNum = Globals.currentGroup.currentBatchNum;
+
       showLoadingDialog(context, "Saving...", true);
       ResultStatus<Group> resultStatus =
-          await GroupsManager.editGroup(group, icon);
+          await GroupsManager.editGroup(group, icon, batchNumber: batchNum);
       Navigator.of(context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         Globals.currentGroup = resultStatus.data;
+        Globals.currentGroup.currentBatchNum = batchNum;
         setState(() {
           // reset everything and reflect changes made
           originalMembers.clear();

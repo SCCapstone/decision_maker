@@ -32,6 +32,7 @@ public class CategoriesManager extends DatabaseAccessManager {
   public static final String CHOICES = "Choices";
   public static final String GROUPS = "Groups";
   public static final String NEXT_CHOICE_NO = "NextChoiceNo";
+  public static final String VERSION = "Version";
   public static final String OWNER = "Owner";
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
@@ -61,6 +62,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         final Category newCategory = new Category(jsonMap);
         newCategory.updateNextChoiceNo();
+        newCategory.setVersion(1);
         newCategory.setOwner(activeUser);
         newCategory.setCategoryId(nextCategoryIndex);
         newCategory.setGroups(Collections.emptyMap());
@@ -83,6 +85,7 @@ public class CategoriesManager extends DatabaseAccessManager {
                 + updatedUsersTableResult.resultMessage;
           }
         } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
@@ -107,7 +110,7 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     try {
       final User user = new User(
-          DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(newCategory.getOwner()).asMap());
+          DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(newCategory.getOwner()));
 
       if (user.getOwnedCategories().size() >= MAX_NUMBER_OF_CATEGORIES) {
         errorMessage = this.getUpdatedInvalidMessage(errorMessage,
@@ -176,43 +179,50 @@ public class CategoriesManager extends DatabaseAccessManager {
 
         final Category newCategory = new Category(jsonMap);
         final Category oldCategory = new Category(
-            this.getItemByPrimaryKey(newCategory.getCategoryId()).asMap());
+            this.getMapByPrimaryKey(newCategory.getCategoryId()));
 
-        if (activeUser.equals(oldCategory.getOwner())) {
+        Optional<String> errorMessage = this
+            .editCategoryIsValid(newCategory, oldCategory, activeUser, metrics);
+        if (!errorMessage.isPresent()) {
+          //make sure the new category has everything set on it for the encoding in the api response
           newCategory.updateNextChoiceNo();
+          newCategory.setVersion(this.determineVersionNumber(newCategory, oldCategory));
+          newCategory.setGroups(oldCategory.getGroups());
+          newCategory.setOwner(oldCategory.getOwner());
 
-          String updateExpression =
-              "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
-                  + " = :next";
-          ValueMap valueMap = new ValueMap()
-              .withString(":name", newCategory.getCategoryName())
-              .withMap(":map", newCategory.getChoices())
-              .withInt(":next", newCategory.getNextChoiceNo());
+          // only edit the category definition if something has changed
+          if (!newCategory.getVersion().equals(oldCategory.getVersion())) {
+            String updateExpression =
+                "set " + CATEGORY_NAME + " = :name, " + CHOICES + " = :map, " + NEXT_CHOICE_NO
+                    + " = :next, " + VERSION + " = :version";
+            ValueMap valueMap = new ValueMap()
+                .withString(":name", newCategory.getCategoryName())
+                .withMap(":map", newCategory.getChoices())
+                .withInt(":next", newCategory.getNextChoiceNo())
+                .withInt(":version", newCategory.getVersion());
 
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), newCategory.getCategoryId())
-              .withUpdateExpression(updateExpression)
-              .withValueMap(valueMap);
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                .withPrimaryKey(this.getPrimaryKeyIndex(), newCategory.getCategoryId())
+                .withUpdateExpression(updateExpression)
+                .withValueMap(valueMap);
 
-          this.updateItem(updateItemSpec);
+            this.updateItem(updateItemSpec);
+          }
 
           //put the entered ratings in the users table
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
               .updateUserChoiceRatings(jsonMap, true, metrics);
 
           if (updatedUsersTableResult.success) {
-            oldCategory.setCategoryName(newCategory.getCategoryName());
-            oldCategory.setChoices(newCategory.getChoices());
-            oldCategory.setNextChoiceNo(newCategory.getNextChoiceNo());
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(oldCategory.asMap()));
+                JsonEncoders.convertObjectToJson(newCategory.asMap()));
           } else {
-            resultStatus.resultMessage =
-                "Error: Unable to update this category's ratings in the users table. "
-                    + updatedUsersTableResult.resultMessage;
+            resultStatus.resultMessage = "Error in call to users manager.";
+            resultStatus.applyResultStatus(updatedUsersTableResult);
           }
         } else {
-          resultStatus.resultMessage = "Error: editing user does not own this category";
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -226,6 +236,85 @@ public class CategoriesManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  public Integer determineVersionNumber(final Category editCategory, final Category oldCategory) {
+    Integer versionNumber = oldCategory.getVersion();
+
+    if (!editCategory.getCategoryName().equals(oldCategory.getCategoryName())) {
+      // if the category name changed then update the version
+      versionNumber++;
+    } else if (editCategory.getChoices().size() != oldCategory.getChoices().size()) {
+      // if there are a different number of choices then we know the version is different
+      versionNumber++;
+    } else if (!editCategory.getChoices().keySet().containsAll(oldCategory.getChoices().keySet())) {
+      // there are the same number of choices but they aren't the same choices
+      versionNumber++;
+    } else {
+      // check each label, if any differ then it's a new version
+      for (final String choiceId : oldCategory.getChoices().keySet()) {
+        if (!oldCategory.getChoices().get(choiceId)
+            .equals(editCategory.getChoices().get(choiceId))) {
+          versionNumber++;
+          break;
+        }
+      }
+    }
+
+    return versionNumber;
+  }
+
+  private Optional<String> editCategoryIsValid(final Category editCategory,
+      final Category oldCategory, final String activeUser, final Metrics metrics) {
+    final String classMethod = "CategoryManager.editCategoryIsValid";
+    metrics.commonSetup(classMethod);
+
+    String errorMessage = null;
+
+    try {
+      if (oldCategory.getOwner().equals(activeUser)) {
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
+
+        for (String categoryId : user.getOwnedCategories().keySet()) {
+          //this is an update and the name might not have changed so we have to see if a different
+          //category has this same name
+          final String ownedCategoryName = user.getOwnedCategories().get(categoryId);
+          if (ownedCategoryName.equals(editCategory.getCategoryName())
+              && !categoryId.equals(editCategory.getCategoryId())) {
+            errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+                "Error: user can not own two categories with the same name.");
+            break;
+          }
+        }
+      } else {
+        errorMessage = this
+            .getUpdatedInvalidMessage(errorMessage, "Error: user does not own this category.");
+      }
+
+      if (editCategory.getChoices().size() < 1) {
+        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
+            "Error: category must have at least one choice.");
+      }
+
+      for (String choiceLabel : editCategory.getChoices().values()) {
+        if (choiceLabel.trim().length() < 1) {
+          errorMessage = this
+              .getUpdatedInvalidMessage(errorMessage, "Error: choice labels cannot be empty.");
+          break;
+        }
+      }
+
+      if (editCategory.getCategoryName().trim().length() < 1) {
+        errorMessage = this
+            .getUpdatedInvalidMessage(errorMessage, "Error: category name can not be empty.");
+      }
+    } catch (Exception e) {
+      metrics.log(new ErrorDescriptor<>(editCategory.asMap(), classMethod, e));
+      errorMessage = this.getUpdatedInvalidMessage(errorMessage, "Exception");
+    }
+
+    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
+    return Optional.ofNullable(errorMessage);
   }
 
   public ResultStatus getCategories(final Map<String, Object> jsonMap, final Metrics metrics) {
@@ -295,13 +384,10 @@ public class CategoriesManager extends DatabaseAccessManager {
         String username = (String) jsonMap.get((RequestFields.ACTIVE_USER));
         String categoryId = (String) jsonMap.get(CATEGORY_ID);
 
-        Item item = this.getItemByPrimaryKey(categoryId);
-        if (username.equals(item.getString(OWNER))) {
-          List<String> groupIds = new ArrayList<>(item.getMap(GROUPS).keySet());
-
-          if (!groupIds.isEmpty()) {
-            DatabaseManagers.GROUPS_MANAGER.removeCategoryFromGroups(groupIds, categoryId, metrics);
-          }
+        final Category category = new Category(this.getMapByPrimaryKey(categoryId));
+        if (username.equals(category.getOwner())) {
+          DatabaseManagers.GROUPS_MANAGER
+              .removeCategoryFromGroups(category.getGroups().keySet(), categoryId, metrics);
 
           //TODO These last two should probably be put into a ~transaction~
           DatabaseManagers.USERS_MANAGER.removeOwnedCategory(username, categoryId, metrics);

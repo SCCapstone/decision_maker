@@ -1,5 +1,7 @@
 package imports;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -9,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +19,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import models.AppSettings;
 import models.User;
@@ -51,6 +56,8 @@ public class UsersManager extends DatabaseAccessManager {
   public static final boolean DEFAULT_MUTED = false;
   public static final int DEFAULT_GROUP_SORT = 0;
   public static final int DEFAULT_CATEGORY_SORT = 1;
+
+  public static final int MAX_DISPLAY_NAME_LENGTH = 40;
 
   public UsersManager() {
     super("users", "Username", Regions.US_EAST_2);
@@ -168,27 +175,50 @@ public class UsersManager extends DatabaseAccessManager {
         final Map<String, Object> ratings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        //TODO add validation to this
+        final Optional<String> errorMessage = this.userRatingsIsValid(ratings);
+        if (!errorMessage.isPresent()) {
+          final Map<String, Integer> ratingsMapConverted = ratings.entrySet().stream()
+              .collect(toMap(
+                  Entry::getKey,
+                  (e) -> Integer.parseInt(e.getValue().toString()),
+                  (e1, e2) -> e2,
+                  HashMap::new));
 
-        String updateExpression = "set " + CATEGORY_RATINGS + ".#categoryId = :map";
-        NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-        ValueMap valueMap = new ValueMap().withMap(":map", ratings);
+          final User user = new User(this.getMapByPrimaryKey(activeUser));
+          if (user.getCategoryRatings().containsKey(categoryId)) {
+            //we need to apply the existing ratings to the updated ratings
+            final Map<String, Integer> categoryRatings = user.getCategoryRatings().get(categoryId);
+            for (final String choiceId : categoryRatings.keySet()) {
+              if (!ratingsMapConverted.containsKey(choiceId)) {
+                //we only put it if it ins't there; if it is there, they're overwriting it
+                ratingsMapConverted.put(choiceId, categoryRatings.get(choiceId));
+              }
+            }
+          }
 
-        if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
-          final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
-          updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
-          valueMap.withString(":categoryName", categoryName);
+          String updateExpression = "set " + CATEGORY_RATINGS + ".#categoryId = :map";
+          NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+          ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
+
+          if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+            final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
+            updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
+            valueMap.withString(":categoryName", categoryName);
+          }
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withNameMap(nameMap)
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.updateItem(updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "User ratings updated successfully!");
+        } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withNameMap(nameMap)
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
-
-        this.updateItem(updateItemSpec);
-
-        resultStatus = new ResultStatus(true, "User ratings updated successfully!");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
@@ -201,6 +231,38 @@ public class UsersManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private Optional<String> userRatingsIsValid(final Map<String, Object> ratings) {
+    String errorMessage = null;
+
+    try {
+      for (final String choiceId : ratings.keySet()) {
+        final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
+
+        if (rating < 0 || rating > 5) {
+          errorMessage = this
+              .getUpdatedInvalidMessage(errorMessage, "Error: invalid rating value.");
+          break;
+        }
+      }
+    } catch (final Exception e) {
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage, "Error: invalid ratings map.");
+    }
+
+    return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedInvalidMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {
@@ -225,120 +287,131 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         String newDisplayName = (String) jsonMap.get(DISPLAY_NAME);
-        Map<String, Object> newAppSettings = (Map<String, Object>) jsonMap.get(APP_SETTINGS);
+        AppSettings newAppSettings = new AppSettings(
+            (Map<String, Object>) jsonMap.get(APP_SETTINGS));
         Set<String> newFavorites = new HashSet<>(
             (List<String>) jsonMap.get(FAVORITES)); // note this comes in as list, in db is map
 
-        User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
+        final Optional<String> errorMessage = this.userSettingsIsValid(newDisplayName);
+        if (!errorMessage.isPresent()) {
+          User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
-        //as long as this remains a small group of settings, I think it's okay to always overwrite
-        //this does imply that the entire appSettings array is sent from the front end though
-        String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
-        ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings);
+          //as long as this remains a small group of settings, I think it's okay to always overwrite
+          //this does imply that the entire appSettings array is sent from the front end though
+          String updateUserExpression = "set " + APP_SETTINGS + " = :appSettings";
+          ValueMap userValueMap = new ValueMap().withMap(":appSettings", newAppSettings.asMap());
 
-        String updateGroupsExpression = null;
-        ValueMap groupsValueMap = new ValueMap();
-        NameMap groupsNameMap = new NameMap();
+          String updateGroupsExpression = null;
+          ValueMap groupsValueMap = new ValueMap();
+          NameMap groupsNameMap = new NameMap();
 
-        String updateFavoritesOfExpression = null;
-        ValueMap favoritesOfValueMap = new ValueMap();
-        NameMap favoritesOfNameMap = new NameMap();
+          String updateFavoritesOfExpression = null;
+          ValueMap favoritesOfValueMap = new ValueMap();
+          NameMap favoritesOfNameMap = new NameMap();
 
-        //determine if the display name/icon have changed
-        if (!oldUser.getDisplayName().equals(newDisplayName)) {
-          updateUserExpression += ", " + DISPLAY_NAME + " = :name";
-          userValueMap.withString(":name", newDisplayName);
+          //determine if the display name/icon have changed
+          if (!oldUser.getDisplayName().equals(newDisplayName)) {
+            updateUserExpression += ", " + DISPLAY_NAME + " = :name";
+            userValueMap.withString(":name", newDisplayName);
 
-          updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
-          groupsValueMap.withString(":displayName", newDisplayName);
-          groupsNameMap.with("#username", activeUser);
+            updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+                GroupsManager.MEMBERS + ".#username." + DISPLAY_NAME, ":displayName");
+            groupsValueMap.withString(":displayName", newDisplayName);
+            groupsNameMap.with("#username", activeUser);
 
-          updateFavoritesOfExpression = this
-              .getUpdateString(updateFavoritesOfExpression,
-                  FAVORITES + ".#username." + DISPLAY_NAME,
-                  ":displayName");
-          favoritesOfValueMap.withString(":displayName", newDisplayName);
-          favoritesOfNameMap.with("#username", activeUser);
-        }
+            updateFavoritesOfExpression = this
+                .getUpdateString(updateFavoritesOfExpression,
+                    FAVORITES + ".#username." + DISPLAY_NAME,
+                    ":displayName");
+            favoritesOfValueMap.withString(":displayName", newDisplayName);
+            favoritesOfNameMap.with("#username", activeUser);
+          }
 
-        //ICON is an optional api payload key, if present it's assumed it has the contents of a new file for upload
-        if (jsonMap.containsKey(ICON)) {
-          List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
+          //ICON is an optional api payload key, if present it's assumed it has the contents of a new file for upload
+          if (jsonMap.containsKey(ICON)) {
+            List<Integer> newIcon = (List<Integer>) jsonMap.get(ICON);
 
-          //try to create the file in s3, if no filename returned, throw exception
-          String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER.uploadImage(newIcon, metrics)
-              .orElseThrow(Exception::new);
+            //try to create the file in s3, if no filename returned, throw exception
+            String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+                .uploadImage(newIcon, metrics)
+                .orElseThrow(Exception::new);
 
-          updateUserExpression += ", " + ICON + " = :icon";
-          userValueMap.withString(":icon", newIconFileName);
+            updateUserExpression += ", " + ICON + " = :icon";
+            userValueMap.withString(":icon", newIconFileName);
 
-          updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
-          groupsValueMap.withString(":icon", newIconFileName);
-          groupsNameMap.with("#username2", activeUser);
+            updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
+                GroupsManager.MEMBERS + ".#username2." + ICON, ":icon");
+            groupsValueMap.withString(":icon", newIconFileName);
+            groupsNameMap.with("#username2", activeUser);
 
-          updateFavoritesOfExpression = this
-              .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
-                  ":icon");
-          favoritesOfValueMap.withString(":icon", newIconFileName);
-          favoritesOfNameMap.with("#username2", activeUser);
-        }
+            updateFavoritesOfExpression = this
+                .getUpdateString(updateFavoritesOfExpression, FAVORITES + ".#username2." + ICON,
+                    ":icon");
+            favoritesOfValueMap.withString(":icon", newIconFileName);
+            favoritesOfNameMap.with("#username2", activeUser);
+          }
 
-        UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withUpdateExpression(updateUserExpression)
-            .withValueMap(userValueMap);
+          UpdateItemSpec updateUserItemSpec = new UpdateItemSpec()
+              .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+              .withUpdateExpression(updateUserExpression)
+              .withValueMap(userValueMap);
 
-        this.updateItem(updateUserItemSpec);
+          this.updateItem(updateUserItemSpec);
 
-        if (updateGroupsExpression != null) {
-          UpdateItemSpec updateGroupItemSpec;
+          if (updateGroupsExpression != null) {
+            UpdateItemSpec updateGroupItemSpec;
 
-          for (String groupId : oldUser.getGroups().keySet()) {
-            try {
-              updateGroupItemSpec = new UpdateItemSpec()
-                  .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
-                  .withUpdateExpression(updateGroupsExpression)
-                  .withValueMap(groupsValueMap)
-                  .withNameMap(groupsNameMap);
+            for (String groupId : oldUser.getGroups().keySet()) {
+              try {
+                updateGroupItemSpec = new UpdateItemSpec()
+                    .withPrimaryKey(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex(), groupId)
+                    .withUpdateExpression(updateGroupsExpression)
+                    .withValueMap(groupsValueMap)
+                    .withNameMap(groupsNameMap);
 
-              DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
-            } catch (Exception e) {
-              metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+                DatabaseManagers.GROUPS_MANAGER.updateItem(updateGroupItemSpec);
+              } catch (Exception e) {
+                metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
+              }
             }
           }
-        }
 
-        if (updateFavoritesOfExpression != null) {
-          UpdateItemSpec updateFavoritesOfItemSpec;
+          if (updateFavoritesOfExpression != null) {
+            UpdateItemSpec updateFavoritesOfItemSpec;
 
-          //all of the users that this user is a favorite of need to be updated
-          for (String username : oldUser.getGroups().keySet()) {
-            try {
-              updateFavoritesOfItemSpec = new UpdateItemSpec()
-                  .withPrimaryKey(this.getPrimaryKeyIndex(), username)
-                  .withUpdateExpression(updateFavoritesOfExpression)
-                  .withValueMap(favoritesOfValueMap)
-                  .withNameMap(favoritesOfNameMap);
+            //all of the users that this user is a favorite of need to be updated
+            for (String username : oldUser.getGroups().keySet()) {
+              try {
+                updateFavoritesOfItemSpec = new UpdateItemSpec()
+                    .withPrimaryKey(this.getPrimaryKeyIndex(), username)
+                    .withUpdateExpression(updateFavoritesOfExpression)
+                    .withValueMap(favoritesOfValueMap)
+                    .withNameMap(favoritesOfNameMap);
 
-              this.updateItem(updateFavoritesOfItemSpec);
-            } catch (Exception e) {
-              metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+                this.updateItem(updateFavoritesOfItemSpec);
+              } catch (Exception e) {
+                metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+              }
             }
           }
+
+          this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
+              metrics);
+
+          final Item updatedUser = this.getItemByPrimaryKey(activeUser);
+          //anytime we return the active user we need to add this
+          updatedUser.withBoolean(FIRST_LOGIN, false);
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders.convertObjectToJson(updatedUser.asMap()));
+        } else {
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
-
-        this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser,
-            metrics);
-
-        final Item updatedUser = this.getItemByPrimaryKey(activeUser);
-        //anytime we return the active user we need to add this
-        updatedUser.withBoolean(FIRST_LOGIN, false);
-
-        resultStatus = new ResultStatus(true,
-            JsonEncoders.convertObjectToJson(updatedUser.asMap()));
-      } catch (Exception e) {
+      } catch (final InvalidAttributeValueException iae) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, iae));
+        resultStatus.resultMessage = iae.getMessage();
+      } catch (final Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request.";
       }
@@ -349,6 +422,22 @@ public class UsersManager extends DatabaseAccessManager {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  public Optional<String> userSettingsIsValid(final String displayName) {
+    String errorMessage = null;
+
+    if (displayName.length() <= 0) {
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage, "Error: Display name cannot be empty.");
+    } else if (displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
+      errorMessage = this
+          .getUpdatedInvalidMessage(errorMessage,
+              "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH
+                  + "characters.");
+    }
+
+    return Optional.ofNullable(errorMessage);
   }
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
