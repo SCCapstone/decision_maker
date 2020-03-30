@@ -259,7 +259,6 @@ public class GroupsManager extends DatabaseAccessManager {
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(DEFAULT_RSVP_DURATION);
         final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
         final boolean isOpen = (boolean) jsonMap.get(IS_OPEN);
-
         List<String> members = (List<String>) jsonMap.get(MEMBERS);
 
         //TODO update the categories passed in to be a list of ids, then create categories map
