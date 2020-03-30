@@ -630,6 +630,7 @@ class _CreateEventState extends State<CreateEvent> {
   }
 
   void validateInput() async {
+    hideKeyboard(context);
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();

@@ -14,8 +14,6 @@ import 'package:frontEnd/utilities/utilities.dart';
 import 'package:frontEnd/widgets/members_page.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'groups_home.dart';
-
 class GroupSettings extends StatefulWidget {
   GroupSettings({Key key}) : super(key: key);
 
@@ -297,7 +295,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: IconButton(
-                                        icon: Icon(Icons.keyboard_arrow_right),
+                                        icon: Icon(Icons.add),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
