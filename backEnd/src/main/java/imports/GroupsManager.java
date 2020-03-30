@@ -25,8 +25,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import models.Category;
 import models.Event;
 import models.EventForSorting;
+import models.EventWithCategoryChoices;
 import models.Group;
 import models.GroupForApiResponse;
 import models.Metadata;
@@ -404,7 +406,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, CATEGORY_NAME, RSVP_DURATION,
+        .asList(RequestFields.ACTIVE_USER, EVENT_NAME, CATEGORY_ID, RSVP_DURATION,
             EVENT_START_DATE_TIME, VOTING_DURATION, GROUP_ID, UTC_EVENT_START_SECONDS);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
@@ -418,10 +420,16 @@ public class GroupsManager extends DatabaseAccessManager {
         final User eventCreator = new User(
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
 
-        final Event newEvent = new Event(jsonMap);
+        final EventWithCategoryChoices newEvent = new EventWithCategoryChoices(jsonMap);
+        newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
 
-        if (this.validEventInput(oldGroup, newEvent)) {
-          newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
+        final Optional<String> errorMessage = this.newEventInputIsValid(oldGroup, newEvent);
+        if (!errorMessage.isPresent()) {
+          //get the category and set category fields
+          final Category category = new Category(
+              DatabaseManagers.CATEGORIES_MANAGER.getMapByPrimaryKey(newEvent.getCategoryId()));
+          newEvent.setCategoryFields(category);
+
           newEvent.setOptedIn(oldGroup.getMembers());
           newEvent.setCreatedDateTime(lastActivity);
           newEvent.setSelectedChoice(null);
@@ -432,8 +440,13 @@ public class GroupsManager extends DatabaseAccessManager {
               "set " + EVENTS + ".#eventId = :map, " + LAST_ACTIVITY + " = :lastActivity";
           NameMap nameMap = new NameMap().with("#eventId", eventId);
           ValueMap valueMap = new ValueMap()
-              .withMap(":map", newEvent.asMap())
               .withString(":lastActivity", lastActivity);
+
+          if (newEvent.getRsvpDuration() > 0) {
+            valueMap.withMap(":map", newEvent.asMap());
+          } else {
+            valueMap.withMap(":map", newEvent.asEventMap());
+          }
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
@@ -470,8 +483,8 @@ public class GroupsManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true,
               JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid request, bad input"));
-          resultStatus.resultMessage = "Invalid request, bad input.";
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -802,8 +815,8 @@ public class GroupsManager extends DatabaseAccessManager {
     return isValid;
   }
 
-  private boolean validEventInput(final Group oldGroup, final Event newEvent) {
-    boolean isValid = true;
+  private Optional<String> newEventInputIsValid(final Group oldGroup, final Event newEvent) {
+    String errorMessage = null;
     //TODO - make this make sense - or maybe put thrown exceptions in the setting of the model attributes!
 //    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
 //      isValid = false;
@@ -816,7 +829,7 @@ public class GroupsManager extends DatabaseAccessManager {
 //    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
 //      isValid = false;
 //    }
-    return isValid;
+    return Optional.ofNullable(errorMessage);
   }
 
   private boolean editInputHasPermissions(final Group oldGroup, final String activeUser) {
@@ -1224,13 +1237,17 @@ public class GroupsManager extends DatabaseAccessManager {
         updateExpression +=
             ", " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
                 + EVENTS + ".#eventId." + VOTING_NUMBERS + " = :votingNumbers";
+
+        if (!isNewEvent) {
+          //we need to remove the duplicated category choices
+          updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
+        }
+
         nameMap.with("#eventId", eventId);
         valueMap.withMap(":tentativeChoices", updatedEvent.getTentativeAlgorithmChoices())
             .withMap(":votingNumbers",
                 this.getVotingNumbersSetup(updatedEvent.getTentativeAlgorithmChoices()));
-      }
-
-      if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
+      } else if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
         updateExpression += ", " + EVENTS + ".#eventId." + SELECTED_CHOICE + " = :selectedChoice";
         nameMap.with("#eventId", eventId);
         valueMap.withString(":selectedChoice", updatedEvent.getSelectedChoice());
