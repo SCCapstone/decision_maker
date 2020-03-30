@@ -14,8 +14,7 @@ class MembersPage extends StatefulWidget {
   final List<String> membersLeft;
   final bool isCreating; // if creating don't have to bother with group creator
 
-  MembersPage(this.displayedMembers, this.membersLeft,
-      this.isCreating);
+  MembersPage(this.displayedMembers, this.membersLeft, this.isCreating);
 
   @override
   _MembersPageState createState() => _MembersPageState();
@@ -62,160 +61,170 @@ class _MembersPageState extends State<MembersPage> {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      child: WillPopScope(
-          onWillPop: handleBackPress,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text("Add/Remove Members"),
-              leading: IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                  }),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Visibility(
-                        visible: !showFavorites,
-                        child: Expanded(
-                          child: TextFormField(
-                              maxLength: Globals.maxUsernameLength,
-                              controller: userController,
-                              validator: (value) {
-                                List<String> allUsers = new List<String>();
-                                for (Member user in widget.displayedMembers) {
-                                  allUsers.add(user.username);
-                                }
-                                return validNewUser(value.trim(), allUsers);
-                              },
-                              decoration: InputDecoration(
-                                  labelText: "Enter a username to add",
-                                  counterText: "")),
-                        ),
-                      ),
-                      Visibility(
-                        visible: !showFavorites,
-                        child: FlatButton(
-                          child: Text("Add User"),
-                          onPressed: () {
-                            if (formKey.currentState.validate()) {
-                              addNewMember();
-                            }
-                          },
-                        ),
-                      ),
-                      Visibility(
-                        visible: showFavorites,
-                        child: Expanded(
-                          child: TextFormField(
-                            maxLength: Globals.maxUsernameLength,
-                            controller: favoriteController,
-                            decoration: InputDecoration(
-                                labelText: "Add user from favorites",
-                                counterText: ""),
-                            onChanged: (value) {
-                              if (value.isEmpty) {
-                                setState(() {
-                                  displayedFavoritesRows.clear();
-                                  getDisplayedFavorites();
-                                });
-                              } else {
-                                List<UserRow> searchRows = new List<UserRow>();
-                                for (Favorite fav in Globals.user.favorites) {
-                                  // show suggestion if match to username or displayname of a favorite
-                                  if ((fav.username
-                                              .toLowerCase()
-                                              .contains(value.toLowerCase()) &&
-                                          !widget.displayedMembers.contains(
-                                              new Member.fromFavorite(fav))) ||
-                                      (fav.displayName
-                                              .toLowerCase()
-                                              .contains(value.toLowerCase()) &&
-                                          !widget.displayedMembers.contains(
-                                              new Member.fromFavorite(fav)))) {
-                                    // when searching, only show suggestions if the user hasn't already added the user to the group
-                                    searchRows.add(new UserRow(
-                                        fav.displayName,
-                                        fav.username,
-                                        fav.icon,
-                                        false,
-                                        true,
-                                        false,
-                                        addUser: () =>
-                                            addMemberFromFavorites(fav)));
+      child: GestureDetector(
+        onTap: () {
+          hideKeyboard(context);
+        },
+        child: WillPopScope(
+            onWillPop: handleBackPress,
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text("Add/Remove Members"),
+                leading: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    }),
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Visibility(
+                          visible: !showFavorites,
+                          child: Expanded(
+                            child: TextFormField(
+                                maxLength: Globals.maxUsernameLength,
+                                controller: userController,
+                                validator: (value) {
+                                  List<String> allUsers = new List<String>();
+                                  for (Member user in widget.displayedMembers) {
+                                    allUsers.add(user.username);
                                   }
-                                }
-                                setState(() {
-                                  displayedFavoritesRows = searchRows;
-                                });
+                                  return validNewUser(value.trim(), allUsers);
+                                },
+                                decoration: InputDecoration(
+                                    labelText: "Enter a username to add",
+                                    counterText: "")),
+                          ),
+                        ),
+                        Visibility(
+                          visible: !showFavorites,
+                          child: FlatButton(
+                            child: Text("Add User"),
+                            onPressed: () {
+                              if (formKey.currentState.validate()) {
+                                addNewMember();
                               }
                             },
                           ),
                         ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: (showFavorites)
-                                ? Theme.of(context).accentColor
-                                : Theme.of(context).scaffoldBackgroundColor),
-                        child: IconButton(
-                          icon: Icon(Icons.contacts),
-                          onPressed: () {
-                            setState(() {
-                              favoriteController.clear();
-                              userController.clear();
-
-                              // prevents bug of if user types name that doesn't exist and then hits back, list will be empty
-                              displayedFavoritesRows.clear();
-                              getDisplayedFavorites();
-                              showFavorites = !showFavorites;
-                            });
-                          },
+                        Visibility(
+                          visible: showFavorites,
+                          child: Expanded(
+                            child: TextFormField(
+                              maxLength: Globals.maxUsernameLength,
+                              controller: favoriteController,
+                              decoration: InputDecoration(
+                                  labelText: "Add user from favorites",
+                                  counterText: ""),
+                              onChanged: (value) {
+                                if (value.isEmpty) {
+                                  setState(() {
+                                    displayedFavoritesRows.clear();
+                                    getDisplayedFavorites();
+                                  });
+                                } else {
+                                  List<UserRow> searchRows =
+                                      new List<UserRow>();
+                                  for (Favorite fav in Globals.user.favorites) {
+                                    // show suggestion if match to username or displayname of a favorite
+                                    if ((fav.username.toLowerCase().contains(
+                                                value.toLowerCase()) &&
+                                            !widget.displayedMembers.contains(
+                                                new Member.fromFavorite(
+                                                    fav))) ||
+                                        (fav.displayName.toLowerCase().contains(
+                                                value.toLowerCase()) &&
+                                            !widget.displayedMembers.contains(
+                                                new Member.fromFavorite(
+                                                    fav)))) {
+                                      // when searching, only show suggestions if the user hasn't already added the user to the group
+                                      searchRows.add(new UserRow(
+                                          fav.displayName,
+                                          fav.username,
+                                          fav.icon,
+                                          false,
+                                          true,
+                                          false,
+                                          addUser: () =>
+                                              addMemberFromFavorites(fav)));
+                                    }
+                                  }
+                                  setState(() {
+                                    displayedFavoritesRows = searchRows;
+                                  });
+                                }
+                              },
+                            ),
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .005)),
-                  Expanded(
-                    child: Scrollbar(
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: (showFavorites)
-                              ? displayedFavoritesRows.length
-                              : displayedUserRows.length,
-                          itemBuilder: (context, index) {
-                            // sorting by alphabetical by displayname for now
-                            displayedUserRows.sort((a, b) => a.displayName
-                                .toLowerCase()
-                                .compareTo(b.displayName.toLowerCase()));
-                            if (!widget.isCreating) {
-                              // place the owner at the top
-                              displayedUserRows.remove(creator);
-                              displayedUserRows.insert(0, creator);
-                            }
-                            displayedFavoritesRows.sort((a, b) => a.displayName
-                                .toLowerCase()
-                                .compareTo(b.displayName.toLowerCase()));
-                            if (showFavorites) {
-                              return displayedFavoritesRows[index];
-                            } else {
-                              return displayedUserRows[index];
-                            }
-                          }),
+                        Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: (showFavorites)
+                                  ? Theme.of(context).accentColor
+                                  : Theme.of(context).scaffoldBackgroundColor),
+                          child: IconButton(
+                            icon: Icon(Icons.contacts),
+                            tooltip: (this.showFavorites)
+                                ? "Hide Favorites"
+                                : "Show favorites",
+                            onPressed: () {
+                              setState(() {
+                                favoriteController.clear();
+                                userController.clear();
+
+                                // prevents bug of if user types name that doesn't exist and then hits back, list will be empty
+                                displayedFavoritesRows.clear();
+                                getDisplayedFavorites();
+                                showFavorites = !showFavorites;
+                              });
+                            },
+                          ),
+                        )
+                      ],
                     ),
-                  ),
-                ],
+                    Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * .005)),
+                    Expanded(
+                      child: Scrollbar(
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: (showFavorites)
+                                ? displayedFavoritesRows.length
+                                : displayedUserRows.length,
+                            itemBuilder: (context, index) {
+                              // sorting by alphabetical by displayname for now
+                              displayedUserRows.sort((a, b) => a.displayName
+                                  .toLowerCase()
+                                  .compareTo(b.displayName.toLowerCase()));
+                              if (!widget.isCreating) {
+                                // place the owner at the top
+                                displayedUserRows.remove(creator);
+                                displayedUserRows.insert(0, creator);
+                              }
+                              displayedFavoritesRows.sort((a, b) => a
+                                  .displayName
+                                  .toLowerCase()
+                                  .compareTo(b.displayName.toLowerCase()));
+                              if (showFavorites) {
+                                return displayedFavoritesRows[index];
+                              } else {
+                                return displayedUserRows[index];
+                              }
+                            }),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )),
+            )),
+      ),
     );
   }
 
@@ -267,7 +276,7 @@ class _MembersPageState extends State<MembersPage> {
       hideKeyboard(context);
     } else {
       ResultStatus<User> resultStatus =
-      await UsersManager.getUserData(username: username);
+          await UsersManager.getUserData(username: username);
       if (resultStatus.success) {
         User newMember = resultStatus.data;
         widget.displayedMembers.add(new Member(
@@ -284,7 +293,8 @@ class _MembersPageState extends State<MembersPage> {
           removeMember(newMember.username);
         }));
       } else {
-        showErrorMessage("Error", "Cannot add: ${userController.text}.", context);
+        showErrorMessage(
+            "Error", "Cannot add: ${userController.text}.", context);
         hideKeyboard(context);
       }
       setState(() {

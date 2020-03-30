@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -604,6 +603,12 @@ class _GroupsHomeState extends State<GroupsHome>
     // this allows for android users to press the back button when done searching and it will remove the search bar
     if (this.searching) {
       toggleSearch();
+      return false;
+    } else if (this.currentTab != 0) {
+      // allows the back button to switch tabs
+      this
+          .tabController
+          .animateTo((this.tabController.index + 1) % this.totalTabs);
       return false;
     } else {
       return true;
