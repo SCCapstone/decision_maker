@@ -83,7 +83,7 @@ public class EventForSorting extends Event {
         //NOTE: this one uses isAfter, we want the oldest ones on top
         return this.eventStart.isAfter(other.getEventStart()) ? -1 : 1;
       } else { // occurring
-        return this.eventStart.isBefore(other.getVotingStarts()) ? -1 : 1;
+        return this.eventStart.isBefore(other.getEventStart()) ? -1 : 1;
       }
     }
   }
