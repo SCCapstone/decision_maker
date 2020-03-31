@@ -6,6 +6,7 @@ class Category {
   final Map<String, String> choices;
   final Map<String, String> groups; // groupId -> groupName
   final int nextChoiceNum;
+  final int categoryVersion;
   final String owner;
 
   Category(
@@ -14,10 +15,11 @@ class Category {
       this.choices,
       this.groups,
       this.nextChoiceNum,
+      this.categoryVersion,
       this.owner});
 
   Category.debug(this.categoryId, this.categoryName, this.choices, this.groups,
-      this.nextChoiceNum, this.owner);
+      this.nextChoiceNum, this.categoryVersion, this.owner);
 
   factory Category.fromJson(Map<String, dynamic> json) {
     Map<String, String> groupsMap = new Map<String, String>();
@@ -38,6 +40,7 @@ class Category {
         choices: choicesMap,
         groups: groupsMap,
         nextChoiceNum: json[CategoriesManager.NEXT_CHOICE_NO],
+        categoryVersion: json[CategoriesManager.CATEGORY_VERSION],
         owner: json[CategoriesManager.OWNER]);
   }
 
@@ -62,6 +65,6 @@ class Category {
   @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName Choices: "
-        "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner";
+        "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner CategoryVersion: $categoryVersion";
   }
 }

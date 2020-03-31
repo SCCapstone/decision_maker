@@ -21,8 +21,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
   bool loading = true;
   bool errorLoading = false;
   Widget errorWidget;
-  List<Widget> ownedCategoryRows = new List<Widget>();
-  List<Widget> groupCategoryRows = new List<Widget>();
+  List<CategoryRowGroup> ownedCategoryRows = new List<CategoryRowGroup>();
+  List<CategoryRowGroup> groupCategoryRows = new List<CategoryRowGroup>();
 
   @override
   void initState() {
@@ -185,6 +185,33 @@ class _GroupCategoriesState extends State<GroupCategories> {
         ));
   }
 
+  void updateOwnedCategories() {
+    this.ownedCategoryRows.clear();
+
+    for (Category category in Globals.user.ownedCategories) {
+      this.ownedCategoryRows.add(new CategoryRowGroup(
+          category,
+          widget.selectedCategories.keys.contains(category.categoryId),
+          false,
+          updateOwnedCategories,
+          onSelect: () => selectCategory(category)));
+    }
+    sortOwnedCategoryRows();
+    setState(() {});
+  }
+
+  void sortGroupCategoryRows() {
+    this.groupCategoryRows.sort((a, b) => a.category.categoryName
+        .toLowerCase()
+        .compareTo(b.category.categoryName.toLowerCase()));
+  }
+
+  void sortOwnedCategoryRows() {
+    this.ownedCategoryRows.sort((a, b) => a.category.categoryName
+        .toLowerCase()
+        .compareTo(b.category.categoryName.toLowerCase()));
+  }
+
   void selectCategory(Category category) {
     setState(() {
       if (widget.selectedCategories.keys.contains(category.categoryId)) {
@@ -211,6 +238,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             category,
             widget.selectedCategories.keys.contains(category.categoryId),
             true,
+            updateOwnedCategories,
             onSelect: () => selectCategory(category),
           ));
         } else if (Globals.user.ownedCategories.contains(category)) {
@@ -219,9 +247,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
               category,
               widget.selectedCategories.keys.contains(category.categoryId),
               false,
+              updateOwnedCategories,
               onSelect: () => selectCategory(category)));
         }
       }
+      sortGroupCategoryRows();
+      sortOwnedCategoryRows();
       setState(() {});
     } else {
       setState(() {

@@ -79,10 +79,22 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                             );
                           } else {
                             return Container(
-                              height: MediaQuery.of(context).size.height * .25,
-                              child: Text(
-                                  "No categories found in this group. Navigate to the group settings page to add some."),
-                            );
+                                height:
+                                    MediaQuery.of(context).size.height * .25,
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                          text:
+                                              "No categories found in this group. Navigate to the group settings page "),
+                                      WidgetSpan(
+                                        child: Icon(Icons.settings),
+                                      ),
+                                      TextSpan(
+                                          text: " of this group to add some."),
+                                    ],
+                                  ),
+                                ));
                           }
                         } else {
                           return Text(resultStatus.errorMessage);

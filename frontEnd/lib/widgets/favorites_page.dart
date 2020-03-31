@@ -23,68 +23,74 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: this.formKey,
-      child: Scaffold(
-          appBar: AppBar(
-            title: Text("My Favorites"),
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                          maxLength: Globals.maxUsernameLength,
-                          controller: this.userController,
-                          validator: (value) {
-                            return validNewFavorite(
-                                value.trim(), widget.displayedFavorites);
-                          },
-                          decoration: InputDecoration(
-                            labelText: "Enter a username to add",
-                            counterText: "",
-                          )),
-                    ),
-                    FlatButton(
-                      child: Text("Add User"),
-                      onPressed: () {
-                        if (this.formKey.currentState.validate()) {
-                          addNewFavorite();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: Scrollbar(
-                    child: ListView.builder(
-                        shrinkWrap: false,
-                        itemCount: widget.displayedFavorites.length,
-                        itemBuilder: (context, index) {
-                          // sorting by alphabetical by displayname for now
-                          widget.displayedFavorites.sort((a, b) => a.displayName
-                              .toLowerCase()
-                              .compareTo(b.displayName.toLowerCase()));
-                          return UserRow(
-                              widget.displayedFavorites[index].displayName,
-                              widget.displayedFavorites[index].username,
-                              widget.displayedFavorites[index].icon,
-                              true,
-                              false,
-                              false, deleteUser: () {
-                            widget.displayedFavorites
-                                .remove(widget.displayedFavorites[index]);
-                            setState(() {});
-                          });
-                        }),
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        hideKeyboard(context);
+      },
+      child: Form(
+        key: this.formKey,
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text("My Favorites"),
             ),
-          )),
+            body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextFormField(
+                            maxLength: Globals.maxUsernameLength,
+                            controller: this.userController,
+                            validator: (value) {
+                              return validNewFavorite(
+                                  value.trim(), widget.displayedFavorites);
+                            },
+                            decoration: InputDecoration(
+                              labelText: "Enter a username to add",
+                              counterText: "",
+                            )),
+                      ),
+                      FlatButton(
+                        child: Text("Add User"),
+                        onPressed: () {
+                          if (this.formKey.currentState.validate()) {
+                            addNewFavorite();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Scrollbar(
+                      child: ListView.builder(
+                          shrinkWrap: false,
+                          itemCount: widget.displayedFavorites.length,
+                          itemBuilder: (context, index) {
+                            // sorting by alphabetical by displayname for now
+                            widget.displayedFavorites.sort((a, b) => a
+                                .displayName
+                                .toLowerCase()
+                                .compareTo(b.displayName.toLowerCase()));
+                            return UserRow(
+                                widget.displayedFavorites[index].displayName,
+                                widget.displayedFavorites[index].username,
+                                widget.displayedFavorites[index].icon,
+                                true,
+                                false,
+                                false, deleteUser: () {
+                              widget.displayedFavorites
+                                  .remove(widget.displayedFavorites[index]);
+                              setState(() {});
+                            });
+                          }),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ),
     );
   }
 

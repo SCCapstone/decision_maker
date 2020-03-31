@@ -26,7 +26,7 @@ class _CategoryRow extends State<CategoryRow> {
       this.categoryText = widget.category.categoryName;
     } else {
       this.categoryText =
-          "${widget.category.categoryName} (@${widget.category.owner})";
+          "${widget.category.categoryName} \n(@${widget.category.owner})";
     }
 
     super.initState();
@@ -52,7 +52,7 @@ class _CategoryRow extends State<CategoryRow> {
             child: AutoSizeText(
               this.categoryText,
               minFontSize: 12,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 20),
             ),

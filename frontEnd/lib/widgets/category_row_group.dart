@@ -10,8 +10,10 @@ class CategoryRowGroup extends StatefulWidget {
   final VoidCallback onSelect;
   final bool groupCategory;
   final bool selected;
+  final Function updateOwnedCategories;
 
   CategoryRowGroup(this.category, this.selected, this.groupCategory,
+      this.updateOwnedCategories,
       {this.onSelect});
 
   @override
@@ -55,24 +57,14 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
           ),
           Expanded(
               child: AutoSizeText(
-            widget.category.categoryName,
-            maxLines: 1,
+            (groupNum != 0)
+                ? "${widget.category.categoryName}\n(Used in $groupNum of your other groups)"
+                : widget.category.categoryName,
+            maxLines: 2,
             style: TextStyle(fontSize: 20),
             minFontSize: 12,
             overflow: TextOverflow.ellipsis,
           )),
-          Visibility(
-            visible: widget.groupCategory,
-            child: Expanded(
-              child: AutoSizeText(
-                (groupNum != 0) ? "Used in ($groupNum) other groups" : "",
-                style: TextStyle(fontSize: 15),
-                maxLines: 1,
-                minFontSize: 8,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
           Padding(
             padding: EdgeInsets.all(MediaQuery.of(context).size.width * .01),
           ),
@@ -88,7 +80,10 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                       builder: (context) => EditCategory(
                             category: widget.category,
                             editName: false,
-                          )));
+                          ))).then((_) {
+                // in case user copied a category, refresh the owned categories on back press
+                widget.updateOwnedCategories();
+              });
             },
           ),
           Padding(

@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/categories_widgets/choice_row.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
@@ -135,9 +136,14 @@ class _EditCategoryState extends State<EditCategory> {
                         MediaQuery.of(context).size.height * .015),
                     child: Column(
                       children: <Widget>[
+                        Align(
+                          alignment: Alignment.topRight,
+                          child:
+                              Text("Version: ${this.category.categoryVersion}"),
+                        ),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .008),
+                              MediaQuery.of(context).size.height * .0025),
                         ),
                         Container(
                           width: MediaQuery.of(context).size.width * .7,
@@ -180,6 +186,12 @@ class _EditCategoryState extends State<EditCategory> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .008),
                         ),
+                        RaisedButton.icon(
+                            onPressed: () {
+                              copyPopup();
+                            },
+                            icon: Icon(Icons.content_copy),
+                            label: Text("Copy Category")),
                         Expanded(
                           child: Scrollbar(
                             child: CustomScrollView(
@@ -301,6 +313,61 @@ class _EditCategoryState extends State<EditCategory> {
     } else {
       return true;
     }
+  }
+
+  void copyPopup() {
+    final TextEditingController copyNameController =
+        new TextEditingController();
+    final GlobalKey<FormState> copyForm = GlobalKey<FormState>();
+    hideKeyboard(context);
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Copy \"${widget.category.categoryName}\""),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                },
+              ),
+              FlatButton(
+                child: Text("Save as New"),
+                onPressed: () {
+                  final form = copyForm.currentState;
+                  if (form.validate()) {
+                    copyCategory(copyNameController.text.trim());
+                  }
+                },
+              )
+            ],
+            content: Form(
+              key: copyForm,
+              child: Container(
+                width: double.maxFinite,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: <Widget>[
+                    Text(
+                        "To copy this category enter the name that you wish your owned copy to have.\n\n"
+                        "Note that any current unsaved changes to the category will not be copied."),
+                    TextFormField(
+                      controller: copyNameController,
+                      validator: (value) {
+                        return validCategoryName(
+                            value.trim(), Globals.user.ownedCategories, false);
+                      },
+                      maxLength: Globals.maxCategoryNameLength,
+                      decoration: InputDecoration(
+                          labelText: "Category Name", counterText: ""),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
   }
 
   void confirmLeavePage() {
@@ -432,6 +499,40 @@ class _EditCategoryState extends State<EditCategory> {
     for (String choiceId in this.ratesControllers.keys) {
       this.originalRatings.putIfAbsent(
           choiceId, () => this.ratesControllers[choiceId].text.toString());
+    }
+  }
+
+  void copyCategory(String categoryName) async {
+    // only use the originalRatings/labels since the user must save first before copying a category
+    Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
+    Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
+    for (String i in this.originalLabels.keys) {
+      labelsToSave.putIfAbsent(i, () => this.originalLabels[i]);
+      ratesToSave.putIfAbsent(i, () => this.originalRatings[i]);
+    }
+    showLoadingDialog(context, "Copying category...", true);
+    ResultStatus<Category> resultStatus =
+        await CategoriesManager.addOrEditCategory(
+            categoryName, labelsToSave, ratesToSave, null);
+    Navigator.of(context, rootNavigator: true).pop('dialog');
+    if (resultStatus.success) {
+      // update mapping in user object locally
+      Globals.user.ownedCategories.add(new Category(
+          categoryId: resultStatus.data.categoryId,
+          categoryName: categoryName));
+      Globals.activeUserCategories.add(resultStatus.data);
+      // update local ratings in user object locally
+      Globals.user.categoryRatings.update(
+          widget.category.categoryId, (existing) => ratesToSave,
+          ifAbsent: () => ratesToSave);
+      // close the original alert dialog
+      Navigator.of(context, rootNavigator: true).pop('dialog');
+      Fluttertoast.showToast(
+          msg: "Category copied successfully!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER);
+    } else {
+      showErrorMessage("Error", resultStatus.errorMessage, context);
     }
   }
 

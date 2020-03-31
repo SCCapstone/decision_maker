@@ -19,6 +19,7 @@ class CategoriesManager {
   static final String GROUPS = "Groups";
   static final String NEXT_CHOICE_NO = "NextChoiceNo";
   static final String OWNER = "Owner";
+  static final String CATEGORY_VERSION = "Version";
 
   static final String editAction = "editCategory";
   static final String createAction = "newCategory";

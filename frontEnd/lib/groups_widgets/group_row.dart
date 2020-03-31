@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/groups_widgets/group_page.dart';
 import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/user_group.dart';
@@ -112,6 +111,8 @@ class _GroupRowState extends State<GroupRow> {
                                 ? Icon(Icons.notifications_off)
                                 : Icon(Icons.notifications),
                             color: Colors.blueAccent,
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
                             tooltip:
                                 (this.widget.group.muted) ? "Unmute" : "Mute",
                             onPressed: () {
