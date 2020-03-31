@@ -534,6 +534,67 @@ public class UsersManager extends DatabaseAccessManager {
     return (!hadError);
   }
 
+  /**
+   * This method is used to update one of the sort settings associated with a
+   * specific user (either CategorySort or GroupSort).
+   *
+   * @param jsonMap     The map containing the json request sent from the front end.
+   *                    This must contain a value for one of the sort settings
+   *                    (CategorySort or GroupSort).
+   * @param metrics     Standard metrics object for profiling and logging
+   */
+  public ResultStatus updateSortSetting(final Map<String, Object> jsonMap, final Metrics metrics) {
+    final String classMethod = "UsersManager.updateSortSetting";
+    metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
+        jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT) ||
+            jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
+        AppSettings appSettings;
+        Map<String, Object> appSettingsMap = user.getAppSettings().asMap();
+        String updateExpression = "";
+        ValueMap valueMap = new ValueMap();
+
+        if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
+          Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
+          appSettingsMap.put(APP_SETTINGS_GROUP_SORT, groupSort);
+          // if the sort value is invalid, an exception will be thrown by AppSettings.SetGroupSort
+          appSettings = new AppSettings(appSettingsMap);
+          updateExpression +=
+              "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort";
+          valueMap.withInt(":groupSort", groupSort);
+        } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
+          Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
+          appSettingsMap.put(APP_SETTINGS_CATEGORY_SORT, categorySort);
+          // if the sort value is invalid, an exception will be thrown by AppSettings.SetCategorySort
+          appSettings = new AppSettings(appSettingsMap);
+          updateExpression +=
+              "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort";
+          valueMap.withInt(":categorySort", categorySort);
+        }
+
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
+
+        this.updateItem(updateItemSpec);
+      } catch (Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Exception inside of manager.";
+      }
+    } else {
+      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
+      resultStatus.resultMessage = "Error: Required request keys not found.";
+    }
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
   private String getUpdateString(String current, String key, String valueName) {
     if (current != null) {
       return current + ", " + key + " = " + valueName;
