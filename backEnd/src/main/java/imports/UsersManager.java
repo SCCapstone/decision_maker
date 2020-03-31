@@ -11,6 +11,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import com.google.common.collect.ImmutableList;
 import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -536,7 +537,8 @@ public class UsersManager extends DatabaseAccessManager {
 
   /**
    * This method is used to update one of the sort settings associated with a
-   * specific user.
+   * specific user. Note that users on front end can't update both settings at
+   * the same time, so this method should only ever be called with one of these sort settings.
    *
    * @param jsonMap     The map containing the json request sent from the front end.
    *                    This must contain a value for one of the sort settings
@@ -551,53 +553,48 @@ public class UsersManager extends DatabaseAccessManager {
     if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
         jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT) ||
             jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
-      String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
-      AppSettings appSettings = oldUser.getAppSettings();
-      boolean hasError = false;
-      String updateExpression = "";
-      ValueMap valueMap = new ValueMap();
+      try {
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
+        AppSettings appSettings;
+        Map<String, Object> appSettingsMap = user.getAppSettings().asMap();
+        String updateExpression = "";
+        ValueMap valueMap = new ValueMap();
 
-      /* Sort values:
-         0 - Date (newest first)
-         1 - Alphabetical
-         2 - Reverse Alphabetical
-         3 - Date (oldest first)
-      */
-      // User on front end can't update both settings at the same time, so
-      // checking groupSort first since it's likely to be more commonly used
-      if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
-        Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
-        if (groupSort < 0 || groupSort > 3) {
-          hasError = true;
-        } else {
-          appSettings.setGroupSort(groupSort);
+        /* Sort values:
+           0 - Date (newest first)
+           1 - Alphabetical
+           2 - Reverse Alphabetical
+           3 - Date (oldest first)
+        */
+
+        if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
+          Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
+          appSettingsMap.put(APP_SETTINGS_GROUP_SORT, groupSort);
+          // if the sort value is invalid, an exception will be thrown by AppSettings.SetGroupSort
+          appSettings = new AppSettings(appSettingsMap);
           updateExpression +=
               "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort ";
           valueMap.withInt(":groupSort", groupSort);
-        }
-      } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
-        Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
-        if (categorySort < 1 || categorySort > 2) {
-          hasError = true;
-        } else {
-          appSettings.setCategorySort(categorySort);
+        } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
+          Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
+          appSettingsMap.put(APP_SETTINGS_CATEGORY_SORT, categorySort);
+          // if the sort value is invalid, an exception will be thrown by AppSettings.SetCategorySort
+          appSettings = new AppSettings(appSettingsMap);
           updateExpression +=
               "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort ";
           valueMap.withInt(":categorySort", categorySort);
         }
-      }
 
-      if (hasError) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid sort value."));
-        resultStatus.resultMessage = "Error: Invalid sort value.";
-      } else {
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
             .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
             .withUpdateExpression(updateExpression)
             .withValueMap(valueMap);
 
         this.updateItem(updateItemSpec);
+      } catch (Exception e) {
+        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        resultStatus.resultMessage = "Exception inside of manager.";
       }
     } else {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
