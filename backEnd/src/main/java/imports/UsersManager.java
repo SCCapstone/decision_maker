@@ -536,8 +536,7 @@ public class UsersManager extends DatabaseAccessManager {
 
   /**
    * This method is used to update one of the sort settings associated with a
-   * specific user. Note that users on front end can't update both settings at
-   * the same time, so this method should only ever be called with one of these sort settings.
+   * specific user (either CategorySort or GroupSort).
    *
    * @param jsonMap     The map containing the json request sent from the front end.
    *                    This must contain a value for one of the sort settings
