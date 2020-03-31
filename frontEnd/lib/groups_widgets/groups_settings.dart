@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:frontEnd/groups_widgets/group_categories.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/groups_manager.dart';
@@ -117,14 +118,25 @@ class _GroupSettingsState extends State<GroupSettings> {
             ),
             actions: <Widget>[
               Visibility(
-                visible: editing,
+                visible: editing && canEdit,
                 child: RaisedButton.icon(
-                    // TODO don't show if private and user is not owner
                     color: Colors.blue,
-                    onPressed: validateInput,
+                    onPressed: () {
+                      if (canEdit) {
+                        validateInput();
+                      }
+                    },
                     icon: Icon(Icons.save),
                     label: Text("Save")),
-              )
+              ),
+              Visibility(
+                visible: !canEdit,
+                child: IconButton(
+                  disabledColor: Colors.black,
+                  icon: Icon(Icons.lock),
+                  tooltip: "Group is locked"
+                )
+              ),
             ],
           ),
           body: Column(children: <Widget>[
@@ -373,7 +385,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   children: <Widget>[
                                     Expanded(
                                       child: AutoSizeText(
-                                        "Make group open/private",
+                                        (this.isOpen)
+                                        ? "Make group private"
+                                        : "Make group open",
                                         minFontSize: 14,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

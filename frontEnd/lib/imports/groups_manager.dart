@@ -197,7 +197,8 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error saving group data (1).";
+          retVal.errorMessage = "Error saving group data (1). "
+              "${responseItem.resultMessage}";
         }
       } catch (e) {
         retVal.errorMessage = "Error saving group data (2).";

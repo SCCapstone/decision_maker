@@ -316,7 +316,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 JsonEncoders
                     .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
           } else {
-            resultStatus.resultMessage = "Invalid request, missing permissions";
+            resultStatus.resultMessage = "Missing permissions.";
           }
         } else {
           resultStatus.resultMessage = "Invalid request, bad input.";
