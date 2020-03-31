@@ -307,7 +307,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: IconButton(
-                                        icon: Icon(Icons.add),
+                                        icon: (canEdit)
+                                            ? Icon(Icons.add)
+                                            : Icon(Icons.keyboard_arrow_right),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
