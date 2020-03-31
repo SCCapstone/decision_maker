@@ -4,7 +4,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
-import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/event.dart';
 import 'package:frontEnd/models/group.dart';
 import 'package:frontEnd/models/member.dart';
@@ -149,7 +148,7 @@ class _CreateGroupState extends State<CreateGroup> {
                       Container(
                           width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
-                            icon: Icon(Icons.keyboard_arrow_right),
+                            icon: Icon(Icons.add),
                             onPressed: () {
                               hideKeyboard(context);
                               Navigator.push(
@@ -256,6 +255,7 @@ class _CreateGroupState extends State<CreateGroup> {
   }
 
   void validateInput() async {
+    hideKeyboard(context);
     final form = formKey.currentState;
     if (form.validate()) {
       form.save();
