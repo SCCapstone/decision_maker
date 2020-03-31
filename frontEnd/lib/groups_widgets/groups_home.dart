@@ -552,6 +552,7 @@ class _GroupsHomeState extends State<GroupsHome>
       // blind send, don't care if it doesn't work since it's just a sort value
       UsersManager.updateSortSetting(
           UsersManager.APP_SETTINGS_GROUP_SORT, this.groupHomeSortVal);
+      Globals.user.appSettings.groupSort = this.groupHomeSortVal;
     }
   }
 

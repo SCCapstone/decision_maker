@@ -134,6 +134,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     //blind send, don't care if it doesn't work since it's just a sort value
     UsersManager.updateSortSetting(
         UsersManager.APP_SETTINGS_CATEGORY_SORT, this.sortVal);
+    Globals.user.appSettings.categorySort = this.sortVal;
   }
 
   void getCategories() {
