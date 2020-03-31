@@ -171,7 +171,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             Padding(
               padding: EdgeInsets.all(MediaQuery.of(context).size.height * .02),
-            ),
+            )
           ],
         ),
       );
@@ -206,14 +206,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 ? Text(
               "Add Categories",
               style: TextStyle(
-                  fontSize:
-                  DefaultTextStyle.of(context).style.fontSize * 0.5),
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
             )
                 : Text(
               "View Categories",
               style: TextStyle(
-                  fontSize:
-                  DefaultTextStyle.of(context).style.fontSize * 0.5),
+                  fontSize: DefaultTextStyle.of(context).style.fontSize * 0.5),
             )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
