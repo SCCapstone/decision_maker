@@ -559,13 +559,6 @@ public class UsersManager extends DatabaseAccessManager {
         String updateExpression = "";
         ValueMap valueMap = new ValueMap();
 
-        /* Sort values:
-           0 - Date (newest first)
-           1 - Alphabetical
-           2 - Reverse Alphabetical
-           3 - Date (oldest first)
-        */
-
         if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
           Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
           appSettingsMap.put(APP_SETTINGS_GROUP_SORT, groupSort);
