@@ -11,7 +11,6 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
-import com.google.common.collect.ImmutableList;
 import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Arrays;
