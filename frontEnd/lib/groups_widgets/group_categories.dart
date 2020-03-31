@@ -74,8 +74,15 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             Visibility(
               visible: ownedCategoryRows.isNotEmpty,
-              child: AutoSizeText(
+              child: (widget.canEdit)
+                  ? AutoSizeText(
                 "My Categories",
+                minFontSize: 15,
+                maxLines: 1,
+                style: TextStyle(fontSize: 26),
+              )
+                  : AutoSizeText(
+                "Categories Added By Me",
                 minFontSize: 15,
                 maxLines: 1,
                 style: TextStyle(fontSize: 26),
@@ -134,7 +141,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               ),
             ),
             Visibility(
-              visible: (groupCategoryRows.isNotEmpty && widget.canEdit),
+              visible: (groupCategoryRows.isNotEmpty && ownedCategoryRows.isNotEmpty),
               child: Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .05),
@@ -228,13 +235,16 @@ class _GroupCategoriesState extends State<GroupCategories> {
     this.ownedCategoryRows.clear();
 
     for (Category category in Globals.user.ownedCategories) {
-      this.ownedCategoryRows.add(new CategoryRowGroup(
-          category,
-          widget.selectedCategories.keys.contains(category.categoryId),
-          false,
-          updateOwnedCategories,
-          widget.canEdit,
-          onSelect: () => selectCategory(category)));
+      if (widget.canEdit ||
+          category.groups.containsKey(Globals.currentGroup.groupId)) {
+        this.ownedCategoryRows.add(new CategoryRowGroup(
+            category,
+            widget.selectedCategories.keys.contains(category.categoryId),
+            false,
+            updateOwnedCategories,
+            widget.canEdit,
+            onSelect: () => selectCategory(category)));
+      }
     }
     sortOwnedCategoryRows();
     setState(() {});
@@ -283,7 +293,9 @@ class _GroupCategoriesState extends State<GroupCategories> {
             onSelect: () => selectCategory(category),
           ));
         } else if (Globals.user.ownedCategories.contains(category)) {
-          // separate the categories the user owns
+          // separate the categories the user owns. add every category if the user
+          // currently has permission to edit group settings, otherwise only add
+          // categories that the user had already added to the group
           if (widget.canEdit ||
               category.groups.containsKey(Globals.currentGroup.groupId)) {
             ownedCategoryRows.add(new CategoryRowGroup(

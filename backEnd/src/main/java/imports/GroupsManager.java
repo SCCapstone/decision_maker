@@ -834,6 +834,8 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   private boolean editInputHasPermissions(final Group oldGroup, final String activeUser) {
+    // if the group is open, any member can edit
+    // otherwise, only the group creator can edit
     boolean hasPermission = true;
 
     if (oldGroup.isOpen()) {
