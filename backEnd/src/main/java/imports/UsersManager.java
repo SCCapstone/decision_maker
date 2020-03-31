@@ -565,7 +565,7 @@ public class UsersManager extends DatabaseAccessManager {
           // if the sort value is invalid, an exception will be thrown by AppSettings.SetGroupSort
           appSettings = new AppSettings(appSettingsMap);
           updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort ";
+              "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort";
           valueMap.withInt(":groupSort", groupSort);
         } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
           Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
@@ -573,7 +573,7 @@ public class UsersManager extends DatabaseAccessManager {
           // if the sort value is invalid, an exception will be thrown by AppSettings.SetCategorySort
           appSettings = new AppSettings(appSettingsMap);
           updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort ";
+              "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort";
           valueMap.withInt(":categorySort", categorySort);
         }
 
