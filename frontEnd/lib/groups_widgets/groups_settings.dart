@@ -346,8 +346,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                           .20,
                                       child: IconButton(
                                         icon: (canEdit)
-                                          ? Icon(Icons.add)
-                                          : Icon(Icons.keyboard_arrow_right),
+                                            ? Icon(Icons.add)
+                                            : Icon(Icons.keyboard_arrow_right),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
