@@ -274,7 +274,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
     if (resultStatus.success) {
       errorLoading = false;
       List<Category> selectedCats = resultStatus.data;
-      print(selectedCats);
       for (Category category in selectedCats) {
         if (!Globals.user.ownedCategories.contains(category) &&
             category.groups.containsKey(Globals.currentGroup.groupId)) {
