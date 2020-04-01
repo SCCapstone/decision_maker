@@ -4,6 +4,7 @@ import 'package:frontEnd/categories_widgets/categories_home.dart';
 import 'package:frontEnd/imports/categories_manager.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/widgets/category_row_group.dart';
 
@@ -21,12 +22,14 @@ class GroupCategories extends StatefulWidget {
 class _GroupCategoriesState extends State<GroupCategories> {
   bool loading = true;
   bool errorLoading = false;
+  int sortVal;
   Widget errorWidget;
   List<CategoryRowGroup> ownedCategoryRows = new List<CategoryRowGroup>();
   List<CategoryRowGroup> groupCategoryRows = new List<CategoryRowGroup>();
 
   @override
   void initState() {
+    this.sortVal = Globals.user.appSettings.categorySort;
     getCategories();
     super.initState();
   }
@@ -54,6 +57,54 @@ class _GroupCategoriesState extends State<GroupCategories> {
                       fontSize:
                           DefaultTextStyle.of(context).style.fontSize * 0.5),
                 ),
+          actions: <Widget>[
+            PopupMenuButton<int>(
+              child: Icon(
+                Icons.sort,
+                size: MediaQuery.of(context).size.height * .04,
+                color: Colors.black,
+              ),
+              tooltip: "Sort Categories",
+              onSelected: (int result) {
+                if (this.sortVal != result) {
+                  // prevents useless updates if sort didn't change
+                  this.sortVal = result;
+                  setState(() {
+                    sortOwnedCategoryRows();
+                    sortGroupCategoryRows();
+                    updateSort();
+                  });
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+                PopupMenuItem<int>(
+                  value: Globals.alphabeticalSort,
+                  child: Text(
+                    Globals.alphabeticalSortString,
+                    style: TextStyle(
+                        // if it is selected, underline it
+                        decoration: (this.sortVal == Globals.alphabeticalSort)
+                            ? TextDecoration.underline
+                            : null),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: Globals.alphabeticalReverseSort,
+                  child: Text(Globals.alphabeticalReverseSortString,
+                      style: TextStyle(
+                          // if it is selected, underline it
+                          decoration:
+                              (this.sortVal == Globals.alphabeticalReverseSort)
+                                  ? TextDecoration.underline
+                                  : null)),
+                ),
+              ],
+            ),
+            Padding(
+              padding:
+                  EdgeInsets.all(MediaQuery.of(context).size.height * .007),
+            ),
+          ],
         ),
         body: Column(
           children: <Widget>[
@@ -245,15 +296,34 @@ class _GroupCategoriesState extends State<GroupCategories> {
   }
 
   void sortGroupCategoryRows() {
-    this.groupCategoryRows.sort((a, b) => a.category.categoryName
-        .toLowerCase()
-        .compareTo(b.category.categoryName.toLowerCase()));
+    if (this.sortVal == Globals.alphabeticalSort) {
+      this.groupCategoryRows.sort((a, b) => a.category.categoryName
+          .toLowerCase()
+          .compareTo(b.category.categoryName.toLowerCase()));
+    } else if (this.sortVal == Globals.alphabeticalReverseSort) {
+      this.groupCategoryRows.sort((a, b) => b.category.categoryName
+          .toLowerCase()
+          .compareTo(a.category.categoryName.toLowerCase()));
+    }
   }
 
   void sortOwnedCategoryRows() {
-    this.ownedCategoryRows.sort((a, b) => a.category.categoryName
-        .toLowerCase()
-        .compareTo(b.category.categoryName.toLowerCase()));
+    if (this.sortVal == Globals.alphabeticalSort) {
+      this.ownedCategoryRows.sort((a, b) => a.category.categoryName
+          .toLowerCase()
+          .compareTo(b.category.categoryName.toLowerCase()));
+    } else if (this.sortVal == Globals.alphabeticalReverseSort) {
+      this.ownedCategoryRows.sort((a, b) => b.category.categoryName
+          .toLowerCase()
+          .compareTo(a.category.categoryName.toLowerCase()));
+    }
+  }
+
+  void updateSort() {
+    //blind send, don't care if it doesn't work since it's just a sort value
+    UsersManager.updateSortSetting(
+        UsersManager.APP_SETTINGS_CATEGORY_SORT, this.sortVal);
+    Globals.user.appSettings.categorySort = this.sortVal;
   }
 
   void selectCategory(Category category) {
@@ -291,7 +361,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
           // currently has permission to edit group settings, otherwise only add
           // categories that the user had already added to the group
           if (widget.canEdit ||
-              Globals.currentGroup.categories.containsKey(category.categoryId)) {
+              Globals.currentGroup.categories
+                  .containsKey(category.categoryId)) {
             ownedCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),

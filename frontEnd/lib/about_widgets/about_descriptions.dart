@@ -30,6 +30,7 @@ class AboutDescriptions {
       <p>Categories can be edited or deleted at any time from the category homepage.</p>
       <p>Categories themselves are independent entities. They must be “attached” to a group in order to be used in events. This is done by going to the group settings page and adding any of the categories that you own.</p>
       <p>When your friends add categories to a group you are in you can edit your ratings for their choices from the group settings page. E.g. If Bob has ‘Coffee Shops’ as a choice you can go in and set your rating so your opinion is leveraged anytime that category is used for an event.</p>
+      <p>Categories owned by you or your friends can be copied. When copied you gain ownership of the category and can add or remove as many choices as you please.</p>
     """);
 
   static Html groups = Html(data: """
@@ -56,5 +57,6 @@ class AboutDescriptions {
       <p>If you have notifications enabled, you will receive a notification whenever a event goes to a different stage</p>
       <p>When creating an event, the consider and voting stages can be skipped by either hitting the skip buttons next to the input fields or by putting the number 0 in for the time.</p>
       <p>The default consider and voting durations are set in the group settings page.</p>
+      <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the "Add to My Calendar" button</P>
     """);
 }
