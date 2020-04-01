@@ -27,7 +27,7 @@ class _CreateGroupState extends State<CreateGroup> {
   int votingDuration;
   File icon;
   int considerDuration;
-  bool isOpen = false;
+  bool isOpen = true;
 
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
