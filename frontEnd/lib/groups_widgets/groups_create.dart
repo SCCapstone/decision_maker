@@ -197,7 +197,9 @@ class _CreateGroupState extends State<CreateGroup> {
                     children: <Widget>[
                       Expanded(
                         child: AutoSizeText(
-                          "Make group open/private",
+                          (this.isOpen)
+                              ? "Make group private"
+                              : "Make group open",
                           minFontSize: 14,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

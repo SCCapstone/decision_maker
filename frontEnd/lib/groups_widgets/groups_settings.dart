@@ -386,8 +386,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     Expanded(
                                       child: AutoSizeText(
                                         (this.isOpen)
-                                        ? "Make group private"
-                                        : "Make group open",
+                                            ? "Make group private"
+                                            : "Make group open",
                                         minFontSize: 14,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
