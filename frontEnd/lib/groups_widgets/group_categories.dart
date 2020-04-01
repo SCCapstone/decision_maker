@@ -291,7 +291,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           // currently has permission to edit group settings, otherwise only add
           // categories that the user had already added to the group
           if (widget.canEdit ||
-              category.groups.containsKey(Globals.currentGroup.groupId)) {
+              Globals.currentGroup.categories.containsKey(category.categoryId)) {
             ownedCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
