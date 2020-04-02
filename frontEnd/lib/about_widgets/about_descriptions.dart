@@ -17,7 +17,7 @@ class AboutDescriptions {
       <p>If you prefer brighter screens, try out the light theme.</p>
       <p>If your pocket is getting polled a little too much, you can turn off notifications entirely. You won't receive any more notifications regarding upcoming events or being added to groups.</p>
       <p>At any time, you can change your user icon. Simply click the edit icon in the top right corner of your current one.</p>
-      <p>No need to memorize all your friends' usernames. Add usernames to your Favorites to have their info saved and ready. These favorites can be utilized when adding members to a group</p>
+      <p>No need to memorize all your friends' usernames. Add usernames to your Favorites to have their info saved and ready. These favorites can be utilized when adding members to a group.</p>
       
     """);
 
@@ -30,6 +30,7 @@ class AboutDescriptions {
       <p>Categories can be edited or deleted at any time from the category homepage.</p>
       <p>Categories themselves are independent entities. They must be “attached” to a group in order to be used in events. This is done by going to the group settings page and adding any of the categories that you own.</p>
       <p>When your friends add categories to a group you are in you can edit your ratings for their choices from the group settings page. E.g. If Bob has ‘Coffee Shops’ as a choice you can go in and set your rating so your opinion is leveraged anytime that category is used for an event.</p>
+      <p>Categories owned by you or your friends can be copied. When copied you gain ownership of the new category and can add or remove as many choices as you please.</p>
     """);
 
   static Html groups = Html(data: """
@@ -53,8 +54,9 @@ class AboutDescriptions {
         <li>Voting stage: The algorithm has produced a handful of choices for all members to vote on (note that if you said “No” to being considered you can still vote). You simply vote no using the thumbs down button and yes with the thumbs up button.</li>
         <li>Ready stage: The highest voted choice is chosen and is displayed along with the start time of the event.</li>
       </ol>
-      <p>If you have notifications enabled, you will receive a notification whenever a event goes to a different stage</p>
+      <p>If you have notifications enabled, you will receive a notification whenever a event goes to a different stage.</p>
       <p>When creating an event, the consider and voting stages can be skipped by either hitting the skip buttons next to the input fields or by putting the number 0 in for the time.</p>
       <p>The default consider and voting durations are set in the group settings page.</p>
+      <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the "Add to My Calendar" button.</P>
     """);
 }
