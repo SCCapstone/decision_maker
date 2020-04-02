@@ -18,15 +18,13 @@ public class DataCruncher {
 
   private EventWithCategoryChoices event;
   private Map<String, User> allUsers;
-  private Float k;
   private Metrics metrics;
 
-  public DataCruncher(final EventWithCategoryChoices event, final List<User> users, final Float k,
+  public DataCruncher(final EventWithCategoryChoices event, final List<User> users,
       final Metrics metrics) {
     this.event = event;
     this.allUsers = users.stream()
         .collect(Collectors.toMap(User::getUsername, u -> u, (u1, u2) -> u2, HashMap::new));
-    this.k = k;
     this.metrics = metrics;
 
     //set up the default mappings
@@ -34,19 +32,19 @@ public class DataCruncher {
     this.resetAllRatingsCountsByChoice();
   }
 
-  public void crunch() {
+  public void crunch(final Float k) {
     //first setup the control values
     List<Map<String, Integer>> allCategoryChoiceRatings = new ArrayList<>();
     for (String username : this.event.getOptedIn().keySet()) {
-        allCategoryChoiceRatings.add(
-            this.allUsers.get(username).getCategoryRatings().get(this.event.getCategoryId())
-        );
+      allCategoryChoiceRatings.add(
+          this.allUsers.get(username).getCategoryRatings().get(this.event.getCategoryId())
+      );
     }
 
     this.clearAndSetControlRatingCountsByChoice(allCategoryChoiceRatings);
 
     //Now we need to get the 'random' categoryChoiceRating maps based on our control histogram
-    for (int i = 0; i < Math.ceil(this.k * this.event.getOptedIn().size()); i++) {
+    for (int i = 0; i < Math.ceil(k * this.event.getOptedIn().size()); i++) {
       allCategoryChoiceRatings.add(this.getRandomUserChoiceRatings());
     }
 

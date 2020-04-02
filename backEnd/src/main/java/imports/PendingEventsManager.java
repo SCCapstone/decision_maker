@@ -195,12 +195,12 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       try {
         final List<User> optedInUsers = new ArrayList<>();
-        for (String username: event.getOptedIn().keySet()) {
+        for (String username : event.getOptedIn().keySet()) {
           optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
         }
 
-        final DataCruncher dataCruncher = new DataCruncher(event, optedInUsers, K, metrics);
-        dataCruncher.crunch();
+        final DataCruncher dataCruncher = new DataCruncher(event, optedInUsers, metrics);
+        dataCruncher.crunch(K);
         returnValue = dataCruncher.getTopXAllChoices(numberOfChoices);
       } catch (final Exception e) {
         metrics.log(new ErrorDescriptor<>(event.asMap(), classMethod, e));
