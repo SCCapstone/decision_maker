@@ -25,7 +25,7 @@ import models.Event;
 import models.EventWithCategoryChoices;
 import models.GroupWithCategoryChoices;
 import models.User;
-import utilities.DataCruncher;
+import utilities.NondeterministicOptimalChoiceSelector;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -199,9 +199,10 @@ public class PendingEventsManager extends DatabaseAccessManager {
           optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
         }
 
-        final DataCruncher dataCruncher = new DataCruncher(event, optedInUsers, metrics);
-        dataCruncher.crunch(K);
-        returnValue = dataCruncher.getTopXAllChoices(numberOfChoices);
+        final NondeterministicOptimalChoiceSelector nondeterministicOptimalChoiceSelector =
+            new NondeterministicOptimalChoiceSelector(event, optedInUsers, metrics);
+        nondeterministicOptimalChoiceSelector.crunch(K);
+        returnValue = nondeterministicOptimalChoiceSelector.getTopXChoices(numberOfChoices);
       } catch (final Exception e) {
         metrics.log(new ErrorDescriptor<>(event.asMap(), classMethod, e));
       }
