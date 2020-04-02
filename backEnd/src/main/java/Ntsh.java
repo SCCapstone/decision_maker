@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import models.Category;
 import models.Group;
 import models.User;
+import utilities.DataCruncher;
 import utilities.ErrorDescriptor;
 
 public class Ntsh {
@@ -66,7 +67,7 @@ public class Ntsh {
     LinkedHashMap<String, User> users = new LinkedHashMap<>();
     Random random = new Random();
     try {
-      for (int i = 1; i <= 20; i++) {
+      for (int i = 1; i <= 30; i++) {
         User newUser = new User(Collections.emptyMap());
         newUser.setUsername("user" + i);
 
@@ -100,7 +101,7 @@ public class Ntsh {
     //Setup the groups
     final Group smallGroup = new Group();
     smallGroup.setGroupId("smallGroup");
-    Map<String, Object> smallGroupMembers = users.entrySet().stream().limit(5)
+    Map<String, Object> smallGroupMembers = users.entrySet().stream().limit(10)
         .collect(Collectors.toMap(
             Entry::getKey, (e) -> e.getValue().asMember().asMap(), (e1, e2) -> e2, HashMap::new
         ));
@@ -108,7 +109,7 @@ public class Ntsh {
 
     final Group mediumGroup = new Group();
     mediumGroup.setGroupId("mediumGroup");
-    Map<String, Object> mediumGroupMembers = users.entrySet().stream().limit(10)
+    Map<String, Object> mediumGroupMembers = users.entrySet().stream().limit(20)
         .collect(Collectors.toMap(
             Entry::getKey, (e) -> e.getValue().asMember().asMap(), (e1, e2) -> e2, HashMap::new
         ));
@@ -116,7 +117,7 @@ public class Ntsh {
 
     final Group largeGroup = new Group();
     largeGroup.setGroupId("largeGroup");
-    Map<String, Object> largeGroupMembers = users.entrySet().stream().limit(20)
+    Map<String, Object> largeGroupMembers = users.entrySet().stream().limit(30)
         .collect(Collectors.toMap(
             Entry::getKey, (e) -> e.getValue().asMember().asMap(), (e1, e2) -> e2, HashMap::new
         ));
@@ -132,9 +133,9 @@ public class Ntsh {
     categories.add(mediumCategory);
     categories.add(largeCategory);
 
-    List<Float> kValues = ImmutableList.of(0.1f, 0.15f, 0.2f);
+    List<Float> kValues = ImmutableList.of(0.1f, 0.15f, 0.2f, 0.25f, 0.3f);
 
-    int numberOfTests = 15;
+    int numberOfTests = 100;
     if (numberOfTests < 1) { //one test results will always be in the output
       numberOfTests = 1;
     }
@@ -163,22 +164,23 @@ public class Ntsh {
             tableRow += "," + dataCruncher.getExperimentResults();
           }
 
-          tableRow += "," + dataCruncher.getTotalDifferentThanControl();
+          tableRow += "," + dataCruncher.getTotalDifferentThanControl() + " over " + dataCruncher.getTotalRoundsDiffering() + " " + dataCruncher.getNumberDifferingDetails();
 
           System.out.println(tableRow);
         }
+        System.out.println();
       }
     }
 
-//    dataCruncher = new DataCruncher(smallGroup, smallCategory, users, 0.1f);
+//    dataCruncher = new utilities.DataCruncher(smallGroup, smallCategory, users, 0.1f);
 //    dataCruncher.crunch();
 //    System.out.println(dataCruncher.toString());
 //
-//    dataCruncher = new DataCruncher(mediumGroup, smallCategory, users, 0.1f);
+//    dataCruncher = new utilities.DataCruncher(mediumGroup, smallCategory, users, 0.1f);
 //    dataCruncher.crunch();
 //    System.out.println(dataCruncher.toString());
 //
-//    dataCruncher = new DataCruncher(largeGroup, smallCategory, users, 0.1f);
+//    dataCruncher = new utilities.DataCruncher(largeGroup, smallCategory, users, 0.1f);
 //    dataCruncher.crunch();
 //    System.out.println(dataCruncher.toString());
 

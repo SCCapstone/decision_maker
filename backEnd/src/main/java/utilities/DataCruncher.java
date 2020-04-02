@@ -1,3 +1,5 @@
+package utilities;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,6 +22,10 @@ public class DataCruncher {
   private Map<String, User> allUsers;
   private Float k;
   private int totalDifferentThanControl;
+  private int totalRoundsDiffering;
+  private int numberDifferingBy1;
+  private int numberDifferingBy2;
+  private int numberDifferingBy3;
 
   public DataCruncher(final Group group, final Category category,
       final Map<String, User> allUsers, final Float k) {
@@ -28,6 +34,11 @@ public class DataCruncher {
     this.allUsers = allUsers;
     this.k = k;
     this.totalDifferentThanControl = 0;
+    this.totalRoundsDiffering = 0;
+
+    this.numberDifferingBy1 = 0;
+    this.numberDifferingBy2 = 0;
+    this.numberDifferingBy3 = 0;
 
     //set up the default mappings
     this.resetControlRatingsCountsByChoice();
@@ -67,7 +78,21 @@ public class DataCruncher {
     List<String> control = this.getTopThreeControlChoices(true);
     List<String> all = this.getTopThreeAllChoices(true);
 
-    this.totalDifferentThanControl += this.getNumberOfChanges(control, all);
+    int numberDiffering = this.getNumberOfChanges(control, all);
+
+    this.totalDifferentThanControl += numberDiffering;
+
+    if (numberDiffering == 1) {
+      this.numberDifferingBy1 += 1;
+    } else if (numberDiffering == 2) {
+      this.numberDifferingBy2 += 1;
+    } else if (numberDiffering == 3) {
+      this.numberDifferingBy3 += 1;
+    }
+
+    if(!all.containsAll(control)) {
+      this.totalRoundsDiffering += 1;
+    }
   }
 
   //we put one additional vote into ratings 1 through 5 (so everything besides 0)
@@ -257,6 +282,14 @@ public class DataCruncher {
 
   public int getTotalDifferentThanControl() {
     return this.totalDifferentThanControl;
+  }
+
+  public int getTotalRoundsDiffering() {
+    return this.totalRoundsDiffering;
+  }
+
+  public String getNumberDifferingDetails() {
+    return "(" + this.numberDifferingBy1 + "; " + this.numberDifferingBy2 + "; " + this.numberDifferingBy3 + ")";
   }
 
   private int getNumberOfChanges(List<String> control, List<String> all) {
