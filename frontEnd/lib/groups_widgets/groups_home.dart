@@ -549,8 +549,10 @@ class _GroupsHomeState extends State<GroupsHome>
       GroupsManager.sortByAlphaAscending(this.totalGroups);
     }
     if (sendUpdate) {
-      // blind send, don't care if it doesn't work since its just a sort value
-      // TODO make a backend method to accept specific settings since it is very verbose using current one
+      // blind send, don't care if it doesn't work since it's just a sort value
+      UsersManager.updateSortSetting(
+          UsersManager.APP_SETTINGS_GROUP_SORT, this.groupHomeSortVal);
+      Globals.user.appSettings.groupSort = this.groupHomeSortVal;
     }
   }
 

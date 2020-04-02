@@ -3,6 +3,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/categories_widgets/categories_create.dart';
 import 'package:frontEnd/imports/globals.dart';
+import 'package:frontEnd/imports/users_manager.dart';
 import 'package:frontEnd/models/category.dart';
 import 'package:frontEnd/utilities/utilities.dart';
 import 'categories_list.dart';
@@ -130,7 +131,10 @@ class _CategoriesHomeState extends State<CategoriesHome> {
   }
 
   void updateSort() {
-    // TODO make API call to update sort method
+    //blind send, don't care if it doesn't work since it's just a sort value
+    UsersManager.updateSortSetting(
+        UsersManager.APP_SETTINGS_CATEGORY_SORT, this.sortVal);
+    Globals.user.appSettings.categorySort = this.sortVal;
   }
 
   void getCategories() {

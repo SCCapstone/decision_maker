@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:frontEnd/imports/globals.dart';
 import 'package:frontEnd/imports/result_status.dart';
@@ -26,6 +27,7 @@ class _CreateGroupState extends State<CreateGroup> {
   int votingDuration;
   File icon;
   int considerDuration;
+  bool isOpen = true;
 
   List<Member> displayedMembers = new List<Member>();
   Map<String, String> selectedCategories =
@@ -62,7 +64,7 @@ class _CreateGroupState extends State<CreateGroup> {
           autovalidate: autoValidate,
           child: ListView(
             shrinkWrap: true,
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
             children: <Widget>[
               Column(
                 children: [
@@ -183,9 +185,42 @@ class _CreateGroupState extends State<CreateGroup> {
                                             displayedMembers,
                                             new List<String>(),
                                             true,
+                                            false
                                           )));
                             },
                           )),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        child: AutoSizeText(
+                          (this.isOpen)
+                              ? "Make group private"
+                              : "Make group open",
+                          minFontSize: 14,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      Container(
+                          width:
+                          MediaQuery.of(context).size.width *
+                              .20,
+                          child: IconButton(
+                            icon: (this.isOpen)
+                                ? Icon(Icons.lock_open)
+                                : Icon(Icons.lock),
+                            onPressed: () {
+                              setState(() {
+                                this.isOpen = !this.isOpen;
+                              });
+                            },
+                          )
+                      ),
                     ],
                   ),
                 ],
@@ -240,7 +275,8 @@ class _CreateGroupState extends State<CreateGroup> {
           members: membersMap,
           defaultVotingDuration: votingDuration,
           defaultConsiderDuration: considerDuration,
-          events: new Map<String, Event>());
+          events: new Map<String, Event>(),
+          isOpen: isOpen);
 
       showLoadingDialog(
           context, "Creating group...", true); // show loading dialog

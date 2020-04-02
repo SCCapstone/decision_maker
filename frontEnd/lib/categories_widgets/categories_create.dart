@@ -198,8 +198,8 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   Future<bool> handleBackPress() async {
     // if creating, ensure the user really wants to leave to lose their changes
-    final form = this.formKey.currentState;
-    if (this.choiceRows.isNotEmpty && form.validate()) {
+    if (this.choiceRows.isNotEmpty &&
+        this.categoryNameController.text.trim().isNotEmpty) {
       confirmLeavePage();
       return false;
     } else {

@@ -18,6 +18,7 @@ class Group {
   final int defaultConsiderDuration;
   final int totalNumberOfEvents;
   int currentBatchNum = 0;
+  final bool isOpen;
 
   Group(
       {this.groupId,
@@ -31,7 +32,8 @@ class Group {
       this.events,
       this.defaultVotingDuration,
       this.defaultConsiderDuration,
-      this.totalNumberOfEvents});
+      this.totalNumberOfEvents,
+      this.isOpen});
 
   Group.debug(
       this.groupId,
@@ -45,7 +47,8 @@ class Group {
       this.events,
       this.defaultVotingDuration,
       this.defaultConsiderDuration,
-      this.totalNumberOfEvents);
+      this.totalNumberOfEvents,
+      this.isOpen);
 
   factory Group.fromJson(Map<String, dynamic> json) {
     // map of eventId -> event
@@ -95,7 +98,8 @@ class Group {
         events: events,
         defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
         defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
-        totalNumberOfEvents: json[GroupsManager.TOTAL_NUMBER_OF_EVENTS]);
+        totalNumberOfEvents: json[GroupsManager.TOTAL_NUMBER_OF_EVENTS],
+        isOpen: json[GroupsManager.IS_OPEN]);
   }
 
   @override
@@ -116,7 +120,8 @@ class Group {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members MembersLeft: $membersLeft"
         "Categories: $categories Events: $events DefaultVotingDuration: $defaultVotingDuration"
-        "DefaultRsvpDuration: $defaultConsiderDuration TotalNumberOfEvents $totalNumberOfEvents";
+        "DefaultRsvpDuration: $defaultConsiderDuration TotalNumberOfEvents $totalNumberOfEvents"
+        "IsOpen: $isOpen";
   }
 
   Map asMap() {
@@ -147,7 +152,8 @@ class Group {
       GroupsManager.EVENTS: eventsMap,
       GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
       GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
-      GroupsManager.TOTAL_NUMBER_OF_EVENTS: this.totalNumberOfEvents
+      GroupsManager.TOTAL_NUMBER_OF_EVENTS: this.totalNumberOfEvents,
+      GroupsManager.IS_OPEN: this.isOpen
     };
   }
 }

@@ -31,6 +31,7 @@ class GroupsManager {
   static final String EVENTS_UNSEEN = "EventsUnseen";
   static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
   static final int BATCH_SIZE = 25;
+  static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
   static final String deleteGroupAction = "deleteGroup";
@@ -196,7 +197,8 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error saving group data (1).";
+          retVal.errorMessage = "Error saving group data (1). "
+              "${responseItem.resultMessage}";
         }
       } catch (e) {
         retVal.errorMessage = "Error saving group data (2).";

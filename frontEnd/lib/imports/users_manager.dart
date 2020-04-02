@@ -35,6 +35,7 @@ class UsersManager {
   static final String getUserDataAction = "getUserData";
   static final String updateSettingsAction = "updateUserSettings";
   static final String updateRatingsAction = "updateUserChoiceRatings";
+  static final String updateSortSettingAction = "updateSortSetting";
   static final String registerPushEndpointAction = "registerPushEndpoint";
   static final String unregisterPushEndpointAction = "unregisterPushEndpoint";
   static final String markEventAsSeenAction = "markEventAsSeen";
@@ -165,6 +166,16 @@ class UsersManager {
       retVal.errorMessage = "Unable to update user rating.";
     }
     return retVal;
+  }
+
+  static Future updateSortSetting(String sortSetting, int sortValue) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = updateSortSettingAction;
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(sortSetting, () => sortValue);
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(apiEndpoint, jsonRequestBody);
   }
 
   static Future registerPushEndpoint(Future<String> token) async {

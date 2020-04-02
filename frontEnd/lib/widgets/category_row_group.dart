@@ -11,9 +11,10 @@ class CategoryRowGroup extends StatefulWidget {
   final bool groupCategory;
   final bool selected;
   final Function updateOwnedCategories;
+  final bool canEdit;
 
   CategoryRowGroup(this.category, this.selected, this.groupCategory,
-      this.updateOwnedCategories,
+      this.updateOwnedCategories, this.canEdit,
       {this.onSelect});
 
   @override
@@ -46,14 +47,23 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Checkbox(
-            value: selectVal,
-            onChanged: (bool value) {
-              this.widget.onSelect();
-              setState(() {
-                selectVal = value;
-              });
-            },
+          Visibility(
+            visible: widget.canEdit,
+            child: Checkbox(
+              value: selectVal,
+              onChanged: (bool value) {
+                this.widget.onSelect();
+                setState(() {
+                  selectVal = value;
+                });
+              },
+            ),
+          ),
+          Visibility(
+            visible: !widget.canEdit,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+            ),
           ),
           Expanded(
               child: AutoSizeText(
@@ -79,7 +89,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                   MaterialPageRoute(
                       builder: (context) => EditCategory(
                             category: widget.category,
-                            editName: false,
+                            editName: !widget.groupCategory,
                           ))).then((_) {
                 // in case user copied a category, refresh the owned categories on back press
                 widget.updateOwnedCategories();
