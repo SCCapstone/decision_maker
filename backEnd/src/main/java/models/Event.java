@@ -28,9 +28,8 @@ public class Event {
   private Integer votingDuration;
   private String selectedChoice;
   private Map<String, Member> optedIn;
-
-  @Setter(AccessLevel.NONE)
   private Map<String, String> tentativeAlgorithmChoices;
+
   @Setter(AccessLevel.NONE)
   private Map<String, Map<String, Integer>> votingNumbers;
   @Setter(AccessLevel.NONE)
@@ -50,7 +49,7 @@ public class Event {
     this.setSelectedChoice((String) jsonMap.get(GroupsManager.SELECTED_CHOICE));
 
     this.setOptedInRawMap((Map<String, Object>) jsonMap.get(GroupsManager.OPTED_IN));
-    this.setTentativeAlgorithmChoices(
+    this.setTentativeAlgorithmChoicesRawMap(
         (Map<String, Object>) jsonMap.get(GroupsManager.TENTATIVE_CHOICES));
     this.setVotingNumbers((Map<String, Object>) jsonMap.get(GroupsManager.VOTING_NUMBERS));
     this.setEventCreatorRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENT_CREATOR));
@@ -118,7 +117,7 @@ public class Event {
     return membersMapped;
   }
 
-  public void setTentativeAlgorithmChoices(final Map<String, Object> jsonMap) {
+  public void setTentativeAlgorithmChoicesRawMap(final Map<String, Object> jsonMap) {
     this.tentativeAlgorithmChoices = null;
     if (jsonMap != null) {
       this.tentativeAlgorithmChoices = new HashMap<>();

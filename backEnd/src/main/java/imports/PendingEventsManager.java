@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -22,9 +23,9 @@ import java.util.Set;
 import models.Category;
 import models.Event;
 import models.EventWithCategoryChoices;
-import models.Group;
 import models.GroupWithCategoryChoices;
 import models.User;
+import utilities.DataCruncher;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonEncoders;
@@ -40,6 +41,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
   private static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
 
   private static final String STEP_FUNCTION_ARN = "arn:aws:states:us-east-2:871532548613:stateMachine:EventResolver";
+
+  private static final Float K = 0.2f;
 
   private final AWSStepFunctions client;
 
@@ -114,7 +117,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             //  run the algorithm
             //  update the event object
             //  update the pending events table with the new data time for the end of voting
-            final Map<String, Object> tentativeChoices;
+            final Map<String, String> tentativeChoices;
             if (event.getVotingDuration() > 0) {
               tentativeChoices = this.getTentativeAlgorithmChoices(event, 3, metrics);
             } else {
@@ -172,13 +175,13 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Object> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
+  private Map<String, String> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
       final Integer numberOfChoices, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
     metrics.commonSetup(classMethod);
 
     boolean success = true;
-    final Map<String, Object> returnValue = new HashMap<>();
+    Map<String, String> returnValue = new HashMap<>();
 
     try {
       final String categoryId = event.getCategoryId();
@@ -190,41 +193,17 @@ public class PendingEventsManager extends DatabaseAccessManager {
         event.setCategoryChoices(category.getChoices());
       }
 
-      //build an array of user choice rating sums, start with all the current choice ids in the category
-      final Map<String, Integer> choiceRatingsToSums = new HashMap<>();
-      for (String choiceId : event.getCategoryChoices().keySet()) {
-        choiceRatingsToSums.putIfAbsent(choiceId, 0);
-      }
-
-      //sum all of the user ratings
-      for (String username : event.getOptedIn().keySet()) {
-        try {
-          final User user = new User(
-              DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
-
-          final Map<String, Integer> categoryChoiceRatings = user.getCategoryRatings()
-              .get(categoryId);
-
-          for (String choiceId : choiceRatingsToSums.keySet()) {
-            if (categoryChoiceRatings != null && categoryChoiceRatings.containsKey(choiceId)) {
-              choiceRatingsToSums.replace(choiceId,
-                  choiceRatingsToSums.get(choiceId) + categoryChoiceRatings.get(choiceId));
-            } else {
-              choiceRatingsToSums.replace(choiceId, choiceRatingsToSums.get(choiceId) + 3);
-            }
-          }
-        } catch (Exception e) {
-          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+      try {
+        final List<User> optedInUsers = new ArrayList<>();
+        for (String username: event.getOptedIn().keySet()) {
+          optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
         }
-      }
 
-      //user ratings have been summed, get the top X now
-      while (returnValue.size() < numberOfChoices && choiceRatingsToSums.size() > 0) {
-        final String maxChoiceId = this.getKeyWithMaxMapping(choiceRatingsToSums);
-
-        //we add to the return map and remove the max from the choice rating map
-        returnValue.putIfAbsent(maxChoiceId, event.getCategoryChoices().get(maxChoiceId));
-        choiceRatingsToSums.remove(maxChoiceId);
+        final DataCruncher dataCruncher = new DataCruncher(event, optedInUsers, K, metrics);
+        dataCruncher.crunch();
+        returnValue = dataCruncher.getTopXAllChoices(numberOfChoices);
+      } catch (final Exception e) {
+        metrics.log(new ErrorDescriptor<>(event.asMap(), classMethod, e));
       }
     } catch (Exception e) {
       // we have an event pointing to a non existent category

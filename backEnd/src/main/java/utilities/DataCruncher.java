@@ -5,40 +5,29 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.stream.Collectors;
-import models.Category;
-import models.Group;
+import models.EventWithCategoryChoices;
 import models.User;
-import utilities.ErrorDescriptor;
 
 public class DataCruncher {
 
   private LinkedHashMap<String, Map<Integer, Integer>> controlRatingCountsByChoice;
   private LinkedHashMap<String, Map<Integer, Integer>> allRatingCountsByChoice;
 
-  private Group group;
-  private Category category;
+  private EventWithCategoryChoices event;
   private Map<String, User> allUsers;
   private Float k;
-  private int totalDifferentThanControl;
-  private int totalRoundsDiffering;
-  private int numberDifferingBy1;
-  private int numberDifferingBy2;
-  private int numberDifferingBy3;
+  private Metrics metrics;
 
-  public DataCruncher(final Group group, final Category category,
-      final Map<String, User> allUsers, final Float k) {
-    this.group = group;
-    this.category = category;
-    this.allUsers = allUsers;
+  public DataCruncher(final EventWithCategoryChoices event, final List<User> users, final Float k,
+      final Metrics metrics) {
+    this.event = event;
+    this.allUsers = users.stream()
+        .collect(Collectors.toMap(User::getUsername, u -> u, (u1, u2) -> u2, HashMap::new));
     this.k = k;
-    this.totalDifferentThanControl = 0;
-    this.totalRoundsDiffering = 0;
-
-    this.numberDifferingBy1 = 0;
-    this.numberDifferingBy2 = 0;
-    this.numberDifferingBy3 = 0;
+    this.metrics = metrics;
 
     //set up the default mappings
     this.resetControlRatingsCountsByChoice();
@@ -48,51 +37,21 @@ public class DataCruncher {
   public void crunch() {
     //first setup the control values
     List<Map<String, Integer>> allCategoryChoiceRatings = new ArrayList<>();
-    for (String username : this.group.getMembers().keySet()) {
-      try {
-        final User user = this.allUsers.get(username);
-
-        final Map<String, Integer> categoryChoiceRatings = user.getCategoryRatings()
-            .get(this.category.getCategoryId());
-
-        allCategoryChoiceRatings.add(categoryChoiceRatings);
-      } catch (final Exception e) {
-        System.out.println(new ErrorDescriptor<>(username, "blah", e));
-      }
+    for (String username : this.event.getOptedIn().keySet()) {
+        allCategoryChoiceRatings.add(
+            this.allUsers.get(username).getCategoryRatings().get(this.event.getCategoryId())
+        );
     }
 
-    //add in the ratings!
     this.clearAndSetControlRatingCountsByChoice(allCategoryChoiceRatings);
 
-    //Now we need to get the random users or at least the random categoryChoiceRating maps
-    for (int i = 0; i < Math.ceil(this.k * group.getMembers().size()); i++) {
+    //Now we need to get the 'random' categoryChoiceRating maps based on our control histogram
+    for (int i = 0; i < Math.ceil(this.k * this.event.getOptedIn().size()); i++) {
       allCategoryChoiceRatings.add(this.getRandomUserChoiceRatings());
     }
 
+    //last we generate the final histogram using the control maps and the random maps
     this.clearAndSetAllRatingCountsByChoice(allCategoryChoiceRatings);
-
-    this.updateTotalDifferent();
-  }
-
-  public void updateTotalDifferent() {
-    List<String> control = this.getTopThreeControlChoices(true);
-    List<String> all = this.getTopThreeAllChoices(true);
-
-    int numberDiffering = this.getNumberOfChanges(control, all);
-
-    this.totalDifferentThanControl += numberDiffering;
-
-    if (numberDiffering == 1) {
-      this.numberDifferingBy1 += 1;
-    } else if (numberDiffering == 2) {
-      this.numberDifferingBy2 += 1;
-    } else if (numberDiffering == 3) {
-      this.numberDifferingBy3 += 1;
-    }
-
-    if(!all.containsAll(control)) {
-      this.totalRoundsDiffering += 1;
-    }
   }
 
   //we put one additional vote into ratings 1 through 5 (so everything besides 0)
@@ -102,10 +61,10 @@ public class DataCruncher {
     Random random = new Random();
 
     for (String choiceId : this.controlRatingCountsByChoice.keySet()) {
-      int randInt = random.nextInt(100); // [0, 100)
+      int randInt = random.nextInt(100); // [0, 100) aka [0, 99] since it's integers
       int runningProb = 0;
       int totalVotes =
-          this.group.getMembers().size() + 5; //we added one vote to each of the choices 1 through 5
+          this.event.getOptedIn().size() + 5; //we added one vote to each of the choices 1 through 5
 
       Map<Integer, Integer> ratingCounts = this.controlRatingCountsByChoice.get(choiceId);
 
@@ -129,7 +88,9 @@ public class DataCruncher {
       }
 
       if (!categoryChoiceRatings.containsKey(choiceId)) {
-        System.out.println("didn't contain " + choiceId);
+        //this shouldn't happen
+        metrics.log(new ErrorDescriptor<>(ratingCounts, "DataCruncher.getRandomUserChoiceRatings",
+            "choice not set in random ratings map"));
         categoryChoiceRatings.put(choiceId, 3);
       }
     }
@@ -185,21 +146,21 @@ public class DataCruncher {
 
   private void resetControlRatingsCountsByChoice() {
     this.controlRatingCountsByChoice = new LinkedHashMap<>();
-    for (String choiceId : category.getChoices().keySet()) {
+    for (String choiceId : this.event.getCategoryChoices().keySet()) {
       this.controlRatingCountsByChoice
-          .putIfAbsent(choiceId, this.getEmptyRatingCountsByChoiceMap());
+          .putIfAbsent(choiceId, this.getEmptyRatingCountsMap());
     }
   }
 
   private void resetAllRatingsCountsByChoice() {
     this.allRatingCountsByChoice = new LinkedHashMap<>();
-    for (String choiceId : category.getChoices().keySet()) {
+    for (String choiceId : this.event.getCategoryChoices().keySet()) {
       this.allRatingCountsByChoice
-          .putIfAbsent(choiceId, this.getEmptyRatingCountsByChoiceMap());
+          .putIfAbsent(choiceId, this.getEmptyRatingCountsMap());
     }
   }
 
-  private Map<Integer, Integer> getEmptyRatingCountsByChoiceMap() {
+  private Map<Integer, Integer> getEmptyRatingCountsMap() {
     return new HashMap<Integer, Integer>() {{
       put(0, 0);
       put(1, 0);
@@ -220,87 +181,14 @@ public class DataCruncher {
     return ret;
   }
 
-  List<String> getTopThreeControlChoices(boolean justKeys) {
-    return this.controlRatingCountsByChoice.entrySet().stream()
-        .sorted((e1, e2) ->
-            this.getSumOfRatingsCounts(e1.getValue()) > this.getSumOfRatingsCounts(e2.getValue())
-                ? -1 : 1)
-        .limit(3)
-        .map((e1) -> justKeys ? e1.getKey() : String.format("%s:%s", e1.getKey(), this.getSumOfRatingsCounts(e1.getValue())))
-        .collect(Collectors.toList());
-  }
-
-  List<String> getTopThreeAllChoices(boolean justKeys) {
+  public Map<String, String> getTopXAllChoices(final Integer x) {
     return this.allRatingCountsByChoice.entrySet().stream()
         .sorted((e1, e2) ->
             this.getSumOfRatingsCounts(e1.getValue()) > this.getSumOfRatingsCounts(e2.getValue())
                 ? -1 : 1)
-        .limit(3)
-        .map((e1) -> justKeys ? e1.getKey() : String.format("%s:%s", e1.getKey(), this.getSumOfRatingsCounts(e1.getValue())))
-        .collect(Collectors.toList());
-  }
-
-  public String toString() {
-    String tableString = String
-        .format("%s/%s/%s,", this.group.getGroupId(), this.category.getCategoryId(),
-            this.k.toString());
-    tableString += String.format("%s,", this.getTopThreeControlChoices(false));
-    tableString += String.format("%s", this.getTopThreeAllChoices(false));
-    return tableString;
-  }
-
-  public String toString2() {
-    String tableString = String
-        .format("%s/%s/%s,", this.group.getGroupId(), this.category.getCategoryId(),
-            this.k.toString());
-    List<String> control = this.getTopThreeControlChoices(true);
-    List<String> all = this.getTopThreeAllChoices(true);
-    tableString += String.format("%s-%s-%s,", control.get(0), control.get(1), control.get(2));
-    tableString += String.format("%s-%s-%s,", all.get(0), all.get(1), all.get(2));
-
-//    if (control.containsAll(all)) {
-//      tableString += "0";
-//    } else {
-//      tableString += "1";
-//    }
-
-    tableString += this.getNumberOfChanges(control, all);
-
-    return tableString;
-  }
-
-  public String getExperimentResults() {
-    String tableString = "";
-    List<String> control = this.getTopThreeControlChoices(true);
-    List<String> all = this.getTopThreeAllChoices(true);
-    tableString += String.format("%s-%s-%s,", all.get(0), all.get(1), all.get(2));
-
-    tableString += this.getNumberOfChanges(control, all);
-
-    return tableString;
-  }
-
-  public int getTotalDifferentThanControl() {
-    return this.totalDifferentThanControl;
-  }
-
-  public int getTotalRoundsDiffering() {
-    return this.totalRoundsDiffering;
-  }
-
-  public String getNumberDifferingDetails() {
-    return "(" + this.numberDifferingBy1 + "; " + this.numberDifferingBy2 + "; " + this.numberDifferingBy3 + ")";
-  }
-
-  private int getNumberOfChanges(List<String> control, List<String> all) {
-    int ret = 0;
-
-    for (String s: all) {
-      if (!control.contains(s)) {
-        ret++;
-      }
-    }
-
-    return ret;
+        .limit(x)
+        .collect(Collectors
+            .toMap(Entry::getKey, e -> this.event.getCategoryChoices().get(e.getKey()),
+                (e1, e2) -> e2, HashMap::new));
   }
 }
