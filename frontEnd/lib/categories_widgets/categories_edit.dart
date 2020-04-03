@@ -184,7 +184,7 @@ class _EditCategoryState extends State<EditCategory> {
                         ),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .008),
+                              MediaQuery.of(context).size.height * .0035),
                         ),
                         RaisedButton.icon(
                             onPressed: () {
@@ -485,6 +485,8 @@ class _EditCategoryState extends State<EditCategory> {
         }
       }
     }
+    // sort by choice number
+    this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
     setOriginalValues();
   }
 

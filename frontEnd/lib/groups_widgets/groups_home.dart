@@ -194,7 +194,9 @@ class _GroupsHomeState extends State<GroupsHome>
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => CategoriesHome()));
+                            builder: (context) => CategoriesHome())).then((_) {
+                      refreshList();
+                    });
                   }),
               ListTile(
                   leading: Icon(Icons.settings),
@@ -205,7 +207,9 @@ class _GroupsHomeState extends State<GroupsHome>
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => UserSettings()));
+                            builder: (context) => UserSettings())).then((_) {
+                      refreshList();
+                    });
                   }),
               ListTile(
                   leading: Icon(Icons.accessibility),
@@ -213,8 +217,12 @@ class _GroupsHomeState extends State<GroupsHome>
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => UserManual()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserManual())).then((_) {
+                      refreshList();
+                    });
                   }),
               ListTile(
                   leading: Icon(Icons.help_outline),
@@ -222,8 +230,12 @@ class _GroupsHomeState extends State<GroupsHome>
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => AboutPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AboutPage())).then((_) {
+                      refreshList();
+                    });
                   }),
               Expanded(
                 child: Align(
