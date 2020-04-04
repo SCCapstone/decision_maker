@@ -101,7 +101,7 @@ String validNewUser(String user, List<String> users) {
   } else if (users.contains(user)) {
     retVal = "Username already added.";
   } else if (!validCharacters(user)) {
-    retVal = "username contains invalid characters.";
+    retVal = "Username contains invalid characters.";
   }
   return retVal;
 }
