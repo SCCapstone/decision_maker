@@ -2,6 +2,11 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
 
+bool validCharacters(String input) {
+  return RegExp(r"^[a-zA-Z0-9 !@#$%^&*()_+-=;:'/?.>,<\[\]{}|]*$")
+      .hasMatch(input);
+}
+
 String validGroupName(String input) {
   input = input.trim(); // sanity check trim
   String retVal;
@@ -9,6 +14,8 @@ String validGroupName(String input) {
     retVal = "Group name cannot be empty.";
   } else if (input.length > Globals.maxGroupNameLength) {
     retVal = "Group name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Group name contains invalid characters.";
   }
   return retVal;
 }
@@ -20,6 +27,8 @@ String validEventName(String input) {
     retVal = "Event name cannot be empty.";
   } else if (input.length > Globals.maxEventNameLength) {
     retVal = "Event name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Event name contains invalid characters.";
   }
   return retVal;
 }
@@ -102,6 +111,8 @@ String validChoiceName(String input) {
     retVal = "Choice name cannot be empty.";
   } else if (input.length > Globals.maxChoiceNameLength) {
     retVal = "Choice name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Choice name contains invalid characters.";
   }
   return retVal;
 }
@@ -121,6 +132,8 @@ String validCategoryName(String input, List<Category> categories, bool edit) {
     retVal = "Category name is too large.";
   } else if (repeat && !edit) {
     retVal = "Category name already exists.";
+  } else if (!validCharacters(input)) {
+    retVal = "Category name contains invalid characters.";
   }
   return retVal;
 }
@@ -197,6 +210,8 @@ String validDisplayName(String input) {
     retVal = "Name cannot be empty.";
   } else if (input.length > Globals.maxDisplayNameLength) {
     retVal = "Name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Name contains invalid characters.";
   }
   return retVal;
 }

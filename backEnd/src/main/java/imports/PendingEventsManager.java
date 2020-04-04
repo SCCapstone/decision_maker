@@ -122,7 +122,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
               tentativeChoices = this.getTentativeAlgorithmChoices(event, 3, metrics);
             } else {
               tentativeChoices = this.getTentativeAlgorithmChoices(event, 1, metrics);
-              updatedEvent.setSelectedChoice(tentativeChoices.keySet().toArray()[0].toString());
+              updatedEvent.setSelectedChoice(tentativeChoices.values().toArray()[0].toString());
             }
 
             updatedEvent.setTentativeAlgorithmChoices(tentativeChoices);
