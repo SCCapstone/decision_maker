@@ -221,6 +221,7 @@ class _FirstLoginState extends State<FirstLogin> {
       this._icon = newIconFile;
       this.newIcon = true;
     }
+    setState(() {});
   }
 
   void saveFavorites() async {
