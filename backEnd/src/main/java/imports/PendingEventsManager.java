@@ -19,7 +19,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import models.Category;
 import models.Event;
 import models.EventWithCategoryChoices;
@@ -251,8 +254,18 @@ public class PendingEventsManager extends DatabaseAccessManager {
         votingSums.put(choiceId, sum);
       }
 
-      String maxChoiceId = this.getKeyWithMaxMapping(votingSums);
-      selectedChoice = event.getTentativeAlgorithmChoices().get(maxChoiceId);
+      //we determine what the highest vote value was
+      final Integer maxVoteValue = votingSums.get(this.getKeyWithMaxMapping(votingSums));
+
+      //we then get all choice ids that had that max vote
+      final List<String> maxChoiceIds = votingSums.entrySet().stream()
+          .filter(e -> e.getValue().equals(maxVoteValue))
+          .map(Entry::getKey).collect(Collectors.toList());
+
+      //pick one randomly
+      final String selectedMaxChoiceId = maxChoiceIds
+          .get(new Random().nextInt(maxChoiceIds.size()));
+      selectedChoice = event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
     } catch (Exception e) {
       selectedChoice = "Error";
       metrics.log(new ErrorDescriptor<>(event, classMethod, e));
