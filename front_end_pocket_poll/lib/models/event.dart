@@ -13,6 +13,7 @@ class Event {
   final DateTime pollEnd;
   final int votingDuration;
   final int considerDuration;
+  final int categoryVersion;
   final Map<String, Member> optedIn;
   final Map<String, String> tentativeAlgorithmChoices;
   final Map<String, Map<String, int>> votingNumbers;
@@ -30,6 +31,7 @@ class Event {
       this.eventStartDateTime,
       this.votingDuration,
       this.considerDuration,
+      this.categoryVersion,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -49,6 +51,7 @@ class Event {
       this.eventStartDateTime,
       this.votingDuration,
       this.considerDuration,
+      this.categoryVersion,
       this.optedIn,
       this.tentativeAlgorithmChoices,
       this.votingNumbers,
@@ -137,6 +140,7 @@ class Event {
         pollBegin: pollBeginUTC.toLocal(),
         votingDuration: json[EventsManager.VOTING_DURATION],
         considerDuration: json[EventsManager.CONSIDER_DURATION],
+        categoryVersion: json[EventsManager.CATEGORY_VERSION],
         optedIn: optInMap,
         tentativeAlgorithmChoices: choicesMap,
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
@@ -177,6 +181,7 @@ class Event {
           this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.VOTING_DURATION: this.votingDuration,
       EventsManager.CONSIDER_DURATION: this.considerDuration,
+      EventsManager.CATEGORY_VERSION: this.categoryVersion,
       EventsManager.OPTED_IN: optedInMap,
       EventsManager.TENTATIVE_ALGORITHM_CHOICES: this.tentativeAlgorithmChoices,
       EventsManager.SELECTED_CHOICE: this.selectedChoice,
@@ -190,6 +195,6 @@ class Event {
     return "CategoryId: $categoryId CategoryName: $categoryName EventName: $eventName CreatedDateTime: "
         "$createdDateTime EventStartDateTime: $eventStartDateTime PollDuration: $votingDuration "
         "ConsiderDuration: $considerDuration OptedIn: $optedIn SelectedChoice: $selectedChoice VotingNumbers: $votingNumbers "
-        "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator";
+        "TentativeAlgorithmChoices $tentativeAlgorithmChoices EventCreator: $eventCreator CategoryVersion: $categoryVersion";
   }
 }

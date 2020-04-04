@@ -68,16 +68,16 @@ class UsersManager {
           retVal.success = true;
           retVal.data = ret;
         } else {
-          retVal.errorMessage = "Error getting the user (1).";
+          retVal.errorMessage = "Unable to load user data.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error getting the user (2).";
+        retVal.errorMessage = "Unable to load user data.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to get user data. Check internet connection.";
+          "Network error. Unable to load user data. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to get user data.";
+      retVal.errorMessage = "Unable to load user data.";
     }
     return retVal;
   }
@@ -117,16 +117,16 @@ class UsersManager {
           retVal.success = true;
           Globals.user = User.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          retVal.errorMessage = "Error updating user settings (1).";
+          retVal.errorMessage = "Unable to update user data.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error updating user settings (2).";
+        retVal.errorMessage = "Unable to update user data.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to update user settings. Check internet connection.";
+          "Network error. Unable to update user data. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to update user settings.";
+      retVal.errorMessage = "Unable to update user data.";
     }
     return retVal;
   }
@@ -154,16 +154,16 @@ class UsersManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error updating user ratings (1).";
+          retVal.errorMessage = "Unable to update ratings.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error updating user ratings (2).";
+        retVal.errorMessage = "Unable to update ratings.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to update user rating. Check internet connection.";
+          "Network error. Unable to update ratings. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to update user rating.";
+      retVal.errorMessage = "Unable to update ratings.";
     }
     return retVal;
   }
