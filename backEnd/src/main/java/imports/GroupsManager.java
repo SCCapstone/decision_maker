@@ -1237,25 +1237,30 @@ public class GroupsManager extends DatabaseAccessManager {
       ValueMap valueMap = new ValueMap().withString(":currentDate", lastActivity);
       NameMap nameMap = new NameMap();
 
+      //set all of the update statements
       if (oldEvent.getTentativeAlgorithmChoices().isEmpty() && !updatedEvent
           .getTentativeAlgorithmChoices().isEmpty()) {
         updateExpression +=
             ", " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
                 + EVENTS + ".#eventId." + VOTING_NUMBERS + " = :votingNumbers";
 
-        if (!isNewEvent) {
-          //we need to remove the duplicated category choices
-          updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
-        }
-
         nameMap.with("#eventId", eventId);
         valueMap.withMap(":tentativeChoices", updatedEvent.getTentativeAlgorithmChoices())
             .withMap(":votingNumbers",
                 this.getVotingNumbersSetup(updatedEvent.getTentativeAlgorithmChoices()));
-      } else if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
+      }
+
+      if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
         updateExpression += ", " + EVENTS + ".#eventId." + SELECTED_CHOICE + " = :selectedChoice";
         nameMap.with("#eventId", eventId);
         valueMap.withString(":selectedChoice", updatedEvent.getSelectedChoice());
+      }
+      //end setting update statements
+
+      //we're setting the tentative choices and this isn't a new event so remove duplicated choices
+      if (valueMap.containsKey(":tentativeChoices") && !isNewEvent) {
+        //we need to remove the duplicated category choices
+        updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
       }
 
       if (nameMap.containsKey("#eventId")) {
