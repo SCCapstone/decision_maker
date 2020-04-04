@@ -154,7 +154,7 @@ class _EditCategoryState extends State<EditCategory> {
                             controller: this.categoryNameController,
                             validator: (value) {
                               return validCategoryName(value.trim(),
-                                  Globals.user.ownedCategories, true);
+                                  categoryId: widget.category.categoryId);
                             },
                             textCapitalization: TextCapitalization.sentences,
                             style: TextStyle(fontSize: 20),
@@ -354,9 +354,10 @@ class _EditCategoryState extends State<EditCategory> {
                         "Note that any current unsaved changes to the category will not be copied."),
                     TextFormField(
                       controller: copyNameController,
+                      textCapitalization: TextCapitalization.sentences,
                       validator: (value) {
-                        return validCategoryName(
-                            value.trim(), Globals.user.ownedCategories, false);
+                        return validCategoryName(value.trim(),
+                            categoryId: widget.category.categoryId);
                       },
                       maxLength: Globals.maxCategoryNameLength,
                       decoration: InputDecoration(
