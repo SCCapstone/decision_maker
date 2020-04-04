@@ -25,12 +25,12 @@ class EditCategory extends StatefulWidget {
 class _EditCategoryState extends State<EditCategory> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
-  new TextEditingController();
+      new TextEditingController();
   final int defaultRate = 3;
   final Map<String, TextEditingController> labelControllers =
-  new LinkedHashMap<String, TextEditingController>();
+      new LinkedHashMap<String, TextEditingController>();
   final Map<String, TextEditingController> ratesControllers =
-  new LinkedHashMap<String, TextEditingController>();
+      new LinkedHashMap<String, TextEditingController>();
   Map<String, String> originalLabels = new LinkedHashMap<String, String>();
   Map<String, String> originalRatings = new LinkedHashMap<String, String>();
 
@@ -139,7 +139,7 @@ class _EditCategoryState extends State<EditCategory> {
                         Align(
                           alignment: Alignment.topRight,
                           child:
-                          Text("Version: ${this.category.categoryVersion}"),
+                              Text("Version: ${this.category.categoryVersion}"),
                         ),
                         Padding(
                           padding: EdgeInsets.all(
@@ -161,7 +161,7 @@ class _EditCategoryState extends State<EditCategory> {
                                         categoryId: widget.category.categoryId);
                                   },
                                   textCapitalization:
-                                  TextCapitalization.sentences,
+                                      TextCapitalization.sentences,
                                   style: TextStyle(fontSize: 20),
                                   decoration: InputDecoration(
                                       border: OutlineInputBorder(),
@@ -211,8 +211,8 @@ class _EditCategoryState extends State<EditCategory> {
                               slivers: <Widget>[
                                 SliverList(
                                   delegate: SliverChildBuilderDelegate(
-                                          (context, index) =>
-                                      this.choiceRows[index],
+                                      (context, index) =>
+                                          this.choiceRows[index],
                                       childCount: this.choiceRows.length),
                                 )
                               ],
@@ -237,16 +237,16 @@ class _EditCategoryState extends State<EditCategory> {
                       setState(() {
                         this.focusNode = new FocusNode();
                         TextEditingController labelController =
-                        new TextEditingController();
+                            new TextEditingController();
                         this.labelControllers.putIfAbsent(
                             this.nextChoiceNum.toString(),
-                                () => labelController);
+                            () => labelController);
                         TextEditingController rateController =
-                        new TextEditingController();
+                            new TextEditingController();
                         rateController.text = this.defaultRate.toString();
                         this.ratesControllers.putIfAbsent(
                             this.nextChoiceNum.toString(),
-                                () => rateController);
+                            () => rateController);
 
                         ChoiceRow choice = new ChoiceRow(
                             this.nextChoiceNum.toString(),
@@ -262,10 +262,10 @@ class _EditCategoryState extends State<EditCategory> {
                         // allow the list to automatically scroll down as it grows
                         SchedulerBinding.instance.addPostFrameCallback((_) {
                           this.scrollController.animateTo(
-                            this.scrollController.position.maxScrollExtent,
-                            duration: const Duration(microseconds: 100),
-                            curve: Curves.easeOut,
-                          );
+                                this.scrollController.position.maxScrollExtent,
+                                duration: const Duration(microseconds: 100),
+                                curve: Curves.easeOut,
+                              );
                         });
                         checkForChanges();
                       });
@@ -282,12 +282,12 @@ class _EditCategoryState extends State<EditCategory> {
     return Scaffold(
         appBar: AppBar(
             title: AutoSizeText(
-              "Edit Category",
-              maxLines: 1,
-              style: TextStyle(fontSize: 25),
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
-            )),
+          "Edit Category",
+          maxLines: 1,
+          style: TextStyle(fontSize: 25),
+          minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
+        )),
         body: Center(child: CircularProgressIndicator()));
   }
 
@@ -295,12 +295,12 @@ class _EditCategoryState extends State<EditCategory> {
     return Scaffold(
         appBar: AppBar(
             title: AutoSizeText(
-              "Edit Category",
-              maxLines: 1,
-              style: TextStyle(fontSize: 25),
-              minFontSize: 12,
-              overflow: TextOverflow.ellipsis,
-            )),
+          "Edit Category",
+          maxLines: 1,
+          style: TextStyle(fontSize: 25),
+          minFontSize: 12,
+          overflow: TextOverflow.ellipsis,
+        )),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
           child: RefreshIndicator(
@@ -329,7 +329,7 @@ class _EditCategoryState extends State<EditCategory> {
 
   void copyPopup() {
     final TextEditingController copyNameController =
-    new TextEditingController();
+        new TextEditingController();
     final GlobalKey<FormState> copyForm = GlobalKey<FormState>();
     hideKeyboard(context);
     showDialog(
@@ -363,7 +363,7 @@ class _EditCategoryState extends State<EditCategory> {
                   children: <Widget>[
                     Text(
                         "To copy this category enter the name that you wish your owned copy to have.\n\n"
-                            "Note that any current unsaved changes to the category will not be copied."),
+                        "Note that any current unsaved changes to the category will not be copied."),
                     TextFormField(
                       controller: copyNameController,
                       textCapitalization: TextCapitalization.sentences,
@@ -407,7 +407,7 @@ class _EditCategoryState extends State<EditCategory> {
             ],
             content: Text(
                 "You have unsaved changes to this category. To save them click the \"Save\" button in "
-                    "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
+                "the upper right hand corner.\n\nAre you sure you wish to leave this page and lose your changes?"),
           );
         });
   }
@@ -440,8 +440,8 @@ class _EditCategoryState extends State<EditCategory> {
 
   Future<Null> getCategory() async {
     ResultStatus<List<Category>> resultStatus =
-    await CategoriesManager.getAllCategoriesList(
-        categoryId: widget.category.categoryId);
+        await CategoriesManager.getAllCategoriesList(
+            categoryId: widget.category.categoryId);
     if (resultStatus.success) {
       this.errorLoading = false;
       this.category = resultStatus.data.first;
@@ -490,7 +490,7 @@ class _EditCategoryState extends State<EditCategory> {
     }
     // populate the choices with the ratings
     Map<String, String> categoryRatings =
-    Globals.user.categoryRatings[widget.category.categoryId];
+        Globals.user.categoryRatings[widget.category.categoryId];
     if (categoryRatings != null) {
       for (String choiceId in this.labelControllers.keys) {
         if (categoryRatings.containsKey(choiceId)) {
@@ -527,8 +527,8 @@ class _EditCategoryState extends State<EditCategory> {
     }
     showLoadingDialog(context, "Copying category...", true);
     ResultStatus<Category> resultStatus =
-    await CategoriesManager.addOrEditCategory(
-        categoryName, labelsToSave, ratesToSave, null);
+        await CategoriesManager.addOrEditCategory(
+            categoryName, labelsToSave, ratesToSave, null);
     Navigator.of(context, rootNavigator: true).pop('dialog');
     if (resultStatus.success) {
       // update mapping in user object locally
@@ -577,11 +577,11 @@ class _EditCategoryState extends State<EditCategory> {
       } else if (this.isCategoryOwner) {
         showLoadingDialog(context, "Saving changes...", true);
         ResultStatus<Category> resultStatus =
-        await CategoriesManager.addOrEditCategory(
-            this.categoryNameController.text.trim(),
-            labelsToSave,
-            ratesToSave,
-            this.category);
+            await CategoriesManager.addOrEditCategory(
+                this.categoryNameController.text.trim(),
+                labelsToSave,
+                ratesToSave,
+                this.category);
         Navigator.of(context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           // update category with new one returned from DB

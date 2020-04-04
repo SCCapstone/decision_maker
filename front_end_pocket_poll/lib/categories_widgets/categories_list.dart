@@ -55,7 +55,7 @@ class _CategoryListState extends State<CategoryList> {
 
     showLoadingDialog(context, "Deleting category...", true);
     ResultStatus status =
-    await CategoriesManager.deleteCategory(category.categoryId);
+        await CategoriesManager.deleteCategory(category.categoryId);
     Navigator.of(context, rootNavigator: true).pop('dialog');
 
     if (status.success) {

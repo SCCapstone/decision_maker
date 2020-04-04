@@ -59,7 +59,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -68,7 +68,7 @@ class GroupsManager {
 
         if (responseItem.success) {
           retVal.data =
-          new Group.fromJson(json.decode(responseItem.resultMessage));
+              new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load group.";
@@ -78,7 +78,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to load group. Check internet connection.";
+          "Network error. Unable to load group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to load group.";
     }
@@ -93,7 +93,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -110,7 +110,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to delete group. Check internet connection.";
+          "Network error. Unable to delete group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to delete group.";
     }
@@ -135,7 +135,7 @@ class GroupsManager {
         group.members.keys.toList();
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -145,7 +145,7 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
           retVal.data =
-          new Group.fromJson(json.decode(responseItem.resultMessage));
+              new Group.fromJson(json.decode(responseItem.resultMessage));
         } else {
           retVal.errorMessage = "Unable to create group.";
         }
@@ -154,7 +154,7 @@ class GroupsManager {
       }
     } else if (retVal.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to create group. Check internet connection.";
+          "Network error. Unable to create group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to create group.";
     }
@@ -186,7 +186,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -194,7 +194,7 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
           retVal.data =
-          new Group.fromJson(json.decode(responseItem.resultMessage));
+              new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to update group."
@@ -205,7 +205,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to update group. Check internet connection.";
+          "Network error. Unable to update group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to update group.";
     }
@@ -221,10 +221,10 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(
         EventsManager.UTC_EVENT_START_SECONDS,
-            () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
+        () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -240,7 +240,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to create event. Check internet connection.";
+          "Network error. Unable to create event. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to create event.";
     }
@@ -255,7 +255,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -272,7 +272,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to leave group. Check internet connection.";
+          "Network error. Unable to leave group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to leave group.";
     }
@@ -288,7 +288,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -305,7 +305,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to rejoin group. Check internet connection.";
+          "Network error. Unable to rejoin group. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to rejoin group.";
     }
@@ -327,7 +327,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -344,7 +344,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to consider. Check internet connection.";
+          "Network error. Unable to consider. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to consider.";
     }
@@ -367,7 +367,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -384,7 +384,7 @@ class GroupsManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to vote. Check internet connection.";
+          "Network error. Unable to vote. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to vote.";
     }

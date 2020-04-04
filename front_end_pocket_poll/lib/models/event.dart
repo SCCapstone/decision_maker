@@ -25,23 +25,23 @@ class Event {
 
   Event(
       {this.categoryId,
-        this.categoryName,
-        this.eventName,
-        this.createdDateTime,
-        this.eventStartDateTime,
-        this.votingDuration,
-        this.considerDuration,
-        this.categoryVersion,
-        this.optedIn,
-        this.tentativeAlgorithmChoices,
-        this.votingNumbers,
-        this.selectedChoice,
-        this.eventCreator,
-        this.eventStartDateTimeFormatted,
-        this.pollBegin,
-        this.pollEnd,
-        this.pollBeginFormatted,
-        this.pollEndFormatted});
+      this.categoryName,
+      this.eventName,
+      this.createdDateTime,
+      this.eventStartDateTime,
+      this.votingDuration,
+      this.considerDuration,
+      this.categoryVersion,
+      this.optedIn,
+      this.tentativeAlgorithmChoices,
+      this.votingNumbers,
+      this.selectedChoice,
+      this.eventCreator,
+      this.eventStartDateTimeFormatted,
+      this.pollBegin,
+      this.pollEnd,
+      this.pollBeginFormatted,
+      this.pollEndFormatted});
 
   Event.debug(
       this.categoryId,
@@ -66,8 +66,8 @@ class Event {
   factory Event.fromJson(Map<String, dynamic> json) {
     // we always add 1 to the end times since the chron job runs on the minute
     DateTime pollBeginTemp =
-    DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).toLocal().add(
-        new Duration(minutes: (json[EventsManager.CONSIDER_DURATION] + 1)));
+        DateTime.parse(json[EventsManager.CREATED_DATE_TIME]).toLocal().add(
+            new Duration(minutes: (json[EventsManager.CONSIDER_DURATION] + 1)));
     /*
       Time in DB is in UTC, but dart parses by default as a local time.
       So convert this local to UTC, then back to local to get the real local time.
@@ -95,16 +95,16 @@ class Event {
     Map<String, Member> optInMap = new Map<String, Member>();
     for (String username in json[EventsManager.OPTED_IN].keys) {
       Member member =
-      new Member.fromJson(json[EventsManager.OPTED_IN][username], username);
+          new Member.fromJson(json[EventsManager.OPTED_IN][username], username);
       optInMap.putIfAbsent(username, () => member);
     }
 
     Map<String, String> choicesMap = new Map<String, String>();
     for (String choiceId
-    in json[EventsManager.TENTATIVE_ALGORITHM_CHOICES].keys) {
+        in json[EventsManager.TENTATIVE_ALGORITHM_CHOICES].keys) {
       choicesMap.putIfAbsent(
           choiceId,
-              () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
+          () => json[EventsManager.TENTATIVE_ALGORITHM_CHOICES][choiceId]
               .toString());
     }
 
@@ -118,13 +118,13 @@ class Event {
 
     // map of choiceId -> map of username and corresponding vote of said user
     Map<String, Map<String, int>> votingNumMap =
-    new Map<String, Map<String, int>>();
+        new Map<String, Map<String, int>>();
     for (String choiceNum in json[EventsManager.VOTING_NUMBERS].keys) {
       Map<String, int> voteInfo = new Map<String, int>();
       for (String username
-      in json[EventsManager.VOTING_NUMBERS][choiceNum].keys) {
+          in json[EventsManager.VOTING_NUMBERS][choiceNum].keys) {
         voteInfo.putIfAbsent(username,
-                () => json[EventsManager.VOTING_NUMBERS][choiceNum][username]);
+            () => json[EventsManager.VOTING_NUMBERS][choiceNum][username]);
       }
       votingNumMap.putIfAbsent(choiceNum, () => voteInfo);
     }
@@ -135,7 +135,7 @@ class Event {
         eventName: json[EventsManager.EVENT_NAME],
         createdDateTime: DateTime.parse(json[EventsManager.CREATED_DATE_TIME]),
         eventStartDateTime:
-        DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
+            DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME]),
         pollEnd: pollEndUTC.toLocal(),
         pollBegin: pollBeginUTC.toLocal(),
         votingDuration: json[EventsManager.VOTING_DURATION],
@@ -176,9 +176,9 @@ class Event {
       EventsManager.CATEGORY_ID: this.categoryId,
       EventsManager.CATEGORY_NAME: this.categoryName,
       EventsManager.CREATED_DATE_TIME:
-      this.createdDateTime.toString().substring(0, 19),
+          this.createdDateTime.toString().substring(0, 19),
       EventsManager.EVENT_START_DATE_TIME:
-      this.eventStartDateTime.toString().substring(0, 19),
+          this.eventStartDateTime.toString().substring(0, 19),
       EventsManager.VOTING_DURATION: this.votingDuration,
       EventsManager.CONSIDER_DURATION: this.considerDuration,
       EventsManager.CATEGORY_VERSION: this.categoryVersion,

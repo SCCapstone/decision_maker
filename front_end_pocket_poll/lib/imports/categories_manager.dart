@@ -51,7 +51,7 @@ class CategoriesManager {
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -61,7 +61,7 @@ class CategoriesManager {
         if (responseItem.success) {
           retVal.success = true;
           retVal.data =
-          new Category.fromJson(json.decode(responseItem.resultMessage));
+              new Category.fromJson(json.decode(responseItem.resultMessage));
         } else {
           retVal.errorMessage = "Unable to save category.";
         }
@@ -70,7 +70,7 @@ class CategoriesManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to save category. Check internet connection.";
+          "Network error. Unable to save category. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to save category.";
     }
@@ -90,7 +90,7 @@ class CategoriesManager {
     }
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -110,7 +110,7 @@ class CategoriesManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to load categories. Check internet connection.";
+          "Network error. Unable to load categories. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to load categories.";
     }
@@ -127,7 +127,7 @@ class CategoriesManager {
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -148,7 +148,7 @@ class CategoriesManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to load group categories. Check internet connection.";
+          "Network error. Unable to load group categories. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to load group categories.";
     }
@@ -164,7 +164,7 @@ class CategoriesManager {
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
     ResultStatus<String> response =
-    await makeApiRequest(apiEndpoint, jsonRequestBody);
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -181,7 +181,7 @@ class CategoriesManager {
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-      "Network error. Unable to delete category. Check internet connection.";
+          "Network error. Unable to delete category. Check internet connection.";
     } else {
       retVal.errorMessage = "Unable to delete category.";
     }
