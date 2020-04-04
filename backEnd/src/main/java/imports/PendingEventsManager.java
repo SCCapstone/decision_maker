@@ -265,6 +265,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
       //pick one randomly
       final String selectedMaxChoiceId = maxChoiceIds
           .get(new Random().nextInt(maxChoiceIds.size()));
+
+      //set the appropriate choice label
       selectedChoice = event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
     } catch (Exception e) {
       selectedChoice = "Error";

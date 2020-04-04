@@ -899,8 +899,9 @@ public class GroupsManager extends DatabaseAccessManager {
         final User user = new User(
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-        //Note: no need to check user's group muted settings since they're just being added
-        if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
+        //Note: not checking the user's group muted settings since this message needs to be send to
+        //automatically kick them from a group
+        if (user.pushEndpointArnIsSet()) {
           DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
               "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(), metadata);
         }
