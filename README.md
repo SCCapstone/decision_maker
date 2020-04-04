@@ -27,6 +27,9 @@ This section assumes you have your .jar files uploaded to the appropriate AWS La
 
 To run the application, one must active their virtual android device from Android Studio. Then navigate in a terminal to the root directory of your Flutter project. Run 'flutter doctor' to ensure build environment and system requirements are met. If no issues are found, using the command 'flutter run' will build and run the application on the aforementioned active virtual device.
 
+### Notice
+There are known issues with push notifications in Android emulators. If you are experiencing any issues please try using a real device.
+
 ## 3 Deployment
 The backend of our application running in the AWS cloud requires deployment.
 
