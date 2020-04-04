@@ -41,8 +41,7 @@ dependencies:
 flutter_icons:
   image_path: "assets/icon/pollAlphaBoarder.png"
   android: true
-  #TODO figure this out
-  ios: false
+  ios: true
   adaptive_icon_background: "assets/icon/background.png"
   adaptive_icon_foreground: "assets/icon/pollFg.png"
 
