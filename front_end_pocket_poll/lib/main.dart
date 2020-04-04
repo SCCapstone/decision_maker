@@ -24,6 +24,10 @@ class AppStart extends StatelessWidget {
    */
   @override
   Widget build(BuildContext context) {
+    //stop the app from going landscape
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
     return InternetCheck();
   }
 }
