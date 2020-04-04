@@ -42,7 +42,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
-          "${this.event.eventCreator[username].displayName} (@$username)";
+      "${this.event.eventCreator[username].displayName} (@$username)";
     }
     super.initState();
   }
@@ -110,6 +110,13 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
+                    AutoSizeText(
+                      "Version: ${this.event.categoryVersion.toString()}",
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 16),
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
@@ -140,12 +147,12 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       visible: this.event.optedIn.length > 0,
                       child: ExpansionTile(
                         title:
-                            Text("Considered (${this.event.optedIn.length})"),
+                        Text("Considered (${this.event.optedIn.length})"),
                         children: <Widget>[
                           ConstrainedBox(
                             constraints: BoxConstraints(
                               maxHeight:
-                                  MediaQuery.of(context).size.height * .2,
+                              MediaQuery.of(context).size.height * .2,
                             ),
                             child: Scrollbar(
                               child: ListView(
@@ -204,7 +211,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     for (String username in this.event.optedIn.keys) {
       this.userRows.putIfAbsent(
           username,
-          () => UserRowEvents(this.event.optedIn[username].displayName,
+              () => UserRowEvents(this.event.optedIn[username].displayName,
               username, this.event.optedIn[username].icon));
     }
     // sorting by alphabetical by displayname for now
@@ -218,7 +225,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
 
   Future<Null> refreshList() async {
     ResultStatus<Group> resultStatus =
-        await GroupsManager.getGroup(widget.groupId);
+    await GroupsManager.getGroup(widget.groupId);
     if (resultStatus.success) {
       Globals.currentGroup = resultStatus.data;
       getEvent();

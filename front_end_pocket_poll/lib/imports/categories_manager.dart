@@ -51,7 +51,7 @@ class CategoriesManager {
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -61,18 +61,18 @@ class CategoriesManager {
         if (responseItem.success) {
           retVal.success = true;
           retVal.data =
-              new Category.fromJson(json.decode(responseItem.resultMessage));
+          new Category.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          retVal.errorMessage = "Error saving the category (1).";
+          retVal.errorMessage = "Unable to save category.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error saving the category (2).";
+        retVal.errorMessage = "Unable to save category.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to update category. Check internet connection.";
+      "Network error. Unable to save category. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to update category.";
+      retVal.errorMessage = "Unable to save category.";
     }
     return retVal;
   }
@@ -90,7 +90,7 @@ class CategoriesManager {
     }
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -103,16 +103,16 @@ class CategoriesManager {
               responseJson.map((m) => new Category.fromJson(m)).toList();
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to load categories";
+          retVal.errorMessage = "Unable to load categories.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error when reading request";
+        retVal.errorMessage = "Unable to load categories.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to load categories from the database. Check internet connection.";
+      "Network error. Unable to load categories. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to load categories from the database.";
+      retVal.errorMessage = "Unable to load categories.";
     }
     return retVal;
   }
@@ -127,7 +127,7 @@ class CategoriesManager {
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -141,16 +141,16 @@ class CategoriesManager {
               responseJson.map((m) => new Category.fromJson(m)).toList();
         } else {
           // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
-          retVal.errorMessage = "Error, bad request";
+          retVal.errorMessage = "Unable to load group categories.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error reading request";
+        retVal.errorMessage = "Unable to load group categories.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to load categories from the database. Check internet connection.";
+      "Network error. Unable to load group categories. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to load categories from the database.";
+      retVal.errorMessage = "Unable to load group categories.";
     }
     return retVal;
   }
@@ -164,7 +164,7 @@ class CategoriesManager {
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -174,16 +174,16 @@ class CategoriesManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error deleting the category (1).";
+          retVal.errorMessage = "Unable to delete category.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error deleting the category (2).";
+        retVal.errorMessage = "Unable to delete category.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to delete category. Check internet connection.";
+      "Network error. Unable to delete category. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to delete category.";
+      retVal.errorMessage = "Unable to delete category.";
     }
     return retVal;
   }

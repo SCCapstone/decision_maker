@@ -42,7 +42,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     getEvent();
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
-          "${this.event.eventCreator[username].displayName} (@$username)";
+      "${this.event.eventCreator[username].displayName} (@$username)";
     }
     super.initState();
   }
@@ -126,6 +126,13 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
+                    AutoSizeText(
+                      "Version: ${this.event.categoryVersion.toString()}",
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 16),
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
@@ -138,12 +145,13 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     Visibility(
                       visible: this.userRows.length > 0,
                       child: ExpansionTile(
-                        title:
-                        Text("Members considered (${this.userRows.length})"),
+                        title: Text(
+                            "Members considered (${this.userRows.length})"),
                         children: <Widget>[
                           ConstrainedBox(
                             constraints: BoxConstraints(
-                              maxHeight: MediaQuery.of(context).size.height * .2,
+                              maxHeight:
+                              MediaQuery.of(context).size.height * .2,
                             ),
                             child: Scrollbar(
                               child: ListView(
@@ -157,13 +165,13 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     ),
                     Visibility(
                         visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText("No members currently being considered",
+                        child: AutoSizeText(
+                          "No members currently being considered",
                           minFontSize: 12,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 16),
-                        )
-                    ),
+                        )),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
@@ -231,7 +239,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
           Globals.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.username,
-          () => UserRowEvents(
+              () => UserRowEvents(
               Globals.user.displayName, Globals.username, Globals.user.icon));
     } else {
       Globals.currentGroup.events[widget.eventId].optedIn
@@ -249,7 +257,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
             Globals.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
             Globals.username,
-            () => UserRowEvents(
+                () => UserRowEvents(
                 Globals.user.displayName, Globals.username, Globals.user.icon));
       } else {
         Globals.currentGroup.events[widget.eventId].optedIn
@@ -268,7 +276,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     for (String username in this.event.optedIn.keys) {
       this.userRows.putIfAbsent(
           username,
-          () => UserRowEvents(this.event.optedIn[username].displayName,
+              () => UserRowEvents(this.event.optedIn[username].displayName,
               username, this.event.optedIn[username].icon));
     }
     // sorting by alphabetical by displayname for now
@@ -282,7 +290,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
 
   Future<Null> refreshList() async {
     ResultStatus<Group> resultStatus =
-        await GroupsManager.getGroup(widget.groupId);
+    await GroupsManager.getGroup(widget.groupId);
     if (resultStatus.success) {
       Globals.currentGroup = resultStatus.data;
       getEvent();

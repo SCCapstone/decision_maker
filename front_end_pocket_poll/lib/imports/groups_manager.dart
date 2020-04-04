@@ -59,7 +59,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -68,19 +68,19 @@ class GroupsManager {
 
         if (responseItem.success) {
           retVal.data =
-              new Group.fromJson(json.decode(responseItem.resultMessage));
+          new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Failed to load group.";
+          retVal.errorMessage = "Unable to load group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Failed to load group $e";
+        retVal.errorMessage = "Unable to load group.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to load group from the database. Check internet connection.";
+      "Network error. Unable to load group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to load group from the database.";
+      retVal.errorMessage = "Unable to load group.";
     }
     return retVal;
   }
@@ -93,7 +93,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -103,16 +103,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error deleting the group (1).";
+          retVal.errorMessage = "Unable to delete group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error deleting the group (2).";
+        retVal.errorMessage = "Unable to delete group.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to delete group. Check internet connection.";
+      "Network error. Unable to delete group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to delete group.";
+      retVal.errorMessage = "Unable to delete group.";
     }
 
     return retVal;
@@ -135,7 +135,7 @@ class GroupsManager {
         group.members.keys.toList();
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -145,18 +145,18 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
           retVal.data =
-              new Group.fromJson(json.decode(responseItem.resultMessage));
+          new Group.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          retVal.errorMessage = "Error creating group (1).";
+          retVal.errorMessage = "Unable to create group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error creating group (2).";
+        retVal.errorMessage = "Unable to create group.";
       }
     } else if (retVal.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to create group. Check internet connection.";
+      "Network error. Unable to create group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to create group.";
+      retVal.errorMessage = "Unable to create group.";
     }
     return retVal;
   }
@@ -186,7 +186,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -194,20 +194,20 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
           retVal.data =
-              new Group.fromJson(json.decode(responseItem.resultMessage));
+          new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error saving group data (1). "
+          retVal.errorMessage = "Unable to update group."
               "${responseItem.resultMessage}";
         }
       } catch (e) {
-        retVal.errorMessage = "Error saving group data (2).";
+        retVal.errorMessage = "Unable to update group.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to edit group. Check internet connection.";
+      "Network error. Unable to update group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to edit group.";
+      retVal.errorMessage = "Unable to update group.";
     }
     return retVal;
   }
@@ -221,10 +221,10 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(
         EventsManager.UTC_EVENT_START_SECONDS,
-        () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
+            () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -233,16 +233,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error creating event (1).";
+          retVal.errorMessage = "Unable to create event.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error creating event (2).";
+        retVal.errorMessage = "Unable to create event.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to create event. Check internet connection.";
+      "Network error. Unable to create event. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to create event.";
+      retVal.errorMessage = "Unable to create event.";
     }
     return retVal;
   }
@@ -255,7 +255,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -265,16 +265,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error leaving the group (1).";
+          retVal.errorMessage = "Unable to leave group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error leaving the group (2).";
+        retVal.errorMessage = "Unable to leave group.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to leave group. Check internet connection.";
+      "Network error. Unable to leave group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to leave group.";
+      retVal.errorMessage = "Unable to leave group.";
     }
 
     return retVal;
@@ -288,7 +288,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -298,16 +298,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error rejoining the group (1).";
+          retVal.errorMessage = "Unable to rejoin group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error rejoining the group (2).";
+        retVal.errorMessage = "Unable to rejoin group.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to rejoin group. Check internet connection.";
+      "Network error. Unable to rejoin group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to rejoin group.";
+      retVal.errorMessage = "Unable to rejoin group.";
     }
 
     return retVal;
@@ -327,7 +327,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -337,16 +337,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error considering (1).";
+          retVal.errorMessage = "Unable to consider.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error considering (2).";
+        retVal.errorMessage = "Unable to consider.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to consider. Check internet connection.";
+      "Network error. Unable to consider. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to consdier.";
+      retVal.errorMessage = "Unable to consider.";
     }
     return retVal;
   }
@@ -367,7 +367,7 @@ class GroupsManager {
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
     ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    await makeApiRequest(apiEndpoint, jsonRequestBody);
 
     if (response.success) {
       try {
@@ -377,16 +377,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Error voting yes/no (1).";
+          retVal.errorMessage = "Unable to vote.";
         }
       } catch (e) {
-        retVal.errorMessage = "Error voting yes/no (2).";
+        retVal.errorMessage = "Unable to vote.";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Failed to cast vote. Check internet connection.";
+      "Network error. Unable to vote. Check internet connection.";
     } else {
-      retVal.errorMessage = "Failed to cast vote.";
+      retVal.errorMessage = "Unable to vote.";
     }
     return retVal;
   }
