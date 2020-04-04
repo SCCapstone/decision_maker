@@ -198,6 +198,8 @@ String validPassword(String input) {
     retVal = "Password cannot be empty.";
   } else if (input.length > Globals.maxPasswordLength) {
     retVal = "Password is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Password contains invalid characters.";
   }
   return retVal;
 }
