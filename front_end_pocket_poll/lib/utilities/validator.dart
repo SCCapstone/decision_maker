@@ -179,6 +179,10 @@ String validNewPassword(String input) {
   if (!RegExp(r'[!@#$%^&*(),.?":{}\[\]\\|<>]+').hasMatch(input)) {
     retVal += "Must contain at least one special character.\n";
   }
+  if (!validCharacters(input)) {
+    retVal += "Password contains invalid characters.\n";
+  }
+
   if (retVal == "") {
     retVal = null;
   } else {
