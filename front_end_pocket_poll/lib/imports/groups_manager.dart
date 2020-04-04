@@ -71,16 +71,16 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to load group.";
+          retVal.errorMessage = "Failed to load group.";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to load group.";
+        retVal.errorMessage = "Failed to load group $e";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to load group. Check internet connection.";
+          "Network error. Failed to load group from the database. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to load group.";
+      retVal.errorMessage = "Failed to load group from the database.";
     }
     return retVal;
   }
@@ -103,16 +103,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to delete group.";
+          retVal.errorMessage = "Error deleting the group (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to delete group.";
+        retVal.errorMessage = "Error deleting the group (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to delete group. Check internet connection.";
+          "Network error. Failed to delete group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to delete group.";
+      retVal.errorMessage = "Failed to delete group.";
     }
 
     return retVal;
@@ -147,16 +147,16 @@ class GroupsManager {
           retVal.data =
               new Group.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          retVal.errorMessage = "Unable to create group.";
+          retVal.errorMessage = "Error creating group (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to create group.";
+        retVal.errorMessage = "Error creating group (2).";
       }
     } else if (retVal.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to create group. Check internet connection.";
+          "Network error. Failed to create group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to create group.";
+      retVal.errorMessage = "Failed to create group.";
     }
     return retVal;
   }
@@ -197,17 +197,17 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to update group."
+          retVal.errorMessage = "Error saving group data (1). "
               "${responseItem.resultMessage}";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to update group.";
+        retVal.errorMessage = "Error saving group data (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to update group. Check internet connection.";
+          "Network error. Failed to edit group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to update group.";
+      retVal.errorMessage = "Failed to edit group.";
     }
     return retVal;
   }
@@ -233,16 +233,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to create event.";
+          retVal.errorMessage = "Error creating event (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to create event.";
+        retVal.errorMessage = "Error creating event (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to create event. Check internet connection.";
+          "Network error. Failed to create event. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to create event.";
+      retVal.errorMessage = "Failed to create event.";
     }
     return retVal;
   }
@@ -265,16 +265,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to leave group.";
+          retVal.errorMessage = "Error leaving the group (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to leave group.";
+        retVal.errorMessage = "Error leaving the group (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to leave group. Check internet connection.";
+          "Network error. Failed to leave group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to leave group.";
+      retVal.errorMessage = "Failed to leave group.";
     }
 
     return retVal;
@@ -298,16 +298,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to rejoin group.";
+          retVal.errorMessage = "Error rejoining the group (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to rejoin group.";
+        retVal.errorMessage = "Error rejoining the group (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to rejoin group. Check internet connection.";
+          "Network error. Failed to rejoin group. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to rejoin group.";
+      retVal.errorMessage = "Failed to rejoin group.";
     }
 
     return retVal;
@@ -337,16 +337,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to consider.";
+          retVal.errorMessage = "Error considering (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to consider.";
+        retVal.errorMessage = "Error considering (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to consider. Check internet connection.";
+          "Network error. Failed to consider. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to consider.";
+      retVal.errorMessage = "Failed to consdier.";
     }
     return retVal;
   }
@@ -377,16 +377,16 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to vote.";
+          retVal.errorMessage = "Error voting yes/no (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to vote.";
+        retVal.errorMessage = "Error voting yes/no (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to vote. Check internet connection.";
+          "Network error. Failed to cast vote. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to vote.";
+      retVal.errorMessage = "Failed to cast vote.";
     }
     return retVal;
   }
