@@ -899,8 +899,9 @@ public class GroupsManager extends DatabaseAccessManager {
         final User user = new User(
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-        //Note: no need to check user's group muted settings since they're just being added
-        if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
+        //Note: not checking the user's group muted settings since this message needs to be send to
+        //automatically kick them from a group
+        if (user.pushEndpointArnIsSet()) {
           DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
               "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(), metadata);
         }
@@ -1237,25 +1238,30 @@ public class GroupsManager extends DatabaseAccessManager {
       ValueMap valueMap = new ValueMap().withString(":currentDate", lastActivity);
       NameMap nameMap = new NameMap();
 
+      //set all of the update statements
       if (oldEvent.getTentativeAlgorithmChoices().isEmpty() && !updatedEvent
           .getTentativeAlgorithmChoices().isEmpty()) {
         updateExpression +=
             ", " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
                 + EVENTS + ".#eventId." + VOTING_NUMBERS + " = :votingNumbers";
 
-        if (!isNewEvent) {
-          //we need to remove the duplicated category choices
-          updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
-        }
-
         nameMap.with("#eventId", eventId);
         valueMap.withMap(":tentativeChoices", updatedEvent.getTentativeAlgorithmChoices())
             .withMap(":votingNumbers",
                 this.getVotingNumbersSetup(updatedEvent.getTentativeAlgorithmChoices()));
-      } else if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
+      }
+
+      if (oldEvent.getSelectedChoice() == null && updatedEvent.getSelectedChoice() != null) {
         updateExpression += ", " + EVENTS + ".#eventId." + SELECTED_CHOICE + " = :selectedChoice";
         nameMap.with("#eventId", eventId);
         valueMap.withString(":selectedChoice", updatedEvent.getSelectedChoice());
+      }
+      //end setting update statements
+
+      //we're setting the tentative choices and this isn't a new event so remove duplicated choices
+      if (valueMap.containsKey(":tentativeChoices") && !isNewEvent) {
+        //we need to remove the duplicated category choices
+        updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
       }
 
       if (nameMap.containsKey("#eventId")) {

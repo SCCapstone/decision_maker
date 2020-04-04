@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:front_end_pocket_poll/first_login.dart';
@@ -24,6 +22,10 @@ class AppStart extends StatelessWidget {
    */
   @override
   Widget build(BuildContext context) {
+    //stop the app from going landscape
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
     return InternetCheck();
   }
 }
@@ -63,11 +65,6 @@ class InternetCheck extends StatelessWidget {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    if (Platform.isAndroid) {
-      Globals.android = true;
-    } else {
-      Globals.android = false;
-    }
     return Container(
         color: Color(0xff303030),
         child: AnnotatedRegion(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -51,10 +52,10 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void initState() {
-    if (Globals.android) {
+    if (Platform.isAndroid) {
       this.firebaseMessaging = FirebaseMessaging();
     }
-    
+
     this.groupsLeftSortVal = Globals.alphabeticalSort;
     this.currentTab = this.groupsHomeTab;
     this.tabController = new TabController(length: this.totalTabs, vsync: this);
@@ -114,8 +115,8 @@ class _GroupsHomeState extends State<GroupsHome>
     });
     //endregion
     // set up notification listener
-    
-    if (Globals.android) {
+
+    if (Platform.isAndroid) {
       Future<String> token = this.firebaseMessaging.getToken();
       UsersManager.registerPushEndpoint(token);
       if (!Globals.fireBaseConfigured) {
@@ -126,11 +127,11 @@ class _GroupsHomeState extends State<GroupsHome>
             );
         Globals.fireBaseConfigured = true;
       }
-      
+
       this.firebaseMessaging.requestNotificationPermissions(
           const IosNotificationSettings(sound: true, badge: true, alert: true));
     }
-    
+
     super.initState();
   }
 
@@ -253,7 +254,7 @@ class _GroupsHomeState extends State<GroupsHome>
                       title: Text('Log Out', style: TextStyle(fontSize: 16)),
                       onTap: () {
                         logOutUser(context);
-                        if (Globals.android) {
+                        if (Platform.isAndroid) {
                           Globals.fireBaseConfigured = false;
                           // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
                           firebaseMessaging.deleteInstanceID();

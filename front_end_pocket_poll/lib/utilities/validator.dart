@@ -2,6 +2,11 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
 
+bool validCharacters(String input) {
+  return RegExp(r"^[a-zA-Z0-9 !@#$%^&*()_+-=;:'/?.>,<\[\]{}|~`]*$")
+      .hasMatch(input);
+}
+
 String validGroupName(String input) {
   input = input.trim(); // sanity check trim
   String retVal;
@@ -9,6 +14,8 @@ String validGroupName(String input) {
     retVal = "Group name cannot be empty.";
   } else if (input.length > Globals.maxGroupNameLength) {
     retVal = "Group name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Group name contains invalid characters.";
   }
   return retVal;
 }
@@ -20,6 +27,8 @@ String validEventName(String input) {
     retVal = "Event name cannot be empty.";
   } else if (input.length > Globals.maxEventNameLength) {
     retVal = "Event name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Event name contains invalid characters.";
   }
   return retVal;
 }
@@ -91,6 +100,8 @@ String validNewUser(String user, List<String> users) {
     retVal = "Can't add yourself.";
   } else if (users.contains(user)) {
     retVal = "Username already added.";
+  } else if (!validCharacters(user)) {
+    retVal = "username contains invalid characters.";
   }
   return retVal;
 }
@@ -102,25 +113,31 @@ String validChoiceName(String input) {
     retVal = "Choice name cannot be empty.";
   } else if (input.length > Globals.maxChoiceNameLength) {
     retVal = "Choice name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Choice name contains invalid characters.";
   }
   return retVal;
 }
 
-String validCategoryName(String input, List<Category> categories, bool edit) {
+String validCategoryName(String input, {String categoryId}) {
   input = input.trim(); // sanity check trim
   String retVal;
   bool repeat = false;
-  for (Category category in categories) {
-    if (category.categoryName == input) {
+  for (Category category in Globals.user.ownedCategories) {
+    if ((categoryId == null || category.categoryId != categoryId) &&
+        category.categoryName == input) {
       repeat = true;
     }
   }
+
   if (input.isEmpty) {
     retVal = "Category name cannot be empty.";
   } else if (input.length > Globals.maxCategoryNameLength) {
     retVal = "Category name is too large.";
-  } else if (repeat && !edit) {
+  } else if (repeat) {
     retVal = "Category name already exists.";
+  } else if (!validCharacters(input)) {
+    retVal = "Category name contains invalid characters.";
   }
   return retVal;
 }
@@ -137,6 +154,8 @@ String validEmail(String input) {
     retVal = "Enter a valid email address.";
   } else if (input.length > Globals.maxEventNameLength) {
     return "Email is too large";
+  } else if (!validCharacters(input)) {
+    retVal = "Email contains invalid characters.";
   }
   return retVal;
 }
@@ -160,6 +179,10 @@ String validNewPassword(String input) {
   if (!RegExp(r'[!@#$%^&*(),.?":{}\[\]\\|<>]+').hasMatch(input)) {
     retVal += "Must contain at least one special character.\n";
   }
+  if (!validCharacters(input)) {
+    retVal += "Password contains invalid characters.\n";
+  }
+
   if (retVal == "") {
     retVal = null;
   } else {
@@ -175,6 +198,8 @@ String validPassword(String input) {
     retVal = "Password cannot be empty.";
   } else if (input.length > Globals.maxPasswordLength) {
     retVal = "Password is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Password contains invalid characters.";
   }
   return retVal;
 }
@@ -186,6 +211,8 @@ String validUsername(String input) {
     retVal = "Username cannot be empty.";
   } else if (input.length > Globals.maxUsernameLength) {
     retVal = "Username is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Username contains invalid characters.";
   }
   return retVal;
 }
@@ -197,6 +224,8 @@ String validDisplayName(String input) {
     retVal = "Name cannot be empty.";
   } else if (input.length > Globals.maxDisplayNameLength) {
     retVal = "Name is too large.";
+  } else if (!validCharacters(input)) {
+    retVal = "Name contains invalid characters.";
   }
   return retVal;
 }
@@ -218,6 +247,8 @@ String validNewFavorite(String input, List<Favorite> favorites) {
     retVal = "You already have this username saved.";
   } else if (input == Globals.username) {
     retVal = "Cannot add yourself.";
+  } else if (!validCharacters(input)) {
+    retVal = "Username contains invalid characters.";
   }
   return retVal;
 }
