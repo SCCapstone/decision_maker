@@ -143,26 +143,44 @@ class _EditCategoryState extends State<EditCategory> {
                         ),
                         Padding(
                           padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .0025),
+                              MediaQuery.of(context).size.height * .004),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .7,
-                          child: TextFormField(
-                            enabled: widget.editName,
-                            onChanged: (val) => checkForChanges(),
-                            maxLength: Globals.maxCategoryNameLength,
-                            controller: this.categoryNameController,
-                            validator: (value) {
-                              return validCategoryName(value.trim(),
-                                  categoryId: widget.category.categoryId);
-                            },
-                            textCapitalization: TextCapitalization.sentences,
-                            style: TextStyle(fontSize: 20),
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Category Name",
-                                counterText: ""),
-                          ),
+                        Stack(
+                          children: <Widget>[
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * .7,
+                                child: TextFormField(
+                                  enabled: widget.editName,
+                                  onChanged: (val) => checkForChanges(),
+                                  maxLength: Globals.maxCategoryNameLength,
+                                  controller: this.categoryNameController,
+                                  validator: (value) {
+                                    return validCategoryName(value.trim(),
+                                        categoryId: widget.category.categoryId);
+                                  },
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  style: TextStyle(fontSize: 20),
+                                  decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: "Category Name",
+                                      counterText: ""),
+                                ),
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                icon: Icon(Icons.content_copy),
+                                tooltip: "Copy Category",
+                                onPressed: () {
+                                  copyPopup();
+                                },
+                              ),
+                            )
+                          ],
                         ),
                         Visibility(
                           visible: !this.isCategoryOwner,
@@ -186,12 +204,6 @@ class _EditCategoryState extends State<EditCategory> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .0035),
                         ),
-                        RaisedButton.icon(
-                            onPressed: () {
-                              copyPopup();
-                            },
-                            icon: Icon(Icons.content_copy),
-                            label: Text("Copy Category")),
                         Expanded(
                           child: Scrollbar(
                             child: CustomScrollView(
