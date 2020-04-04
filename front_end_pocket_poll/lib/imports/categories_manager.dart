@@ -63,16 +63,16 @@ class CategoriesManager {
           retVal.data =
               new Category.fromJson(json.decode(responseItem.resultMessage));
         } else {
-          retVal.errorMessage = "Unable to save category.";
+          retVal.errorMessage = "Error saving the category (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to save category.";
+        retVal.errorMessage = "Error saving the category (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to save category. Check internet connection.";
+          "Network error. Failed to update category. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to save category.";
+      retVal.errorMessage = "Failed to update category.";
     }
     return retVal;
   }
@@ -103,16 +103,16 @@ class CategoriesManager {
               responseJson.map((m) => new Category.fromJson(m)).toList();
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to load categories.";
+          retVal.errorMessage = "Unable to load categories";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to load categories.";
+        retVal.errorMessage = "Error when reading request";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to load categories. Check internet connection.";
+          "Network error. Failed to load categories from the database. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to load categories.";
+      retVal.errorMessage = "Failed to load categories from the database.";
     }
     return retVal;
   }
@@ -141,16 +141,16 @@ class CategoriesManager {
               responseJson.map((m) => new Category.fromJson(m)).toList();
         } else {
           // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
-          retVal.errorMessage = "Unable to load group categories.";
+          retVal.errorMessage = "Error, bad request";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to load group categories.";
+        retVal.errorMessage = "Error reading request";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to load group categories. Check internet connection.";
+          "Network error. Failed to load categories from the database. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to load group categories.";
+      retVal.errorMessage = "Failed to load categories from the database.";
     }
     return retVal;
   }
@@ -174,16 +174,16 @@ class CategoriesManager {
         if (responseItem.success) {
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to delete category.";
+          retVal.errorMessage = "Error deleting the category (1).";
         }
       } catch (e) {
-        retVal.errorMessage = "Unable to delete category.";
+        retVal.errorMessage = "Error deleting the category (2).";
       }
     } else if (response.networkError) {
       retVal.errorMessage =
-          "Network error. Unable to delete category. Check internet connection.";
+          "Network error. Failed to delete category. Check internet connection.";
     } else {
-      retVal.errorMessage = "Unable to delete category.";
+      retVal.errorMessage = "Failed to delete category.";
     }
     return retVal;
   }

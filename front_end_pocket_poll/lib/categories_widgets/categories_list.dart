@@ -21,15 +21,11 @@ class CategoryList extends StatefulWidget {
 class _CategoryListState extends State<CategoryList> {
   @override
   Widget build(BuildContext context) {
-    if (widget.categories.isEmpty) {
-      return ListView(
-        children: <Widget>[
-          Center(
-            child: Text(
-                "No categories found! Click the button below to create some!",
-                style: TextStyle(fontSize: 30)),
-          ),
-        ],
+    if (widget.categories.length == 0) {
+      return Center(
+        child: Text(
+            "No categories found! Click the button below to create some!",
+            style: TextStyle(fontSize: 30)),
       );
     } else {
       return Scrollbar(

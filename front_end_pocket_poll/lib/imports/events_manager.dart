@@ -21,7 +21,6 @@ class EventsManager {
   static final String SELECTED_CHOICE = "SelectedChoice";
   static final String VOTING_NUMBERS = "VotingNumbers";
   static final String EVENT_CREATOR = "EventCreator";
-  static final String CATEGORY_VERSION = "Version";
 
   static int getEventMode(Event event) {
     DateTime timeNow = DateTime.now();

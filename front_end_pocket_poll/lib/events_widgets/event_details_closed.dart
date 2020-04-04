@@ -107,13 +107,6 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      AutoSizeText(
-                        "Version: ${this.event.categoryVersion.toString()}",
-                        minFontSize: 12,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16),
-                      ),
                       Padding(
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .01),
@@ -144,13 +137,11 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                       Visibility(
                         visible: this.event.optedIn.length > 0,
                         child: ExpansionTile(
-                          title:
-                              Text("Considered (${this.event.optedIn.length})"),
+                          title: Text("Considered (${this.event.optedIn.length})"),
                           children: <Widget>[
                             ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).size.height * .2,
+                                maxHeight: MediaQuery.of(context).size.height * .2,
                               ),
                               child: Scrollbar(
                                 child: ListView(
@@ -163,14 +154,14 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
                         ),
                       ),
                       Visibility(
-                          visible: this.event.optedIn.length <= 0,
-                          child: AutoSizeText(
-                            "No members considered",
-                            minFontSize: 12,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 16),
-                          )),
+                        visible: this.event.optedIn.length <= 0,
+                        child: AutoSizeText("No members considered",
+                          minFontSize: 12,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 16),
+                        )
+                      ),
                     ],
                   ),
                 ],

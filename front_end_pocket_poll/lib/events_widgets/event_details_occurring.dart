@@ -110,13 +110,6 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 32),
                     ),
-                    AutoSizeText(
-                      "Version: ${this.event.categoryVersion.toString()}",
-                      minFontSize: 12,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16),
-                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
