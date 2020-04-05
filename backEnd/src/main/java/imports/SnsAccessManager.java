@@ -113,7 +113,17 @@ public class SnsAccessManager {
         .withTargetArn(arn)
         .withMessage(jsonNotification);
     publishRequest.setMessageStructure("json");
-    return this.client.publish(publishRequest);
+
+    PublishResult publishResult;
+    try {
+      publishResult = this.client.publish(publishRequest);
+    } catch (final EndpointDisabledException ede) {
+      //this isn't an error on our end, read more about this exception here:
+      //https://forums.aws.amazon.com/thread.jspa?threadID=174551
+      publishResult = new PublishResult();
+    }
+
+    return  publishResult;
   }
 
   public PublishResult sendMessage(final String arn, final String title, final String body,
