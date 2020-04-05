@@ -644,10 +644,12 @@ class _GroupsHomeState extends State<GroupsHome>
     try {
       final Message notification = Message.fromJSON(notificationRaw);
 
-      Fluttertoast.showToast(
-          msg: "${notification.title}\n${notification.body}",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER);
+      if (notification.title != null && notification.body != null) {
+        Fluttertoast.showToast(
+            msg: "${notification.title}\n${notification.body}",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER);
+      }
 
       if (notification.action == Globals.removedFromGroupAction) {
         String groupId = notification.payload[GroupsManager.GROUP_ID];

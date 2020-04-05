@@ -870,9 +870,14 @@ public class GroupsManager extends DatabaseAccessManager {
 
         if (!username.equals(addedTo.getGroupCreator())) {
           //Note: no need to check user's group muted settings since they're just being added
-          if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted()) {
-            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "Added to new group!", addedTo.getGroupName(), addedTo.getGroupId(), metadata);
+          if (user.pushEndpointArnIsSet()) {
+            if (user.getAppSettings().isMuted()) {
+              DatabaseManagers.SNS_ACCESS_MANAGER
+                  .sendMutedMessage(user.getPushEndpointArn(), metadata);
+            } else {
+              DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
+                  "Added to new group!", addedTo.getGroupName(), addedTo.getGroupId(), metadata);
+            }
           }
         }
       } catch (Exception e) {
@@ -899,11 +904,16 @@ public class GroupsManager extends DatabaseAccessManager {
         final User user = new User(
             DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-        //Note: not checking the user's group muted settings since this message needs to be send to
-        //automatically kick them from a group
         if (user.pushEndpointArnIsSet()) {
-          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-              "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(), metadata);
+          if (user.getAppSettings().isMuted() || user.getGroups().get(removedFrom.getGroupId())
+              .isMuted()) {
+            DatabaseManagers.SNS_ACCESS_MANAGER
+                .sendMutedMessage(user.getPushEndpointArn(), metadata);
+          } else {
+            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
+                "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(),
+                metadata);
+          }
         }
       } catch (Exception e) {
         success = false;
@@ -957,11 +967,16 @@ public class GroupsManager extends DatabaseAccessManager {
           final User user = new User(
               DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
 
-          if (user.pushEndpointArnIsSet() && !user.getAppSettings().isMuted() && !user.getGroups()
-              .get(group.getGroupId()).isMuted()) {
-            DatabaseManagers.SNS_ACCESS_MANAGER
-                .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody, eventId,
-                    metadata);
+          if (user.pushEndpointArnIsSet()) {
+            if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())
+                .isMuted()) {
+              DatabaseManagers.SNS_ACCESS_MANAGER
+                  .sendMutedMessage(user.getPushEndpointArn(), metadata);
+            } else {
+              DatabaseManagers.SNS_ACCESS_MANAGER
+                  .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody,
+                      eventId, metadata);
+            }
           }
         } catch (Exception e) {
           success = false;
