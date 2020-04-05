@@ -932,7 +932,7 @@ public class GroupsManager extends DatabaseAccessManager {
         DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
 
         //if the delete went through, send the notification
-        if (removedUser.pushEndpointArnIsSet()) {
+        if (removedUser.pushEndpointArnIsSet() && !removedFrom.getGroupCreator().equals(username)) {
           if (removedUser.getAppSettings().isMuted() || removedUser.getGroups()
               .get(removedFrom.getGroupId()).isMuted()) {
             DatabaseManagers.SNS_ACCESS_MANAGER
@@ -1149,8 +1149,10 @@ public class GroupsManager extends DatabaseAccessManager {
       }
     }
 
-    //update user objects of all of the users removed
-    this.removeUsersFromGroupAndSendNotificationsOnEdit(removedUsernames, oldGroup, metrics);
+    //update user objects of all of the users removed - if oldGroup is null, nothing to remove from
+    if (oldGroup != null) {
+      this.removeUsersFromGroupAndSendNotificationsOnEdit(removedUsernames, oldGroup, metrics);
+    }
 
     try {
       //blind send...
