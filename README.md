@@ -27,18 +27,45 @@ This section is only for building and/or running our front end application on an
 
 **There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
 
-### 2.1 Running the application from the command line
+If using a real Android device, you cannot use a debug apk. You must use a release apk. Conversely, if using an Android emulator you must use a debug apk, not a release one.
+
+### 2.1 Compiling and Running the application from the command line
 To run the application from the command line, one must:
 1. Have an android device or emulator connected to the computer.
 2. cd into the front_end_pocket_poll directory.
-3. Run 'flutter doctor' to ensure build environment and system requirements are met. If they are not met, follow the instruction to resolve issues.
-4. If no issues are found, run the command 'flutter run' to build, install, and run the application on the connected device/emulator.
+3. Run `flutter doctor` to ensure build environment and system requirements are met. If they are not met, follow the instruction to resolve issues.
+4. If no issues are found, run the command `flutter run` to build, install, and run the application on the connected device/emulator.
 
-### 2.2 Running the application from a release .apk file
+### 2.2 Compiling and Running the application from Android Studio
+Note this will build a debug-apk on your device. To run the application from Android Studio, one must:
+1. Click on the "Run" tab in Android Studio and then click "Edit Configurations"
+2. Add a new configuration.
+3. Ensure that the Dart entry point is pointed to the main.dart file.
+4. Save the configuration.
+5. Run by clicking the play button found on the top tab of Android Studio (or click the Run tab and use that play button).
+
+### 2.3 Building an apk file
+Make sure you are at the top level of the front end directory (front_end_pocket_poll).
+1. Run the command: `flutter clean`
+2. Run the command: `flutter build apk --release` (this builds it in release mode, if debug mode use --debug)
+3. The apk will be built in the build/app/outputs/apk/release folder of front_end_pocket_poll. Note if making a debug apk file the last folder will be "debug" instead of "release".
+
+### 2.4 Running the application from a release .apk file
+Note that attempting to install a release apk on an emulated android device will likely not work. Use a real device instead.
+
 To run the application from a release .apk file, one must:
+1. Ensure there are no prior versions of this application installed on the android device.
+2. Open the download location (presumably github) and download the apk directly on to the device from there. Your phone's settings might have to be altered to allow external apks to be downloaded (typically you install apks directly from Google Play, and some devices warn you when trying to download externally).
+3. Can also run in the directory of the apk: `adb install <apk-file>`. Note that you must have debugging enabled and your phone must of course be plugged into the computer.
+
+
+### 2.5 Running the application from a debug .apk file
+Note that attempting to install a debug apk on a real android device will likely not work. Use an emulator instead.
+
+To run the application from a debug .apk file, one must:
 1. Ensure there are no prior versions of this application installed on the android device or emulator.
-2. If using an emulator: drag and drop the .apk onto the device to install the application.
-3. If using a real device: open the download location (presumably github) and download the apk directly on to the device from there.
+2. Drag and drop the .apk onto the device to install the application.
+3. Can also run in the directory of the apk: `adb install <apk-file>`. Note that your emulator must be turned on for this command to work.
 
 ## 3 Deployment
 The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll AWS credentials. Please contact John Andrews (jha2@email.sc.edu) if you have any inqueries.
