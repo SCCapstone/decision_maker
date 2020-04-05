@@ -27,7 +27,7 @@ This section is only for building and/or running our front end application on an
 
 **There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
 
-If using a real Android device, you cannot use a debug apk. You must use a release apk. Conversely, if using an Android emulator you must use a debug apk, not a release one.
+If using a real Android device, you cannot use a debug apk; you must use a release apk. Inversely, if using an Android emulator you must use a debug apk, not a release one.
 
 ### 2.1 Compiling and Running the application from the command line
 To run the application from the command line, one must:
