@@ -355,12 +355,15 @@ public class GroupsManager extends DatabaseAccessManager {
           Set<String> categoryIds = group.getCategories().keySet();
 
           // Remove the group from the users and categories tables
-          final ResultStatus removeFromUsersResult = DatabaseManagers.USERS_MANAGER
-              .removeGroupFromUsers(members, membersLeft, groupId, metrics);
+          final ResultStatus removeFromLeftUsersResult = DatabaseManagers.USERS_MANAGER
+              .removeGroupsLeftFromUsers(membersLeft, groupId, metrics);
+          final ResultStatus removeGroupFromActiveUsers = this
+              .removeUsersFromGroupAndSendNotificationsOnDelete(members, group, metrics);
           final ResultStatus removeFromCategoriesResult = DatabaseManagers.CATEGORIES_MANAGER
               .removeGroupFromCategories(categoryIds, groupId, metrics);
 
-          if (removeFromUsersResult.success && removeFromCategoriesResult.success) {
+          if (removeFromLeftUsersResult.success && removeGroupFromActiveUsers.success
+              && removeFromCategoriesResult.success) {
             DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
                 .withPrimaryKey(this.getPrimaryKeyIndex(), groupId);
 
@@ -378,7 +381,8 @@ public class GroupsManager extends DatabaseAccessManager {
             DatabaseManagers.PENDING_EVENTS_MANAGER
                 .deleteAllPendingGroupEvents(groupId, pendingEventIds, metrics);
           } else {
-            resultStatus = removeFromUsersResult.applyResultStatus(removeFromCategoriesResult);
+            resultStatus = removeFromLeftUsersResult.applyResultStatus(removeGroupFromActiveUsers)
+                .applyResultStatus(removeFromCategoriesResult);
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, resultStatus.resultMessage));
           }
 
@@ -889,33 +893,65 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private void sendRemovedFromGroupNotifications(final User user,
+  private ResultStatus removeUsersFromGroupAndSendNotificationsOnEdit(final Set<String> usernames,
       final Group removedFrom, final Metrics metrics) {
+    return this.removeUsersFromGroupAndSendNotifications(usernames, removedFrom, false, metrics);
+  }
+
+  private ResultStatus removeUsersFromGroupAndSendNotificationsOnDelete(final Set<String> usernames,
+      final Group removedFrom, final Metrics metrics) {
+    return this.removeUsersFromGroupAndSendNotifications(usernames, removedFrom, true, metrics);
+  }
+
+  private ResultStatus removeUsersFromGroupAndSendNotifications(final Set<String> usernames,
+      final Group removedFrom, final boolean isGroupDelete, final Metrics metrics) {
     final String classMethod = "GroupsManager.sendRemovedFromGroupNotifications";
     metrics.commonSetup(classMethod);
 
-    boolean success = true;
+    ResultStatus resultStatus = new ResultStatus(true,
+        "Active members removed and notified successfully.");
 
     final Metadata metadata = new Metadata("removedFromGroup",
         ImmutableMap.of(GROUP_ID, removedFrom.getGroupId()));
-    try {
-      if (user.pushEndpointArnIsSet()) {
-        if (user.getAppSettings().isMuted() || user.getGroups().get(removedFrom.getGroupId())
-            .isMuted()) {
-          DatabaseManagers.SNS_ACCESS_MANAGER
-              .sendMutedMessage(user.getPushEndpointArn(), metadata);
-        } else {
-          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-              "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(),
-              metadata);
+
+    final String updateExpression = "remove Groups.#groupId";
+    final NameMap nameMap = new NameMap().with("#groupId", removedFrom.getGroupId());
+    final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+        .withNameMap(nameMap)
+        .withUpdateExpression(updateExpression);
+
+    for (final String username : usernames) {
+      try {
+        //pull the user before deleting so we have their group isMuted mapping for the push notice
+        final User removedUser = new User(
+            DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+
+        //actually do the delete
+        updateItemSpec
+            .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), username);
+        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+        //if the delete went through, send the notification
+        if (removedUser.pushEndpointArnIsSet()) {
+          if (removedUser.getAppSettings().isMuted() || removedUser.getGroups()
+              .get(removedFrom.getGroupId()).isMuted()) {
+            DatabaseManagers.SNS_ACCESS_MANAGER
+                .sendMutedMessage(removedUser.getPushEndpointArn(), metadata);
+          } else {
+            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(removedUser.getPushEndpointArn(),
+                isGroupDelete ? "Group Deleted" : "Removed from group", removedFrom.getGroupName(),
+                removedFrom.getGroupId(),
+                metadata);
+          }
         }
+      } catch (Exception e) {
+        resultStatus = new ResultStatus(false, "Exception removing users from group");
+        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
-    } catch (Exception e) {
-      success = false;
-      metrics.log(new ErrorDescriptor<>(user.getUsername(), classMethod, e));
     }
 
-    metrics.commonClose(success);
+    metrics.commonClose(resultStatus.success);
+    return resultStatus;
   }
 
   private void sendEventUpdatedNotification(final Set<String> usernames,
@@ -1114,30 +1150,7 @@ public class GroupsManager extends DatabaseAccessManager {
     }
 
     //update user objects of all of the users removed
-    if (!removedUsernames.isEmpty()) {
-      updateExpression = "remove Groups.#groupId";
-      updateItemSpec = new UpdateItemSpec()
-          .withNameMap(nameMap)
-          .withUpdateExpression(updateExpression);
-
-      for (final String username : removedUsernames) {
-        try {
-          //pull the user before deleting so we have their group isMuted mapping for the push notice
-          final User removedUser = new User(
-              DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
-
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), username);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
-
-          //blind send...
-          this.sendRemovedFromGroupNotifications(removedUser, oldGroup, metrics);
-        } catch (Exception e) {
-          success = false;
-          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
-        }
-      }
-    }
+    this.removeUsersFromGroupAndSendNotificationsOnEdit(removedUsernames, oldGroup, metrics);
 
     try {
       //blind send...

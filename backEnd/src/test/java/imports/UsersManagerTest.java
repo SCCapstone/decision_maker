@@ -551,22 +551,7 @@ public class UsersManagerTest {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"),
-            Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(4)).getTable(any(String.class));
-    verify(this.table, times(4)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  @Test
-  public void removeGroupFromUsers_validInputNoMembersLeft_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"),
-            Collections.emptySet(), "GroupId1", this.metrics);
+        .removeGroupsLeftFromUsers(Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
 
     assertTrue(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
@@ -575,12 +560,22 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void removeGroupFromUsers_validInputNoMembersLeft_successfulResult() {
+    ResultStatus resultStatus = this.usersManager
+        .removeGroupsLeftFromUsers(Collections.emptySet(), "GroupId1", this.metrics);
+
+    assertTrue(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
   public void removeGroupFromUsers_validInputDbDiesDuringUpdate_failureResult() {
     doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
 
     ResultStatus resultStatus = this.usersManager
-        .removeGroupFromUsers(Sets.newHashSet("User1", "User2"),
-            Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
+        .removeGroupsLeftFromUsers(Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
