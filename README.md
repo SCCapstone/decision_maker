@@ -10,7 +10,7 @@ This application leverages several technologies. At a high level, it uses flutte
 ### 1.1 Front End Technologies
 For the front end we are using Flutter. In order to develop, build, and run our Flutter application, you will need to download several things:
 * [Flutter](https://flutter.dev/docs/get-started/install)
-   * The application depends on the several external packages. Before building, one needs to fetch these by running 'flutter pug get' (more info in section 2).
+   * The application depends on the several external packages. Before building, one needs to fetch these by running `flutter pug get` (more info in section 2).
 * [Android Studio](https://developer.android.com/studio)
    * Flutter Plugin and Dart Plugin will be needed for development. To install these, start android studio, go to File -> Settings -> Plugins, select the 'Marketplace' tab, select the Flutter plugin and click 'Install', click 'Yes' when prompted to install the Dart plugin, and finally click 'Restart' when prompted.
 * [Virtual Device (Android)](https://developer.android.com/studio/run/managing-avds)
@@ -27,7 +27,7 @@ This section is only for building and/or running our front end application on an
 
 **There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
 
-If using a real Android device, you cannot use a debug apk. You must use a release apk. Conversely, if using an Android emulator you must use a debug apk, not a release one.
+If using a real Android device, you cannot use a debug apk; you must use a release apk. Inversely, if using an Android emulator you must use a debug apk, not a release one.
 
 ### 2.1 Compiling and Running the application from the command line
 To run the application from the command line, one must:
@@ -47,8 +47,8 @@ Note this will build a debug-apk on your device. To run the application from And
 ### 2.3 Building an apk file
 Make sure you are at the top level of the front end directory (front_end_pocket_poll).
 1. Run the command: `flutter clean`
-2. Run the command: `flutter build apk --release` (this builds it in release mode, if debug mode use --debug)
-3. The apk will be built in the build/app/outputs/apk/release folder of front_end_pocket_poll. Note if making a debug apk file the last folder will be "debug" instead of "release".
+2. Run the command: `flutter build apk --release` (this builds it in release mode, if debug mode use --debug instead of --release)
+3. The apk will be built in the build/app/outputs/apk/release folder of front_end_pocket_poll. Note if making a debug apk file the last directory in the build path will be "debug" instead of "release".
 
 ### 2.4 Running the application from a release .apk file
 Note that attempting to install a release apk on an emulated android device will likely not work. Use a real device instead.
@@ -56,7 +56,7 @@ Note that attempting to install a release apk on an emulated android device will
 To run the application from a release .apk file, one must:
 1. Ensure there are no prior versions of this application installed on the android device.
 2. Open the download location (presumably github) and download the apk directly on to the device from there. Your phone's settings might have to be altered to allow external apks to be downloaded (typically you install apks directly from Google Play, and some devices warn you when trying to download externally).
-3. Can also run in the directory of the apk: `adb install <apk-file>`. Note that you must have debugging enabled and your phone must of course be plugged into the computer.
+3. One can also download the apk file and then run this command in the downloaded directory: `adb install <apk-file>`. Note that you must have debugging enabled and your phone must of course be plugged into the computer.
 
 
 ### 2.5 Running the application from a debug .apk file
@@ -65,13 +65,13 @@ Note that attempting to install a debug apk on a real android device will likely
 To run the application from a debug .apk file, one must:
 1. Ensure there are no prior versions of this application installed on the android device or emulator.
 2. Drag and drop the .apk onto the device to install the application.
-3. Can also run in the directory of the apk: `adb install <apk-file>`. Note that your emulator must be turned on for this command to work.
+3. One can also download the apk file and then run this command in the downloaded directory: `adb install <apk-file>`. Note that your emulator must be turned on for this command to work.
 
 ## 3 Deployment
 The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll AWS credentials. Please contact John Andrews (jha2@email.sc.edu) if you have any inqueries.
 
 ### 3.1 Deploying Lambda Functions
-1. Develop java code locally and use the command 'mvn package' to package your java code into an executable .jar file.
+1. Develop java code locally and use the command `mvn package` to package your java code into an executable .jar file.
 2. Login to the AWS Management Console and navigate to the Lambda service.
 3. Locate or create the Lambda function you want to deploy your code to.
 4. Scroll down and upload the function, then save your changes.
@@ -98,8 +98,8 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 
 ##### 5.1.2 Running the Tests
 1. cd into the backEnd directory.
-2. To run the tests: from the backEnd directory run this command: 'mvn test'.
-3. To run the tests and generate coverage reports: from the backEnd directory run this command: 'mvn clean verify'.
+2. To run the tests: from the backEnd directory run this command: `mvn test`.
+3. To run the tests and generate coverage reports: from the backEnd directory run this command: `mvn clean verify`.
    * To view the coverage reports open the file located at backEnd/target/site/jacoco/index.html in your browser. Then use the name-links to navigate to spcific places in code.
 
 ##### 5.1.3 Location of These Tests
@@ -110,11 +110,11 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 
 ##### 5.2.1 Dependencies
 * These tests should be run using flutter version 1.12.13+hotfix.8 on the stable channel
-* To fetch project specific dependencies, run 'flutter pub get' from the front_end_pocket_poll directory.
+* To fetch project specific dependencies, run `flutter pub get` from the front_end_pocket_poll directory.
 
 ##### 5.2.2 Running the Tests
 1. cd into the front_end_pocket_poll directory.
-2. From the front_end_pocket_poll directory, to run the tests, run this command: 'flutter drive --target=test_driver/app.dart'
+2. From the front_end_pocket_poll directory, to run the tests, run this command: `flutter drive --target=test_driver/app.dart`
 
 ##### 5.1.3 Location of These Tests
 * Our front end behavioral tests are located at front_end_pocket_poll/test_driver/app_test.dart
