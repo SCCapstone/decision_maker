@@ -71,6 +71,7 @@ class _CreateGroupState extends State<CreateGroup> {
                   TextFormField(
                     maxLength: Globals.maxGroupNameLength,
                     controller: groupNameController,
+                    textCapitalization: TextCapitalization.sentences,
                     validator: validGroupName,
                     onSaved: (String arg) {
                       groupName = arg.trim();
@@ -182,18 +183,16 @@ class _CreateGroupState extends State<CreateGroup> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => MembersPage(
-                                            displayedMembers,
-                                            new List<String>(),
-                                            true,
-                                            false
-                                          )));
+                                          displayedMembers,
+                                          new List<String>(),
+                                          true,
+                                          false)));
                             },
                           )),
                     ],
                   ),
                   Row(
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       Expanded(
                         child: AutoSizeText(
@@ -207,9 +206,7 @@ class _CreateGroupState extends State<CreateGroup> {
                         ),
                       ),
                       Container(
-                          width:
-                          MediaQuery.of(context).size.width *
-                              .20,
+                          width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
                             icon: (this.isOpen)
                                 ? Icon(Icons.lock_open)
@@ -219,8 +216,7 @@ class _CreateGroupState extends State<CreateGroup> {
                                 this.isOpen = !this.isOpen;
                               });
                             },
-                          )
-                      ),
+                          )),
                     ],
                   ),
                 ],

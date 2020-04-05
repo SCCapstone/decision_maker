@@ -65,13 +65,8 @@ Future<bool> refreshUserTokens() async {
   if (response.statusCode == 200) {
     Map<String, dynamic> body = json.decode(response.body);
     await storeUserTokens(body['access_token'], refreshToken, body['id_token']);
-    debugPrint("THE REFRESH OCCURED WITH STATUS CODE 200");
     success = true;
   } else {
-    debugPrint(
-        "FAILED REFRESH RESPONSE WITH CODE: " + response.statusCode.toString());
-    debugPrint(response.toString());
-    debugPrint(response.body);
     clearTokens(); // if there was anything there, it is junk so clear it
   }
 
