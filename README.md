@@ -2,7 +2,7 @@
 
 This mobile application will help users create events in group settings. Users can create groups amongst other users. Users can define categories with many different choices. Users can rate all of the choices for a category. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choice options for group activities at the click of a button.
 
-The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. **We are currently only providing full support for Android plaform**. In the dart code there are api calls to our aws cloud hosted api endpoints. These apis are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
+The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. **We are currently only providing full support for the Android plaform**. In the dart code there are api calls to our aws cloud hosted api endpoints. These apis are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
 
 ## 1 Technologies
 This application leverages several technologies, at a high level, it uses flutter for the front end and java for the back end.
@@ -25,6 +25,8 @@ For the back end we are using Java. In order to develop, build, and run our java
 ## 2 Running the application
 This section is only for building and/or running our front end .apk on an Android device or emulator. The following assumes the back end has been packaged and deployed to the appropriate AWS Lambda function backing the API endpoints the application depends upon.
 
+**There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
+
 ### 2.1 Running the application from the command line
 To run the application from the command line, one must:
 1. Have an android device or emulator connected to the computer.
@@ -36,10 +38,7 @@ To run the application from the command line, one must:
 To run the application from a .apk file:
 1. Ensure there are no prior versions of this application installed on the android device or emulator.
 2. If using an emulator: drag and drop the .apk onto the device to install the application.
-3. If using a real device, open the download location (presumably github) and download the apk directly on to the device from there.
-
-### 2.3 Notice
-**There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
+3. If using a real device: open the download location (presumably github) and download the apk directly on to the device from there.
 
 ## 3 Deployment
 The backend of our application running in the AWS cloud requires deployment.
