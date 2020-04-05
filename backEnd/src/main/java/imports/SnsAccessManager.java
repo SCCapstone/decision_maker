@@ -95,6 +95,26 @@ public class SnsAccessManager {
     return this.client.deleteEndpoint(deleteEndpointRequest);
   }
 
+  //to allow the notification to get sent without popping up, just don't add the notification
+  public PublishResult sendMutedMessage(final String arn, final Metadata metadata) {
+    Map<String, Object> notification = ImmutableMap.of(
+        "data", ImmutableMap.of(
+            "click_action", "FLUTTER_NOTIFICATION_CLICK",
+            "default", "default message",
+            "metadata", metadata.asMap()
+        )
+    );
+
+    final String jsonNotification =
+        "{\"GCM\": \"" + JsonEncoders.convertObjectToJson(notification) + "\"}";
+
+    final PublishRequest publishRequest = new PublishRequest()
+        .withTargetArn(arn)
+        .withMessage(jsonNotification);
+    publishRequest.setMessageStructure("json");
+    return this.client.publish(publishRequest);
+  }
+
   public PublishResult sendMessage(final String arn, final String title, final String body,
       final String tag, final Metadata metadata) {
     Map<String, Object> notification = ImmutableMap.of(

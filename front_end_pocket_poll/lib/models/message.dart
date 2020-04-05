@@ -22,11 +22,15 @@ class Message {
   }
 
   static Message fromJSON(Map<String, dynamic> json) {
-    final notification = json["notification"];
-    final data = json["data"];
-    if (notification != null && data != null) {
+    dynamic notification = json["notification"];
+    final dynamic data = json["data"];
+    if (data != null) {
       Map<String, dynamic> metadata = jsonDecode(data['metadata']);
       if (metadata != null) {
+        if (notification == null) {
+          notification = {"title": null, "action": null};
+        }
+
         return new Message(
             title: notification['title'],
             body: notification['body'],

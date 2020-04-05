@@ -535,13 +535,12 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method is used to update one of the sort settings associated with a
-   * specific user (either CategorySort or GroupSort).
+   * This method is used to update one of the sort settings associated with a specific user (either
+   * CategorySort or GroupSort).
    *
-   * @param jsonMap     The map containing the json request sent from the front end.
-   *                    This must contain a value for one of the sort settings
-   *                    (CategorySort or GroupSort).
-   * @param metrics     Standard metrics object for profiling and logging
+   * @param jsonMap The map containing the json request sent from the front end. This must contain a
+   *                value for one of the sort settings (CategorySort or GroupSort).
+   * @param metrics Standard metrics object for profiling and logging
    */
   public ResultStatus updateSortSetting(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.updateSortSetting";
@@ -724,32 +723,25 @@ public class UsersManager extends DatabaseAccessManager {
   /**
    * This method removes a given group from each user that is or was in the group.
    *
-   * @param members     A set containing all of the members currently in the group.
    * @param membersLeft A set containing all of the members who have left the group.
    * @param groupId     The GroupId for the group to be removed from the users table.
    * @param metrics     Standard metrics object for profiling and logging
    */
-  public ResultStatus removeGroupFromUsers(final Set<String> members, final Set<String> membersLeft,
-      final String groupId, final Metrics metrics) {
-    final String classMethod = "UsersManager.removeGroupFromUsers";
+  public ResultStatus removeGroupsLeftFromUsers(final Set<String> membersLeft, final String groupId,
+      final Metrics metrics) {
+    final String classMethod = "UsersManager.removeGroupsLeftFromUsers";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      final String updateExpressionGroups = "remove " + GROUPS + ".#groupId";
       final String updateExpressionGroupsLeft = "remove " + GROUPS_LEFT + ".#groupId";
       final NameMap nameMap = new NameMap().with("#groupId", groupId);
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpressionGroups)
+          .withUpdateExpression(updateExpressionGroupsLeft)
           .withNameMap(nameMap);
 
-      for (String member : members) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
-        this.updateItem(updateItemSpec);
-      }
-      updateItemSpec.withUpdateExpression(updateExpressionGroupsLeft);
       for (String member : membersLeft) {
         updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
         this.updateItem(updateItemSpec);
