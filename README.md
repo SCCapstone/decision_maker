@@ -1,11 +1,11 @@
 # decision_maker - Simple Group Event Planner
 
-This mobile application will help users in creating events for a group of people. Users can create groups amongst other users. Users can define categories that have related choices. Users can rate their preference of each choice for a category and save their ratings. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choices for group activities at the click of a button.
+This mobile application will help users create events in group settings. Users can create groups amongst other users. Users can define categories with many different choices. Users can rate all of the choices for a category. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choice options for group activities at the click of a button.
 
-The basic architecture of this project consists of Flutter and several AWS services: API Gateway, Lambda, DynamoDB, and S3. Flutter activates the dart code to create the UI and front end. In the dart code there are http calls to api endpoints set up in AWS API Gateway. These apis are backed by AWS Lambda cloud functions. Package Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package source code.
+The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. **We are currently only providing full support for Android plaform**. In the dart code there are api calls to our aws cloud hosted api endpoints. These apis are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
 
 ## 1 Technologies
-This application leverages several technologies, at the top level, it uses flutter for the front end and java for the back end.
+This application leverages several technologies, at a high level, it uses flutter for the front end and java for the back end.
 
 ### 1.1 Front End Technologies
 For the front end we are using Flutter. In order to develop, build, and run our Flutter application, you will need to download several things:
@@ -17,18 +17,29 @@ For the front end we are using Flutter. In order to develop, build, and run our 
 
 ### 1.2 Back End Technologies
 For the back end we are using Java. In order to develop, build, and run our java code, you will need to download several things:
-* [Java 8](https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [Java 11](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
 * [Maven](http://maven.apache.org/download.cgi)
-   * You need to make sure you have your JAVA_HOME environment variable pointing to your jdk8 location.
+   * You need to make sure you have your JAVA_HOME environment variable pointing to your jdk11 location.
    * You will also need to add the unpacked maven bin to location to you PATH environment variable.
 
-## 2 Running
-This section assumes you have your .jar files uploaded to the appropriate AWS Lambda function backing the API endpoints the application calls.
+## 2 Running the application
+This section is only for building and/or running our front end .apk on an Android device or emulator. The following assumes the back end has been packaged and deployed to the appropriate AWS Lambda function backing the API endpoints the application depends upon.
 
-To run the application, one must active their virtual android device from Android Studio. Then navigate in a terminal to the root directory of your Flutter project. Run 'flutter doctor' to ensure build environment and system requirements are met. If no issues are found, using the command 'flutter run' will build and run the application on the aforementioned active virtual device.
+### 2.1 Running the application from the command line
+To run the application from the command line, one must:
+1. Have an android device or emulator connected to the computer.
+2. cd into the front_end_pocket_poll directory.
+3. Run 'flutter doctor' to ensure build environment and system requirements are met. If they are not met, follow the instruction to resolve issues.
+4. If no issues are found, using the command 'flutter run' will build and run the application on the aforementioned active virtual device.
 
-### Notice
-There are known issues with push notifications in Android emulators. If you are experiencing any issues please try using a real device.
+### 2.2 Running the application from a release .apk file
+To run the application from a .apk file:
+1. Ensure there are no prior versions of this application installed on the android device or emulator.
+2. If using an emulator: drag and drop the .apk onto the device to install the application.
+3. If using a real device, open the download location (presumably github) and download the apk directly on to the device from there.
+
+### 2.3 Notice
+**There are known issues with push notifications in Android emulators**. If you are experiencing any issues please try using a real android device.
 
 ## 3 Deployment
 The backend of our application running in the AWS cloud requires deployment.
@@ -38,8 +49,8 @@ The backend of our application running in the AWS cloud requires deployment.
 2. Login to the AWS Management Console and navigate to the Lambda service.
 3. Locate or create the Lambda function you want to deploy your code to.
 4. Scroll down and upload the function, then save your changes.
-5. If needed, change the location of the event handler to match the code that you wrote (safe are updating if needed).
-6. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the lambda code has authorization to access the DynamoDB and S3 bucket.
+5. If needed, change the location of the event handler to match the location in the code.
+6. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the lambda code has authorization to access DynamoDB, Step Functions, SNS, and S3.
 
 ### 3.2 Deploying API Gateway Endpoints
 1. Login to the AWS Management Console and navigate to the API Gateway service.
@@ -49,8 +60,8 @@ The backend of our application running in the AWS cloud requires deployment.
 5. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the api has authorization to access the lambda function.
 
 ## 4 Code Style Guides:
-[Dart](https://dart.dev/guides/language/effective-dart/style)
-[Java](https://google.github.io/styleguide/javaguide.html)
+* [Dart](https://dart.dev/guides/language/effective-dart/style)
+* [Java](https://google.github.io/styleguide/javaguide.html)
 
 ## 5 Testing
 
