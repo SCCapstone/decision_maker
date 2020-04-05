@@ -380,7 +380,7 @@ public class UsersManager extends DatabaseAccessManager {
             UpdateItemSpec updateFavoritesOfItemSpec;
 
             //all of the users that this user is a favorite of need to be updated
-            for (String username : oldUser.getGroups().keySet()) {
+            for (String username : oldUser.getFavoriteOf().keySet()) {
               try {
                 updateFavoritesOfItemSpec = new UpdateItemSpec()
                     .withPrimaryKey(this.getPrimaryKeyIndex(), username)
