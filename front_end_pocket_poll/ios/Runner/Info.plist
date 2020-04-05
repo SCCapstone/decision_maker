@@ -29,7 +29,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to the photo library.</string>
 	<key>NSCalendarsUsageDescription</key>
-    <string>This app requires access to your calendar.</string>
+  <string>This app requires access to your calendar.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
