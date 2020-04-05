@@ -10,7 +10,7 @@ This application leverages several technologies. At a high level, it uses flutte
 ### 1.1 Front End Technologies
 For the front end we are using Flutter. In order to develop, build, and run our Flutter application, you will need to download several things:
 * [Flutter](https://flutter.dev/docs/get-started/install)
-   * The application depends on the several external packages. Before building, one needs to fetch these by running 'flutter pug get' (more info in section 2).
+   * The application depends on the several external packages. Before building, one needs to fetch these by running `flutter pug get` (more info in section 2).
 * [Android Studio](https://developer.android.com/studio)
    * Flutter Plugin and Dart Plugin will be needed for development. To install these, start android studio, go to File -> Settings -> Plugins, select the 'Marketplace' tab, select the Flutter plugin and click 'Install', click 'Yes' when prompted to install the Dart plugin, and finally click 'Restart' when prompted.
 * [Virtual Device (Android)](https://developer.android.com/studio/run/managing-avds)
@@ -71,7 +71,7 @@ To run the application from a debug .apk file, one must:
 The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll AWS credentials. Please contact John Andrews (jha2@email.sc.edu) if you have any inqueries.
 
 ### 3.1 Deploying Lambda Functions
-1. Develop java code locally and use the command 'mvn package' to package your java code into an executable .jar file.
+1. Develop java code locally and use the command `mvn package` to package your java code into an executable .jar file.
 2. Login to the AWS Management Console and navigate to the Lambda service.
 3. Locate or create the Lambda function you want to deploy your code to.
 4. Scroll down and upload the function, then save your changes.
@@ -98,8 +98,8 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 
 ##### 5.1.2 Running the Tests
 1. cd into the backEnd directory.
-2. To run the tests: from the backEnd directory run this command: 'mvn test'.
-3. To run the tests and generate coverage reports: from the backEnd directory run this command: 'mvn clean verify'.
+2. To run the tests: from the backEnd directory run this command: `mvn test`.
+3. To run the tests and generate coverage reports: from the backEnd directory run this command: `mvn clean verify`.
    * To view the coverage reports open the file located at backEnd/target/site/jacoco/index.html in your browser. Then use the name-links to navigate to spcific places in code.
 
 ##### 5.1.3 Location of These Tests
@@ -110,11 +110,11 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 
 ##### 5.2.1 Dependencies
 * These tests should be run using flutter version 1.12.13+hotfix.8 on the stable channel
-* To fetch project specific dependencies, run 'flutter pub get' from the front_end_pocket_poll directory.
+* To fetch project specific dependencies, run `flutter pub get` from the front_end_pocket_poll directory.
 
 ##### 5.2.2 Running the Tests
 1. cd into the front_end_pocket_poll directory.
-2. From the front_end_pocket_poll directory, to run the tests, run this command: 'flutter drive --target=test_driver/app.dart'
+2. From the front_end_pocket_poll directory, to run the tests, run this command: `flutter drive --target=test_driver/app.dart`
 
 ##### 5.1.3 Location of These Tests
 * Our front end behavioral tests are located at front_end_pocket_poll/test_driver/app_test.dart
