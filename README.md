@@ -1,4 +1,4 @@
-# decision_maker - Simple Group Event Planner
+# decision_maker (Pocket Poll) - Simple Group Event Planner
 
 This mobile application will help users create events in group settings. Users can create groups amongst other users. Users can define categories with many different choices. Users can rate all of the choices for a category. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choice options for group activities at the click of a button.
 
@@ -41,7 +41,7 @@ To run the application from a .apk file:
 3. If using a real device: open the download location (presumably github) and download the apk directly on to the device from there.
 
 ## 3 Deployment
-The backend of our application running in the AWS cloud requires deployment.
+The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll aws credentials. Please contact the John Andrews (jha2@email.sc.edu) if you have any inqueries.
 
 ### 3.1 Deploying Lambda Functions
 1. Develop java code locally and use the command 'mvn package' to package your java code into an executable .jar file.
