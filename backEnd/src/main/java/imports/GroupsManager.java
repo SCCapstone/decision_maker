@@ -889,7 +889,7 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private void sendRemovedFromGroupNotifications(final Set<String> usernames,
+  private void sendRemovedFromGroupNotifications(final User user,
       final Group removedFrom, final Metrics metrics) {
     final String classMethod = "GroupsManager.sendRemovedFromGroupNotifications";
     metrics.commonSetup(classMethod);
@@ -898,27 +898,21 @@ public class GroupsManager extends DatabaseAccessManager {
 
     final Metadata metadata = new Metadata("removedFromGroup",
         ImmutableMap.of(GROUP_ID, removedFrom.getGroupId()));
-
-    for (String username : usernames) {
-      try {
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
-
-        if (user.pushEndpointArnIsSet()) {
-          if (user.getAppSettings().isMuted() || user.getGroups().get(removedFrom.getGroupId())
-              .isMuted()) {
-            DatabaseManagers.SNS_ACCESS_MANAGER
-                .sendMutedMessage(user.getPushEndpointArn(), metadata);
-          } else {
-            DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
-                "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(),
-                metadata);
-          }
+    try {
+      if (user.pushEndpointArnIsSet()) {
+        if (user.getAppSettings().isMuted() || user.getGroups().get(removedFrom.getGroupId())
+            .isMuted()) {
+          DatabaseManagers.SNS_ACCESS_MANAGER
+              .sendMutedMessage(user.getPushEndpointArn(), metadata);
+        } else {
+          DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(user.getPushEndpointArn(),
+              "Removed from group", removedFrom.getGroupName(), removedFrom.getGroupId(),
+              metadata);
         }
-      } catch (Exception e) {
-        success = false;
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
+    } catch (Exception e) {
+      success = false;
+      metrics.log(new ErrorDescriptor<>(user.getUsername(), classMethod, e));
     }
 
     metrics.commonClose(success);
@@ -1126,14 +1120,21 @@ public class GroupsManager extends DatabaseAccessManager {
           .withNameMap(nameMap)
           .withUpdateExpression(updateExpression);
 
-      for (final String member : removedUsernames) {
+      for (final String username : removedUsernames) {
         try {
+          //pull the user before deleting so we have their group isMuted mapping for the push notice
+          final User removedUser = new User(
+              DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+
           updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), member);
+              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), username);
           DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+
+          //blind send...
+          this.sendRemovedFromGroupNotifications(removedUser, oldGroup, metrics);
         } catch (Exception e) {
           success = false;
-          metrics.log(new ErrorDescriptor<>(member, classMethod, e));
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
@@ -1146,18 +1147,9 @@ public class GroupsManager extends DatabaseAccessManager {
       metrics.log(new ErrorDescriptor<>(addedUsernames, classMethod, e));
     }
 
-    if (oldGroup != null) { // users can only be removed from the old group
-      try {
-        //blind send...
-        this.sendRemovedFromGroupNotifications(removedUsernames, oldGroup, metrics);
-      } catch (final Exception e) {
-        success = false;
-        metrics.log(new ErrorDescriptor<>(addedUsernames, classMethod, e));
-      }
-    }
-
     if (updatedEventId != null) {
       try {
+        //blind send...
         this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, isNewEvent,
             metrics);
       } catch (Exception e) {
