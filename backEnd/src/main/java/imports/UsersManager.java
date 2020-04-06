@@ -117,7 +117,11 @@ public class UsersManager extends DatabaseAccessManager {
     if (jsonMap.containsKey(UsersManager.USERNAME)) {
       final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
       Item user = this.getItemByPrimaryKey(otherUser);
-      resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+      if (user != null) {
+        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+      } else {
+        resultStatus = new ResultStatus(true, "User not found.");
+      }
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);

@@ -131,9 +131,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
           } else {
             //we need to set the selected choice as the one with the highest percent
             updatedEvent.setSelectedChoice(this.getSelectedChoice(event, metrics));
-
-            DatabaseManagers.GROUPS_MANAGER
-                .updateEvent(group, eventId, updatedEvent, false, metrics);
           }
 
           //update the event with whatever got added to it
