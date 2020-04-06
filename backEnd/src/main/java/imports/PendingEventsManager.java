@@ -115,24 +115,30 @@ public class PendingEventsManager extends DatabaseAccessManager {
           final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
           final Event updatedEvent = event.clone();
 
+          //first, set whatever needs to be set on the pending event
           if (event.getTentativeAlgorithmChoices().isEmpty()) {
-            //we need to:
-            //  run the algorithm
-            //  update the event object
-            //  update the pending events table with the new data time for the end of voting
+            //we need to set the tentative choices
             final Map<String, String> tentativeChoices;
             if (event.getVotingDuration() > 0) {
               tentativeChoices = this.getTentativeAlgorithmChoices(event, 3, metrics);
             } else {
+              //skipping voting, we also need to set the selected choice
               tentativeChoices = this.getTentativeAlgorithmChoices(event, 1, metrics);
               updatedEvent.setSelectedChoice(tentativeChoices.values().toArray()[0].toString());
             }
 
             updatedEvent.setTentativeAlgorithmChoices(tentativeChoices);
-            DatabaseManagers.GROUPS_MANAGER
-                .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
+          } else {
+            //we need to set the selected choice as the one with the highest percent
+            updatedEvent.setSelectedChoice(this.getSelectedChoice(event, metrics));
+          }
 
-            //this overwrites the old mapping
+          //update the event with whatever got added to it
+          DatabaseManagers.GROUPS_MANAGER
+              .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
+
+          if (updatedEvent.getSelectedChoice() == null) {
+            //this event is still pending, add it back into the pending events table
             ResultStatus updatePendingEvent = this
                 .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics);
             if (updatePendingEvent.success) {
@@ -141,14 +147,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
               resultStatus.resultMessage = "Error updating pending event mapping with voting duration";
             }
           } else {
-            //we need to loop over the voting results and figure out the yes percentage of votes for the choices
-            //set the selected choice as the one with the highest percent
-            updatedEvent.setSelectedChoice(this.getSelectedChoice(event, metrics));
-
-            DatabaseManagers.GROUPS_MANAGER
-                .updateEvent(group, eventId, updatedEvent, false, metrics);
-
-            // now remove the entry from the pending events table since it has been fully processed now
+            //event finalized -> remove the entry from the pending events table
             String updateExpression = "remove #groupEventKey";
             NameMap nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
 
