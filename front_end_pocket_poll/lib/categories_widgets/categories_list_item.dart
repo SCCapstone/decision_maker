@@ -6,12 +6,11 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
 class CategoriesListItem extends StatelessWidget {
   final Category category;
-  final VoidCallback onDelete;
-  final VoidCallback afterEditCallback;
-  final int index;
+  final VoidCallback deleteCategory;
+  final VoidCallback refreshCategoryList;
 
-  CategoriesListItem(this.category, this.index,
-      {this.onDelete, this.afterEditCallback});
+  CategoriesListItem(this.category,
+      {this.deleteCategory, this.refreshCategoryList});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,7 @@ class CategoriesListItem extends StatelessWidget {
         children: <Widget>[
           Expanded(
               child: AutoSizeText(
-            category.categoryName,
+            this.category.categoryName,
             maxLines: 1,
             style: TextStyle(fontSize: 24),
             minFontSize: 12,
@@ -35,15 +34,16 @@ class CategoriesListItem extends StatelessWidget {
                 icon: Icon(Icons.edit),
                 iconSize: MediaQuery.of(context).size.width * .075,
                 tooltip: "Edit Category",
+                key: Key(
+                    "categories_list_item:category_edit_button:${this.category.categoryName}"),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => EditCategory(
                               category: this.category,
-                              editName: true,
                             )),
-                  ).then((_) => this.afterEditCallback());
+                  ).then((_) => this.refreshCategoryList());
                 },
               ),
               Padding(
@@ -54,6 +54,8 @@ class CategoriesListItem extends StatelessWidget {
                   icon: Icon(Icons.delete),
                   iconSize: MediaQuery.of(context).size.width * .075,
                   tooltip: "Delete Category",
+                  key: Key(
+                      "categories_list_item:category_delete_button:${this.category.categoryName}"),
                   onPressed: () {
                     confirmDelete(context);
                   },
@@ -77,13 +79,17 @@ class CategoriesListItem extends StatelessWidget {
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key(
+                    "categories_list_item:category_edit_button_confirm:${this.category.categoryName}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
-                  this.onDelete();
+                  this.deleteCategory();
                 },
               ),
               FlatButton(
                 child: Text("No"),
+                key: Key(
+                    "categories_list_item:category_edit_button_denial:${this.category.categoryName}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },

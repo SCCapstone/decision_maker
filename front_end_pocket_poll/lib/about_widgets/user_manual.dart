@@ -15,6 +15,7 @@ class UserManual extends StatelessWidget {
             style: TextStyle(fontSize: 40), maxLines: 1, minFontSize: 20),
         centerTitle: true,
       ),
+      key: Key("user_manual:scaffold"),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
         child: Scrollbar(
@@ -36,6 +37,8 @@ class UserManual extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (context) => GeneralInfo()));
                             },
+                            key: Key(
+                                "user_manual:general_info_gesture_detector"),
                             child: AutoSizeText(
                               "General",
                               minFontSize: 12,
@@ -49,6 +52,7 @@ class UserManual extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * .20,
                             child: IconButton(
                               icon: Icon(Icons.keyboard_arrow_right),
+                              key: Key("user_manual:general_info_button"),
                               onPressed: () {
                                 Navigator.push(
                                     context,
@@ -72,6 +76,8 @@ class UserManual extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (context) => SettingsInfo()));
                             },
+                            key: Key(
+                                "user_manual:settings_info_gesture_detector"),
                             child: AutoSizeText(
                               "User Settings",
                               minFontSize: 12,
@@ -85,6 +91,7 @@ class UserManual extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * .20,
                             child: IconButton(
                               icon: Icon(Icons.keyboard_arrow_right),
+                              key: Key("user_manual:settings_info_button"),
                               onPressed: () {
                                 Navigator.push(
                                     context,
@@ -108,6 +115,8 @@ class UserManual extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (context) => CategoriesInfo()));
                             },
+                            key: Key(
+                                "user_manual:categories_info_gesture_detector"),
                             child: AutoSizeText(
                               "Categories",
                               minFontSize: 12,
@@ -121,6 +130,7 @@ class UserManual extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * .20,
                             child: IconButton(
                               icon: Icon(Icons.keyboard_arrow_right),
+                              key: Key("user_manual:categories_info_button"),
                               onPressed: () {
                                 Navigator.push(
                                     context,
@@ -145,6 +155,8 @@ class UserManual extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (context) => GroupsInfo()));
                             },
+                            key:
+                                Key("user_manual:groups_info_gesture_detector"),
                             child: AutoSizeText(
                               "Groups",
                               minFontSize: 12,
@@ -158,6 +170,7 @@ class UserManual extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * .20,
                             child: IconButton(
                               icon: Icon(Icons.keyboard_arrow_right),
+                              key: Key("user_manual:groups_info_button"),
                               onPressed: () {
                                 Navigator.push(
                                     context,
@@ -181,6 +194,8 @@ class UserManual extends StatelessWidget {
                                   MaterialPageRoute(
                                       builder: (context) => EventsInfo()));
                             },
+                            key:
+                                Key("user_manual:events_info_gesture_detector"),
                             child: AutoSizeText(
                               "Events",
                               minFontSize: 12,
@@ -194,6 +209,7 @@ class UserManual extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * .20,
                             child: IconButton(
                               icon: Icon(Icons.keyboard_arrow_right),
+                              key: Key("user_manual:events_info_button"),
                               onPressed: () {
                                 Navigator.push(
                                     context,

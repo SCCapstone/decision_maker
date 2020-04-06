@@ -12,6 +12,7 @@ class GroupsInfo extends StatelessWidget {
             style: TextStyle(fontSize: 40), maxLines: 1, minFontSize: 20),
         centerTitle: true,
       ),
+      key: Key("groups_info:scaffold"),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Scrollbar(

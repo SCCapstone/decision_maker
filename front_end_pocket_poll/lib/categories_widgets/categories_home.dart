@@ -46,6 +46,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
               size: MediaQuery.of(context).size.height * .04,
               color: Colors.black,
             ),
+            key: Key("categories_home:sort_button"),
             tooltip: "Sort Categories",
             onSelected: (int result) {
               if (this.sortVal != result) {
@@ -59,6 +60,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               PopupMenuItem<int>(
                 value: Globals.alphabeticalSort,
+                key: Key("categories_home:alphabetical_sort_button"),
                 child: Text(
                   Globals.alphabeticalSortString,
                   style: TextStyle(
@@ -73,9 +75,10 @@ class _CategoriesHomeState extends State<CategoriesHome> {
                 child: Text(Globals.alphabeticalReverseSortString,
                     style: TextStyle(
                         // if it is selected, underline it
-                        decoration: (this.sortVal == Globals.alphabeticalReverseSort)
-                            ? TextDecoration.underline
-                            : null)),
+                        decoration:
+                            (this.sortVal == Globals.alphabeticalReverseSort)
+                                ? TextDecoration.underline
+                                : null)),
               ),
             ],
           ),
@@ -84,6 +87,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
           ),
         ],
       ),
+      key: Key("categories_home:scaffold"),
       body: Center(
         child: Column(
           children: <Widget>[
@@ -113,6 +117,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
+        key: Key("categories_home:add_category_button"),
         onPressed: () {
           if (Globals.user.ownedCategories.length >= Globals.maxCategories) {
             showErrorMessage(
@@ -130,13 +135,14 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     );
   }
 
+  // blind send to DB, don't care if it doesn't work since it's just a sort value
   void updateSort() {
-    //blind send, don't care if it doesn't work since it's just a sort value
     UsersManager.updateSortSetting(
         UsersManager.APP_SETTINGS_CATEGORY_SORT, this.sortVal);
     Globals.user.appSettings.categorySort = this.sortVal;
   }
 
+  // fetches the categories from the local user object
   void getCategories() {
     this.categories.clear();
     for (Category category in Globals.user.ownedCategories) {
@@ -144,6 +150,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     }
   }
 
+  // is called when the user clicks back on this page to fetch any new/edited categories to display
   Future<Null> refreshList() async {
     getCategories();
     setState(() {});

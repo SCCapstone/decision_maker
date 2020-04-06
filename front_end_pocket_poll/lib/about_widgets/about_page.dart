@@ -36,6 +36,7 @@ class _AboutPageState extends State<AboutPage> {
       );
     } else {
       return Scaffold(
+        key: Key("about_page:scaffold"),
         appBar: AppBar(
           title: AutoSizeText("About",
               style: TextStyle(fontSize: 40), maxLines: 1, minFontSize: 20),
@@ -66,6 +67,7 @@ class _AboutPageState extends State<AboutPage> {
                   child: AutoSizeText(
                     "Version ${this.version}",
                     style: TextStyle(fontSize: 24),
+                    key: Key("about_page:version_number"),
                     minFontSize: 14,
                     maxLines: 1,
                   ),
@@ -86,6 +88,7 @@ class _AboutPageState extends State<AboutPage> {
                           decoration: TextDecoration.underline),
                     ),
                   ),
+                  key: Key("about_page:privacy_policy"),
                   onTap: () async {
                     if (await canLaunch(Globals.privacyPolicyUrl)) {
                       await launch(Globals.privacyPolicyUrl);
@@ -110,6 +113,7 @@ class _AboutPageState extends State<AboutPage> {
                           decoration: TextDecoration.underline),
                     ),
                   ),
+                  key: Key("about_page:terms_conditions"),
                   onTap: () async {
                     if (await canLaunch(Globals.termsUrl)) {
                       await launch(Globals.termsUrl);
@@ -192,6 +196,10 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
+  /*
+    Loads the metadata about the app from the pubspec.yml file.
+    Once done loading, notify the app state and then display the data.
+   */
   void getPackageInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 

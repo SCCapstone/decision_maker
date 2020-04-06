@@ -121,6 +121,7 @@ void showErrorMessage(
       builder: (context) {
         return AlertDialog(
           title: Text(errorTitle),
+          key: Key("utilities:error_message_popup"),
           actions: <Widget>[
             FlatButton(
               child: Text("Ok"),
