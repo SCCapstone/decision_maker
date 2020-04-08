@@ -42,9 +42,12 @@ class _CategoryListState extends State<CategoryList> {
                 } else {
                   CategoriesManager.sortByAlphaDescending(widget.categories);
                 }
-                return CategoriesListItem(widget.categories[index],
-                    deleteCategory: () => deleteCategory(index),
-                    refreshCategoryList: widget.refreshPage);
+                return CategoriesListItem(
+                  widget.categories[index],
+                  deleteCategory: () => deleteCategory(index),
+                  refreshCategoryList: widget.refreshPage,
+                  index: index,
+                );
               },
               key: Key("categories_list:category_list")));
     }
