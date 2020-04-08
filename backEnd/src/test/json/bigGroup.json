@@ -1,0 +1,6018 @@
+{
+  "Categories": {
+    "4c27a381-cff9-4ed5-9020-41dc0f0f70c5": "version changes for real"
+  },
+  "DefaultRsvpDuration": 2,
+  "DefaultVotingDuration": 2,
+  "Events": {
+    "022267d7-cd94-4914-821f-65c755ebe6a5": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "CUHGG4X",
+      "EventStartDateTime": "2020-03-28 11:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 393,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585558204,
+      "VotingDuration": 380,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "05ada9b6-ad44-48a2-b3b6-9711e459325f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "FCFHWMIY",
+      "EventStartDateTime": "2020-03-28 08:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 198,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585451104,
+      "VotingDuration": 364,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "07161a4b-1da2-4dc5-a23e-716235c538bb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:50:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "43S4CG",
+      "EventStartDateTime": "2020-03-28 13:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 418,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585554604,
+      "VotingDuration": 306,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "07692a42-6053-42ca-b6d3-26d8545c8c7a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "RXPZ5HWWM",
+      "EventStartDateTime": "2020-03-28 11:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 491,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585477504,
+      "VotingDuration": 100,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "0cf1da76-abfc-4409-a0ee-36837c93924f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "6738MDKGK",
+      "EventStartDateTime": "2020-03-28 03:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 91,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585432204,
+      "VotingDuration": 495,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "0f3988fa-f753-429a-a9d4-2a8c1cbb3301": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1KTGPJU",
+      "EventStartDateTime": "2020-03-28 08:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 440,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585588204,
+      "VotingDuration": 480,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "10226dd4-6cb1-4682-ac16-026033b7e349": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1S4VW",
+      "EventStartDateTime": "2020-03-28 10:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 249,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585592104,
+      "VotingDuration": 461,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "10fe8fde-e2f8-4ddc-acdc-5cd0ef13b0fb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:35:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "7MRSJ3TB",
+      "EventStartDateTime": "2020-03-28 07:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 97,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585438504,
+      "VotingDuration": 379,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "1159079b-d891-4062-9032-f6d77f99713d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1KIX3B",
+      "EventStartDateTime": "2020-03-28 09:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 437,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585536004,
+      "VotingDuration": 233,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "11c6ed01-eae8-4565-986c-538d29e80207": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "H8SYY92E0",
+      "EventStartDateTime": "2020-03-28 03:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 81,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585402804,
+      "VotingDuration": 38,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "1351c038-9f77-40df-a453-1692051c88f4": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:45:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "SPGVR9W",
+      "EventStartDateTime": "2020-03-28 10:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 34,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585633504,
+      "VotingDuration": 569,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "13928f62-8fe0-49f9-a425-bf068c1ddbf2": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:20:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "AU0YI0Z",
+      "EventStartDateTime": "2020-03-28 11:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 468,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585491604,
+      "VotingDuration": 226,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "1831310d-88f5-40e6-8790-6438e91c10f6": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "95YABE3GZ",
+      "EventStartDateTime": "2020-03-28 10:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 119,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585500904,
+      "VotingDuration": 273,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "18c15780-9325-41fc-a279-6250f26a78cf": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "GCCIYYK7",
+      "EventStartDateTime": "2020-03-28 11:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 322,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585421104,
+      "VotingDuration": 74,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "19ae8c6f-50b2-4cd4-b70d-b6913bb6920c": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:25:16",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "09GA6GC81",
+      "EventStartDateTime": "2020-03-28 06:25:12",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 428,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585484712,
+      "VotingDuration": 199,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "1a3846d9-3d0b-4dc4-8f2f-de1ff5c143fa": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 14:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "L07LG",
+      "EventStartDateTime": "2020-03-28 14:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 553,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585466104,
+      "VotingDuration": 458,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "1d43a771-3845-4adf-b563-2abd5012b469": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "585D5",
+      "EventStartDateTime": "2020-03-28 12:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 7,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585603204,
+      "VotingDuration": 242,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "1d789f4e-9e90-47f8-9419-fa19c30d413b": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:35:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "UE41U8P2",
+      "EventStartDateTime": "2020-03-28 06:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 407,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585575304,
+      "VotingDuration": 135,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "1ea3b2a9-3453-4c42-8acd-f204f8971746": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:30:17",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "L2LMV",
+      "EventStartDateTime": "2020-03-28 12:30:12",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 52,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585416612,
+      "VotingDuration": 117,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "2311eaf5-bd96-4f84-8b84-7956d35b85a6": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:50:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4MZFB",
+      "EventStartDateTime": "2020-03-28 04:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 93,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585565404,
+      "VotingDuration": 207,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "270abcb9-a847-44ba-af80-7c6ed2eb4c62": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "ZFVLW97",
+      "EventStartDateTime": "2020-03-28 10:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 438,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585510804,
+      "VotingDuration": 297,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "2b91cdaf-4e23-46e4-a910-55fabd0a85d3": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "YIZ58X9G",
+      "EventStartDateTime": "2020-03-28 05:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 437,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585383004,
+      "VotingDuration": 246,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "2ce7ce40-d3d5-486f-94c6-1975fe999aee": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "JTHCEZG0",
+      "EventStartDateTime": "2020-03-28 09:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 116,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585486804,
+      "VotingDuration": 491,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "2e34c28c-9d7c-4d37-8c14-2696e9033127": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "FB28Z9C",
+      "EventStartDateTime": "2020-03-28 04:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 595,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585464904,
+      "VotingDuration": 80,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "2e9ceeb6-dede-4d7a-9ca7-23d4f05b24aa": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "JLZNLT",
+      "EventStartDateTime": "2020-03-28 04:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 167,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585398604,
+      "VotingDuration": 341,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "300fbbe5-3452-49ab-bc11-513fc04e29d1": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "BXMXN8FNV",
+      "EventStartDateTime": "2020-03-28 10:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 305,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585533604,
+      "VotingDuration": 203,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "306466d7-783f-408a-b578-acc966ca9d1e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "89ONBBED",
+      "EventStartDateTime": "2020-03-28 03:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 354,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585454104,
+      "VotingDuration": 304,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "34c7e12c-4a4f-4d8e-838b-e83519777612": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "7V4P61C64",
+      "EventStartDateTime": "2020-03-28 10:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 56,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585437004,
+      "VotingDuration": 263,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "378f5365-84e9-4795-9cef-679269d5bc45": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "OVCT60",
+      "EventStartDateTime": "2020-03-28 10:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 344,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585449004,
+      "VotingDuration": 551,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "391551f8-60d7-4cb6-b7ce-1270cd3968d3": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "9YBXZ",
+      "EventStartDateTime": "2020-03-28 07:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 541,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585530904,
+      "VotingDuration": 222,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "3a7b5680-6b58-4dc5-9937-7d35750f5151": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 14:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "6P8QZOR",
+      "EventStartDateTime": "2020-03-28 14:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 148,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585505104,
+      "VotingDuration": 446,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "3d04aa4d-0c84-410d-9872-fd4b301da182": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "FYGNKTUH",
+      "EventStartDateTime": "2020-03-28 03:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 217,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585454704,
+      "VotingDuration": 517,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "3d46ab0d-367e-4424-9f01-a8693b901712": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "G30TGXV9",
+      "EventStartDateTime": "2020-03-28 06:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 108,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585575604,
+      "VotingDuration": 369,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "3d4f7a62-66d7-45f3-832b-126f322db641": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "IMNOO",
+      "EventStartDateTime": "2020-03-28 10:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 246,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585515004,
+      "VotingDuration": 510,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "3d9509dc-682e-4df2-a221-a9ccb395a01f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:40:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "19KY41",
+      "EventStartDateTime": "2020-03-28 08:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 185,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585420804,
+      "VotingDuration": 268,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "409f47ca-5a87-44d1-b875-d406d699413d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-29 00:27:50",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1",
+      "EventStartDateTime": "2020-03-28 21:27:00",
+      "OptedIn": {
+        "1": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "2": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "3": {
+          "DisplayName": "Testing",
+          "Icon": null
+        },
+        "6": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "edmond": {
+          "DisplayName": "Edmond K.",
+          "Icon": null
+        },
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        },
+        "josh": {
+          "DisplayName": "Josh R",
+          "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+        }
+      },
+      "RsvpDuration": 12,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585445220,
+      "VotingDuration": 12,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "40c75463-de77-41c5-afbc-062a63843f71": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "EGOOKI6N",
+      "EventStartDateTime": "2020-03-28 08:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 258,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585441504,
+      "VotingDuration": 415,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "40fac426-f9fd-4ff1-a783-e6f2af36b8a2": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "8Z9J2TE",
+      "EventStartDateTime": "2020-03-28 04:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 315,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585516804,
+      "VotingDuration": 568,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "423c1b54-defc-4fae-944e-af2d00f06da1": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4W9Y9",
+      "EventStartDateTime": "2020-03-28 06:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 537,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585434004,
+      "VotingDuration": 320,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "4433ddbb-1660-4dde-a0ae-1d16065f538d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "B23CXJNE4",
+      "EventStartDateTime": "2020-03-28 02:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 423,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585526104,
+      "VotingDuration": 525,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "466ffefd-8710-4151-bfd2-2d514ce2784e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "O3CKY0MI",
+      "EventStartDateTime": "2020-03-28 11:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 365,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585472404,
+      "VotingDuration": 420,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "46719110-9beb-42be-a19f-9ee11bcf8e82": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "V6BPXEPUT",
+      "EventStartDateTime": "2020-03-28 06:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 522,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585389904,
+      "VotingDuration": 468,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "4691ab0d-701b-4500-9a89-3313f62d2d03": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-29 00:28:17",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "2",
+      "EventStartDateTime": "2020-03-29 21:27:00",
+      "OptedIn": {
+        "1": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "2": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "3": {
+          "DisplayName": "Testing",
+          "Icon": null
+        },
+        "6": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "edmond": {
+          "DisplayName": "Edmond K.",
+          "Icon": null
+        },
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        },
+        "josh": {
+          "DisplayName": "Josh R",
+          "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+        }
+      },
+      "RsvpDuration": 2,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585531620,
+      "VotingDuration": 2,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "492d1379-19dc-40e5-87e8-7cae2ae7b195": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "52K20X",
+      "EventStartDateTime": "2020-03-28 07:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 191,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585558504,
+      "VotingDuration": 583,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "4a67fdb7-eb6b-408d-9b08-36b6c9e91520": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:35:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4VO72C0",
+      "EventStartDateTime": "2020-03-28 09:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 60,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585445704,
+      "VotingDuration": 439,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "4bffad62-b663-4319-8234-19e539600421": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:20:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "B0KDBFYWB",
+      "EventStartDateTime": "2020-03-28 10:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 436,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585581604,
+      "VotingDuration": 434,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "5163f51b-98e2-4c00-a61b-4962711177fe": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "XXWWQU",
+      "EventStartDateTime": "2020-03-28 03:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585413004,
+      "VotingDuration": 290,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "549d8a18-015f-4541-bd66-31b71e7f7b5b": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:20:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "ZL4N0MSPR",
+      "EventStartDateTime": "2020-03-28 13:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 250,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "7": "c"
+      },
+      "UtcEventStartSeconds": 1585614004,
+      "VotingDuration": 169,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "7": {
+
+        }
+      }
+    },
+    "55143489-bc7e-477e-9b8a-fd8f1b464d14": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "AE9J28E8I",
+      "EventStartDateTime": "2020-03-28 04:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 486,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585389604,
+      "VotingDuration": 292,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "56cf2736-70d6-4e6e-bc24-8462fe4dcd2f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "WK49Y4BL",
+      "EventStartDateTime": "2020-03-28 03:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 232,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585493104,
+      "VotingDuration": 486,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "586d09ee-0e95-4e6b-bfa8-b09af96df098": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:30:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4A1O69AQ",
+      "EventStartDateTime": "2020-03-28 06:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 94,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585571404,
+      "VotingDuration": 530,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "587bd3e1-2e1f-48b5-b6e2-755eabad5b2c": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "98NIPUD",
+      "EventStartDateTime": "2020-03-28 13:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 364,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585611604,
+      "VotingDuration": 28,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "58d9f3ee-ffe6-4fef-9447-2f12cc7c0245": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "9NV38R",
+      "EventStartDateTime": "2020-03-28 05:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 363,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585513804,
+      "VotingDuration": 552,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "59316da6-6818-4939-849e-a93af21f6129": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "SZKA9NG",
+      "EventStartDateTime": "2020-03-28 12:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 352,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585651504,
+      "VotingDuration": 117,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "5a381db2-d6d8-4381-8e17-2fedb2d426ca": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "XS8PD24H",
+      "EventStartDateTime": "2020-03-28 09:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 181,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585531204,
+      "VotingDuration": 239,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "5acaae33-344c-44c2-aecb-f7f5d9135463": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:45:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "3BD3R",
+      "EventStartDateTime": "2020-03-28 07:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 553,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585511104,
+      "VotingDuration": 181,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "5ea90668-ee83-4032-9c6c-c6767433c99f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "P621SC",
+      "EventStartDateTime": "2020-03-28 09:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 258,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585527304,
+      "VotingDuration": 215,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "5f535449-918c-4b53-9a90-233fd1c41a06": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "2HR6ZNNK",
+      "EventStartDateTime": "2020-03-28 02:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 310,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585446304,
+      "VotingDuration": 319,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "5ffca1d4-f503-48b9-a478-171544fbe8ae": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "CSMAP0W",
+      "EventStartDateTime": "2020-03-28 02:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 327,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585363804,
+      "VotingDuration": 182,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "63a70e98-9a8e-4f4e-bd29-df33706beef2": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:32:09",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "GORTGL3XU",
+      "EventStartDateTime": "2020-03-28 02:32:05",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 241,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585362725,
+      "VotingDuration": 49,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "65c8d547-95da-4951-8b6a-e39b03c90775": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "03CBK",
+      "EventStartDateTime": "2020-03-28 03:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 76,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585573804,
+      "VotingDuration": 349,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "676b3a2d-ac9c-460f-a507-b670a9c6d5b5": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 14:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LCCDMO8",
+      "EventStartDateTime": "2020-03-28 14:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 135,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585638604,
+      "VotingDuration": 198,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "68ce42af-e6b9-49e7-8de7-44d8d5c5c64f": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KY62J4",
+      "EventStartDateTime": "2020-03-28 10:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 155,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585505104,
+      "VotingDuration": 329,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "68fde261-a0cd-4618-bfdb-2404879ddbe3": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "UZ8WEIL",
+      "EventStartDateTime": "2020-03-28 08:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 239,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585494004,
+      "VotingDuration": 518,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6abf92c0-aad0-4abf-8680-11973c166504": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:45:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "GAW0QIH",
+      "EventStartDateTime": "2020-03-28 09:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 236,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585525504,
+      "VotingDuration": 318,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6ccc0d87-9b34-48bd-be25-4317b03ae6cb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "AQONK",
+      "EventStartDateTime": "2020-03-28 13:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 395,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585413004,
+      "VotingDuration": 574,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "6cfd8001-e567-48ed-a378-dd86dfa6f0dc": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "9MP39AJ",
+      "EventStartDateTime": "2020-03-28 06:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 457,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585486204,
+      "VotingDuration": 384,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6d409ba5-666f-49ad-9cef-e76f29b35fe1": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:06:42",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "newest",
+      "EventStartDateTime": "2020-03-27 23:06:00",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 2,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585364760,
+      "VotingDuration": 2,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6dfd65df-75e5-44e7-af8b-a8699d1d5ad4": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:35:16",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "3LEW37HT",
+      "EventStartDateTime": "2020-03-28 04:35:12",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 538,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585420512,
+      "VotingDuration": 588,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6e3daf8e-892d-4def-ab40-038e64798304": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "RMMFQK7",
+      "EventStartDateTime": "2020-03-28 03:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 595,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585522804,
+      "VotingDuration": 123,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6e783835-6315-49cd-afd5-6da5af360a31": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KS10KTAC",
+      "EventStartDateTime": "2020-03-28 08:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 105,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585444504,
+      "VotingDuration": 455,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "6fe4a4cd-ffa8-4448-bff7-870fd709ea7a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 14:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "ZKAQV6Q91",
+      "EventStartDateTime": "2020-03-28 14:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 119,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585430404,
+      "VotingDuration": 543,
+      "VotingNumbers": {
+        "1": {
+          "josh": 1
+        },
+        "2": {
+          "josh": 0
+        },
+        "5": {
+          "josh": 1
+        }
+      }
+    },
+    "702daa88-d35c-4655-9e34-dce8505a9d42": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "AFHSW",
+      "EventStartDateTime": "2020-03-28 09:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 509,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585585504,
+      "VotingDuration": 57,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "722446dd-489f-4412-81a4-15f01872f2ab": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "JLNLQ9T0",
+      "EventStartDateTime": "2020-03-28 05:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 564,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585491304,
+      "VotingDuration": 374,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "72be0ed1-a44e-453d-9047-25113e326bba": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "TMLNSDE",
+      "EventStartDateTime": "2020-03-28 03:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 269,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585556704,
+      "VotingDuration": 462,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "735f2cd5-ae1f-4faa-921a-51f627e1d6cc": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:35:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "MAJZB0AB",
+      "EventStartDateTime": "2020-03-28 13:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 300,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585643704,
+      "VotingDuration": 111,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "79de29ea-9e16-43a4-a91a-fbf011516448": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "DCPI0",
+      "EventStartDateTime": "2020-03-28 11:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 558,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585484104,
+      "VotingDuration": 43,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "7b6a7f16-2b5f-41ea-a410-72ee291bf60a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:35:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "HMAIREL2O",
+      "EventStartDateTime": "2020-03-28 02:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 442,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585607704,
+      "VotingDuration": 556,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "7d7b3d73-7ecd-4bd3-886c-0bb8541797e7": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1CNL0G1J",
+      "EventStartDateTime": "2020-03-28 12:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 265,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585530304,
+      "VotingDuration": 435,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "7f453f01-ec93-4716-b8af-fe7672e0f29d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4OY3XF",
+      "EventStartDateTime": "2020-03-28 12:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 589,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585500904,
+      "VotingDuration": 473,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "820cb8a0-dd39-48c4-84d6-2c77aced2fd8": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "QG8D4VV",
+      "EventStartDateTime": "2020-03-28 13:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 431,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585552204,
+      "VotingDuration": 571,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "83b26a45-7ae1-4ccc-bf03-62fad5ffa9e4": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "Z73CIQG",
+      "EventStartDateTime": "2020-03-28 13:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 209,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585508404,
+      "VotingDuration": 145,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "83fddc0b-b26b-4fd8-a062-2b922f934e45": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "9VYTTZQ6",
+      "EventStartDateTime": "2020-03-28 07:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 242,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585448404,
+      "VotingDuration": 435,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "8460582f-5346-43f2-959a-a3914ad9de44": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:40:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "05LU23KJ",
+      "EventStartDateTime": "2020-03-28 12:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 364,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585521604,
+      "VotingDuration": 110,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "84b747ad-7b0e-4071-b37d-526e8e7ba42a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "QD4KMU2",
+      "EventStartDateTime": "2020-03-28 04:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 548,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585397404,
+      "VotingDuration": 253,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "85822c9e-24a4-48aa-b198-25ea89e956db": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-29 00:28:46",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "3",
+      "EventStartDateTime": "2020-03-28 21:28:00",
+      "OptedIn": {
+        "1": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "2": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "3": {
+          "DisplayName": "Testing",
+          "Icon": null
+        },
+        "6": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "edmond": {
+          "DisplayName": "Edmond K.",
+          "Icon": null
+        },
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        },
+        "josh": {
+          "DisplayName": "Josh R",
+          "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+        }
+      },
+      "RsvpDuration": 22,
+      "SelectedChoice": "c",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585445280,
+      "VotingDuration": 21,
+      "VotingNumbers": {
+        "2": {
+          "edmond": 0
+        },
+        "7": {
+          "edmond": 1
+        },
+        "8": {
+          "edmond": 0
+        }
+      }
+    },
+    "8e9049d1-8766-44a7-8973-ca0c4e408dcd": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:35:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "QQUN7UY",
+      "EventStartDateTime": "2020-03-28 12:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 105,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585532104,
+      "VotingDuration": 479,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "8fb589d8-a505-4a9b-bda8-567085a41a32": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:35:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "0NHNT4I5",
+      "EventStartDateTime": "2020-03-28 03:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 318,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585370104,
+      "VotingDuration": 371,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "90e2cd07-2b22-48bb-8c2b-fe7b1d57c57b": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "SS9JR4XT5",
+      "EventStartDateTime": "2020-03-28 08:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 453,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585551304,
+      "VotingDuration": 507,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "923b74ee-e68d-4079-95bc-b3e85f351881": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "FLO5A5",
+      "EventStartDateTime": "2020-03-28 05:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 275,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585520704,
+      "VotingDuration": 276,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "928f4f39-dbda-4698-b189-4b0d1e5729d9": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "APBP9WFAZ",
+      "EventStartDateTime": "2020-03-28 06:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 209,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585494904,
+      "VotingDuration": 361,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "966f2c6e-a5a8-456a-9cea-68f3f3bcf4eb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1KXMGE4V",
+      "EventStartDateTime": "2020-03-28 12:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 408,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585610104,
+      "VotingDuration": 314,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "98c8be6f-2f09-4a37-b631-6009f155f265": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KEIRFSX",
+      "EventStartDateTime": "2020-03-28 08:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 185,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585518304,
+      "VotingDuration": 354,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "9ded6657-e3b2-4985-bb83-a4b14f780a2d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "HD8939IFF",
+      "EventStartDateTime": "2020-03-28 05:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 206,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585381504,
+      "VotingDuration": 118,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "9e06f785-aa8f-4b72-b250-e57a7f84d919": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-29 00:29:06",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "4",
+      "EventStartDateTime": "2020-03-31 09:28:00",
+      "OptedIn": {
+        "1": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "2": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "3": {
+          "DisplayName": "Testing",
+          "Icon": null
+        },
+        "6": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "edmond": {
+          "DisplayName": "Edmond K.",
+          "Icon": null
+        },
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        },
+        "josh": {
+          "DisplayName": "Josh R",
+          "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+        }
+      },
+      "RsvpDuration": 2,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585661280,
+      "VotingDuration": 2,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "9eb9831c-8d64-45c1-a24a-9a9ade9f15ad": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "0IWCE8M",
+      "EventStartDateTime": "2020-03-28 07:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 429,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585549804,
+      "VotingDuration": 572,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "9f16ddab-70dc-4860-b487-de0afe559bec": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "IF4HXMWAX",
+      "EventStartDateTime": "2020-03-28 06:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 539,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585403704,
+      "VotingDuration": 199,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a01b5877-5892-4d0f-8753-fd959fe4e382": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "V77NNQME",
+      "EventStartDateTime": "2020-03-28 07:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 326,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585421404,
+      "VotingDuration": 10,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a0a0bd3f-0a7b-44cd-a8e5-c579b8795c7e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LQEDAL",
+      "EventStartDateTime": "2020-03-28 07:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 157,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585571104,
+      "VotingDuration": 95,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a1190738-e9ce-48ab-a017-1532e8304e81": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "FZAN7T",
+      "EventStartDateTime": "2020-03-28 09:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 183,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585490104,
+      "VotingDuration": 525,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a24fb0de-a2ab-4216-87c0-521a043bfa14": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:35:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "BSE9PJ5",
+      "EventStartDateTime": "2020-03-28 08:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 93,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585593304,
+      "VotingDuration": 397,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a425236f-698c-45b5-8f12-810a089a9303": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "W6R7VEXH",
+      "EventStartDateTime": "2020-03-28 05:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 539,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585618804,
+      "VotingDuration": 526,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a8502804-e144-4364-abb3-9ea74641e321": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 14:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LCBSRJRVZ",
+      "EventStartDateTime": "2020-03-28 14:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 82,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585486804,
+      "VotingDuration": 125,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "a8d47f9f-a132-4abc-a5c1-0058a6fd06d2": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "ZNK0UJOGF",
+      "EventStartDateTime": "2020-03-28 05:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 431,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585425304,
+      "VotingDuration": 297,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "abe0b5de-68e6-4819-9709-184df7699c4c": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "N9GWHGT",
+      "EventStartDateTime": "2020-03-28 05:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 560,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585385404,
+      "VotingDuration": 54,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "af519821-62fb-4e0e-851d-41327f07cfdb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "ZSMOUI",
+      "EventStartDateTime": "2020-03-28 07:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 22,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585584604,
+      "VotingDuration": 355,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "b00e38a0-1b7d-4466-bee8-1b4ae13348a4": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:50:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "UJZSA",
+      "EventStartDateTime": "2020-03-28 12:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 285,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585443004,
+      "VotingDuration": 303,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "b1551cc0-f560-4242-8804-d0e8a381d4d9": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "W0FIRL2G",
+      "EventStartDateTime": "2020-03-28 09:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 398,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585439404,
+      "VotingDuration": 560,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "b212d5e4-998d-401f-852a-45cca8ab02de": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:35:17",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1WOLP50IX",
+      "EventStartDateTime": "2020-03-28 10:35:12",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 534,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585542912,
+      "VotingDuration": 423,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "b4b0e82f-b3e4-4c5f-87ab-b0ee466ecd20": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "MNV8D7",
+      "EventStartDateTime": "2020-03-28 09:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 530,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585618204,
+      "VotingDuration": 76,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "b678074a-3197-40aa-b837-5983b36f9f3e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 10:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "47WB6",
+      "EventStartDateTime": "2020-03-28 10:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 374,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585405504,
+      "VotingDuration": 340,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "b70cee91-7619-4487-a921-b06083bc1f4c": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:30:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "3CH6LLG",
+      "EventStartDateTime": "2020-03-28 11:30:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 351,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585542604,
+      "VotingDuration": 46,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "ba03e6c8-e4b9-43b6-b0c8-4456654be3e4": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "E2UMQK",
+      "EventStartDateTime": "2020-03-28 13:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 244,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585558504,
+      "VotingDuration": 181,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "bb9bda7a-8c05-4aa8-bd0e-61d3fb81811e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "9CKQQI",
+      "EventStartDateTime": "2020-03-28 12:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 243,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585569604,
+      "VotingDuration": 434,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "bfe31889-7b21-4b2d-a75d-9230e2a82bd1": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "OCTI3J2J",
+      "EventStartDateTime": "2020-03-28 04:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 248,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585527304,
+      "VotingDuration": 173,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "bfff8f6e-9fdc-4ae8-bffe-0c1feb436865": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:35:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "O4HQKIZFD",
+      "EventStartDateTime": "2020-03-28 11:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 358,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "7": "c"
+      },
+      "UtcEventStartSeconds": 1585499704,
+      "VotingDuration": 96,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "7": {
+
+        }
+      }
+    },
+    "c167dc0d-b5d6-4028-abb7-e2908968f602": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "WM24LNVNN",
+      "EventStartDateTime": "2020-03-28 13:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 213,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585433104,
+      "VotingDuration": 344,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "c2652b9f-423e-4927-bf8f-c87ba211d9fa": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "L9KZEN1ZZ",
+      "EventStartDateTime": "2020-03-28 13:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 474,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585611904,
+      "VotingDuration": 470,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "c2d93b21-5425-45c2-b6c1-4879911550f7": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LPK99V",
+      "EventStartDateTime": "2020-03-28 11:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 573,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585546804,
+      "VotingDuration": 168,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "c4171b48-480d-42e9-ae47-7fd3e90c06f7": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:45:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "VTVL2",
+      "EventStartDateTime": "2020-03-28 04:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 47,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585392304,
+      "VotingDuration": 438,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "c4378d94-0130-4f77-9c7a-dce3c01c1f32": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "MBVCP",
+      "EventStartDateTime": "2020-03-28 12:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 252,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585416304,
+      "VotingDuration": 582,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "c8701618-a9f5-4858-8173-50ca21dae6c2": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "PNQEK3T",
+      "EventStartDateTime": "2020-03-28 06:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 86,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585609804,
+      "VotingDuration": 478,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "c8c6c2d6-c3aa-4a0e-97e9-2c6b23ee5865": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-29 00:29:23",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "5",
+      "EventStartDateTime": "2020-03-28 21:29:00",
+      "OptedIn": {
+        "1": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "2": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "3": {
+          "DisplayName": "Testing",
+          "Icon": null
+        },
+        "6": {
+          "DisplayName": "New User",
+          "Icon": null
+        },
+        "edmond": {
+          "DisplayName": "Edmond K.",
+          "Icon": null
+        },
+        "john_andrews12": {
+          "DisplayName": "jpg",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        },
+        "josh": {
+          "DisplayName": "Josh R",
+          "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585445340,
+      "VotingDuration": 2,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "c9667a5a-5adb-44ee-b308-66b8d1c729ff": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LIA0N",
+      "EventStartDateTime": "2020-03-28 05:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 222,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585566004,
+      "VotingDuration": 82,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "c977f482-27d0-44bb-93de-f3337966345a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "NXR5HN4P",
+      "EventStartDateTime": "2020-03-28 05:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 318,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585585204,
+      "VotingDuration": 109,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "cc029ce6-43d3-42a2-ac2f-acbcfe789f8e": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:00:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "YZ55A4",
+      "EventStartDateTime": "2020-03-28 07:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 487,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585566004,
+      "VotingDuration": 132,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "cc345238-0c45-48f0-93c8-7494bf9dd553": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "E4CMHCC9S",
+      "EventStartDateTime": "2020-03-28 07:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 532,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585636804,
+      "VotingDuration": 326,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "cddf2b39-0d63-4018-96bd-88f68ae6f888": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:33:41",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "MA5VR",
+      "EventStartDateTime": "2020-03-28 02:33:38",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 539,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585528418,
+      "VotingDuration": 115,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "cfa04c10-e84a-4e35-b479-a02861c3e665": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:15:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "L9Y6C",
+      "EventStartDateTime": "2020-03-28 03:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 134,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585559704,
+      "VotingDuration": 320,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "cfa301bf-ead5-4b67-8d32-bb3bbe9aa271": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "X363O",
+      "EventStartDateTime": "2020-03-28 05:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 298,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585501504,
+      "VotingDuration": 562,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "d0bb62ff-c34c-4f19-9fdd-c8a17ccb2498": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LLGQ8OL",
+      "EventStartDateTime": "2020-03-28 04:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 556,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585382704,
+      "VotingDuration": 539,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "d159ad5f-a4a0-467f-8abc-1a2c22745db9": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "882WLSF",
+      "EventStartDateTime": "2020-03-28 09:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 308,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585587904,
+      "VotingDuration": 435,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "d33b0b18-ec4b-4d75-b65c-328c1e5e816a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:50:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "GN5K3315E",
+      "EventStartDateTime": "2020-03-28 08:50:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 479,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585518604,
+      "VotingDuration": 255,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "d5054133-7fb8-440b-be1c-93f509487387": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 07:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "74UV7C4R",
+      "EventStartDateTime": "2020-03-28 07:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 407,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585559104,
+      "VotingDuration": 207,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "d857d769-57a7-4505-b048-95ad56161632": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "CIAL44",
+      "EventStartDateTime": "2020-03-28 13:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 437,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585650304,
+      "VotingDuration": 150,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "db4ceb37-d5c5-4eb7-8d93-a5e05e9b1316": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 05:35:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "16O6SK",
+      "EventStartDateTime": "2020-03-28 05:35:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 358,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585474504,
+      "VotingDuration": 236,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "dc958839-f924-4265-a8c3-8768ae72391a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:40:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "Q45QT9UU",
+      "EventStartDateTime": "2020-03-28 04:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 262,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585539604,
+      "VotingDuration": 87,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "e38fe510-423b-49f8-abe1-ecb4c6aedaf6": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "IV94DSGL",
+      "EventStartDateTime": "2020-03-28 11:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 293,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585534204,
+      "VotingDuration": 551,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "e70c187e-fab7-40b3-a71a-86c4f0519257": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 12:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KP8SH11",
+      "EventStartDateTime": "2020-03-28 12:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 33,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585426204,
+      "VotingDuration": 101,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "ea2344d0-3e73-4bd2-8f02-36b351ca4b7d": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:55:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KBOZID24",
+      "EventStartDateTime": "2020-03-28 11:55:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 345,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585569304,
+      "VotingDuration": 410,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "ea255c64-f348-426f-b2c3-0be5a6072fc8": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:20:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "E6QKS",
+      "EventStartDateTime": "2020-03-28 08:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 304,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585390804,
+      "VotingDuration": 451,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "eb7bcc41-37e0-4b46-9868-67d92a47ff93": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 08:30:17",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "IL76S9Z",
+      "EventStartDateTime": "2020-03-28 08:30:12",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 186,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585513812,
+      "VotingDuration": 575,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "ecbe13a9-1cd9-460f-86a0-6e205589d9e5": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 11:05:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "X5DFK",
+      "EventStartDateTime": "2020-03-28 11:05:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 484,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585623904,
+      "VotingDuration": 437,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "f4bd69dc-7849-4644-9177-d16eb467440a": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 03:20:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "KSWUF",
+      "EventStartDateTime": "2020-03-28 03:20:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 530,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585416004,
+      "VotingDuration": 542,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "f4ea0555-b56f-4acd-a3ff-532de0aa0901": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:00:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "LFS70",
+      "EventStartDateTime": "2020-03-28 06:00:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 202,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585494004,
+      "VotingDuration": 453,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "f7129529-be3c-409a-87d8-57e08bbd0623": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 13:15:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "K0QPOII",
+      "EventStartDateTime": "2020-03-28 13:15:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 598,
+      "SelectedChoice": "b",
+      "TentativeAlgorithmChoices": {
+        "2": "b",
+        "7": "c",
+        "8": "d"
+      },
+      "UtcEventStartSeconds": 1585512904,
+      "VotingDuration": 473,
+      "VotingNumbers": {
+        "2": {
+
+        },
+        "7": {
+
+        },
+        "8": {
+
+        }
+      }
+    },
+    "f8854e41-7c9e-4833-9aa2-0cf7560b9def": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 04:25:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "1TI27NS6",
+      "EventStartDateTime": "2020-03-28 04:25:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 400,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585549504,
+      "VotingDuration": 114,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "f9208246-479d-49d7-ac52-b541c65b0a25": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 02:40:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "GSAJ1ZM0Z",
+      "EventStartDateTime": "2020-03-28 02:40:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 174,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585435204,
+      "VotingDuration": 190,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "f94021a3-0955-41e9-a8bb-13741e01cdfb": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 06:45:05",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "7L2U97P",
+      "EventStartDateTime": "2020-03-28 06:45:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 120,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585572304,
+      "VotingDuration": 384,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    },
+    "f975c899-0b4b-4f3b-8f66-ece22c7c35dd": {
+      "CategoryId": "4c27a381-cff9-4ed5-9020-41dc0f0f70c5",
+      "CategoryName": "version changes for real",
+      "CreatedDateTime": "2020-03-28 09:10:04",
+      "EventCreator": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "EventName": "UC1NLS98",
+      "EventStartDateTime": "2020-03-28 09:10:04",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John",
+          "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+        }
+      },
+      "RsvpDuration": 272,
+      "SelectedChoice": "a",
+      "TentativeAlgorithmChoices": {
+        "1": "a",
+        "2": "b",
+        "5": "d"
+      },
+      "UtcEventStartSeconds": 1585444204,
+      "VotingDuration": 237,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "5": {
+
+        }
+      }
+    }
+  },
+  "GroupCreator": "john_andrews12",
+  "GroupId": "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48",
+  "GroupName": "New Test!",
+  "Icon": null,
+  "IsOpen": false,
+  "LastActivity": "2020-03-29 07:07:21",
+  "Members": {
+    "1": {
+      "DisplayName": "New User",
+      "Icon": null
+    },
+    "2": {
+      "DisplayName": "New User",
+      "Icon": null
+    },
+    "3": {
+      "DisplayName": "Testing",
+      "Icon": null
+    },
+    "6": {
+      "DisplayName": "New User",
+      "Icon": null
+    },
+    "edmond": {
+      "DisplayName": "Edmond K.",
+      "Icon": null
+    },
+    "john_andrews12": {
+      "DisplayName": "jpg",
+      "Icon": "3ab2f6d6-b1b3-43f4-b2af-91e96370b84f.jpg"
+    },
+    "josh": {
+      "DisplayName": "Josh R",
+      "Icon": "1b32f9fd-3002-4aab-ae90-21359dc4e925.jpg"
+    }
+  },
+  "MembersLeft": {
+    "edmond2": true
+  }
+}

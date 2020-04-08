@@ -1,6 +1,7 @@
 package imports;
 
 import static imports.GroupsManager.CATEGORIES;
+import static junit.framework.TestCase.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,6 +18,9 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,8 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import utilities.JsonParsers;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -86,6 +92,13 @@ public class GroupsManagerTest {
           .put(GroupsManager.VOTING_DURATION, 50)
           .put(GroupsManager.RSVP_DURATION, 50)
           .put(GroupsManager.GROUP_ID, "GroupId")
+          .build());
+
+  private final Map<String, Object> handleGetBatchOfEventsGoodInput = Maps
+      .newHashMap(ImmutableMap.<String, Object>builder()
+          .put(RequestFields.ACTIVE_USER, "john_andrews12")
+          .put(GroupsManager.GROUP_ID, "GroupId")
+          .put(RequestFields.BATCH_NUMBER, 2)
           .build());
 
   @Mock
@@ -502,9 +515,9 @@ public class GroupsManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  /////////////////////////////endregion
+  //////////////////////endregion
   // leaveGroup tests //
-  /////////////////////////////region
+  //////////////////////region
   @Test
   public void leaveGroup_missingKeys_failureResult() {
     ResultStatus resultStatus = this.groupsManager
@@ -520,9 +533,9 @@ public class GroupsManagerTest {
     verify(this.metrics, times(2)).commonClose(false);
   }
 
-  /////////////////////////////endregion
+  ///////////////////////endregion
   // rejoinGroup tests //
-  /////////////////////////////region
+  ///////////////////////region
   @Test
   public void rejoinGroup_missingKeys_failureResult() {
     ResultStatus resultStatus = this.groupsManager
@@ -537,4 +550,75 @@ public class GroupsManagerTest {
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.metrics, times(2)).commonClose(false);
   }
+
+  //////////////////////////////////endregion
+  // handleGetBatchOfEvents tests //
+  //////////////////////////////////region
+  @Test
+  public void handleGetBatchOfEvents_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .handleGetBatchOfEvents(this.handleGetBatchOfEventsGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void handleGetBatchOfEvents_userNotInGroup_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.handleGetBatchOfEventsGoodInput.replace(RequestFields.ACTIVE_USER, "notIntGroup");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .handleGetBatchOfEvents(this.handleGetBatchOfEventsGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void handleGetBatchOfEvents_missingKeys_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .handleGetBatchOfEvents(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void handleGetBatchOfEvents_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    final ResultStatus resultStatus = this.groupsManager
+        .handleGetBatchOfEvents(this.handleGetBatchOfEventsGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  //endregion
 }
