@@ -197,6 +197,7 @@ class _GroupsHomeState extends State<GroupsHome>
               ListTile(
                   leading: Icon(Icons.format_list_bulleted),
                   title: Text('My Categories', style: TextStyle(fontSize: 16)),
+                  key: Key("groups_home:my_categories_button"),
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
@@ -473,6 +474,7 @@ class _GroupsHomeState extends State<GroupsHome>
             ),
           ),
         ),
+        key: Key("groups_home:scaffold"),
         body: TabBarView(
           controller: this.tabController,
           children: <Widget>[

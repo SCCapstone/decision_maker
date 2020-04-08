@@ -8,9 +8,10 @@ class CategoriesListItem extends StatelessWidget {
   final Category category;
   final VoidCallback deleteCategory;
   final VoidCallback refreshCategoryList;
+  final int index; // used for having a unique key for each row for tests
 
   CategoriesListItem(this.category,
-      {this.deleteCategory, this.refreshCategoryList});
+      {this.deleteCategory, this.refreshCategoryList, this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class CategoriesListItem extends StatelessWidget {
                 iconSize: MediaQuery.of(context).size.width * .075,
                 tooltip: "Edit Category",
                 key: Key(
-                    "categories_list_item:category_edit_button:${this.category.categoryName}"),
+                    "categories_list_item:category_edit_button:${this.index}"),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -55,7 +56,7 @@ class CategoriesListItem extends StatelessWidget {
                   iconSize: MediaQuery.of(context).size.width * .075,
                   tooltip: "Delete Category",
                   key: Key(
-                      "categories_list_item:category_delete_button:${this.category.categoryName}"),
+                      "categories_list_item:category_delete_button:${this.index}"),
                   onPressed: () {
                     confirmDelete(context);
                   },
@@ -80,7 +81,7 @@ class CategoriesListItem extends StatelessWidget {
               FlatButton(
                 child: Text("Yes"),
                 key: Key(
-                    "categories_list_item:category_edit_button_confirm:${this.category.categoryName}"),
+                    "categories_list_item:category_edit_button_confirm:${this.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   this.deleteCategory();
@@ -89,7 +90,7 @@ class CategoriesListItem extends StatelessWidget {
               FlatButton(
                 child: Text("No"),
                 key: Key(
-                    "categories_list_item:category_edit_button_denial:${this.category.categoryName}"),
+                    "categories_list_item:category_edit_button_denial:${this.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
