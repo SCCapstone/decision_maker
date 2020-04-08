@@ -42,21 +42,25 @@ class _CategoryListState extends State<CategoryList> {
                 } else {
                   CategoriesManager.sortByAlphaDescending(widget.categories);
                 }
-                return CategoriesListItem(widget.categories[index], index,
-                    onDelete: () => removeItem(index),
-                    afterEditCallback: widget.refreshPage);
-              }));
+                return CategoriesListItem(
+                  widget.categories[index],
+                  deleteCategory: () => deleteCategory(index),
+                  refreshCategoryList: widget.refreshPage,
+                  index: index,
+                );
+              },
+              key: Key("categories_list:category_list")));
     }
   }
 
-  void removeItem(int index) async {
-    // removes an item from the local list of categories used in the CategoryList state
+  // Attempts to delete the category from the DB. If success then it removes it from the local list
+  void deleteCategory(int index) async {
     Category category = widget.categories[index];
 
-    showLoadingDialog(context, "Deleting category...", true);
+    showLoadingDialog(this.context, "Deleting category...", true);
     ResultStatus status =
         await CategoriesManager.deleteCategory(category.categoryId);
-    Navigator.of(context, rootNavigator: true).pop('dialog');
+    Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (status.success) {
       setState(() {
@@ -65,7 +69,7 @@ class _CategoryListState extends State<CategoryList> {
         widget.categories.remove(widget.categories[index]);
       });
     } else {
-      showErrorMessage("Error", status.errorMessage, context);
+      showErrorMessage("Error", status.errorMessage, this.context);
     }
   }
 }

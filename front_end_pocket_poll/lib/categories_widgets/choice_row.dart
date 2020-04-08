@@ -16,6 +16,7 @@ class ChoiceRow extends StatefulWidget {
       this.rateController,
       {this.deleteChoice, this.focusNode, this.checkForChange});
 
+  // opens up the keyboard to this specific widget
   void requestFocus(BuildContext context) {
     FocusScope.of(context).requestFocus(focusNode);
   }
@@ -42,11 +43,13 @@ class _ChoiceRowState extends State<ChoiceRow> {
             focusNode: widget.focusNode,
             controller: widget.labelController,
             decoration: InputDecoration(labelText: "Choice", counterText: ""),
+            key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
           ),
         ),
         RaisedButton.icon(
           icon: Icon(Icons.edit),
           label: Text("Rating: " + widget.rateController.text),
+          key: Key("choice_row:ratings_button:${widget.choiceNumber}"),
           onPressed: () {
             displayRateSelector();
           },
@@ -57,6 +60,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: IconButton(
             color: Colors.red,
             icon: Icon(Icons.cancel),
+            key: Key("choice_row:delete_button:${widget.choiceNumber}"),
             onPressed: () {
               widget.deleteChoice(widget);
             },
@@ -66,9 +70,10 @@ class _ChoiceRowState extends State<ChoiceRow> {
     );
   }
 
+  // displays a popup for allowing the users to pick a rating for the given choice
   void displayRateSelector() {
     showDialog<int>(
-        context: context,
+        context: this.context,
         builder: (BuildContext context) {
           return NumberPickerDialog.integer(
             minValue: 0,

@@ -14,9 +14,8 @@ import 'package:front_end_pocket_poll/utilities/validator.dart';
 
 class EditCategory extends StatefulWidget {
   final Category category;
-  final bool editName;
 
-  EditCategory({Key key, this.category, this.editName}) : super(key: key);
+  EditCategory({Key key, this.category}) : super(key: key);
 
   @override
   _EditCategoryState createState() => _EditCategoryState();
@@ -26,19 +25,24 @@ class _EditCategoryState extends State<EditCategory> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
+  final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
+  final ScrollController scrollController = new ScrollController();
   final int defaultRate = 3;
+
+  // map of choice number to controller that contains the name of the proposed choice
   final Map<String, TextEditingController> labelControllers =
       new LinkedHashMap<String, TextEditingController>();
+
+  // map of choice number to controller that contains the rating of the proposed choice
   final Map<String, TextEditingController> ratesControllers =
       new LinkedHashMap<String, TextEditingController>();
+
+  // preserve the original labels for copying purposes and detecting if changes were made
   Map<String, String> originalLabels = new LinkedHashMap<String, String>();
   Map<String, String> originalRatings = new LinkedHashMap<String, String>();
 
-  final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
-  final ScrollController scrollController = new ScrollController();
-
   FocusNode focusNode;
-  bool autoValidate = false;
+  bool autoValidate;
   bool isCategoryOwner;
   bool loading;
   bool errorLoading;
@@ -63,9 +67,11 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   void initState() {
+    this.autoValidate = false;
     this.categoryChanged = false;
     this.loading = true;
     this.errorLoading = false;
+
     for (Category cat in Globals.activeUserCategories) {
       // if category is cached get it and don't bother querying DB
       if (cat.categoryId == widget.category.categoryId) {
@@ -74,6 +80,7 @@ class _EditCategoryState extends State<EditCategory> {
       }
     }
     if (this.loading) {
+      // category not cached so fetch from DB
       getCategory();
     } else {
       // put the recently accessed category back to top of list of cached categories
@@ -121,12 +128,14 @@ class _EditCategoryState extends State<EditCategory> {
                     child: RaisedButton.icon(
                       icon: Icon(Icons.save),
                       label: Text("Save"),
+                      key: Key("categories_edit:save_button"),
                       color: Colors.blue,
                       onPressed: saveCategory,
                     ),
                   ),
                 ],
               ),
+              key: Key("categories_edit:scaffold"),
               body: Center(
                 child: Form(
                   key: this.formKey,
@@ -138,8 +147,10 @@ class _EditCategoryState extends State<EditCategory> {
                       children: <Widget>[
                         Align(
                           alignment: Alignment.topRight,
-                          child:
-                              Text("Version: ${this.category.categoryVersion}"),
+                          child: Text(
+                            "Version: ${this.category.categoryVersion}",
+                            key: Key("categories_edit:version_text"),
+                          ),
                         ),
                         Padding(
                           padding: EdgeInsets.all(
@@ -152,7 +163,7 @@ class _EditCategoryState extends State<EditCategory> {
                               child: Container(
                                 width: MediaQuery.of(context).size.width * .7,
                                 child: TextFormField(
-                                  enabled: widget.editName,
+                                  enabled: this.isCategoryOwner,
                                   onChanged: (val) => checkForChanges(),
                                   maxLength: Globals.maxCategoryNameLength,
                                   controller: this.categoryNameController,
@@ -160,6 +171,8 @@ class _EditCategoryState extends State<EditCategory> {
                                     return validCategoryName(value.trim(),
                                         categoryId: widget.category.categoryId);
                                   },
+                                  key: Key(
+                                      "categories_edit:category_name_input"),
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   style: TextStyle(fontSize: 20),
@@ -174,6 +187,7 @@ class _EditCategoryState extends State<EditCategory> {
                               alignment: Alignment.centerRight,
                               child: IconButton(
                                 icon: Icon(Icons.content_copy),
+                                key: Key("categories_edit:copy_button"),
                                 tooltip: "Copy Category",
                                 onPressed: () {
                                   copyPopup();
@@ -198,6 +212,7 @@ class _EditCategoryState extends State<EditCategory> {
                             maxLines: 1,
                             minFontSize: 12,
                             overflow: TextOverflow.ellipsis,
+                            key: Key("categories_edit:category_owner_text"),
                           ),
                         ),
                         Padding(
@@ -210,11 +225,11 @@ class _EditCategoryState extends State<EditCategory> {
                               controller: this.scrollController,
                               slivers: <Widget>[
                                 SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                      (context, index) =>
-                                          this.choiceRows[index],
-                                      childCount: this.choiceRows.length),
-                                )
+                                    delegate: SliverChildBuilderDelegate(
+                                        (context, index) =>
+                                            this.choiceRows[index],
+                                        childCount: this.choiceRows.length),
+                                    key: Key("categories_edit:choice_list"))
                               ],
                             ),
                           ),
@@ -232,8 +247,10 @@ class _EditCategoryState extends State<EditCategory> {
                 visible: this.isCategoryOwner,
                 child: FloatingActionButton(
                   child: Icon(Icons.add),
+                  key: Key("categories_edit:add_choice_button"),
                   onPressed: () {
                     if (this.isCategoryOwner) {
+                      // only owners of the category can currently add new choices
                       setState(() {
                         this.focusNode = new FocusNode();
                         TextEditingController labelController =
@@ -288,6 +305,7 @@ class _EditCategoryState extends State<EditCategory> {
           minFontSize: 12,
           overflow: TextOverflow.ellipsis,
         )),
+        key: Key("categories_edit:scaffold_loading"),
         body: Center(child: CircularProgressIndicator()));
   }
 
@@ -301,14 +319,15 @@ class _EditCategoryState extends State<EditCategory> {
           minFontSize: 12,
           overflow: TextOverflow.ellipsis,
         )),
+        key: Key("categories_edit:scaffold_error"),
         body: Container(
-          height: MediaQuery.of(context).size.height * .80,
+          height: MediaQuery.of(this.context).size.height * .80,
           child: RefreshIndicator(
             child: ListView(
               children: <Widget>[
                 Padding(
                     padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .15)),
+                        MediaQuery.of(this.context).size.height * .15)),
                 Center(child: Text(errorMsg, style: TextStyle(fontSize: 30))),
               ],
             ),
@@ -317,8 +336,12 @@ class _EditCategoryState extends State<EditCategory> {
         ));
   }
 
+  /*
+    If making changes to a category then display a popup to confirm if the user really wishes to
+    lose their changes.
+    Return true to pop the current page and false to stay.
+   */
   Future<bool> handleBackPress() async {
-    // if editing, ensure the user really wants to leave to lose their changes
     if (this.categoryChanged) {
       confirmLeavePage();
       return false;
@@ -327,25 +350,33 @@ class _EditCategoryState extends State<EditCategory> {
     }
   }
 
+  /*
+    Display a popup to allow the user to copy a category.
+
+    Note that the category is only copied using the original ratings/labels. Unsaved changes will
+    not be carried over to the copied category.
+   */
   void copyPopup() {
     final TextEditingController copyNameController =
         new TextEditingController();
     final GlobalKey<FormState> copyForm = GlobalKey<FormState>();
-    hideKeyboard(context);
+    hideKeyboard(this.context);
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Copy \"${widget.category.categoryName}\""),
             actions: <Widget>[
               FlatButton(
                 child: Text("Cancel"),
+                key: Key("categories_edit:copy_popup_cancel"),
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },
               ),
               FlatButton(
                 child: Text("Save as New"),
+                key: Key("categories_edit:copy_popup_save"),
                 onPressed: () {
                   final form = copyForm.currentState;
                   if (form.validate()) {
@@ -371,6 +402,8 @@ class _EditCategoryState extends State<EditCategory> {
                         return validCategoryName(value.trim(),
                             categoryId: widget.category.categoryId);
                       },
+                      key:
+                          Key("categories_edit:copy_popup_category_name_input"),
                       maxLength: Globals.maxCategoryNameLength,
                       decoration: InputDecoration(
                           labelText: "Category Name", counterText: ""),
@@ -383,25 +416,28 @@ class _EditCategoryState extends State<EditCategory> {
         });
   }
 
+  // Display a popup to confirm if the user wishes to leave the page.
   void confirmLeavePage() {
-    hideKeyboard(context);
+    hideKeyboard(this.context);
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("categories_edit:confirm_leave_page_button"),
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                  Navigator.of(context).pop();
+                  Navigator.of(this.context, rootNavigator: true).pop('dialog');
+                  Navigator.of(this.context).pop();
                 },
               ),
               FlatButton(
                 child: Text("No"),
+                key: Key("categories_edit:denial_leave_page_button"),
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },
               )
             ],
@@ -438,6 +474,7 @@ class _EditCategoryState extends State<EditCategory> {
     });
   }
 
+  // fetches category from DB
   Future<Null> getCategory() async {
     ResultStatus<List<Category>> resultStatus =
         await CategoriesManager.getAllCategoriesList(
@@ -464,6 +501,7 @@ class _EditCategoryState extends State<EditCategory> {
     });
   }
 
+  // load ratings from the local user object
   void getRatings() {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
@@ -473,7 +511,7 @@ class _EditCategoryState extends State<EditCategory> {
       TextEditingController labelController = new TextEditingController();
       labelController.text = this.category.choices[choiceId];
       this.labelControllers.putIfAbsent(choiceId, () => labelController);
-
+      // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
       this.ratesControllers.putIfAbsent(choiceId, () => rateController);
@@ -488,7 +526,7 @@ class _EditCategoryState extends State<EditCategory> {
       );
       this.choiceRows.add(choice);
     }
-    // populate the choices with the ratings
+    // populate the choices with the ratings if they exist in the user object
     Map<String, String> categoryRatings =
         Globals.user.categoryRatings[widget.category.categoryId];
     if (categoryRatings != null) {
@@ -498,13 +536,17 @@ class _EditCategoryState extends State<EditCategory> {
         }
       }
     }
-    // sort by choice number
+    // sort by rows choice number
     this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
     setOriginalValues();
   }
 
+  /*
+    Preserve original values to determine if save button is to be shown or not.
+
+    This is called when the category is first loaded as well as when a category successfully saves
+   */
   void setOriginalValues() {
-    // preserve original values to determine if save button is to be shown or not
     this.originalRatings.clear();
     this.originalLabels.clear();
     for (String choiceId in this.labelControllers.keys) {
@@ -517,19 +559,21 @@ class _EditCategoryState extends State<EditCategory> {
     }
   }
 
+  /*
+    Copies the category by using the current original ratings and names for choices
+   */
   void copyCategory(String categoryName) async {
-    // only use the originalRatings/labels since the user must save first before copying a category
     Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
     Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
     for (String i in this.originalLabels.keys) {
       labelsToSave.putIfAbsent(i, () => this.originalLabels[i]);
       ratesToSave.putIfAbsent(i, () => this.originalRatings[i]);
     }
-    showLoadingDialog(context, "Copying category...", true);
+    showLoadingDialog(this.context, "Copying category...", true);
     ResultStatus<Category> resultStatus =
         await CategoriesManager.addOrEditCategory(
             categoryName, labelsToSave, ratesToSave, null);
-    Navigator.of(context, rootNavigator: true).pop('dialog');
+    Navigator.of(this.context, rootNavigator: true).pop('dialog');
     if (resultStatus.success) {
       // update mapping in user object locally
       Globals.user.ownedCategories.add(new Category(
@@ -541,20 +585,27 @@ class _EditCategoryState extends State<EditCategory> {
           widget.category.categoryId, (existing) => ratesToSave,
           ifAbsent: () => ratesToSave);
       // close the original alert dialog
-      Navigator.of(context, rootNavigator: true).pop('dialog');
+      Navigator.of(this.context, rootNavigator: true).pop('dialog');
       Fluttertoast.showToast(
           msg: "Category copied successfully!",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.CENTER);
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
   }
 
+  /*
+    Attempts to save the category to the DB. If not the owner, then only the new ratings are saved since only the owner
+    can change the name/choices.
+
+    First validates all the user input and if success then it launches an API call. If that call
+    returns a success then the page is popped. Else an error message is displayed.
+   */
   void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
-      showErrorMessage("Error", "Must have at least one choice!", context);
+      showErrorMessage("Error", "Must have at least one choice!", this.context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
@@ -567,22 +618,22 @@ class _EditCategoryState extends State<EditCategory> {
           duplicates = true;
         }
       }
-      hideKeyboard(context);
+      hideKeyboard(this.context);
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error", "No duplicate choices allowed!", context);
+              "Input Error", "No duplicate choices allowed!", this.context);
           this.autoValidate = true;
         });
       } else if (this.isCategoryOwner) {
-        showLoadingDialog(context, "Saving changes...", true);
+        showLoadingDialog(this.context, "Saving changes...", true);
         ResultStatus<Category> resultStatus =
             await CategoriesManager.addOrEditCategory(
                 this.categoryNameController.text.trim(),
                 labelsToSave,
                 ratesToSave,
                 this.category);
-        Navigator.of(context, rootNavigator: true).pop('dialog');
+        Navigator.of(this.context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           // update category with new one returned from DB
           this.category = resultStatus.data;
@@ -603,13 +654,14 @@ class _EditCategoryState extends State<EditCategory> {
             this.categoryChanged = false;
           });
         } else {
-          showErrorMessage("Error", resultStatus.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, this.context);
         }
       } else {
-        showLoadingDialog(context, "Saving changes...", true);
+        // not the owner so only save these new ratings
+        showLoadingDialog(this.context, "Saving changes...", true);
         ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
             this.category.categoryId, ratesToSave);
-        Navigator.of(context, rootNavigator: true).pop('dialog');
+        Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
         if (resultStatus.success) {
           // update local ratings
@@ -621,22 +673,24 @@ class _EditCategoryState extends State<EditCategory> {
             this.categoryChanged = false;
           });
         } else {
-          showErrorMessage("Error", resultStatus.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, this.context);
         }
       }
     } else {
+      // set autoValidate to true to highlight errors
       setState(() {
         this.autoValidate = true;
       });
     }
   }
 
+  // deletes a given choice row from the main list of choice rows
   void deleteChoice(ChoiceRow choiceRow) {
     setState(() {
       this.choiceRows.remove(choiceRow);
       this.labelControllers.remove(choiceRow.choiceNumber);
       this.ratesControllers.remove(choiceRow.choiceNumber);
-      hideKeyboard(context);
+      hideKeyboard(this.context);
       checkForChanges();
     });
   }

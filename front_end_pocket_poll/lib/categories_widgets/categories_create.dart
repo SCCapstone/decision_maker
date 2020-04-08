@@ -22,8 +22,12 @@ class _CreateCategoryState extends State<CreateCategory> {
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
+
+  // map of choice number to controller that contains the name of the proposed choice
   final Map<String, TextEditingController> labelControllers =
       new LinkedHashMap<String, TextEditingController>();
+
+  // map of choice number to controller that contains the rating of the proposed choice
   final Map<String, TextEditingController> ratesControllers =
       new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
@@ -49,14 +53,15 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   void initState() {
-    this.nextChoiceValue = 2;
-
+    // we are creating a category, so thus the first choice value is already set to 1
     TextEditingController initLabelController = new TextEditingController();
     this.labelControllers.putIfAbsent("1", () => initLabelController);
 
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = this.defaultRate.toString();
     this.ratesControllers.putIfAbsent("1", () => initRatingController);
+
+    this.nextChoiceValue = 2;
 
     ChoiceRow choice = new ChoiceRow(
         "1", true, initLabelController, initRatingController,
@@ -92,11 +97,13 @@ class _CreateCategoryState extends State<CreateCategory> {
                 RaisedButton.icon(
                   icon: Icon(Icons.save),
                   label: Text("Save"),
+                  key: Key("categories_create:save_button"),
                   color: Colors.blue,
                   onPressed: saveCategory,
                 ),
               ],
             ),
+            key: Key("categories_create:scaffold"),
             body: Center(
               child: Form(
                 key: this.formKey,
@@ -117,6 +124,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                           validator: (value) {
                             return validCategoryName(value.trim());
                           },
+                          key: Key("categories_create:category_name_input"),
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),
@@ -137,10 +145,11 @@ class _CreateCategoryState extends State<CreateCategory> {
                             controller: this.scrollController,
                             slivers: <Widget>[
                               SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                    (context, index) => this.choiceRows[index],
-                                    childCount: this.choiceRows.length),
-                              )
+                                  delegate: SliverChildBuilderDelegate(
+                                      (context, index) =>
+                                          this.choiceRows[index],
+                                      childCount: this.choiceRows.length),
+                                  key: Key("categories_create:choice_list"))
                             ],
                           ),
                         ),
@@ -156,6 +165,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             ),
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.add),
+              key: Key("categories_create:add_choice_button"),
               onPressed: () {
                 setState(() {
                   this.focusNode = new FocusNode();
@@ -195,8 +205,14 @@ class _CreateCategoryState extends State<CreateCategory> {
     );
   }
 
+  /*
+    If creating a category then display a popup to confirm if the user really wishes to
+    lose their changes.
+    Return true to pop the current page and false to stay.
+
+    Assumption is that if the category name is set or there are choices, then the user is editing.
+   */
   Future<bool> handleBackPress() async {
-    // if creating, ensure the user really wants to leave to lose their changes
     if (this.choiceRows.isNotEmpty &&
         this.categoryNameController.text.trim().isNotEmpty) {
       confirmLeavePage();
@@ -206,25 +222,28 @@ class _CreateCategoryState extends State<CreateCategory> {
     }
   }
 
+  // Display a popup to confirm if the user wishes to leave the page.
   void confirmLeavePage() {
-    hideKeyboard(context);
+    hideKeyboard(this.context);
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("categories_create:confirm_leave_page_button"),
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
-                  Navigator.of(context).pop();
+                  Navigator.of(this.context, rootNavigator: true).pop('dialog');
+                  Navigator.of(this.context).pop();
                 },
               ),
               FlatButton(
                 child: Text("No"),
+                key: Key("categories_create:denial_leave_page_button"),
                 onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop('dialog');
+                  Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },
               )
             ],
@@ -235,14 +254,21 @@ class _CreateCategoryState extends State<CreateCategory> {
         });
   }
 
+  /*
+    Attempts to save the category to the DB.
+
+    First validates all the user input and if success then it launches an API call. If that call
+    returns a success then the page is popped. Else an error message is displayed.
+   */
   void saveCategory() async {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
-      showErrorMessage("Error", "Must have at least one choice!", context);
+      showErrorMessage("Error", "Must have at least one choice!", this.context);
     } else if (form.validate()) {
       Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
       bool duplicates = false;
+      // using a set is more efficient than looping over the maps
       Set names = new Set();
       for (String i in this.labelControllers.keys) {
         labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text.trim());
@@ -254,20 +280,21 @@ class _CreateCategoryState extends State<CreateCategory> {
       if (duplicates) {
         setState(() {
           showErrorMessage(
-              "Input Error", "No duplicate choices allowed!", context);
+              "Input Error", "No duplicate choices allowed!", this.context);
           this.autoValidate = true;
         });
       } else {
-        showLoadingDialog(context, "Creating category...", true);
+        showLoadingDialog(this.context, "Creating category...", true);
         ResultStatus<Category> resultStatus =
             await CategoriesManager.addOrEditCategory(
                 this.categoryNameController.text.trim(),
                 labelsToSave,
                 ratesToSave,
                 null);
-        Navigator.of(context, rootNavigator: true).pop('dialog');
+        Navigator.of(this.context, rootNavigator: true).pop('dialog');
         if (resultStatus.success) {
           Category newCategory = resultStatus.data;
+          // update local user object to reflect the new category
           Globals.user.ownedCategories.add(new Category(
               owner: Globals.username,
               categoryId: newCategory.categoryId,
@@ -275,6 +302,7 @@ class _CreateCategoryState extends State<CreateCategory> {
           Globals.activeUserCategories.add(newCategory);
           if (Globals.activeUserCategories.length >
               Globals.maxCategoryCacheSize) {
+            // we only let the user cache so many categories
             Globals.activeUserCategories
                 .removeAt(Globals.maxCategoryCacheSize - 1);
           }
@@ -282,25 +310,26 @@ class _CreateCategoryState extends State<CreateCategory> {
           Globals.user.categoryRatings.update(
               newCategory.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
-          Navigator.of(context).pop();
+          Navigator.of(this.context).pop();
         } else {
-          showErrorMessage("Error", resultStatus.errorMessage, context);
+          showErrorMessage("Error", resultStatus.errorMessage, this.context);
         }
       }
     } else {
-      // error, don't allow user to save with empty choices/category name
+      // set autoValidate to true to highlight errors
       setState(() {
         this.autoValidate = true;
       });
     }
   }
 
+  // deletes a given choice row from the main list of choice rows
   void deleteChoice(ChoiceRow choiceRow) {
     setState(() {
       this.choiceRows.remove(choiceRow);
       this.labelControllers.remove(choiceRow.choiceNumber);
       this.ratesControllers.remove(choiceRow.choiceNumber);
-      hideKeyboard(context);
+      hideKeyboard(this.context);
     });
   }
 }

@@ -89,7 +89,6 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                   MaterialPageRoute(
                       builder: (context) => EditCategory(
                             category: widget.category,
-                            editName: !widget.groupCategory,
                           ))).then((_) {
                 // in case user copied a category, refresh the owned categories on back press
                 widget.updateOwnedCategories();
