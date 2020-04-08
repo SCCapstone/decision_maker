@@ -1363,6 +1363,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This function takes in a group and batch number and gets the appropriate map of events for the
+   * group based on the batch number. This method is used in the 'infinitely' scrolling list of
+   * events on a group's page. Using this, we continue to get the next set or 'batch' of events.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Stand result status object giving insight on whether or not the request was successful
+   */
   public ResultStatus handleGetBatchOfEvents(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.getBatchOfEvents";
