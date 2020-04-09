@@ -27,12 +27,15 @@ class EventDetailsOccurring extends StatefulWidget {
 }
 
 class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
-  String eventCreator = "";
-  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
+  String eventCreator;
+  Map<String, UserRowEvents> userRows; // username -> widget
   Event event;
 
   @override
   void initState() {
+    this.eventCreator = "";
+    this.userRows = new Map<String, UserRowEvents>();
+    // clicking on the details page marks the event unseen
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
@@ -61,7 +64,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: refreshList,
+        onRefresh: refreshEvent,
         child: ListView(
           shrinkWrap: true,
           children: <Widget>[
@@ -190,9 +193,10 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
               label: Text("Add to My Calendar"),
               onPressed: () {
                 calendar.Event calendarEvent = calendar.Event(
-                  title: event.eventName,
-                  startDate: event.eventStartDateTime,
-                  endDate: event.eventStartDateTime.add(Duration(hours: 1)),
+                  title: this.event.eventName,
+                  startDate: this.event.eventStartDateTime,
+                  endDate:
+                      this.event.eventStartDateTime.add(Duration(hours: 1)),
                   allDay: false,
                 );
                 calendar.Add2Calendar.addEvent2Cal(calendarEvent);
@@ -223,18 +227,19 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     this.userRows = sortedMap.cast();
   }
 
-  Future<Null> refreshList() async {
-    ResultStatus<Group> resultStatus =
-        await GroupsManager.getGroup(widget.groupId);
+  Future<Null> refreshEvent() async {
+    ResultStatus<Group> resultStatus = await GroupsManager.getGroup(
+        widget.groupId,
+        batchNumber: Globals.currentGroup.currentBatchNum);
     if (resultStatus.success) {
       Globals.currentGroup = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
-        Navigator.of(context).pop();
+        Navigator.of(this.context).pop();
       }
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
     setState(() {});
   }

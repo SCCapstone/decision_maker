@@ -13,10 +13,10 @@ class EventCardConsider extends StatefulWidget implements EventCardInterface {
   final Event event;
   final String eventId;
   final Function refreshEventsUnseen;
-  final Function refreshPage;
+  final Function refreshGroupPage;
 
   EventCardConsider(this.groupId, this.event, this.eventId,
-      this.refreshEventsUnseen, this.refreshPage);
+      this.refreshEventsUnseen, this.refreshGroupPage);
 
   @override
   _EventCardConsiderState createState() => new _EventCardConsiderState();
@@ -120,7 +120,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                             eventId: widget.eventId,
                             mode: EventsManager.considerMode)),
                   ).then((_) {
-                    widget.refreshPage();
+                    widget.refreshGroupPage();
                   });
                 },
               ),
@@ -140,6 +140,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
   void markEventRead() {
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
+      // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {

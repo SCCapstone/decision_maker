@@ -23,12 +23,15 @@ class EventDetailsClosed extends StatefulWidget {
 }
 
 class _EventDetailsClosedState extends State<EventDetailsClosed> {
-  String eventCreator = "";
-  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
+  String eventCreator;
+  Map<String, UserRowEvents> userRows; // username -> widget
   Event event;
 
   @override
   void initState() {
+    this.eventCreator = "";
+    this.userRows = new Map<String, UserRowEvents>();
+    // clicking on the details page marks the event unseen
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
@@ -189,9 +192,10 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
               label: Text("Add to My Calendar"),
               onPressed: () {
                 calendar.Event calendarEvent = calendar.Event(
-                  title: event.eventName,
-                  startDate: event.eventStartDateTime,
-                  endDate: event.eventStartDateTime.add(Duration(hours: 1)),
+                  title: this.event.eventName,
+                  startDate: this.event.eventStartDateTime,
+                  endDate:
+                      this.event.eventStartDateTime.add(Duration(hours: 1)),
                   allDay: false,
                 );
                 calendar.Add2Calendar.addEvent2Cal(calendarEvent);
@@ -229,7 +233,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
       Globals.currentGroup = resultStatus.data;
       getEvent();
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
     setState(() {});
   }

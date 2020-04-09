@@ -22,16 +22,16 @@ class CreateGroup extends StatefulWidget {
 }
 
 class _CreateGroupState extends State<CreateGroup> {
-  bool autoValidate = false;
+  bool autoValidate;
+  bool isOpen;
   String groupName;
   int votingDuration;
-  File icon;
   int considerDuration;
-  bool isOpen = true;
+  File groupIcon;
+  List<Member> groupMembers;
 
-  List<Member> displayedMembers = new List<Member>();
-  Map<String, String> selectedCategories =
-      new Map<String, String>(); // map of categoryIds -> categoryName
+  // map of categoryIds -> categoryName
+  Map<String, String> groupCategories = new Map<String, String>();
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
@@ -39,6 +39,14 @@ class _CreateGroupState extends State<CreateGroup> {
       new TextEditingController();
   final TextEditingController considerDurationController =
       new TextEditingController();
+
+  @override
+  void initState() {
+    this.autoValidate = false;
+    this.isOpen = true;
+    this.groupMembers = new List<Member>();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -60,8 +68,8 @@ class _CreateGroupState extends State<CreateGroup> {
           title: Text("Add New Group"),
         ),
         body: Form(
-          key: formKey,
-          autovalidate: autoValidate,
+          key: this.formKey,
+          autovalidate: this.autoValidate,
           child: ListView(
             shrinkWrap: true,
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -70,11 +78,11 @@ class _CreateGroupState extends State<CreateGroup> {
                 children: [
                   TextFormField(
                     maxLength: Globals.maxGroupNameLength,
-                    controller: groupNameController,
+                    controller: this.groupNameController,
                     textCapitalization: TextCapitalization.sentences,
                     validator: validGroupName,
                     onSaved: (String arg) {
-                      groupName = arg.trim();
+                      this.groupName = arg.trim();
                     },
                     decoration: InputDecoration(
                         labelText: "Enter a group name", counterText: ""),
@@ -90,9 +98,9 @@ class _CreateGroupState extends State<CreateGroup> {
                     decoration: BoxDecoration(
                         image: DecorationImage(
                             fit: BoxFit.cover,
-                            image: this.icon == null
+                            image: this.groupIcon == null
                                 ? getGroupIconUrlStr(null)
-                                : FileImage(this.icon))),
+                                : FileImage(this.groupIcon))),
                     child: Container(
                       decoration: BoxDecoration(
                           color: Colors.grey.withOpacity(0.7),
@@ -107,28 +115,28 @@ class _CreateGroupState extends State<CreateGroup> {
                     ),
                   ),
                   TextFormField(
-                    controller: considerDurationController,
+                    controller: this.considerDurationController,
                     maxLength: Globals.maxConsiderDigits,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       return validConsiderDuration(value, true);
                     },
                     onSaved: (String arg) {
-                      considerDuration = int.parse(arg.trim());
+                      this.considerDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
                         labelText: "Enter a default consider duration (mins)",
                         counterText: ""),
                   ),
                   TextFormField(
-                    controller: votingDurationController,
+                    controller: this.votingDurationController,
                     maxLength: Globals.maxVotingDigits,
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       return validVotingDuration(value, true);
                     },
                     onSaved: (String arg) {
-                      votingDuration = int.parse(arg.trim());
+                      this.votingDuration = int.parse(arg.trim());
                     },
                     decoration: InputDecoration(
                         labelText: "Enter a default voting duration (mins)",
@@ -156,7 +164,7 @@ class _CreateGroupState extends State<CreateGroup> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          CategoryPick(selectedCategories)));
+                                          CategoryPick(this.groupCategories)));
                             },
                           )),
                     ],
@@ -183,7 +191,7 @@ class _CreateGroupState extends State<CreateGroup> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => MembersPage(
-                                          displayedMembers,
+                                          this.groupMembers,
                                           new List<String>(),
                                           true,
                                           false)));
@@ -232,6 +240,7 @@ class _CreateGroupState extends State<CreateGroup> {
               RaisedButton.icon(
                   onPressed: validateInput,
                   icon: Icon(Icons.add),
+                  key: Key("groups_create:save_button"),
                   label: Text("Create Group"))
             ],
           ),
@@ -240,6 +249,7 @@ class _CreateGroupState extends State<CreateGroup> {
     );
   }
 
+  // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIcon = await ImagePicker.pickImage(
         source: ImageSource.gallery,
@@ -248,17 +258,22 @@ class _CreateGroupState extends State<CreateGroup> {
         maxHeight: 600);
 
     setState(() {
-      this.icon = newIcon;
+      this.groupIcon = newIcon;
     });
   }
 
+  /*
+    Attempt to save the category if no errors exist with user input.
+
+    If success then save the group locally and pop the page. Else highlight the input errors.
+   */
   void validateInput() async {
-    hideKeyboard(context);
-    final form = formKey.currentState;
+    hideKeyboard(this.context);
+    final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
       Map<String, Member> membersMap = new Map<String, Member>();
-      for (Member member in displayedMembers) {
+      for (Member member in this.groupMembers) {
         membersMap.putIfAbsent(member.username, () => member);
       }
       // creator is always in the group of course
@@ -266,19 +281,19 @@ class _CreateGroupState extends State<CreateGroup> {
           Globals.username, () => new Member.fromUser(Globals.user));
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
-          groupName: groupName,
-          categories: selectedCategories,
+          groupName: this.groupName,
+          categories: this.groupCategories,
           members: membersMap,
-          defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration,
+          defaultVotingDuration: this.votingDuration,
+          defaultConsiderDuration: this.considerDuration,
           events: new Map<String, Event>(),
-          isOpen: isOpen);
+          isOpen: this.isOpen);
 
       showLoadingDialog(
-          context, "Creating group...", true); // show loading dialog
+          this.context, "Creating group...", true); // show loading dialog
       ResultStatus<Group> resultStatus =
-          await GroupsManager.createNewGroup(group, icon);
-      Navigator.of(context, rootNavigator: true)
+          await GroupsManager.createNewGroup(group, groupIcon);
+      Navigator.of(this.context, rootNavigator: true)
           .pop('dialog'); // dismiss the loading dialog
 
       if (resultStatus.success) {
@@ -292,12 +307,12 @@ class _CreateGroupState extends State<CreateGroup> {
             eventsUnseen: new Map<String, bool>());
         Globals.user.groups
             .putIfAbsent(resultStatus.data.groupId, () => newGroup);
-        Navigator.of(context).pop();
+        Navigator.of(this.context).pop();
       } else {
-        showErrorMessage("Error", resultStatus.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 }

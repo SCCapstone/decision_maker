@@ -13,10 +13,10 @@ class EventCardOccurring extends StatefulWidget implements EventCardInterface {
   final Event event;
   final String eventId;
   final Function refreshEventsUnseen;
-  final Function refreshPage;
+  final Function refreshGroupPage;
 
   EventCardOccurring(this.groupId, this.event, this.eventId,
-      this.refreshEventsUnseen, this.refreshPage);
+      this.refreshEventsUnseen, this.refreshGroupPage);
 
   @override
   _EventCardOccurringState createState() => new _EventCardOccurringState();
@@ -122,7 +122,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
                             eventId: widget.eventId,
                             mode: EventsManager.occurringMode)),
                   ).then((_) {
-                    widget.refreshPage();
+                    widget.refreshGroupPage();
                   });
                 },
               ),
@@ -142,6 +142,7 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
   void markEventRead() {
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
+      // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {

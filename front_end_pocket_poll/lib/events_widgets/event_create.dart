@@ -28,9 +28,8 @@ class _CreateEventState extends State<CreateEvent> {
       TextEditingController();
   final TextEditingController hrController = new TextEditingController();
   final TextEditingController minController = new TextEditingController();
-  final int textFieldLength = 4;
-  final formKey = GlobalKey<FormState>();
-  final List<Category> categorySelected = new List<Category>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final List<Category> categorySelected = new List<Category>(); // only 1 item
 
   Timer timer;
   String eventName;
@@ -39,9 +38,9 @@ class _CreateEventState extends State<CreateEvent> {
   String eventStartDateFormatted;
   String considerButtonText;
   String voteButtonText;
-  bool autoValidate = false;
-  bool willConsider = true;
-  bool willVote = true;
+  bool autoValidate;
+  bool willConsider;
+  bool willVote;
   bool am;
   DateTime votingStart;
   DateTime votingEnd;
@@ -51,7 +50,7 @@ class _CreateEventState extends State<CreateEvent> {
   int proposedYear;
   int proposedMonth;
   int proposedDay;
-  FocusNode minuteFocus = new FocusNode();
+  FocusNode minuteInputFocus;
 
   @override
   void dispose() {
@@ -66,7 +65,12 @@ class _CreateEventState extends State<CreateEvent> {
 
   @override
   void initState() {
-    // if user is in PM or almost near PM show PM instead of AM
+    this.minuteInputFocus = new FocusNode();
+    this.autoValidate = false;
+    this.willConsider = true;
+    this.willVote = true;
+
+    // if user is in PM or almost near PM show PM instead of AM initially
     this.am = (TimeOfDay.now().hour + 1 < 12);
     // provide default values initially, this is never shown to the user however
     DateTime initialTime = DateTime.now().add(Duration(hours: 1));
@@ -78,33 +82,33 @@ class _CreateEventState extends State<CreateEvent> {
 
     // if close to the end of the current day, then add one to the default proposed day
     if ((TimeOfDay.now().hour + 1) > 23) {
-      proposedEventDateTime = DateTime.now().add(Duration(days: 1));
+      this.proposedEventDateTime = DateTime.now().add(Duration(days: 1));
     } else {
-      proposedEventDateTime = DateTime.now();
+      this.proposedEventDateTime = DateTime.now();
     }
-    proposedYear = proposedEventDateTime.year;
-    proposedMonth = proposedEventDateTime.month;
-    proposedDay = proposedEventDateTime.day;
-    eventStartDateFormatted =
-        Globals.formatter.format(proposedEventDateTime).substring(0, 10);
+    this.proposedYear = this.proposedEventDateTime.year;
+    this.proposedMonth = this.proposedEventDateTime.month;
+    this.proposedDay = this.proposedEventDateTime.day;
+    this.eventStartDateFormatted =
+        Globals.formatter.format(this.proposedEventDateTime).substring(0, 10);
 
-    votingDurationController.text =
+    this.votingDurationController.text =
         Globals.currentGroup.defaultVotingDuration.toString();
-    considerDurationController.text =
+    this.considerDurationController.text =
         Globals.currentGroup.defaultConsiderDuration.toString();
-    considerDuration = considerDurationController.text;
-    votingDuration = votingDurationController.text;
-    if (considerDuration == "0") {
-      considerButtonText = "Set Consider";
-      willConsider = false;
+    this.considerDuration = this.considerDurationController.text;
+    this.votingDuration = this.votingDurationController.text;
+    if (this.considerDuration == "0") {
+      this.considerButtonText = "Set Consider";
+      this.willConsider = false;
     } else {
-      considerButtonText = "Skip Consider";
+      this.considerButtonText = "Skip Consider";
     }
-    if (votingDuration == "0") {
-      voteButtonText = "Set Voting";
-      willVote = false;
+    if (this.votingDuration == "0") {
+      this.voteButtonText = "Set Voting";
+      this.willVote = false;
     } else {
-      voteButtonText = "Skip Voting";
+      this.voteButtonText = "Skip Voting";
     }
     super.initState();
   }
@@ -118,9 +122,10 @@ class _CreateEventState extends State<CreateEvent> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text("Create Event")),
+        key: Key("event_create:scaffold"),
         body: Form(
-            key: formKey,
-            autovalidate: autoValidate,
+            key: this.formKey,
+            autovalidate: this.autoValidate,
             child: ListView(
               shrinkWrap: true,
               padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -129,11 +134,11 @@ class _CreateEventState extends State<CreateEvent> {
                   children: <Widget>[
                     TextFormField(
                       maxLength: Globals.maxEventNameLength,
-                      controller: eventNameController,
+                      controller: this.eventNameController,
                       validator: validEventName,
                       textCapitalization: TextCapitalization.sentences,
                       onSaved: (String arg) {
-                        eventName = arg;
+                        this.eventName = arg.trim();
                       },
                       decoration: InputDecoration(
                           labelText: "Enter an event name", counterText: ""),
@@ -146,7 +151,7 @@ class _CreateEventState extends State<CreateEvent> {
                               showCategoriesPopup();
                             },
                             child: AutoSizeText(
-                              getCategoryButtonMessage(),
+                              getCategoryActionMessage(),
                               minFontSize: 10,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -185,7 +190,7 @@ class _CreateEventState extends State<CreateEvent> {
                               selectStartDate();
                             },
                             child: AutoSizeText(
-                              eventStartDateFormatted,
+                              this.eventStartDateFormatted,
                               maxLines: 1,
                               minFontSize: 14,
                               overflow: TextOverflow.ellipsis,
@@ -207,10 +212,10 @@ class _CreateEventState extends State<CreateEvent> {
                         Expanded(
                           child: TextFormField(
                             keyboardType: TextInputType.number,
-                            controller: hrController,
+                            controller: this.hrController,
                             textInputAction: TextInputAction.next,
                             validator: (input) {
-                              return validMeridianHour(hrController.text);
+                              return validMeridianHour(this.hrController.text);
                             },
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
@@ -219,38 +224,42 @@ class _CreateEventState extends State<CreateEvent> {
                                 hintText: "HH", counterText: ""),
                             onFieldSubmitted: (form) {
                               // when user hits the next button on their keyboard, takes them to the minutes field
-                              FocusScope.of(context).requestFocus(minuteFocus);
+                              FocusScope.of(context)
+                                  .requestFocus(this.minuteInputFocus);
                             },
                             onChanged: (val) {
-                              // as user types the hour is automatically saved, assuming it is valid
+                              // as the user types the hour is automatically saved, assuming it is valid
                               if (val.isNotEmpty) {
                                 // this check needs to be here otherwise user can't backspace
                                 try {
                                   int newVal = int.parse(val.trim());
                                   if (newVal > 12) {
-                                    hrController.clear();
-                                    hrController.text = proposedHr.toString();
+                                    this.hrController.clear();
+                                    this.hrController.text =
+                                        this.proposedHr.toString();
                                     FocusScope.of(context)
-                                        .requestFocus(minuteFocus);
+                                        .requestFocus(this.minuteInputFocus);
                                   } else if (val.trim().length == 2) {
                                     if (newVal == 0) {
                                       // can't have 00 for hour in AM/PM format
-                                      proposedHr = 1;
-                                      hrController.text = proposedHr.toString();
+                                      this.proposedHr = 1;
+                                      this.hrController.text =
+                                          this.proposedHr.toString();
                                     } else {
-                                      proposedHr = int.parse(val.trim());
+                                      this.proposedHr = int.parse(val.trim());
                                     }
                                     FocusScope.of(context)
-                                        .requestFocus(minuteFocus);
+                                        .requestFocus(this.minuteInputFocus);
                                   } else {
-                                    proposedHr = int.parse(val.trim());
+                                    this.proposedHr = int.parse(val.trim());
                                   }
                                 } catch (e) {
                                   // in case somehow a non number gets inputted
-                                  hrController.clear();
-                                  hrController.text = proposedHr.toString();
+                                  this.hrController.clear();
+                                  this.hrController.text =
+                                      this.proposedHr.toString();
                                   FocusScope.of(context)
-                                      .requestFocus(minuteFocus);
+                                      .requestFocus(this.minuteInputFocus);
                                 }
                               }
                             },
@@ -262,10 +271,10 @@ class _CreateEventState extends State<CreateEvent> {
                             textAlign: TextAlign.center,
                             keyboardType: TextInputType.number,
                             textInputAction: TextInputAction.done,
-                            controller: minController,
-                            focusNode: minuteFocus,
+                            controller: this.minController,
+                            focusNode: this.minuteInputFocus,
                             validator: (val) {
-                              return validMinute(minController.text);
+                              return validMinute(this.minController.text);
                             },
                             enableInteractiveSelection: false,
                             maxLength: 2,
@@ -278,20 +287,22 @@ class _CreateEventState extends State<CreateEvent> {
                                 try {
                                   int newVal = int.parse(val.trim());
                                   if (newVal > 59) {
-                                    minController.clear();
-                                    minController.text = proposedMin.toString();
+                                    this.minController.clear();
+                                    this.minController.text =
+                                        this.proposedMin.toString();
                                     hideKeyboard(context);
                                   } else if (newVal.toString().length == 2 ||
                                       val.length == 2) {
-                                    proposedMin = int.parse(val.trim());
+                                    this.proposedMin = int.parse(val.trim());
                                     hideKeyboard(context);
                                   } else {
-                                    proposedMin = int.parse(val.trim());
+                                    this.proposedMin = int.parse(val.trim());
                                   }
                                 } catch (e) {
                                   // in case somehow a non number gets inputted
-                                  minController.clear();
-                                  minController.text = proposedMin.toString();
+                                  this.minController.clear();
+                                  this.minController.text =
+                                      this.proposedMin.toString();
                                   hideKeyboard(context);
                                 }
                               }
@@ -328,23 +339,24 @@ class _CreateEventState extends State<CreateEvent> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Visibility(
-                          visible: willConsider,
+                          visible: this.willConsider,
                           child: Expanded(
                             child: Container(
                               child: TextFormField(
-                                controller: considerDurationController,
+                                controller: this.considerDurationController,
                                 keyboardType: TextInputType.number,
-                                enabled: willConsider,
+                                enabled: this.willConsider,
                                 validator: (value) {
                                   return validConsiderDuration(value, true);
                                 },
                                 maxLength: Globals.maxConsiderDigits,
                                 onChanged: (String arg) {
                                   // if already at max length and you keep typing, setState won't get called again
-                                  if (!(arg.length == textFieldLength &&
-                                      considerDuration.length ==
-                                          textFieldLength)) {
-                                    considerDuration = arg;
+                                  if (!(arg.length ==
+                                          Globals.maxConsiderDigits &&
+                                      this.considerDuration.length ==
+                                          Globals.maxConsiderDigits)) {
+                                    this.considerDuration = arg;
                                     setState(() {});
                                   }
                                 },
@@ -359,26 +371,26 @@ class _CreateEventState extends State<CreateEvent> {
                           width: MediaQuery.of(context).size.width * .3,
                           child: RaisedButton(
                               child: AutoSizeText(
-                                considerButtonText,
+                                this.considerButtonText,
                                 minFontSize: 10,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
                               onPressed: () {
-                                willConsider = !willConsider;
-                                if (willConsider == false) {
-                                  considerDurationController.text = "0";
-                                  considerDuration =
-                                      considerDurationController.text;
-                                  considerButtonText = "Set Consider";
+                                this.willConsider = !this.willConsider;
+                                if (!this.willConsider) {
+                                  this.considerDurationController.text = "0";
+                                  this.considerDuration =
+                                      this.considerDurationController.text;
+                                  this.considerButtonText = "Set Consider";
                                 } else {
-                                  considerDurationController.text = Globals
+                                  this.considerDurationController.text = Globals
                                       .currentGroup.defaultConsiderDuration
                                       .toString();
-                                  considerDuration =
-                                      considerDurationController.text;
-                                  considerButtonText = "Skip Consider";
+                                  this.considerDuration =
+                                      this.considerDurationController.text;
+                                  this.considerButtonText = "Skip Consider";
                                 }
                                 setState(() {});
                               }),
@@ -410,21 +422,22 @@ class _CreateEventState extends State<CreateEvent> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Visibility(
-                          visible: willVote,
+                          visible: this.willVote,
                           child: Expanded(
                             child: Container(
                               child: TextFormField(
-                                controller: votingDurationController,
+                                controller: this.votingDurationController,
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
                                   return validVotingDuration(value, true);
                                 },
                                 maxLength: Globals.maxVotingDigits,
                                 onChanged: (String arg) {
-                                  if (!(arg.length == textFieldLength &&
-                                      votingDuration.length ==
-                                          textFieldLength)) {
-                                    votingDuration = arg;
+                                  if (!(arg.length ==
+                                          Globals.maxConsiderDigits &&
+                                      this.votingDuration.length ==
+                                          Globals.maxConsiderDigits)) {
+                                    this.votingDuration = arg;
                                     setState(() {});
                                   }
                                 },
@@ -439,26 +452,26 @@ class _CreateEventState extends State<CreateEvent> {
                           width: MediaQuery.of(context).size.width * .3,
                           child: RaisedButton(
                               child: AutoSizeText(
-                                voteButtonText,
+                                this.voteButtonText,
                                 minFontSize: 10,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
                               onPressed: () {
-                                willVote = !willVote;
-                                if (willVote == false) {
-                                  votingDurationController.text = "0";
-                                  votingDuration =
-                                      votingDurationController.text;
-                                  voteButtonText = "Set Voting";
+                                this.willVote = !this.willVote;
+                                if (!this.willVote) {
+                                  this.votingDurationController.text = "0";
+                                  this.votingDuration =
+                                      this.votingDurationController.text;
+                                  this.voteButtonText = "Set Voting";
                                 } else {
-                                  votingDurationController.text = Globals
+                                  this.votingDurationController.text = Globals
                                       .currentGroup.defaultVotingDuration
                                       .toString();
-                                  votingDuration =
-                                      votingDurationController.text;
-                                  voteButtonText = "Skip Voting";
+                                  this.votingDuration =
+                                      this.votingDurationController.text;
+                                  this.voteButtonText = "Skip Voting";
                                 }
                                 setState(() {});
                               }),
@@ -493,13 +506,14 @@ class _CreateEventState extends State<CreateEvent> {
                 children: <Widget>[
                   RaisedButton.icon(
                       onPressed: () {
-                        if (categorySelected.isEmpty) {
+                        if (this.categorySelected.isEmpty) {
                           showErrorMessage(
                               "Error", "Select a category.", context);
                         } else {
-                          validateInput();
+                          attemptSave();
                         }
                       },
+                      key: Key("event_create:save_event_button"),
                       icon: Icon(Icons.add),
                       label: Text("Create"))
                 ])),
@@ -507,43 +521,50 @@ class _CreateEventState extends State<CreateEvent> {
     );
   }
 
+  /*
+      Get the most recent calculated times in case user is just idle on this screen.
+     
+      Is called by a timer on a fixed interval.
+   */
   void refreshTime() {
-    // used to get the most recent calculated times in case user is just idle on this screen
     setState(() {});
   }
 
+  // display a popup for picking a category for this event
   void showCategoriesPopup() {
     showDialog(
-        context: context,
+        context: this.context,
         child: CategoryPopupSingle(
-          categorySelected,
+          this.categorySelected,
           handlePopupClosed: categoryPopupClosed,
         )).then((value) {
       categoryPopupClosed();
     });
   }
 
+  // callback method for whenever popup is closed. Currently just closes keyboard if open
   void categoryPopupClosed() {
-    hideKeyboard(context);
+    hideKeyboard(this.context);
     setState(() {});
   }
 
-  String getCategoryButtonMessage() {
-    if (categorySelected.isEmpty) {
+  // if the user has selected a category, then display that name instead of default message
+  String getCategoryActionMessage() {
+    if (this.categorySelected.isEmpty) {
       return "Select Category";
     } else {
-      return categorySelected.first.categoryName;
+      return this.categorySelected.first.categoryName;
     }
   }
 
-  Future selectStartDate() async {
-    /*
+  /*
       Displays a GUI for selecting the month/day/year for the event start time
-     */
-    hideKeyboard(context);
+   */
+  Future selectStartDate() async {
+    hideKeyboard(this.context);
     DateTime selectedDate = await showDatePicker(
-        context: context,
-        initialDate: proposedEventDateTime,
+        context: this.context,
+        initialDate: this.proposedEventDateTime,
         firstDate: DateTime.now().subtract(Duration(days: 1)),
         lastDate: DateTime(DateTime.now().year + 50));
     if (selectedDate != null) {
@@ -553,27 +574,28 @@ class _CreateEventState extends State<CreateEvent> {
       this.proposedDay = selectedDate.day;
       this.proposedEventDateTime =
           new DateTime(this.proposedYear, this.proposedMonth, this.proposedDay);
-      eventStartDateFormatted =
+      this.eventStartDateFormatted =
           Globals.formatter.format(selectedDate).substring(0, 10);
       setState(() {});
     }
   }
 
-  Future selectStartTimePopup() async {
-    /*
+  /*
       Displays a GUI for selecting the hr/min for the event start time.
+      
       The time picker requires an initial time. When the user first opens the page,
-      there is no initial time (it's set to a sentinel value of -1) so we must provide
-      some random initial time to the GUI. For now just using 1 hour past current time
-     */
-    hideKeyboard(context);
+      we must provide some random initial time to the GUI.
+      For now just using 1 hour past current time
+   */
+  Future selectStartTimePopup() async {
+    hideKeyboard(this.context);
     DateTime initialTime = DateTime.now().add(Duration(hours: 1));
     final TimeOfDay selectedTime = await showTimePicker(
-        context: context,
+        context: this.context,
         initialTime: new TimeOfDay(
             hour: (this.proposedHr < 1)
                 ? initialTime.hour
-                : convertMeridianHrToMilitary(proposedHr, am),
+                : convertMeridianHrToMilitary(this.proposedHr, this.am),
             minute: (this.proposedMin < 1)
                 ? initialTime.minute
                 : this.proposedMin));
@@ -593,68 +615,76 @@ class _CreateEventState extends State<CreateEvent> {
     }
   }
 
+  // calculate a string to show when the vote start time would be given current input
   String calculateVotingStartDateTime() {
     String displayVal;
-
-    if (considerDuration == "0") {
-      votingStart = DateTime.now();
-      displayVal = Globals.formatter.format(votingStart);
+    if (this.considerDuration == "0") {
+      this.votingStart = DateTime.now();
+      displayVal = Globals.formatter.format(this.votingStart);
     } else {
-      if (validConsiderDuration(considerDuration, true) != null) {
-        displayVal = Globals.formatter.format(votingStart);
+      if (validConsiderDuration(this.considerDuration, true) != null) {
+        displayVal = Globals.formatter.format(this.votingStart);
       } else {
-        votingStart = DateTime.now();
-        votingStart =
-            votingStart.add(Duration(minutes: int.parse(considerDuration)));
-        displayVal = Globals.formatter.format(votingStart);
+        this.votingStart = DateTime.now();
+        this.votingStart = this
+            .votingStart
+            .add(Duration(minutes: int.parse(this.considerDuration)));
+        displayVal = Globals.formatter.format(this.votingStart);
       }
     }
     return "Consider will end: $displayVal";
   }
 
+  // calculate a string to show when the consider start time would be given current input
   String calculateVotingEndDateTime() {
     String displayVal;
-
-    if (validVotingDuration(votingDuration, true) != null) {
-      displayVal = Globals.formatter.format(votingEnd);
-    } else if (votingDuration == "0") {
-      votingEnd = votingStart;
-      displayVal = Globals.formatter.format(votingEnd);
-    } else if (votingStart != null) {
-      votingEnd = votingStart.add(Duration(minutes: int.parse(votingDuration)));
-      displayVal = Globals.formatter.format(votingEnd);
+    if (validVotingDuration(this.votingDuration, true) != null) {
+      displayVal = Globals.formatter.format(this.votingEnd);
+    } else if (this.votingDuration == "0") {
+      this.votingEnd = this.votingStart;
+      displayVal = Globals.formatter.format(this.votingEnd);
+    } else if (this.votingStart != null) {
+      this.votingEnd = this
+          .votingStart
+          .add(Duration(minutes: int.parse(this.votingDuration)));
+      displayVal = Globals.formatter.format(this.votingEnd);
     } else {
       displayVal = "";
     }
     return "Voting will end: $displayVal";
   }
 
-  void validateInput() async {
-    hideKeyboard(context);
-    final form = formKey.currentState;
+  /*
+    Attempts to create the event if all input is valid.
+    
+    Once it is created the page is popped. Errors are highlighted if present.
+   */
+  void attemptSave() async {
+    hideKeyboard(this.context);
+    final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
       // convert the hour to military time
-      int formattedHr = convertMeridianHrToMilitary(proposedHr, am);
-      proposedEventDateTime = new DateTime(this.proposedYear,
-          this.proposedMonth, this.proposedDay, formattedHr, proposedMin);
+      int formattedHr = convertMeridianHrToMilitary(this.proposedHr, this.am);
+      this.proposedEventDateTime = new DateTime(this.proposedYear,
+          this.proposedMonth, this.proposedDay, formattedHr, this.proposedMin);
 
       String errorMessage = "";
-      if (DateTime.now().isAfter(proposedEventDateTime)) {
+      if (DateTime.now().isAfter(this.proposedEventDateTime)) {
         errorMessage += "Start time must be after current time\n\n";
       } else {
-        if (this.votingStart.isAfter(proposedEventDateTime)) {
+        if (this.votingStart.isAfter(this.proposedEventDateTime)) {
           errorMessage +=
               "Consider duration invalid: Consider time will end after the event starts\n\n";
         }
-        if (this.votingEnd.isAfter(proposedEventDateTime)) {
+        if (this.votingEnd.isAfter(this.proposedEventDateTime)) {
           errorMessage +=
               "Voting duration invalid: Voting will end after the event starts";
         }
       }
 
       if (errorMessage != "") {
-        showErrorMessage("Error", errorMessage.trim(), context);
+        showErrorMessage("Error", errorMessage.trim(), this.context);
       } else {
         Event event = new Event(
             eventName: this.eventName.trim(),
@@ -669,16 +699,16 @@ class _CreateEventState extends State<CreateEvent> {
         showLoadingDialog(context, "Creating event...", true);
         ResultStatus result =
             await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
-        Navigator.of(context, rootNavigator: true).pop('dialog');
+        Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
         if (result.success) {
-          Navigator.of(context).pop();
+          Navigator.of(this.context).pop();
         } else {
-          showErrorMessage("Error", result.errorMessage, context);
+          showErrorMessage("Error", result.errorMessage, this.context);
         }
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 }

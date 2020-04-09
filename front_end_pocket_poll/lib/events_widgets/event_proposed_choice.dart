@@ -107,20 +107,18 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
       widget.event.votingNumbers
           .putIfAbsent(widget.choiceId, () => new Map<String, int>());
     }
-
     widget.event.votingNumbers[widget.choiceId].update(
         Globals.username, (existing) => voteVal,
         ifAbsent: () => voteVal);
-
     setState(() {
       this.currentVote = voteVal;
     });
 
     ResultStatus resultStatus = await GroupsManager.voteForChoice(
         widget.groupId, widget.eventId, widget.choiceId, voteVal);
-
+    // we want voting to be as smooth as possible, so don't show loading dialog and only show error if it happens
     if (!resultStatus.success) {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
       setState(() {
         // if error, put vote back to what it was
         this.currentVote = previousVote;
