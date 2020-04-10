@@ -90,7 +90,7 @@ class _CreateEventState extends State<CreateEvent> {
     this.proposedMonth = this.proposedEventDateTime.month;
     this.proposedDay = this.proposedEventDateTime.day;
     this.eventStartDateFormatted =
-        Globals.formatter.format(this.proposedEventDateTime).substring(0, 10);
+        Globals.dateFormatter.format(this.proposedEventDateTime);
 
     this.votingDurationController.text =
         Globals.currentGroup.defaultVotingDuration.toString();
@@ -574,8 +574,7 @@ class _CreateEventState extends State<CreateEvent> {
       this.proposedDay = selectedDate.day;
       this.proposedEventDateTime =
           new DateTime(this.proposedYear, this.proposedMonth, this.proposedDay);
-      this.eventStartDateFormatted =
-          Globals.formatter.format(selectedDate).substring(0, 10);
+      this.eventStartDateFormatted = Globals.dateFormatter.format(selectedDate);
       setState(() {});
     }
   }
@@ -620,16 +619,16 @@ class _CreateEventState extends State<CreateEvent> {
     String displayVal;
     if (this.considerDuration == "0") {
       this.votingStart = DateTime.now();
-      displayVal = Globals.formatter.format(this.votingStart);
+      displayVal = Globals.formatterWithTime.format(this.votingStart);
     } else {
       if (validConsiderDuration(this.considerDuration, true) != null) {
-        displayVal = Globals.formatter.format(this.votingStart);
+        displayVal = Globals.formatterWithTime.format(this.votingStart);
       } else {
         this.votingStart = DateTime.now();
         this.votingStart = this
             .votingStart
             .add(Duration(minutes: int.parse(this.considerDuration)));
-        displayVal = Globals.formatter.format(this.votingStart);
+        displayVal = Globals.formatterWithTime.format(this.votingStart);
       }
     }
     return "Consider will end: $displayVal";
@@ -639,15 +638,15 @@ class _CreateEventState extends State<CreateEvent> {
   String calculateVotingEndDateTime() {
     String displayVal;
     if (validVotingDuration(this.votingDuration, true) != null) {
-      displayVal = Globals.formatter.format(this.votingEnd);
+      displayVal = Globals.formatterWithTime.format(this.votingEnd);
     } else if (this.votingDuration == "0") {
       this.votingEnd = this.votingStart;
-      displayVal = Globals.formatter.format(this.votingEnd);
+      displayVal = Globals.formatterWithTime.format(this.votingEnd);
     } else if (this.votingStart != null) {
       this.votingEnd = this
           .votingStart
           .add(Duration(minutes: int.parse(this.votingDuration)));
-      displayVal = Globals.formatter.format(this.votingEnd);
+      displayVal = Globals.formatterWithTime.format(this.votingEnd);
     } else {
       displayVal = "";
     }

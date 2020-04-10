@@ -66,176 +66,174 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
       ),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Proposed Time",
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Proposed Time",
+                      minFontSize: 20,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                  ),
+                  AutoSizeText(
+                    this.event.eventStartDateTimeFormatted,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText("Consider Time Ends",
                         minFontSize: 20,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      Globals.formatter.format(this.event.eventStartDateTime),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        )),
+                  ),
+                  AutoSizeText(this.event.pollBeginFormatted,
                       minFontSize: 15,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText("Consider Time Ends",
-                          minFontSize: 20,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40,
-                          )),
-                    ),
-                    AutoSizeText(this.event.pollBeginFormatted,
-                        minFontSize: 15,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 32)),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Category",
-                        minFontSize: 20,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.categoryName,
-                      minFontSize: 15,
+                      style: TextStyle(fontSize: 32)),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Category",
+                      minFontSize: 20,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
                     ),
-                    AutoSizeText(
-                      "Version: ${this.event.categoryVersion.toString()}",
+                  ),
+                  AutoSizeText(
+                    this.event.categoryName,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  AutoSizeText(
+                    "Version: ${this.event.categoryVersion.toString()}",
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                  ),
+                  AutoSizeText("Event created by: ${this.eventCreator}",
                       minFontSize: 12,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Event created by: ${this.eventCreator}",
-                        minFontSize: 12,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16)),
-                    Visibility(
-                      visible: this.userRows.length > 0,
-                      child: ExpansionTile(
-                        title: Text(
-                            "Members considered (${this.userRows.length})"),
-                        children: <Widget>[
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * .2,
-                            ),
-                            child: Scrollbar(
-                              child: ListView(
-                                shrinkWrap: true,
-                                children: this.userRows.values.toList(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Visibility(
-                        visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText(
-                          "No members currently being considered",
-                          minFontSize: 12,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        )),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Consider Me?",
-                        minFontSize: 12,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 20)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      style: TextStyle(fontSize: 16)),
+                  Visibility(
+                    visible: this.userRows.length > 0,
+                    child: ExpansionTile(
+                      title:
+                          Text("Members considered (${this.userRows.length})"),
                       children: <Widget>[
-                        Container(
-                          child: RaisedButton(
-                            child: Text("No"),
-                            color: Colors.red,
-                            onPressed: () {
-                              tryConsider(false);
-                            },
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
                           ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                              width: 3,
-                              color: (!this
-                                      .event
-                                      .optedIn
-                                      .containsKey(Globals.username))
-                                  ? Colors.orangeAccent
-                                  : Theme.of(context).scaffoldBackgroundColor,
-                            )),
+                          child: Scrollbar(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
+                            ),
                           ),
                         ),
-                        Container(
-                          child: RaisedButton(
-                            child: Text("Yes"),
-                            color: Colors.green,
-                            onPressed: () {
-                              tryConsider(true);
-                            },
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                                bottom: BorderSide(
-                              width: 3,
-                              color: (this
-                                      .event
-                                      .optedIn
-                                      .containsKey(Globals.username))
-                                  ? Colors.greenAccent
-                                  : Theme.of(context).scaffoldBackgroundColor,
-                            )),
-                          ),
-                        )
                       ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                  ),
+                  Visibility(
+                      visible: this.event.optedIn.length <= 0,
+                      child: AutoSizeText(
+                        "No members currently being considered",
+                        minFontSize: 12,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 16),
+                      )),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                  ),
+                  AutoSizeText("Consider Me?",
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 20)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        child: RaisedButton(
+                          child: Text("No"),
+                          color: Colors.red,
+                          onPressed: () {
+                            tryConsider(false);
+                          },
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                            width: 3,
+                            color: (!this
+                                    .event
+                                    .optedIn
+                                    .containsKey(Globals.username))
+                                ? Colors.orangeAccent
+                                : Theme.of(context).scaffoldBackgroundColor,
+                          )),
+                        ),
+                      ),
+                      Container(
+                        child: RaisedButton(
+                          child: Text("Yes"),
+                          color: Colors.green,
+                          onPressed: () {
+                            tryConsider(true);
+                          },
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                            width: 3,
+                            color: (this
+                                    .event
+                                    .optedIn
+                                    .containsKey(Globals.username))
+                                ? Colors.greenAccent
+                                : Theme.of(context).scaffoldBackgroundColor,
+                          )),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(

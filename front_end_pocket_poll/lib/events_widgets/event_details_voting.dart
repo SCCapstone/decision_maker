@@ -73,149 +73,142 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
       ),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Event Starts",
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Event Starts",
+                      minFontSize: 20,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                  ),
+                  AutoSizeText(
+                    this.event.eventStartDateTimeFormatted,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText("Voting Ends",
                         minFontSize: 20,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.eventStartDateTimeFormatted,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        )),
+                  ),
+                  AutoSizeText(this.event.pollEndFormatted,
                       minFontSize: 15,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText("Voting Ends",
-                          minFontSize: 20,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40,
-                          )),
-                    ),
-                    AutoSizeText(this.event.pollEndFormatted,
-                        minFontSize: 15,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 32)),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Category",
-                        minFontSize: 20,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.categoryName,
-                      minFontSize: 15,
+                      style: TextStyle(fontSize: 32)),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Category",
+                      minFontSize: 20,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
                     ),
-                    AutoSizeText(
-                      "Version: ${this.event.categoryVersion.toString()}",
+                  ),
+                  AutoSizeText(
+                    this.event.categoryName,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  AutoSizeText(
+                    "Version: ${this.event.categoryVersion.toString()}",
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .001),
+                  ),
+                  AutoSizeText("Event created by: ${this.eventCreator}",
                       minFontSize: 12,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16)),
+                  Visibility(
+                    visible: this.event.optedIn.length > 0,
+                    child: ExpansionTile(
+                      title: Text("Considered (${this.event.optedIn.length})"),
+                      children: <Widget>[
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
+                          child: Scrollbar(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Event created by: ${this.eventCreator}",
+                  ),
+                  Visibility(
+                      visible: this.event.optedIn.length <= 0,
+                      child: AutoSizeText(
+                        "No members considered",
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16)),
-                    Visibility(
-                      visible: this.event.optedIn.length > 0,
-                      child: ExpansionTile(
-                        title:
-                            Text("Considered (${this.event.optedIn.length})"),
-                        children: <Widget>[
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * .2,
-                            ),
-                            child: Scrollbar(
-                              child: ListView(
-                                shrinkWrap: true,
-                                children: this.userRows.values.toList(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Visibility(
-                        visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText(
-                          "No members considered",
-                          minFontSize: 12,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        )),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    Container(
-                      height: MediaQuery.of(context).size.height * .27,
-                      width: MediaQuery.of(context).size.width * .95,
-                      child: PageView.builder(
-                        controller: this.pageController,
-                        itemCount: this.choices.length,
-                        itemBuilder: (context, index) {
-                          String key = this.choices.keys.elementAt(index);
-                          return EventProposedChoice(
-                            groupId: widget.groupId,
-                            eventId: widget.eventId,
-                            event: this.event,
-                            choiceName: this.choices[key],
-                            choiceId: key,
-                          );
-                        },
-                        scrollDirection: Axis.horizontal,
-                      ),
-                    ),
-                    SmoothPageIndicator(
+                        style: TextStyle(fontSize: 16),
+                      )),
+                  Container(
+                    height: MediaQuery.of(context).size.height * .27,
+                    width: MediaQuery.of(context).size.width * .95,
+                    child: PageView.builder(
                       controller: this.pageController,
-                      count: this.choices.length,
-                      effect: SlideEffect(
-                          dotColor: Colors.grey, activeDotColor: Colors.green),
-                    )
-                  ],
-                ),
-              ],
-            ),
-          ],
+                      itemCount: this.choices.length,
+                      itemBuilder: (context, index) {
+                        String key = this.choices.keys.elementAt(index);
+                        return EventProposedChoice(
+                          groupId: widget.groupId,
+                          eventId: widget.eventId,
+                          event: this.event,
+                          choiceName: this.choices[key],
+                          choiceId: key,
+                        );
+                      },
+                      scrollDirection: Axis.horizontal,
+                    ),
+                  ),
+                  SmoothPageIndicator(
+                    controller: this.pageController,
+                    count: this.choices.length,
+                    effect: SlideEffect(
+                        dotColor: Colors.grey, activeDotColor: Colors.green),
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(

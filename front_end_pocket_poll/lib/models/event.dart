@@ -146,10 +146,10 @@ class Event {
         selectedChoice: json[EventsManager.SELECTED_CHOICE],
         votingNumbers: votingNumMap,
         eventCreator: eventCreatorMap,
-        eventStartDateTimeFormatted: Globals.formatter
+        eventStartDateTimeFormatted: Globals.formatterWithTime
             .format(DateTime.parse(json[EventsManager.EVENT_START_DATE_TIME])),
-        pollEndFormatted: Globals.formatter.format(pollEndUTC.toLocal()),
-        pollBeginFormatted: Globals.formatter.format(pollBeginUTC.toLocal()));
+        pollEndFormatted: Globals.formatterWithTime.format(pollEndUTC.toLocal()),
+        pollBeginFormatted: Globals.formatterWithTime.format(pollBeginUTC.toLocal()));
   }
 
   Map asMap() {

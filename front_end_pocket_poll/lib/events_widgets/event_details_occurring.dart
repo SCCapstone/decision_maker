@@ -65,122 +65,119 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
       ),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        (DateTime.now().isBefore(this.event.eventStartDateTime))
-                            ? "Event Starts"
-                            : "Event Started",
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      (DateTime.now().isBefore(this.event.eventStartDateTime))
+                          ? "Event Starts"
+                          : "Event Started",
+                      minFontSize: 20,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                  ),
+                  AutoSizeText(
+                    this.event.eventStartDateTimeFormatted,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Category",
+                      minFontSize: 20,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                  ),
+                  AutoSizeText(
+                    this.event.categoryName,
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  AutoSizeText(
+                    "Version: ${this.event.categoryVersion.toString()}",
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText("Selected Choice",
                         minFontSize: 20,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.eventStartDateTimeFormatted,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        )),
+                  ),
+                  AutoSizeText(this.event.selectedChoice,
                       minFontSize: 15,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
+                      style: TextStyle(fontSize: 32)),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                  ),
+                  AutoSizeText("Event created by: ${this.eventCreator}",
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 16)),
+                  Visibility(
+                    visible: this.event.optedIn.length > 0,
+                    child: ExpansionTile(
+                      title: Text("Considered (${this.event.optedIn.length})"),
+                      children: <Widget>[
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
+                          child: Scrollbar(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
+                  ),
+                  Visibility(
+                      visible: this.event.optedIn.length <= 0,
                       child: AutoSizeText(
-                        "Category",
-                        minFontSize: 20,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.categoryName,
-                      minFontSize: 12,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
-                    ),
-                    AutoSizeText(
-                      "Version: ${this.event.categoryVersion.toString()}",
-                      minFontSize: 12,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText("Selected Choice",
-                          minFontSize: 20,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40,
-                          )),
-                    ),
-                    AutoSizeText(this.event.selectedChoice,
-                        minFontSize: 15,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 32)),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Event created by: ${this.eventCreator}",
+                        "No members considered",
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16)),
-                    Visibility(
-                      visible: this.event.optedIn.length > 0,
-                      child: ExpansionTile(
-                        title:
-                            Text("Considered (${this.event.optedIn.length})"),
-                        children: <Widget>[
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * .2,
-                            ),
-                            child: Scrollbar(
-                              child: ListView(
-                                shrinkWrap: true,
-                                children: this.userRows.values.toList(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Visibility(
-                        visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText(
-                          "No members considered",
-                          minFontSize: 12,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        )),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                        style: TextStyle(fontSize: 16),
+                      )),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
