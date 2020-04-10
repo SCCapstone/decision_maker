@@ -9,7 +9,8 @@ class Globals {
   static Color secondaryColor = Color(0xff106126);
   static String username;
   static User user;
-  static DateFormat formatter = DateFormat('MM-dd-yyyy –').add_jm();
+  static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
+  static DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
   static Group currentGroup;
   static List<Category> activeUserCategories = new List<Category>();
   static SharedPreferences sharedPrefs;

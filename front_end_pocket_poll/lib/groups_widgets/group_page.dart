@@ -23,12 +23,15 @@ class GroupPage extends StatefulWidget {
 }
 
 class _GroupPageState extends State<GroupPage> {
-  bool loading = true;
-  bool errorLoading = false;
+  bool loading;
+  bool errorLoading;
   Widget errorWidget;
 
   @override
   void initState() {
+    this.loading = true;
+    this.errorLoading = false;
+    // allows this page to be refreshed if a new notification comes in for the group
     Globals.refreshGroupPage = refreshList;
     getGroup();
     super.initState();
@@ -43,10 +46,10 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
+    if (this.loading) {
       return groupLoading();
-    } else if (errorLoading) {
-      return errorWidget;
+    } else if (this.errorLoading) {
+      return this.errorWidget;
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -71,6 +74,7 @@ class _GroupPageState extends State<GroupPage> {
             ),
           ],
         ),
+        key: Key("group_page:scaffold"),
         body: Center(
           child: Column(
             children: <Widget>[
@@ -139,6 +143,7 @@ class _GroupPageState extends State<GroupPage> {
         ),
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
+          key: Key("group_page:create_event_button"),
           onPressed: () {
             Navigator.push(context,
                     MaterialPageRoute(builder: (context) => CreateEvent()))
@@ -151,21 +156,22 @@ class _GroupPageState extends State<GroupPage> {
     }
   }
 
+  // attempts to get group from DB. If success then display all events. Else show error
   void getGroup() async {
     int batchNum = (Globals.currentGroup == null)
         ? 0
         : Globals.currentGroup.currentBatchNum;
     ResultStatus<Group> status =
         await GroupsManager.getGroup(widget.groupId, batchNumber: batchNum);
-    loading = false;
+    this.loading = false;
     if (status.success) {
-      errorLoading = false;
+      this.errorLoading = false;
       Globals.currentGroup = status.data;
       Globals.currentGroup.currentBatchNum = batchNum;
       setState(() {});
     } else {
-      errorLoading = true;
-      errorWidget = groupError(status.errorMessage);
+      this.errorLoading = true;
+      this.errorWidget = groupError(status.errorMessage);
       setState(() {});
     }
   }
@@ -193,7 +199,8 @@ class _GroupPageState extends State<GroupPage> {
                 ),
               )
             ]),
-        body: Center(child: CircularProgressIndicator()));
+        body: Center(child: CircularProgressIndicator()),
+        key: Key("group_page:loading_scaffold"));
   }
 
   Widget groupError(String errorMsg) {
@@ -233,31 +240,37 @@ class _GroupPageState extends State<GroupPage> {
               ],
             ),
           ),
-        ));
+        ),
+        key: Key("group_page:error_scaffold"));
   }
 
+  // attempts to get the latest data for the group from the DB
   Future<void> refreshList() async {
     if (ModalRoute.of(context).isCurrent) {
       // only refresh if this page is actually visible
       getGroup();
       updatePage();
     }
-
     return;
   }
 
+  /*
+    Re-builds the page.
+    It's own method to allow the mark all seen button to disappear if marking the last event seen
+   */
   void updatePage() {
-    // this is here to allow the mark all seen button to disappear if marking the last event seen
     setState(() {});
   }
 
+  // called when next/back buttons are pressed in event list. Gets the next/previous number of events in group
   void getNextBatch() {
     setState(() {
-      loading = true;
+      this.loading = true;
     });
     getGroup();
   }
 
+  // blind send to mark all events as seen, not critical
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen.clear();

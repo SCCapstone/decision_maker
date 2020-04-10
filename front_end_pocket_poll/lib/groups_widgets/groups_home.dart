@@ -36,23 +36,31 @@ class GroupsHome extends StatefulWidget {
 class _GroupsHomeState extends State<GroupsHome>
     with SingleTickerProviderStateMixin {
   final TextEditingController searchBarController = new TextEditingController();
-  FirebaseMessaging firebaseMessaging;
-
-  TabController tabController;
-  List<UserGroup> searchGroups = new List<UserGroup>();
-  List<UserGroup> totalGroups = new List<UserGroup>();
-  List<GroupLeft> groupsLeft = new List<GroupLeft>();
-  List<GroupLeft> searchLeftGroups = new List<GroupLeft>();
-  Icon searchIcon = new Icon(Icons.search);
-  bool searching = false;
-  int currentTab, groupHomeSortVal, groupsLeftSortVal;
   final int totalTabs = 2;
   final int groupsHomeTab = 0;
   final int groupsLeftTab = 1;
 
+  FirebaseMessaging firebaseMessaging;
+  TabController tabController;
+  List<UserGroup> searchGroups;
+  List<GroupLeft> searchGroupsLeft;
+  List<UserGroup> totalGroups;
+  List<GroupLeft> groupsLeft;
+  Icon searchIcon;
+  bool searching;
+  int currentTab, groupHomeSortVal, groupsLeftSortVal;
+
   @override
   void initState() {
+    this.searching = false;
+    this.searchIcon = new Icon(Icons.search);
+    this.searchGroups = new List<UserGroup>();
+    this.searchGroupsLeft = new List<GroupLeft>();
+    this.totalGroups = new List<UserGroup>();
+    this.groupsLeft = new List<GroupLeft>();
+
     if (Platform.isAndroid) {
+      // for now only have firebase messaging on android since ios requires license
       this.firebaseMessaging = FirebaseMessaging();
     }
 
@@ -71,6 +79,7 @@ class _GroupsHomeState extends State<GroupsHome>
             this.searchGroups.addAll(this.totalGroups);
           });
         } else {
+          // user has started to type so filter groups based on input
           setState(() {
             String searchInput = this.searchBarController.text;
             List<UserGroup> temp = new List<UserGroup>();
@@ -91,10 +100,11 @@ class _GroupsHomeState extends State<GroupsHome>
         // in the groups left tab
         if (this.searchBarController.text.isEmpty) {
           setState(() {
-            this.searchLeftGroups.clear();
-            this.searchLeftGroups.addAll(this.groupsLeft);
+            this.searchGroupsLeft.clear();
+            this.searchGroupsLeft.addAll(this.groupsLeft);
           });
         } else {
+          // user has started to type so filter groups based on input
           setState(() {
             String searchInput = this.searchBarController.text;
             List<GroupLeft> temp = new List<GroupLeft>();
@@ -107,7 +117,7 @@ class _GroupsHomeState extends State<GroupsHome>
                 temp.add(this.groupsLeft[i]);
               }
             }
-            this.searchLeftGroups = temp;
+            this.searchGroupsLeft = temp;
             GroupsManager.sortByAlphaAscending(this.searchGroups);
           });
         }
@@ -115,7 +125,6 @@ class _GroupsHomeState extends State<GroupsHome>
     });
     //endregion
     // set up notification listener
-
     if (Platform.isAndroid) {
       Future<String> token = this.firebaseMessaging.getToken();
       UsersManager.registerPushEndpoint(token);
@@ -287,6 +296,7 @@ class _GroupsHomeState extends State<GroupsHome>
             WillPopScope(
               onWillPop: handleBackPress,
               child: Visibility(
+                // shows a search bar once the user clicks the search icon
                 visible: this.searching,
                 child: Container(
                   width: MediaQuery.of(context).size.width * .70,
@@ -309,17 +319,18 @@ class _GroupsHomeState extends State<GroupsHome>
               onPressed: () {
                 // prevents quick flash of rows that appears when clicking search icon
                 this.searchGroups.clear();
-                this.searchLeftGroups.clear();
+                this.searchGroupsLeft.clear();
                 if (this.tabController.index == this.groupsHomeTab) {
                   this.searchGroups.addAll(this.totalGroups);
                 } else {
-                  this.searchLeftGroups.addAll(this.groupsLeft);
+                  this.searchGroupsLeft.addAll(this.groupsLeft);
                 }
                 toggleSearch();
               },
             )
           ],
           bottom: PreferredSize(
+            // used to display the tabs and the sort icon
             preferredSize: Size(MediaQuery.of(context).size.width,
                 MediaQuery.of(context).size.height * .045),
             child: Visibility(
@@ -478,8 +489,8 @@ class _GroupsHomeState extends State<GroupsHome>
         body: TabBarView(
           controller: this.tabController,
           children: <Widget>[
-            // tab for groups home
             Center(
+              // tab for groups home
               child: Column(
                 children: <Widget>[
                   Padding(
@@ -507,8 +518,8 @@ class _GroupsHomeState extends State<GroupsHome>
                 ],
               ),
             ),
-            // tab for groups left
             Center(
+              // tab for groups left
               child: Column(
                 children: <Widget>[
                   Padding(
@@ -522,7 +533,7 @@ class _GroupsHomeState extends State<GroupsHome>
                             onRefresh: refreshList,
                             child: GroupsLeftList(
                               groupsLeft: (this.searching)
-                                  ? this.searchLeftGroups
+                                  ? this.searchGroupsLeft
                                   : this.groupsLeft,
                               searching: this.searching,
                               refreshGroups: refreshList,
@@ -542,6 +553,7 @@ class _GroupsHomeState extends State<GroupsHome>
           visible: (!this.searching && this.currentTab == this.groupsHomeTab),
           child: FloatingActionButton(
             child: Icon(Icons.add),
+            key: Key("groups_home:new_category_button"),
             onPressed: () {
               // Navigate to second route when tapped.
               Navigator.push(
@@ -557,6 +569,7 @@ class _GroupsHomeState extends State<GroupsHome>
     );
   }
 
+  // whenever the tab changes make sure to save current tab index
   void handleTabChange() {
     setState(() {
       this.currentTab = this.tabController.index;
@@ -590,6 +603,9 @@ class _GroupsHomeState extends State<GroupsHome>
     }
   }
 
+  /*
+    Attempts to refresh the list using a call to the DB for user object
+   */
   Future<Null> refreshList() async {
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
@@ -598,10 +614,11 @@ class _GroupsHomeState extends State<GroupsHome>
         loadGroups();
       });
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
   }
 
+  // loads all groups and groups left from the local user object
   void loadGroups() {
     this.totalGroups = Globals.user.groups.values.toList();
     this.groupsLeft = Globals.user.groupsLeft.values.toList();
@@ -626,9 +643,12 @@ class _GroupsHomeState extends State<GroupsHome>
     }
   }
 
+  /*
+    Allows android users to press back button and have useful shortcuts
+   */
   Future<bool> handleBackPress() async {
-    // this allows for android users to press the back button when done searching and it will remove the search bar
     if (this.searching) {
+      // when done searching remove the search bar
       toggleSearch();
       return false;
     } else if (this.currentTab != 0) {
@@ -642,6 +662,9 @@ class _GroupsHomeState extends State<GroupsHome>
     }
   }
 
+  // region FirebaseMessaging Methods
+
+  // this method is activated whenever the user receives a notification with the app in the foreground
   Future<void> _onMessage(Map<String, dynamic> notificationRaw) async {
     try {
       final Message notification = Message.fromJSON(notificationRaw);
@@ -677,7 +700,7 @@ class _GroupsHomeState extends State<GroupsHome>
               .putIfAbsent(eventId, () => true);
         }
         if (Globals.refreshGroupPage != null) {
-          // the refresh callback has been properly set, so refresh the group page
+          // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
         if (ModalRoute.of(context).isCurrent) {
@@ -692,6 +715,7 @@ class _GroupsHomeState extends State<GroupsHome>
     return;
   }
 
+  // this method is called when user clicks on a notification when the app has been terminated
   Future<void> _onLaunch(Map<String, dynamic> notificationRaw) async {
     try {
       final Message notification = Message.fromJSON(notificationRaw);
@@ -722,7 +746,13 @@ class _GroupsHomeState extends State<GroupsHome>
     return;
   }
 
+  /*
+    This is called when the user clicks on a notification when the app is in the background.
+    
+    Currently not implemented because it is very involved to make processes run correctly in the background
+   */
   Future<void> _onResume(Map<String, dynamic> message) async {
     return;
   }
+// endregion
 }

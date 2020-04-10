@@ -22,10 +22,10 @@ class GroupSettings extends StatefulWidget {
 }
 
 class _GroupSettingsState extends State<GroupSettings> {
-  bool autoValidate = false;
-  bool validGroupIcon = true;
-  bool editing = false;
-  bool newIcon = false;
+  bool autoValidate;
+  bool validGroupIcon;
+  bool editing;
+  bool newIcon;
   bool isOpen;
   bool canEdit;
   File icon;
@@ -34,13 +34,11 @@ class _GroupSettingsState extends State<GroupSettings> {
   int votingDuration;
   int considerDuration;
   bool owner;
-  List<Member> originalMembers = new List<Member>();
-  List<Member> displayedMembers = new List<Member>();
-  List<String> membersLeft = new List<String>();
-  Map<String, String> selectedCategories =
-      new Map<String, String>(); // map of categoryIds -> categoryName
-  Map<String, String> originalCategories =
-      new Map<String, String>(); // map of categoryIds -> categoryName
+  List<Member> originalMembers;
+  List<Member> displayedMembers;
+  List<String> membersLeft; // list of usernames
+  Map<String, String> selectedCategories; // map of categoryIds -> categoryName
+  Map<String, String> originalCategories; // map of categoryIds -> categoryName
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
@@ -59,40 +57,52 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   @override
   void initState() {
+    this.autoValidate = false;
+    this.validGroupIcon = true;
+    this.editing = false;
+    this.newIcon = false;
+    this.originalMembers = new List<Member>();
+    this.displayedMembers = new List<Member>();
+    this.membersLeft = new List<String>();
+    this.originalCategories = new Map<String, String>();
+    this.selectedCategories = new Map<String, String>();
+
     if (Globals.username == Globals.currentGroup.groupCreator) {
-      // to display the delete button, check if user owns this group
-      owner = true;
+      // to display the delete group button, check if user owns this group
+      this.owner = true;
     } else {
-      owner = false;
+      this.owner = false;
     }
     for (String username in Globals.currentGroup.members.keys) {
       Member member = new Member(
           username: username,
           displayName: Globals.currentGroup.members[username].displayName,
           icon: Globals.currentGroup.members[username].icon);
-      originalMembers.add(member); // preserve original members
-      displayedMembers.add(member); // used to show group members in the popup
+      this.originalMembers.add(member); // preserve original members
+      this.displayedMembers.add(member); // current selected members
     }
     for (String catId in Globals.currentGroup.categories.keys) {
       // preserve original categories selected
-      originalCategories.putIfAbsent(
-          catId, () => Globals.currentGroup.categories[catId]);
-      selectedCategories.putIfAbsent(
-          catId, () => Globals.currentGroup.categories[catId]);
+      this
+          .originalCategories
+          .putIfAbsent(catId, () => Globals.currentGroup.categories[catId]);
+      this
+          .selectedCategories
+          .putIfAbsent(catId, () => Globals.currentGroup.categories[catId]);
     }
     for (String username in Globals.currentGroup.membersLeft.keys) {
-      membersLeft.add(username);
+      this.membersLeft.add(username);
     }
-    groupName = Globals.currentGroup.groupName;
-    votingDuration = Globals.currentGroup.defaultVotingDuration;
-    considerDuration = Globals.currentGroup.defaultConsiderDuration;
-    currentGroupIcon = Globals.currentGroup.icon;
-    isOpen = Globals.currentGroup.isOpen;
-    canEdit = owner || (isOpen && !owner);
+    this.groupName = Globals.currentGroup.groupName;
+    this.votingDuration = Globals.currentGroup.defaultVotingDuration;
+    this.considerDuration = Globals.currentGroup.defaultConsiderDuration;
+    this.currentGroupIcon = Globals.currentGroup.icon;
+    this.isOpen = Globals.currentGroup.isOpen;
+    this.canEdit = owner || (isOpen && !owner);
 
-    groupNameController.text = groupName;
-    votingDurationController.text = votingDuration.toString();
-    considerDurationController.text = considerDuration.toString();
+    this.groupNameController.text = groupName;
+    this.votingDurationController.text = votingDuration.toString();
+    this.considerDurationController.text = considerDuration.toString();
 
     super.initState();
   }
@@ -117,31 +127,30 @@ class _GroupSettingsState extends State<GroupSettings> {
             ),
             actions: <Widget>[
               Visibility(
-                visible: editing && canEdit,
+                visible: this.editing && this.canEdit,
                 child: RaisedButton.icon(
                     color: Colors.blue,
                     onPressed: () {
-                      if (canEdit) {
-                        validateInput();
+                      if (this.canEdit) {
+                        attemptSave();
                       }
                     },
                     icon: Icon(Icons.save),
                     label: Text("Save")),
               ),
               Visibility(
-                visible: !canEdit,
-                child: IconButton(
-                  disabledColor: Colors.black,
-                  icon: Icon(Icons.lock),
-                  tooltip: "Group is locked"
-                )
-              ),
+                  visible: !this.canEdit,
+                  child: IconButton(
+                      disabledColor: Colors.black,
+                      icon: Icon(Icons.lock),
+                      tooltip: "Group is locked")),
             ],
           ),
+          key: Key("groups_settings:scaffold"),
           body: Column(children: <Widget>[
             Form(
-              key: formKey,
-              autovalidate: autoValidate,
+              key: this.formKey,
+              autovalidate: this.autoValidate,
               child: Expanded(
                 child: Scrollbar(
                   child: ListView(
@@ -152,16 +161,16 @@ class _GroupSettingsState extends State<GroupSettings> {
                       Column(
                         children: [
                           TextFormField(
-                            enabled: canEdit,
+                            enabled: this.canEdit,
                             maxLength: Globals.maxGroupNameLength,
-                            controller: groupNameController,
+                            controller: this.groupNameController,
                             validator: validGroupName,
                             onChanged: (String arg) {
-                              groupName = arg.trim();
-                              enableAutoValidation();
+                              this.groupName = arg.trim();
+                              showSaveButton();
                             },
                             onSaved: (String arg) {
-                              groupName = arg.trim();
+                              this.groupName = arg.trim();
                             },
                             style: TextStyle(fontSize: 33),
                             decoration: InputDecoration(
@@ -175,7 +184,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                             onTap: () {
                               showGroupImage(
                                   this.icon == null
-                                      ? getGroupIconUrlStr(currentGroupIcon)
+                                      ? getGroupIconUrlStr(
+                                          this.currentGroupIcon)
                                       : FileImage(this.icon),
                                   context);
                             },
@@ -187,23 +197,23 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   image: DecorationImage(
                                       fit: BoxFit.cover,
                                       image: this.icon == null
-                                          ? getGroupIconUrlStr(currentGroupIcon)
+                                          ? getGroupIconUrlStr(
+                                              this.currentGroupIcon)
                                           : FileImage(this.icon))),
                               child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.grey.withOpacity(0.7),
-                                    shape: BoxShape.circle),
-                                child: Visibility(
-                                  visible: canEdit,
-                                  child: IconButton(
-                                    icon: Icon(Icons.edit),
-                                    color: Colors.blueAccent,
-                                    onPressed: () {
-                                      getImage();
-                                    },
-                                  ),
-                                )
-                              ),
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey.withOpacity(0.7),
+                                      shape: BoxShape.circle),
+                                  child: Visibility(
+                                    visible: this.canEdit,
+                                    child: IconButton(
+                                      icon: Icon(Icons.edit),
+                                      color: Colors.blueAccent,
+                                      onPressed: () {
+                                        getImage();
+                                      },
+                                    ),
+                                  )),
                             ),
                           ),
                           Padding(
@@ -230,24 +240,26 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
-                                      enabled: canEdit,
+                                      enabled: this.canEdit,
                                       maxLength: Globals.maxConsiderDigits,
                                       keyboardType: TextInputType.number,
                                       validator: (value) {
                                         return validConsiderDuration(
                                             value, false);
                                       },
-                                      controller: considerDurationController,
+                                      controller:
+                                          this.considerDurationController,
                                       onChanged: (String arg) {
                                         try {
-                                          considerDuration = int.parse(arg);
-                                          enableAutoValidation();
+                                          this.considerDuration =
+                                              int.parse(arg);
+                                          showSaveButton();
                                         } catch (e) {
-                                          autoValidate = true;
+                                          this.autoValidate = true;
                                         }
                                       },
                                       onSaved: (String arg) {
-                                        considerDuration = int.parse(arg);
+                                        this.considerDuration = int.parse(arg);
                                       },
                                       decoration: InputDecoration(
                                           border: OutlineInputBorder(),
@@ -273,24 +285,24 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     width:
                                         MediaQuery.of(context).size.width * .20,
                                     child: TextFormField(
-                                      enabled: canEdit,
+                                      enabled: this.canEdit,
                                       maxLength: Globals.maxVotingDigits,
                                       keyboardType: TextInputType.number,
                                       validator: (value) {
                                         return validVotingDuration(
                                             value, false);
                                       },
-                                      controller: votingDurationController,
+                                      controller: this.votingDurationController,
                                       onChanged: (String arg) {
                                         try {
-                                          votingDuration = int.parse(arg);
-                                          enableAutoValidation();
+                                          this.votingDuration = int.parse(arg);
+                                          showSaveButton();
                                         } catch (e) {
-                                          autoValidate = true;
+                                          this.autoValidate = true;
                                         }
                                       },
                                       onSaved: (String arg) {
-                                        votingDuration = int.parse(arg);
+                                        this.votingDuration = int.parse(arg);
                                       },
                                       decoration: InputDecoration(
                                           border: OutlineInputBorder(),
@@ -305,9 +317,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: AutoSizeText(
-                                      (canEdit)
-                                      ? "Select categories for group"
-                                      : "View categories in group",
+                                      (this.canEdit)
+                                          ? "Select categories for group"
+                                          : "View categories in group",
                                       minFontSize: 14,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -318,7 +330,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: IconButton(
-                                        icon: (canEdit)
+                                        icon: (this.canEdit)
                                             ? Icon(Icons.add)
                                             : Icon(Icons.keyboard_arrow_right),
                                         onPressed: () {
@@ -327,9 +339,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       GroupCategories(
-                                                        selectedCategories:
-                                                            selectedCategories,
-                                                        canEdit: canEdit,
+                                                        selectedCategories: this
+                                                            .selectedCategories,
+                                                        canEdit: this.canEdit,
                                                       ))).then((_) {
                                             saveCategories();
                                           });
@@ -343,9 +355,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 children: <Widget>[
                                   Expanded(
                                     child: AutoSizeText(
-                                      (canEdit)
-                                      ? "Add/Remove members"
-                                      : "View members",
+                                      (this.canEdit)
+                                          ? "Add/Remove members"
+                                          : "View members",
                                       minFontSize: 14,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -356,7 +368,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       width: MediaQuery.of(context).size.width *
                                           .20,
                                       child: IconButton(
-                                        icon: (canEdit)
+                                        icon: (this.canEdit)
                                             ? Icon(Icons.add)
                                             : Icon(Icons.keyboard_arrow_right),
                                         onPressed: () {
@@ -365,11 +377,11 @@ class _GroupSettingsState extends State<GroupSettings> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       MembersPage(
-                                                        displayedMembers,
-                                                        membersLeft,
-                                                        false,
-                                                        canEdit
-                                                      ))).then((_) {
+                                                          this.displayedMembers,
+                                                          this.membersLeft,
+                                                          false,
+                                                          this.canEdit))).then(
+                                              (_) {
                                             saveMembers();
                                           });
                                         },
@@ -377,7 +389,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                 ],
                               ),
                               Visibility(
-                                visible: owner,
+                                visible: this.owner,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
@@ -404,7 +416,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                           onPressed: () {
                                             setState(() {
                                               this.isOpen = !this.isOpen;
-                                              enableAutoValidation();
+                                              showSaveButton();
                                             });
                                           },
                                         )),
@@ -445,9 +457,9 @@ class _GroupSettingsState extends State<GroupSettings> {
     );
   }
 
+  // if editing, ensure the user really wants to leave and lose their changes
   Future<bool> handleBackPress() async {
-    // if editing, ensure the user really wants to leave to lose their changes
-    if (editing) {
+    if (this.editing) {
       confirmLeavePage();
       return false;
     } else {
@@ -455,14 +467,19 @@ class _GroupSettingsState extends State<GroupSettings> {
     }
   }
 
+  /*
+    Save members if new ones were added/removed
+    
+    This is called automatically when the user closes the members page
+   */
   void saveMembers() async {
-    Set oldMembers = originalMembers.toSet();
-    Set newMembers = displayedMembers.toSet();
+    Set oldMembers = this.originalMembers.toSet();
+    Set newMembers = this.displayedMembers.toSet();
     bool changedMembers = !(oldMembers.containsAll(newMembers) &&
         oldMembers.length == newMembers.length);
     if (changedMembers) {
       Map<String, Member> membersMap = new Map<String, Member>();
-      for (Member member in displayedMembers) {
+      for (Member member in this.displayedMembers) {
         membersMap.putIfAbsent(member.username, () => member);
       }
 
@@ -474,28 +491,32 @@ class _GroupSettingsState extends State<GroupSettings> {
           members: membersMap,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration:
-              Globals.currentGroup.defaultConsiderDuration,
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           isOpen: Globals.currentGroup.isOpen);
 
       ResultStatus<Group> resultStatus =
-          await GroupsManager.editGroup(group, icon);
+          await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
         Globals.currentGroup = resultStatus.data;
-        originalMembers.clear();
-        originalMembers.addAll(displayedMembers);
+        this.originalMembers.clear();
+        this.originalMembers.addAll(displayedMembers);
       } else {
-        displayedMembers.clear();
-        displayedMembers.addAll(originalMembers);
-        showErrorMessage("Error", "Error saving members", context);
+        this.displayedMembers.clear();
+        this.displayedMembers.addAll(originalMembers);
+        showErrorMessage("Error", "Error saving members", this.context);
       }
     }
   }
 
+  /*
+    Save categories if new ones were added/removed
+    
+    This is called automatically when the user closes the group categories page
+   */
   void saveCategories() async {
-    Set oldCategories = originalCategories.keys.toSet();
-    Set newCategories = selectedCategories.keys.toSet();
+    Set oldCategories = this.originalCategories.keys.toSet();
+    Set newCategories = this.selectedCategories.keys.toSet();
     bool changedCategories = !(oldCategories.containsAll(newCategories) &&
         oldCategories.length == newCategories.length);
     if (changedCategories) {
@@ -503,29 +524,29 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupId: Globals.currentGroup.groupId,
           groupName: Globals.currentGroup.groupName,
           groupCreator: Globals.currentGroup.groupCreator,
-          categories: selectedCategories,
+          categories: this.selectedCategories,
           members: Globals.currentGroup.members,
           events: Globals.currentGroup.events,
           defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration:
-              Globals.currentGroup.defaultConsiderDuration,
+          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
           isOpen: Globals.currentGroup.isOpen);
 
       ResultStatus<Group> resultStatus =
-          await GroupsManager.editGroup(group, icon);
+          await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
         Globals.currentGroup = resultStatus.data;
         originalCategories.clear();
-        originalCategories.addAll(selectedCategories);
+        originalCategories.addAll(this.selectedCategories);
       } else {
         selectedCategories.clear();
-        selectedCategories.addAll(originalCategories);
-        showErrorMessage("Error", "Error saving categories", context);
+        selectedCategories.addAll(this.originalCategories);
+        showErrorMessage("Error", "Error saving categories", this.context);
       }
     }
   }
 
+  // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
@@ -534,16 +555,18 @@ class _GroupSettingsState extends State<GroupSettings> {
         maxHeight: 600);
 
     if (newIconFile != null) {
+      // only save if the user actually picked a picture
       this.newIcon = true;
       this.icon = newIconFile;
-      enableAutoValidation();
+      showSaveButton();
     }
   }
 
+  // show popup asking if user wants to leave page
   void confirmLeavePage() {
-    hideKeyboard(context);
+    hideKeyboard(this.context);
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Unsaved changes"),
@@ -569,9 +592,10 @@ class _GroupSettingsState extends State<GroupSettings> {
         });
   }
 
+  // show popup asking if user really wants to leave group
   void confirmLeaveGroup() {
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Leave group?"),
@@ -596,9 +620,10 @@ class _GroupSettingsState extends State<GroupSettings> {
         });
   }
 
+  // show popup asking if user really wants to delete group
   void confirmDeleteGroup() {
     showDialog(
-        context: context,
+        context: this.context,
         builder: (context) {
           return AlertDialog(
             title: Text("Delete"),
@@ -623,10 +648,10 @@ class _GroupSettingsState extends State<GroupSettings> {
   }
 
   void tryLeave() async {
-    showLoadingDialog(context, "Leaving group...", true);
+    showLoadingDialog(this.context, "Leaving group...", true);
     ResultStatus resultStatus =
         await GroupsManager.leaveGroup(Globals.currentGroup.groupId);
-    Navigator.of(context, rootNavigator: true).pop('dialog');
+    Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
@@ -636,93 +661,98 @@ class _GroupSettingsState extends State<GroupSettings> {
               groupId: Globals.currentGroup.groupId,
               groupName: Globals.currentGroup.groupName,
               icon: Globals.currentGroup.icon));
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(this.context).popUntil((route) => route.isFirst);
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
   }
 
   void tryDelete() async {
-    showLoadingDialog(context, "Deleting group...", true);
+    showLoadingDialog(this.context, "Deleting group...", true);
     ResultStatus resultStatus =
         await GroupsManager.deleteGroup(Globals.currentGroup.groupId);
-    Navigator.of(context, rootNavigator: true).pop('dialog');
+    Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
       Globals.user.groups.remove(Globals.currentGroup.groupId);
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(this.context).popUntil((route) => route.isFirst);
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
   }
 
-  void enableAutoValidation() {
-    // the moment the user makes changes to their previously saved settings, display the save button
-    if (votingDuration != Globals.currentGroup.defaultVotingDuration ||
-        considerDuration != Globals.currentGroup.defaultConsiderDuration ||
-        groupName != Globals.currentGroup.groupName ||
-        isOpen != Globals.currentGroup.isOpen ||
-        newIcon) {
+  // the moment the user makes changes to their previously saved settings, display the save button
+  void showSaveButton() {
+    if (this.votingDuration != Globals.currentGroup.defaultVotingDuration ||
+        this.considerDuration != Globals.currentGroup.defaultConsiderDuration ||
+        this.groupName != Globals.currentGroup.groupName ||
+        this.isOpen != Globals.currentGroup.isOpen ||
+        this.newIcon) {
       setState(() {
-        editing = true;
+        this.editing = true;
       });
     } else {
       setState(() {
-        editing = false;
+        this.editing = false;
       });
     }
   }
 
-  void validateInput() async {
-    final form = formKey.currentState;
-    if (form.validate() && validGroupIcon) {
+  /*
+    Attempts to save the new group if all input is valid.
+    
+    If success then the local current group is updated with the value returned by the DB.
+   */
+  void attemptSave() async {
+    final form = this.formKey.currentState;
+    if (form.validate() && this.validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
       form.save();
       Map<String, Member> membersMap = new Map<String, Member>();
-      for (Member member in displayedMembers) {
+      for (Member member in this.displayedMembers) {
         membersMap.putIfAbsent(member.username, () => member);
       }
 
       Group group = new Group(
           groupId: Globals.currentGroup.groupId,
-          groupName: groupName,
+          groupName: this.groupName,
           groupCreator: Globals.currentGroup.groupCreator,
-          categories: selectedCategories,
+          categories: this.selectedCategories,
           members: membersMap,
           events: Globals.currentGroup.events,
-          defaultVotingDuration: votingDuration,
-          defaultConsiderDuration: considerDuration,
-          isOpen: isOpen);
+          defaultVotingDuration: this.votingDuration,
+          defaultConsiderDuration: this.considerDuration,
+          isOpen: this.isOpen);
 
       int batchNum = Globals.currentGroup.currentBatchNum;
 
-      showLoadingDialog(context, "Saving...", true);
+      showLoadingDialog(this.context, "Saving...", true);
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, icon, batchNumber: batchNum);
-      Navigator.of(context, rootNavigator: true).pop('dialog');
+      Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         Globals.currentGroup = resultStatus.data;
         Globals.currentGroup.currentBatchNum = batchNum;
         setState(() {
           // reset everything and reflect changes made
-          originalMembers.clear();
-          originalMembers.addAll(displayedMembers);
-          originalCategories.clear();
-          originalCategories.addAll(selectedCategories);
-          groupNameController.text = groupName;
-          votingDurationController.text = votingDuration.toString();
-          considerDurationController.text = considerDuration.toString();
-          editing = false;
-          autoValidate = false;
-          newIcon = false;
-          hideKeyboard(context);
+          this.originalMembers.clear();
+          this.originalMembers.addAll(displayedMembers);
+          this.originalCategories.clear();
+          this.originalCategories.addAll(selectedCategories);
+          this.groupNameController.text = groupName;
+          this.votingDurationController.text = votingDuration.toString();
+          this.considerDurationController.text = considerDuration.toString();
+          this.editing = false;
+          this.autoValidate = false;
+          this.newIcon = false;
+          hideKeyboard(this.context);
         });
       } else {
-        showErrorMessage("Error", resultStatus.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 }

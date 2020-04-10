@@ -34,7 +34,7 @@ class _CreateCategoryState extends State<CreateCategory> {
   final ScrollController scrollController = new ScrollController();
 
   int nextChoiceValue;
-  bool autoValidate = false;
+  bool autoValidate;
   FocusNode focusNode;
   ChoiceRow currentChoice;
 
@@ -53,6 +53,7 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   void initState() {
+    this.autoValidate = false;
     // we are creating a category, so thus the first choice value is already set to 1
     TextEditingController initLabelController = new TextEditingController();
     this.labelControllers.putIfAbsent("1", () => initLabelController);

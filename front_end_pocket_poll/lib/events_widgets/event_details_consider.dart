@@ -27,12 +27,15 @@ class EventDetailsConsider extends StatefulWidget {
 }
 
 class _EventDetailsConsiderState extends State<EventDetailsConsider> {
-  Map<String, UserRowEvents> userRows = new Map<String, UserRowEvents>();
-  String eventCreator = "";
+  String eventCreator;
+  Map<String, UserRowEvents> userRows; // username -> widget
   Event event;
 
   @override
   void initState() {
+    this.eventCreator = "";
+    this.userRows = new Map<String, UserRowEvents>();
+    // clicking on the details page marks the event unseen
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
@@ -62,149 +65,175 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
         leading: BackButton(),
       ),
       body: RefreshIndicator(
-        onRefresh: refreshList,
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Proposed Time",
+        onRefresh: refreshEvent,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Proposed Time",
+                      minFontSize: 20,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
+                    ),
+                  ),
+                  AutoSizeText(
+                    this.event.eventStartDateTimeFormatted,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText("Consider Time Ends",
                         minFontSize: 20,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      Globals.formatter.format(this.event.eventStartDateTime),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        )),
+                  ),
+                  AutoSizeText(this.event.pollBeginFormatted,
                       minFontSize: 15,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText("Consider Time Ends",
-                          minFontSize: 20,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40,
-                          )),
-                    ),
-                    AutoSizeText(this.event.pollBeginFormatted,
-                        minFontSize: 15,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 32)),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                      child: AutoSizeText(
-                        "Category",
-                        minFontSize: 20,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 40),
-                      ),
-                    ),
-                    AutoSizeText(
-                      this.event.categoryName,
-                      minFontSize: 15,
+                      style: TextStyle(fontSize: 32)),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                    child: AutoSizeText(
+                      "Category",
+                      minFontSize: 20,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 32),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
                     ),
-                    AutoSizeText(
-                      "Version: ${this.event.categoryVersion.toString()}",
+                  ),
+                  AutoSizeText(
+                    this.event.categoryName,
+                    minFontSize: 15,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 32),
+                  ),
+                  AutoSizeText(
+                    "Version: ${this.event.categoryVersion.toString()}",
+                    minFontSize: 12,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                  ),
+                  AutoSizeText("Event created by: ${this.eventCreator}",
                       minFontSize: 12,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Event created by: ${this.eventCreator}",
-                        minFontSize: 12,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 16)),
-                    Visibility(
-                      visible: this.userRows.length > 0,
-                      child: ExpansionTile(
-                        title: Text(
-                            "Members considered (${this.userRows.length})"),
-                        children: <Widget>[
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * .2,
-                            ),
-                            child: Scrollbar(
-                              child: ListView(
-                                shrinkWrap: true,
-                                children: this.userRows.values.toList(),
-                              ),
+                      style: TextStyle(fontSize: 16)),
+                  Visibility(
+                    visible: this.userRows.length > 0,
+                    child: ExpansionTile(
+                      title:
+                          Text("Members considered (${this.userRows.length})"),
+                      children: <Widget>[
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * .2,
+                          ),
+                          child: Scrollbar(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: this.userRows.values.toList(),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Visibility(
-                        visible: this.event.optedIn.length <= 0,
-                        child: AutoSizeText(
-                          "No members currently being considered",
-                          minFontSize: 12,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        )),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
-                    AutoSizeText("Consider Me?",
+                  ),
+                  Visibility(
+                      visible: this.event.optedIn.length <= 0,
+                      child: AutoSizeText(
+                        "No members currently being considered",
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 20)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        RaisedButton(
+                        style: TextStyle(fontSize: 16),
+                      )),
+                  Padding(
+                    padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.height * .01),
+                  ),
+                  AutoSizeText("Consider Me?",
+                      minFontSize: 12,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 20)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        child: RaisedButton(
                           child: Text("No"),
                           color: Colors.red,
                           onPressed: () {
                             tryConsider(false);
                           },
                         ),
-                        RaisedButton(
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                            width: 3,
+                            color: (!this
+                                    .event
+                                    .optedIn
+                                    .containsKey(Globals.username))
+                                ? Colors.orangeAccent
+                                : Theme.of(context).scaffoldBackgroundColor,
+                          )),
+                        ),
+                      ),
+                      Container(
+                        child: RaisedButton(
                           child: Text("Yes"),
                           color: Colors.green,
                           onPressed: () {
                             tryConsider(true);
                           },
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              bottom: BorderSide(
+                            width: 3,
+                            color: (this
+                                    .event
+                                    .optedIn
+                                    .containsKey(Globals.username))
+                                ? Colors.greenAccent
+                                : Theme.of(context).scaffoldBackgroundColor,
+                          )),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -217,9 +246,10 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
               label: Text("Add to My Calendar"),
               onPressed: () {
                 calendar.Event calendarEvent = calendar.Event(
-                  title: event.eventName,
-                  startDate: event.eventStartDateTime,
-                  endDate: event.eventStartDateTime.add(Duration(hours: 1)),
+                  title: this.event.eventName,
+                  startDate: this.event.eventStartDateTime,
+                  endDate:
+                      this.event.eventStartDateTime.add(Duration(hours: 1)),
                   allDay: false,
                 );
                 calendar.Add2Calendar.addEvent2Cal(calendarEvent);
@@ -288,18 +318,19 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     this.userRows = sortedMap.cast();
   }
 
-  Future<Null> refreshList() async {
-    ResultStatus<Group> resultStatus =
-        await GroupsManager.getGroup(widget.groupId);
+  Future<Null> refreshEvent() async {
+    ResultStatus<Group> resultStatus = await GroupsManager.getGroup(
+        widget.groupId,
+        batchNumber: Globals.currentGroup.currentBatchNum);
     if (resultStatus.success) {
       Globals.currentGroup = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
-        Navigator.of(context).pop();
+        Navigator.of(this.context).pop();
       }
     } else {
-      showErrorMessage("Error", resultStatus.errorMessage, context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }
     setState(() {});
   }

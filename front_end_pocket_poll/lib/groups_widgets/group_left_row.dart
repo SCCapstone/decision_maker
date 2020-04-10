@@ -18,11 +18,6 @@ class GroupLeftRow extends StatefulWidget {
 
 class _GroupLeftRowState extends State<GroupLeftRow> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
@@ -32,9 +27,9 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               GestureDetector(
-                  onTap: () {
-                    confirmRejoinGroup();
-                  },
+                onTap: () {
+                  confirmRejoinGroup();
+                },
                 child: Container(
                   height: MediaQuery.of(context).size.width * .20,
                   width: MediaQuery.of(context).size.width * .20,
@@ -100,14 +95,13 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
                 },
               )
             ],
-            content: Text(
-                "Would you like to rejoin ${widget.group.groupName}?"),
+            content:
+                Text("Would you like to rejoin ${widget.group.groupName}?"),
           );
         });
   }
 
-  // Send the request to the back end to rejoin the group, refresh the groups
-  // list upon success
+  // Send the call to the backend to rejoin the group, refresh the groups list upon success
   void tryRejoin() async {
     showLoadingDialog(context, "Rejoining group...", true);
     ResultStatus resultStatus =

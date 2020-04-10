@@ -20,26 +20,30 @@ class GroupCategories extends StatefulWidget {
 }
 
 class _GroupCategoriesState extends State<GroupCategories> {
-  bool loading = true;
-  bool errorLoading = false;
+  bool loading;
+  bool errorLoading;
   int sortVal;
   Widget errorWidget;
-  List<CategoryRowGroup> ownedCategoryRows = new List<CategoryRowGroup>();
-  List<CategoryRowGroup> groupCategoryRows = new List<CategoryRowGroup>();
+  List<CategoryRowGroup> ownedCategoryRows;
+  List<CategoryRowGroup> groupCategoryRows;
 
   @override
   void initState() {
+    this.loading = true;
+    this.errorLoading = false;
     this.sortVal = Globals.user.appSettings.categorySort;
+    this.ownedCategoryRows = new List<CategoryRowGroup>();
+    this.groupCategoryRows = new List<CategoryRowGroup>();
     getCategories();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
+    if (this.loading) {
       return categoriesLoading();
-    } else if (errorLoading) {
-      return errorWidget;
+    } else if (this.errorLoading) {
+      return this.errorWidget;
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -106,6 +110,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
           ],
         ),
+        key: Key("group_categories:scaffold"),
         body: Column(
           children: <Widget>[
             Padding(
@@ -113,8 +118,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   EdgeInsets.all(MediaQuery.of(context).size.height * .015),
             ),
             Visibility(
-              visible: groupCategoryRows.isEmpty &&
-                  ownedCategoryRows.isEmpty &&
+              visible: this.groupCategoryRows.isEmpty &&
+                  this.ownedCategoryRows.isEmpty &&
                   !widget.canEdit,
               child: AutoSizeText(
                 "There are no categories currently associated with this group. "
@@ -126,7 +131,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               ),
             ),
             Visibility(
-                visible: ownedCategoryRows.isNotEmpty,
+                visible: this.ownedCategoryRows.isNotEmpty,
                 child: (widget.canEdit)
                     ? AutoSizeText(
                         "My Categories",
@@ -141,7 +146,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                         style: TextStyle(fontSize: 26),
                       )),
             Visibility(
-              visible: ownedCategoryRows.isEmpty && widget.canEdit,
+              visible: this.ownedCategoryRows.isEmpty && widget.canEdit,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                     MediaQuery.of(context).size.width * .07,
@@ -186,22 +191,22 @@ class _GroupCategoriesState extends State<GroupCategories> {
               child: Scrollbar(
                 child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: ownedCategoryRows.length,
+                    itemCount: this.ownedCategoryRows.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return ownedCategoryRows[index];
+                      return this.ownedCategoryRows[index];
                     }),
               ),
             ),
             Visibility(
-              visible: (groupCategoryRows.isNotEmpty &&
-                  ownedCategoryRows.isNotEmpty),
+              visible: (this.groupCategoryRows.isNotEmpty &&
+                  this.ownedCategoryRows.isNotEmpty),
               child: Padding(
                 padding:
                     EdgeInsets.all(MediaQuery.of(context).size.height * .05),
               ),
             ),
             Visibility(
-              visible: (groupCategoryRows.isNotEmpty),
+              visible: (this.groupCategoryRows.isNotEmpty),
               child: AutoSizeText(
                 "Categories Added By Members",
                 minFontSize: 15,
@@ -215,9 +220,9 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 height: MediaQuery.of(context).size.height * .40,
                 child: Scrollbar(
                   child: ListView.builder(
-                      itemCount: groupCategoryRows.length,
+                      itemCount: this.groupCategoryRows.length,
                       itemBuilder: (BuildContext context, int index) {
-                        return groupCategoryRows[index];
+                        return this.groupCategoryRows[index];
                       }),
                 ),
               ),
@@ -244,7 +249,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
                     style: TextStyle(
                         fontSize: DefaultTextStyle.of(context).style.fontSize *
                             0.5))),
-        body: Center(child: CircularProgressIndicator()));
+        body: Center(child: CircularProgressIndicator()),
+        key: Key("group_categories:scaffold_loading"));
   }
 
   Widget categoriesError(String errorMsg) {
@@ -273,9 +279,11 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
             onRefresh: getCategories,
           ),
-        ));
+        ),
+        key: Key("group_categories:scaffold_error"));
   }
 
+  // update the list of owned categories with categories found in local user object
   void updateOwnedCategories() {
     this.ownedCategoryRows.clear();
 
@@ -326,6 +334,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     Globals.user.appSettings.categorySort = this.sortVal;
   }
 
+  // adds this category to the list of selected (i.e. adds it to the group)
   void selectCategory(Category category) {
     setState(() {
       if (widget.selectedCategories.keys.contains(category.categoryId)) {
@@ -337,33 +346,39 @@ class _GroupCategoriesState extends State<GroupCategories> {
     });
   }
 
+  /*
+    Loads all the categories the group has attached to it. Categories that are owned by the active user
+    are set to checked if they are in the group.
+   */
   void getCategories() async {
     ResultStatus<List<Category>> resultStatus =
         await CategoriesManager.getAllCategoriesList();
-    loading = false;
+    this.loading = false;
     if (resultStatus.success) {
-      errorLoading = false;
+      this.errorLoading = false;
       List<Category> selectedCats = resultStatus.data;
       for (Category category in selectedCats) {
         if (!Globals.user.ownedCategories.contains(category) &&
             category.groups.containsKey(Globals.currentGroup.groupId)) {
           // separate the categories of the group that the user doesn't own
-          groupCategoryRows.add(new CategoryRowGroup(
-            category,
-            widget.selectedCategories.keys.contains(category.categoryId),
-            true,
-            updateOwnedCategories,
-            widget.canEdit,
-            onSelect: () => selectCategory(category),
-          ));
+          this.groupCategoryRows.add(new CategoryRowGroup(
+                category,
+                widget.selectedCategories.keys.contains(category.categoryId),
+                true,
+                updateOwnedCategories,
+                widget.canEdit,
+                onSelect: () => selectCategory(category),
+              ));
         } else if (Globals.user.ownedCategories.contains(category)) {
-          // separate the categories the user owns. add every category if the user
-          // currently has permission to edit group settings, otherwise only add
-          // categories that the user had already added to the group
+          /*
+            Separate the categories the user owns. Add every category if the user
+            currently has permission to edit group settings, otherwise only add
+            categories that the user had already added to the group
+           */
           if (widget.canEdit ||
               Globals.currentGroup.categories
                   .containsKey(category.categoryId)) {
-            ownedCategoryRows.add(new CategoryRowGroup(
+            this.ownedCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
                 false,
@@ -378,8 +393,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
       setState(() {});
     } else {
       setState(() {
-        errorWidget = categoriesError(resultStatus.errorMessage);
-        errorLoading = true;
+        this.errorWidget = categoriesError(resultStatus.errorMessage);
+        this.errorLoading = true;
       });
     }
   }

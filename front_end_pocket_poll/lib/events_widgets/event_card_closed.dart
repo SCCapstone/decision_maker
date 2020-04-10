@@ -13,10 +13,10 @@ class EventCardClosed extends StatefulWidget implements EventCardInterface {
   final Event event;
   final String eventId;
   final Function refreshEventsUnseen;
-  final Function refreshPage;
+  final Function refreshGroupPage;
 
   EventCardClosed(this.groupId, this.event, this.eventId,
-      this.refreshEventsUnseen, this.refreshPage);
+      this.refreshEventsUnseen, this.refreshGroupPage);
 
   @override
   _EventCardClosedState createState() => new _EventCardClosedState();
@@ -118,7 +118,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
                         builder: (context) => EventDetailsClosed(
                             groupId: widget.groupId, eventId: widget.eventId)),
                   ).then((_) {
-                    widget.refreshPage();
+                    widget.refreshGroupPage();
                   });
                 },
               ),
@@ -138,6 +138,7 @@ class _EventCardClosedState extends State<EventCardClosed> {
   void markEventRead() {
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
+      // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
       setState(() {

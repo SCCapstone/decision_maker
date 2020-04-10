@@ -119,7 +119,7 @@ class _EventsListState extends State<EventsList> {
       List<Widget> widgetList = new List<Widget>.from(eventCards);
       int numEvents =
           (Globals.currentGroup.currentBatchNum + 1) * GroupsManager.BATCH_SIZE;
-
+      // have a button shown if more events to show
       Row buttonRow = new Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -158,12 +158,11 @@ class _EventsListState extends State<EventsList> {
 
       return Scrollbar(
           child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: widgetList.length,
-        itemBuilder: (context, index) {
-          return widgetList[index];
-        },
-      ));
+              shrinkWrap: true,
+              itemCount: widgetList.length,
+              itemBuilder: (context, index) {
+                return widgetList[index];
+              }));
     }
   }
 }
