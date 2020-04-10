@@ -27,15 +27,15 @@ void main() {
     });
 
     test('user login', () async {
-      var usernameField = find.byValueKey("username");
+      var usernameField = find.byValueKey("login_page:username_input");
       await driver.tap(usernameField);
       await driver.enterText('testingUser1!');
 
-      var passwordField = find.byValueKey("password");
+      var passwordField = find.byValueKey("login_page:password_input");
       await driver.tap(passwordField);
       await driver.enterText('testingUser1!');
 
-      var signInOrUpButton = find.byValueKey("signInOrUp");
+      var signInOrUpButton = find.byValueKey("login_page:sign_in_button");
       await driver.tap(signInOrUpButton);
 
       await driver.waitFor(find.byValueKey("groups_home:scaffold"));

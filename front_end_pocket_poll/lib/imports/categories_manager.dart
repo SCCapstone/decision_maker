@@ -40,6 +40,7 @@ class CategoriesManager {
       jsonRequestBody[RequestFields.PAYLOAD]
           .putIfAbsent(CATEGORY_ID, () => category.categoryId);
     } else {
+      // if no category is passed in, then we are creating a category
       jsonRequestBody[RequestFields.ACTION] = createAction;
     }
 
@@ -188,11 +189,13 @@ class CategoriesManager {
     return retVal;
   }
 
+  // sorts a list of categories alphabetically (ascending)
   static void sortByAlphaAscending(List<Category> categories) {
     categories.sort((a, b) =>
         a.categoryName.toUpperCase().compareTo(b.categoryName.toUpperCase()));
   }
 
+  // sorts a list of categories alphabetically (descending)
   static void sortByAlphaDescending(List<Category> categories) {
     categories.sort((a, b) =>
         b.categoryName.toUpperCase().compareTo(a.categoryName.toUpperCase()));

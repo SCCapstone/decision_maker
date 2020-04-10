@@ -25,6 +25,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // allows for anywhere on the screen to be tapped to hide keyboard
         hideKeyboard(context);
       },
       child: Form(
@@ -94,6 +95,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
+  // attempts to add a new favorite if that user exists in the DB
   void addNewFavorite() async {
     ResultStatus<User> resultStatus = await UsersManager.getUserData(
         username: this.userController.text.trim());
@@ -105,8 +107,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
           icon: newFavorite.icon));
     } else {
       showErrorMessage(
-          "Error", "Cannot add: ${this.userController.text}", context);
-      hideKeyboard(context);
+          "Error", "Cannot add: ${this.userController.text}", this.context);
+      hideKeyboard(this.context);
     }
     setState(() {
       this.userController.clear();

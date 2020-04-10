@@ -22,14 +22,14 @@ class _FirstLoginState extends State<FirstLogin> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController displayNameController = TextEditingController();
 
-  bool autoValidate = false;
-  bool _darkTheme = false;
-  bool _muted = false;
-  bool newIcon = false;
+  bool autoValidate;
+  bool _darkTheme;
+  bool _muted;
+  bool newIcon;
   File _icon;
   String _displayName;
-  List<Favorite> displayedFavorites = new List<Favorite>();
-  List<Favorite> originalFavorites = new List<Favorite>();
+  List<Favorite> displayedFavorites;
+  List<Favorite> originalFavorites;
 
   @override
   void dispose() {
@@ -39,6 +39,11 @@ class _FirstLoginState extends State<FirstLogin> {
 
   @override
   void initState() {
+    this.autoValidate = false;
+    this.newIcon = false;
+    this.displayedFavorites = new List<Favorite>();
+    this.originalFavorites = new List<Favorite>();
+
     this._displayName = Globals.user.displayName;
     this._darkTheme = Globals.user.appSettings.darkTheme;
     this._muted = Globals.user.appSettings.muted;
@@ -93,7 +98,7 @@ class _FirstLoginState extends State<FirstLogin> {
                         onTap: () {
                           showUserImage(
                               this._icon == null
-                                  ? getUserIconUrl(Globals.user)
+                                  ? getUserIconImage(Globals.user.icon)
                                   : FileImage(this._icon),
                               context);
                         },
@@ -105,7 +110,7 @@ class _FirstLoginState extends State<FirstLogin> {
                               image: DecorationImage(
                                   fit: BoxFit.cover,
                                   image: this._icon == null
-                                      ? getUserIconUrl(Globals.user)
+                                      ? getUserIconImage(Globals.user.icon)
                                       : FileImage(this._icon))),
                           child: Container(
                             decoration: BoxDecoration(
@@ -201,7 +206,7 @@ class _FirstLoginState extends State<FirstLogin> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 RaisedButton.icon(
-                    onPressed: validateInput,
+                    onPressed: saveSettings,
                     icon: Icon(Icons.save),
                     label: Text("Save")),
               ]),
@@ -210,6 +215,7 @@ class _FirstLoginState extends State<FirstLogin> {
     );
   }
 
+  // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
@@ -224,6 +230,7 @@ class _FirstLoginState extends State<FirstLogin> {
     setState(() {});
   }
 
+  // if the favorites have changed, attempt to update them in the DB
   void saveFavorites() async {
     Set oldFavorites = this.originalFavorites.toSet();
     Set newFavorites = this.displayedFavorites.toSet();
@@ -247,12 +254,13 @@ class _FirstLoginState extends State<FirstLogin> {
         // if it failed then revert back to old favorites
         this.displayedFavorites.clear();
         this.displayedFavorites.addAll(this.originalFavorites);
-        showErrorMessage("Error", "Error saving favorites.", context);
+        showErrorMessage("Error", "Error saving favorites.", this.context);
       }
     }
   }
 
-  void validateInput() async {
+  // attempts to save the user settings if the input is valid
+  void saveSettings() async {
     final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -261,24 +269,24 @@ class _FirstLoginState extends State<FirstLogin> {
         userNames.add(favorite.username);
       }
 
-      showLoadingDialog(context, "Saving settings...", true);
+      showLoadingDialog(this.context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
           this._displayName,
           this._darkTheme,
           this._muted,
           userNames,
           this._icon);
-      Navigator.of(context, rootNavigator: true).pop('dialog');
+      Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        changeTheme(context);
+        changeTheme(this.context);
         Navigator.pushReplacement(
-          context,
+          this.context,
           MaterialPageRoute(builder: (context) => GroupsHome()),
         );
       } else {
         hideKeyboard(context);
-        showErrorMessage("Error", resultStatus.errorMessage, context);
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {
       setState(() => this.autoValidate = true);

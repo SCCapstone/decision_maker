@@ -35,7 +35,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
                   width: MediaQuery.of(context).size.width * .20,
                   decoration: BoxDecoration(
                       image: DecorationImage(
-                          image: getGroupIconUrlStr(widget.group.icon),
+                          image: getGroupIconImage(widget.group.icon),
                           fit: BoxFit.cover)),
                 ),
               ),

@@ -107,7 +107,7 @@ class _GroupPageState extends State<GroupPage> {
                         child: Container(
                           child: IconButton(
                             icon: Icon(Icons.done_all),
-                            color: Color(0xff5ce080),
+                            color: Globals.pocketPollGreen,
                             tooltip: "Mark all seen",
                             onPressed: () {
                               markAllEventsSeen();

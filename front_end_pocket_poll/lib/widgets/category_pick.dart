@@ -16,10 +16,11 @@ class CategoryPick extends StatefulWidget {
 }
 
 class _CategoryPickState extends State<CategoryPick> {
-  List<Widget> categoryRows = new List<Widget>();
+  List<Widget> categoryRows;
 
   @override
   void initState() {
+    this.categoryRows = new List<Widget>();
     this.getCategories();
     super.initState();
   }
@@ -48,7 +49,8 @@ class _CategoryPickState extends State<CategoryPick> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              "No categories found to add. Navigate to the categories homepage to create some.",
+                              "No categories found to add! Categories are list of choices that are used to make events."
+                              " Navigate to the categories homepage to create some.",
                               style: TextStyle(fontSize: 20),
                             ),
                             RaisedButton(
@@ -76,6 +78,7 @@ class _CategoryPickState extends State<CategoryPick> {
     );
   }
 
+  // load categories into the category rows using the categories found on local user object
   void getCategories() {
     for (Category category in Globals.user.ownedCategories) {
       this.categoryRows.add(CategoryRow(category,
@@ -84,6 +87,7 @@ class _CategoryPickState extends State<CategoryPick> {
     }
   }
 
+  // select a category to be added or, if it already selected, remove it from the selection
   void selectCategory(Category category) {
     setState(() {
       if (widget.selectedCategories.keys.contains(category.categoryId)) {

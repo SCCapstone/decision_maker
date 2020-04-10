@@ -17,7 +17,7 @@ class CategoryPopupSingle extends StatefulWidget {
 }
 
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
-  List<Widget> categoryRows = new List<Widget>();
+  List<Widget> categoryRows;
   Future<ResultStatus<List<Category>>> resultFuture;
   bool loading;
   bool errorLoading;
@@ -25,6 +25,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
 
   @override
   void initState() {
+    this.categoryRows = new List<Widget>();
     this.resultFuture = CategoriesManager.getAllCategoriesFromGroup(
         Globals.currentGroup.groupId);
     super.initState();
@@ -32,7 +33,6 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
 
   @override
   Widget build(BuildContext context) {
-    // displays a popup for editing the group's members
     return AlertDialog(
       title: Text("Select Category"),
       actions: <Widget>[
@@ -114,6 +114,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
     );
   }
 
+  // selects a category for an event. Note only one category can be selected
   void selectCategory(Category category) {
     setState(() {
       this.categoryRows.clear();

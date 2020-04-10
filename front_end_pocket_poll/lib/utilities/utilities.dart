@@ -6,8 +6,8 @@ import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
-import 'package:front_end_pocket_poll/models/user.dart';
 
+// checks if internet connection is okay on startup
 Future<bool> internetCheck() async {
   bool retVal = true;
   try {
@@ -18,31 +18,27 @@ Future<bool> internetCheck() async {
   return retVal;
 }
 
+// log out the user and clear all local variables they might have stored
 void logOutUser(BuildContext context) {
   UsersManager.unregisterPushEndpoint();
-  Globals.clearGlobals();
+  Globals.username = null;
   Globals.activeUserCategories.clear();
-  clearTokens();
+  clearSharedPrefs();
 }
 
-ImageProvider getUserIconUrl(User user) {
-  return user.icon == null
+ImageProvider getUserIconImage(String iconUrl) {
+  return iconUrl == null
       ? AssetImage("assets/images/defaultUser.png")
-      : NetworkImage(Globals.imageUrl + user.icon);
+      : NetworkImage(Globals.imageUrl + iconUrl);
 }
 
-ImageProvider getUserIconUrlStr(String icon) {
-  return icon == null
-      ? AssetImage("assets/images/defaultUser.png")
-      : NetworkImage(Globals.imageUrl + icon);
-}
-
-ImageProvider getGroupIconUrlStr(String icon) {
-  return icon == null
+ImageProvider getGroupIconImage(String iconUrl) {
+  return iconUrl == null
       ? AssetImage("assets/images/defaultGroup.png")
-      : NetworkImage(Globals.imageUrl + icon);
+      : NetworkImage(Globals.imageUrl + iconUrl);
 }
 
+// converts a sort val from an int to a string based on the values in the global file
 String getSortMethodString(int sortVal) {
   String retVal;
   if (sortVal == Globals.alphabeticalSort) {
@@ -60,6 +56,7 @@ String getSortMethodString(int sortVal) {
   return retVal;
 }
 
+// converts a sort val from an string to a int based on the values in the global file
 int getSortMethod(String sortString) {
   int retVal;
   if (sortString == Globals.alphabeticalSortString) {
@@ -77,8 +74,8 @@ int getSortMethod(String sortString) {
   return retVal;
 }
 
+// converts from AM/PM hour to military time hour
 int convertMeridianHrToMilitary(int hour, bool am) {
-  // converts from AM/PM hour to military time hour
   int formattedHr = 0;
   if (am) {
     if (hour == 12) {
@@ -97,8 +94,8 @@ int convertMeridianHrToMilitary(int hour, bool am) {
   return formattedHr;
 }
 
+// converts from military time hour to AM/PM hour
 int convertMilitaryHrToMeridian(int hour) {
-  // converts from military time hour to AM/PM hour
   int formattedHr;
   if (hour == 0) {
     formattedHr = 12;
@@ -110,10 +107,12 @@ int convertMilitaryHrToMeridian(int hour) {
   return formattedHr;
 }
 
+// returns border color for containers based on whether user is in dark mode or light mode
 Color getBorderColor() {
   return (Globals.user.appSettings.darkTheme) ? Colors.white : Colors.black;
 }
 
+// shows an error message popup with a custom title and body
 void showErrorMessage(
     String errorTitle, String errorMsg, BuildContext context) {
   showDialog(
@@ -135,13 +134,13 @@ void showErrorMessage(
       });
 }
 
+// shows a loading dialog. Used for API calls.
 void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
   showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
         return WillPopScope(
-          // prevents the dialog from being exited by the back button
           onWillPop: () async => dismissible,
           child: AlertDialog(
             content: Flex(
@@ -162,6 +161,7 @@ void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
       });
 }
 
+// shows a blown up image of a user icon
 void showUserImage(ImageProvider image, BuildContext buildContext) {
   showDialog(
       context: buildContext,
@@ -180,6 +180,7 @@ void showUserImage(ImageProvider image, BuildContext buildContext) {
       });
 }
 
+// shows a blown up image of a group icon
 void showGroupImage(ImageProvider image, BuildContext buildContext) {
   showDialog(
       context: buildContext,
@@ -202,6 +203,7 @@ void hideKeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(new FocusNode());
 }
 
+// changes the global theme of the app
 void changeTheme(BuildContext context) {
   ThemeData selectedTheme;
   if (Globals.user.appSettings.darkTheme) {
@@ -214,6 +216,7 @@ void changeTheme(BuildContext context) {
   themeNotifier.setTheme(selectedTheme);
 }
 
+// used for returning a UTC timestamp to the DB for new events
 int getUtcSecondsSinceEpoch(final DateTime dateTime) {
   return (dateTime.millisecondsSinceEpoch / 1000).ceil();
 }
