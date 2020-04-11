@@ -71,11 +71,13 @@ class _UserSettingsState extends State<UserSettings> {
                 child: RaisedButton.icon(
                     color: Colors.blue,
                     onPressed: saveSettings,
+                    key: Key("user_settings:save_button"),
                     icon: Icon(Icons.save),
                     label: Text("Save")),
               )
             ],
           ),
+          key: Key("user_settings:scaffold"),
           body: Column(children: <Widget>[
             Form(
               key: this.formKey,
@@ -97,6 +99,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 this._displayName = arg.trim();
                                 showSaveButton();
                               },
+                              key: Key("user_settings:displayName_input"),
                               onSaved: (String arg) {},
                               style: TextStyle(fontSize: 25),
                               decoration: InputDecoration(
@@ -154,6 +157,7 @@ class _UserSettingsState extends State<UserSettings> {
                               });
                             },
                             icon: Icon(Icons.contacts),
+                            key: Key("user_settings:favorites_button"),
                             label: Text("My Favorites")),
                         Container(
                           width: MediaQuery.of(context).size.width * .8,
@@ -198,6 +202,7 @@ class _UserSettingsState extends State<UserSettings> {
                                   ),
                                   Switch(
                                     value: !this._darkTheme,
+                                    key: Key("user_settings:dark_theme_switch"),
                                     onChanged: (bool value) {
                                       setState(() {
                                         this._darkTheme = !value;

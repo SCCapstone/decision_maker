@@ -8,8 +8,9 @@ class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
   final bool selected;
+  final int index;
 
-  CategoryRow(this.category, this.selected, {this.onSelect});
+  CategoryRow(this.category, this.selected, {this.onSelect, this.index});
 
   @override
   _CategoryRow createState() => new _CategoryRow();
@@ -43,6 +44,7 @@ class _CategoryRow extends State<CategoryRow> {
         children: <Widget>[
           Checkbox(
             value: this.selected,
+            key: Key("category_row:checkbox:${widget.index}"),
             onChanged: (bool value) {
               this.widget.onSelect();
               setState(() {

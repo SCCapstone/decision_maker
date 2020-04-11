@@ -61,10 +61,15 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                         if (resultStatus.success) {
                           List<Category> categories = resultStatus.data;
                           CategoriesManager.sortByAlphaAscending(categories);
+                          int index = 0; // used for integration testing
                           for (Category category in categories) {
-                            this.categoryRows.add(CategoryRow(category,
-                                widget.selectedCategory.contains(category),
-                                onSelect: () => selectCategory(category)));
+                            this.categoryRows.add(CategoryRow(
+                                  category,
+                                  widget.selectedCategory.contains(category),
+                                  onSelect: () => selectCategory(category),
+                                  index: index,
+                                ));
+                            index++;
                           }
                           if (this.categoryRows.length > 0) {
                             return Container(

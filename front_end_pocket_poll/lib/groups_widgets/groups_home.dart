@@ -221,6 +221,7 @@ class _GroupsHomeState extends State<GroupsHome>
               ListTile(
                   leading: Icon(Icons.settings),
                   title: Text('Settings', style: TextStyle(fontSize: 16)),
+                  key: Key("groups_home:user_settings_button"),
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
@@ -554,7 +555,7 @@ class _GroupsHomeState extends State<GroupsHome>
           visible: (!this.searching && this.currentTab == this.groupsHomeTab),
           child: FloatingActionButton(
             child: Icon(Icons.add),
-            key: Key("groups_home:new_category_button"),
+            key: Key("groups_home:new_group_button"),
             onPressed: () {
               // Navigate to second route when tapped.
               Navigator.push(
