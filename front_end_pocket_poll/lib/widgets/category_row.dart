@@ -8,7 +8,7 @@ class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
   final bool selected;
-  final int index;
+  final int index; // used for integration tests
 
   CategoryRow(this.category, this.selected, {this.onSelect, this.index});
 
