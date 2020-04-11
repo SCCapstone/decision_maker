@@ -610,6 +610,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("group_settings:leave_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   tryLeave();
