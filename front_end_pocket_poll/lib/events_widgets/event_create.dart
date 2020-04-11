@@ -382,6 +382,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
+                              key: Key("event_create:skip_consider_button"),
                               onPressed: () {
                                 this.willConsider = !this.willConsider;
                                 if (!this.willConsider) {
@@ -464,6 +465,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
+                              key: Key("event_create:skip_vote_button"),
                               onPressed: () {
                                 this.willVote = !this.willVote;
                                 if (!this.willVote) {

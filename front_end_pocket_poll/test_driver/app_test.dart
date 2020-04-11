@@ -264,11 +264,11 @@ void main() {
       var saveEventButton = find.byValueKey("event_create:save_event_button");
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
-      // make sure event is there
-      await driver.waitFor(find.text(eventName));
+      // make sure event is there in right stage
+      await driver.waitFor(find.byValueKey("event_card_consider:$eventName"));
     });
 
-    test('create_skip_consider_event', () async {
+    test('create_event_skip_consider', () async {
       // enter the create event page
       var createEventButton = find.byValueKey("group_page:create_event_button");
       await driver.tap(createEventButton);
@@ -280,7 +280,53 @@ void main() {
       await driver.enterText(eventName);
       // select a category
       var addCategoryButton =
-      find.byValueKey("event_create:add_category_button");
+          find.byValueKey("event_create:add_category_button");
+      await driver.tap(addCategoryButton);
+      // wait for categories to load
+      await driver
+          .waitFor(find.byValueKey("category_popup_single:category_container"));
+      // always select first category
+      var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
+      await driver.tap(categoryCheckBox);
+      var doneButton = find.byValueKey("category_popup_single:done_button");
+      await driver.tap(doneButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      // enter the start time (date is already set for current day by default)
+      var hourInput = find.byValueKey("event_create:hour_input");
+      await driver.tap(hourInput);
+      await driver.enterText(" "); // space automatically picks next hour
+      var minuteInput = find.byValueKey("event_create:minute_input");
+      await driver.tap(minuteInput);
+      await driver.enterText(" "); // space automatically picks current minute
+      // SKIP the consider time
+      var skipConsiderButton =
+          find.byValueKey("event_create:skip_consider_button");
+      await driver.tap(skipConsiderButton);
+      // enter a vote time
+      var voteInput = find.byValueKey("event_create:vote_input");
+      await driver.tap(voteInput);
+      await driver.enterText("2");
+      // save the event
+      var saveEventButton = find.byValueKey("event_create:save_event_button");
+      await driver.tap(saveEventButton);
+      await driver.waitFor(find.byValueKey("group_page:scaffold"));
+      // make sure event is there in right stage
+      await driver.waitFor(find.byValueKey("event_card_voting:$eventName"));
+    });
+
+    test('create_event_skip_vote', () async {
+      // enter the create event page
+      var createEventButton = find.byValueKey("group_page:create_event_button");
+      await driver.tap(createEventButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      // enter an event name (save it for verifying later it was created)
+      String eventName = getRandomEventName();
+      var eventNameInput = find.byValueKey("event_create:event_name_input");
+      await driver.tap(eventNameInput);
+      await driver.enterText(eventName);
+      // select a category
+      var addCategoryButton =
+          find.byValueKey("event_create:add_category_button");
       await driver.tap(addCategoryButton);
       // wait for categories to load
       await driver
@@ -302,16 +348,60 @@ void main() {
       var considerInput = find.byValueKey("event_create:consider_input");
       await driver.tap(considerInput);
       await driver.enterText("2");
-      // enter a vote time
-      var voteInput = find.byValueKey("event_create:vote_input");
-      await driver.tap(voteInput);
-      await driver.enterText("2");
+      // SKIP the vote time
+      var skipVoteButton = find.byValueKey("event_create:skip_vote_button");
+      await driver.tap(skipVoteButton);
       // save the event
       var saveEventButton = find.byValueKey("event_create:save_event_button");
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
-      // make sure event is there
-      await driver.waitFor(find.text(eventName));
+      // make sure event is there in right stage
+      await driver.waitFor(find.byValueKey("event_card_consider:$eventName"));
+    });
+
+    test('create_event_skip_both', () async {
+      // enter the create event page
+      var createEventButton = find.byValueKey("group_page:create_event_button");
+      await driver.tap(createEventButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      // enter an event name (save it for verifying later it was created)
+      String eventName = getRandomEventName();
+      var eventNameInput = find.byValueKey("event_create:event_name_input");
+      await driver.tap(eventNameInput);
+      await driver.enterText(eventName);
+      // select a category
+      var addCategoryButton =
+          find.byValueKey("event_create:add_category_button");
+      await driver.tap(addCategoryButton);
+      // wait for categories to load
+      await driver
+          .waitFor(find.byValueKey("category_popup_single:category_container"));
+      // always select first category
+      var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
+      await driver.tap(categoryCheckBox);
+      var doneButton = find.byValueKey("category_popup_single:done_button");
+      await driver.tap(doneButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      // enter the start time (date is already set for current day by default)
+      var hourInput = find.byValueKey("event_create:hour_input");
+      await driver.tap(hourInput);
+      await driver.enterText(" "); // space automatically picks next hour
+      var minuteInput = find.byValueKey("event_create:minute_input");
+      await driver.tap(minuteInput);
+      await driver.enterText(" "); // space automatically picks current minute
+      // SKIP the consider time
+      var skipConsiderButton =
+          find.byValueKey("event_create:skip_consider_button");
+      await driver.tap(skipConsiderButton);
+      // SKIP the vote time
+      var skipVoteButton = find.byValueKey("event_create:skip_vote_button");
+      await driver.tap(skipVoteButton);
+      // save the event
+      var saveEventButton = find.byValueKey("event_create:save_event_button");
+      await driver.tap(saveEventButton);
+      await driver.waitFor(find.byValueKey("group_page:scaffold"));
+      // make sure event is there in right stage
+      await driver.waitFor(find.byValueKey("event_card_occurring:$eventName"));
     });
 
     test('edit_group', () async {
