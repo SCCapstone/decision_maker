@@ -7,7 +7,7 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
-  bool selected;
+  final bool selected;
 
   CategoryRow(this.category, this.selected, {this.onSelect});
 
@@ -17,10 +17,12 @@ class CategoryRow extends StatefulWidget {
 
 class _CategoryRow extends State<CategoryRow> {
   String categoryText;
+  bool selected;
 
   @override
   void initState() {
-    // only show owner in row if the user doesn't own it
+    this.selected = widget.selected;
+    // only show owner username in row if the user doesn't own it
     bool isActiveUserCategoryOwner = widget.category.owner == Globals.username;
     if (isActiveUserCategoryOwner) {
       this.categoryText = widget.category.categoryName;
@@ -40,11 +42,11 @@ class _CategoryRow extends State<CategoryRow> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Checkbox(
-            value: widget.selected,
+            value: this.selected,
             onChanged: (bool value) {
               this.widget.onSelect();
               setState(() {
-                widget.selected = value;
+                this.selected = value;
               });
             },
           ),

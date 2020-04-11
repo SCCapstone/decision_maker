@@ -72,7 +72,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
                       child: Container(
                         child: IconButton(
                           icon: Icon(Icons.notification_important),
-                          color: Color(0xff5ce080),
+                          color: Globals.pocketPollGreen,
                           tooltip: "Mark seen",
                           onPressed: () {
                             markEventRead();

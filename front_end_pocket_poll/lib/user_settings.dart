@@ -21,15 +21,15 @@ class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController displayNameController = TextEditingController();
 
-  bool autoValidate = false;
-  bool editing = false;
-  bool _darkTheme = false;
-  bool _muted = false;
-  bool newIcon = false;
+  bool autoValidate;
+  bool editing;
+  bool _darkTheme;
+  bool _muted;
+  bool newIcon;
   File _icon;
   String _displayName;
-  List<Favorite> displayedFavorites = new List<Favorite>();
-  List<Favorite> originalFavorites = new List<Favorite>();
+  List<Favorite> displayedFavorites;
+  List<Favorite> originalFavorites;
 
   @override
   void dispose() {
@@ -39,6 +39,12 @@ class _UserSettingsState extends State<UserSettings> {
 
   @override
   void initState() {
+    this.autoValidate = false;
+    this.editing = false;
+    this.newIcon = false;
+    this.displayedFavorites = new List<Favorite>();
+    this.originalFavorites = new List<Favorite>();
+
     this._displayName = Globals.user.displayName;
     this._darkTheme = Globals.user.appSettings.darkTheme;
     this._muted = Globals.user.appSettings.muted;
@@ -64,7 +70,7 @@ class _UserSettingsState extends State<UserSettings> {
                 visible: this.editing,
                 child: RaisedButton.icon(
                     color: Colors.blue,
-                    onPressed: validateInput,
+                    onPressed: saveSettings,
                     icon: Icon(Icons.save),
                     label: Text("Save")),
               )
@@ -89,7 +95,7 @@ class _UserSettingsState extends State<UserSettings> {
                               validator: validDisplayName,
                               onChanged: (String arg) {
                                 this._displayName = arg.trim();
-                                enableAutoValidation();
+                                showSaveButton();
                               },
                               onSaved: (String arg) {},
                               style: TextStyle(fontSize: 25),
@@ -105,7 +111,7 @@ class _UserSettingsState extends State<UserSettings> {
                           onTap: () {
                             showUserImage(
                                 this._icon == null
-                                    ? getUserIconUrl(Globals.user)
+                                    ? getUserIconImage(Globals.user.icon)
                                     : FileImage(this._icon),
                                 context);
                           },
@@ -117,7 +123,7 @@ class _UserSettingsState extends State<UserSettings> {
                                 image: DecorationImage(
                                     fit: BoxFit.cover,
                                     image: this._icon == null
-                                        ? getUserIconUrl(Globals.user)
+                                        ? getUserIconImage(Globals.user.icon)
                                         : FileImage(this._icon))),
                             child: Container(
                               decoration: BoxDecoration(
@@ -171,7 +177,7 @@ class _UserSettingsState extends State<UserSettings> {
                                     onChanged: (bool value) {
                                       setState(() {
                                         this._muted = value;
-                                        enableAutoValidation();
+                                        showSaveButton();
                                       });
                                     },
                                   )
@@ -195,7 +201,7 @@ class _UserSettingsState extends State<UserSettings> {
                                     onChanged: (bool value) {
                                       setState(() {
                                         this._darkTheme = !value;
-                                        enableAutoValidation();
+                                        showSaveButton();
                                       });
                                     },
                                   )
@@ -214,6 +220,7 @@ class _UserSettingsState extends State<UserSettings> {
     );
   }
 
+  // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
         source: ImageSource.gallery,
@@ -224,10 +231,11 @@ class _UserSettingsState extends State<UserSettings> {
     if (newIconFile != null) {
       this._icon = newIconFile;
       this.newIcon = true;
-      enableAutoValidation();
+      showSaveButton();
     }
   }
 
+  // if the favorites have changed, attempt to update them in the DB
   void saveFavorites() async {
     Set oldFavorites = this.originalFavorites.toSet();
     Set newFavorites = this.displayedFavorites.toSet();
@@ -251,13 +259,13 @@ class _UserSettingsState extends State<UserSettings> {
         // if it failed then revert back to old favorites
         this.displayedFavorites.clear();
         this.displayedFavorites.addAll(this.originalFavorites);
-        showErrorMessage("Error", "Error saving favorites.", context);
+        showErrorMessage("Error", "Error saving favorites.", this.context);
       }
     }
   }
 
-  void enableAutoValidation() {
-    // the moment the user makes changes to their previously saved settings, display the save button
+  // the moment the user makes changes to their previously saved settings, display the save button
+  void showSaveButton() {
     if (Globals.user.appSettings.darkTheme != this._darkTheme ||
         Globals.user.appSettings.muted != this._muted ||
         Globals.user.displayName != this._displayName ||
@@ -272,7 +280,8 @@ class _UserSettingsState extends State<UserSettings> {
     }
   }
 
-  void validateInput() async {
+  // attempts to save the user settings if the input is valid
+  void saveSettings() async {
     final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -281,29 +290,29 @@ class _UserSettingsState extends State<UserSettings> {
         userNames.add(favorite.username);
       }
 
-      showLoadingDialog(context, "Saving settings...", true);
+      showLoadingDialog(this.context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
           this._displayName,
           this._darkTheme,
           this._muted,
           userNames,
           this._icon);
-      Navigator.of(context, rootNavigator: true).pop('dialog');
+      Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         setState(() {
-          hideKeyboard(context);
+          hideKeyboard(this.context);
           // reset everything and reflect changes made
           this.originalFavorites.clear();
           this.originalFavorites.addAll(this.displayedFavorites);
           this.editing = false;
           this.newIcon = false;
           this.autoValidate = false;
-          changeTheme(context);
+          changeTheme(this.context);
         });
       } else {
-        hideKeyboard(context);
-        showErrorMessage("Error", resultStatus.errorMessage, context);
+        hideKeyboard(this.context);
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {
       setState(() => this.autoValidate = true);

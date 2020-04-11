@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:http/http.dart';
-
 import 'globals.dart';
 
 final String userPoolUrl =
@@ -21,26 +19,23 @@ final String tokenEndpoint = "/oauth2/token?";
 final String userInfoEndpoint = "/oauth2/userInfo?";
 final String logoutEndpoint = "/logout?";
 
-//One option to consider for the future is making one SharedPreferences variable
-//as a global variable and just use it for all local storage, but for now I'll keep
-//the scope within the context of tokens.
-
-final String accessTokenKey = "access"; //_tokens is like a Map, so we declare
-final String refreshTokenKey = "refresh"; //the keys for the tokens here.
+// keys for use in the global shared prefs
+final String accessTokenKey = "access";
+final String refreshTokenKey = "refresh";
 final String idTokenKey = "id";
-bool gotTokens = false;
 
 Future<bool> hasValidTokensSet(BuildContext context) async {
   ResultStatus<User> resultStatus = await UsersManager.getUserData();
 
+  bool retVal = true;
   if (resultStatus.success) {
     Globals.user = resultStatus.data;
-    Globals.username = resultStatus.data.username; //Store the username
+    Globals.username = resultStatus.data.username;
   } else {
-    return false;
+    retVal = false;
   }
 
-  return true;
+  return retVal;
 }
 
 Future<bool> refreshUserTokens() async {
@@ -48,7 +43,8 @@ Future<bool> refreshUserTokens() async {
 
   //Use the stored refresh token to get new tokens and then call storeUserTokens to store the new tokens
   //hint, don't overwrite the refresh token, that one token can be used many times and you only get it once
-  String refreshToken = (await Globals.getSharedPrefs()).getString(refreshTokenKey);
+  String refreshToken =
+      (await Globals.getSharedPrefs()).getString(refreshTokenKey);
 
   Map<String, String> headers = {
     "Content-Type": "application/x-www-form-urlencoded"
@@ -67,7 +63,7 @@ Future<bool> refreshUserTokens() async {
     await storeUserTokens(body['access_token'], refreshToken, body['id_token']);
     success = true;
   } else {
-    clearTokens(); // if there was anything there, it is junk so clear it
+    clearSharedPrefs(); // if there was anything there, it is junk so clear it
   }
 
   return success;
@@ -80,6 +76,6 @@ Future<void> storeUserTokens(
   (await Globals.getSharedPrefs()).setString(refreshTokenKey, refreshToken);
 }
 
-void clearTokens() async {
+void clearSharedPrefs() async {
   (await Globals.getSharedPrefs()).clear();
 }

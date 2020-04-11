@@ -7,13 +7,13 @@ class UserRow extends StatelessWidget {
   final String username;
   final String icon;
   final bool showDelete;
-  final bool adding;
+  final bool showAdd;
   final bool isGroupOwner;
   final VoidCallback deleteUser;
   final VoidCallback addUser;
 
   UserRow(this.displayName, this.username, this.icon, this.showDelete,
-      this.adding, this.isGroupOwner,
+      this.showAdd, this.isGroupOwner,
       {this.deleteUser, this.addUser});
 
   @override
@@ -25,14 +25,14 @@ class UserRow extends StatelessWidget {
         children: <Widget>[
           GestureDetector(
             onTap: () {
-              showUserImage(getUserIconUrlStr(icon), context);
+              showUserImage(getUserIconImage(this.icon), context);
             },
             child: Container(
               height: MediaQuery.of(context).size.height * .2,
               width: MediaQuery.of(context).size.width * .15,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                      image: getUserIconUrlStr(icon), fit: BoxFit.cover)),
+                      image: getUserIconImage(this.icon), fit: BoxFit.cover)),
             ),
           ),
           Padding(
@@ -48,7 +48,7 @@ class UserRow extends StatelessWidget {
             ),
           ),
           Visibility(
-            visible: showDelete, // if owner, can't remove itself
+            visible: this.showDelete, // if owner, can't remove itself
             child: IconButton(
               icon: Icon(Icons.remove_circle_outline),
               color: Colors.red,
@@ -56,7 +56,7 @@ class UserRow extends StatelessWidget {
             ),
           ),
           Visibility(
-            visible: isGroupOwner,
+            visible: this.isGroupOwner,
             // show a special icon if user is the owner of the group. Used a button to make it centered
             child: IconButton(
               icon: Icon(Icons.star, color: Colors.yellow),
@@ -64,7 +64,7 @@ class UserRow extends StatelessWidget {
             ),
           ),
           Visibility(
-            visible: adding,
+            visible: this.showAdd,
             // show this if the user is typing in a username from their favorites
             child: IconButton(
               icon: Icon(Icons.add_circle_outline),

@@ -52,6 +52,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
     if (batchNumber == null) {
+      // batchNumber is used to get a discrete number of events from the DB
       batchNumber = 0;
     }
 
@@ -179,6 +180,7 @@ class GroupsManager {
         group.members.keys.toList();
 
     if (batchNumber == null) {
+      // batchNumber is used to get a discrete number of events from the DB
       batchNumber = 0;
     }
 
@@ -313,6 +315,7 @@ class GroupsManager {
     return retVal;
   }
 
+  // used to consider a user for an event
   static Future<ResultStatus> optInOutOfEvent(
       String groupId, String eventId, bool participating) async {
     ResultStatus retVal = new ResultStatus(success: false);
@@ -391,16 +394,19 @@ class GroupsManager {
     return retVal;
   }
 
+  // sorts a list of groups by date modified (ascending)
   static void sortByDateNewest(List<UserGroup> groups) {
     groups.sort((a, b) => DateTime.parse(b.lastActivity)
         .compareTo(DateTime.parse(a.lastActivity)));
   }
 
+  // sorts a list of groups by date modified (descending)
   static void sortByDateOldest(List<UserGroup> groups) {
     groups.sort((a, b) => DateTime.parse(a.lastActivity)
         .compareTo(DateTime.parse(b.lastActivity)));
   }
 
+  // sorts a list of groups alphabetically (ascending)
   static void sortByAlphaAscending(List<GroupInterface> groups) {
     groups.sort((a, b) => a
         .getGroupName()
@@ -408,6 +414,7 @@ class GroupsManager {
         .compareTo(b.getGroupName().toUpperCase()));
   }
 
+  // sorts a list of groups alphabetically (descending)
   static void sortByAlphaDescending(List<GroupInterface> groups) {
     groups.sort((a, b) => b
         .getGroupName()

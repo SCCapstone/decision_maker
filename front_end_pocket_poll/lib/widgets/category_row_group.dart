@@ -11,10 +11,10 @@ class CategoryRowGroup extends StatefulWidget {
   final bool groupCategory;
   final bool selected;
   final Function updateOwnedCategories;
-  final bool canEdit;
+  final bool canSelect;
 
   CategoryRowGroup(this.category, this.selected, this.groupCategory,
-      this.updateOwnedCategories, this.canEdit,
+      this.updateOwnedCategories, this.canSelect,
       {this.onSelect});
 
   @override
@@ -22,18 +22,19 @@ class CategoryRowGroup extends StatefulWidget {
 }
 
 class _CategoryRowGroupState extends State<CategoryRowGroup> {
-  int groupNum = 0;
-  bool selectVal = false;
+  int groupNum;
+  bool selectVal;
 
   @override
   void initState() {
-    selectVal = widget.selected;
+    this.groupNum = 0;
+    this.selectVal = widget.selected;
     if (widget.groupCategory) {
-      // find the num of other groups this category is in if its not yours
+      // find the num of other groups this category is in if its not active user's category
       for (String groupId in Globals.user.groups.keys) {
         if (widget.category.groups.containsKey(groupId) &&
             groupId != Globals.currentGroup.groupId) {
-          groupNum++;
+          this.groupNum++;
         }
       }
     }
@@ -48,33 +49,32 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Visibility(
-            visible: widget.canEdit,
+            visible: widget.canSelect,
             child: Checkbox(
-              value: selectVal,
+              value: this.selectVal,
               onChanged: (bool value) {
                 this.widget.onSelect();
                 setState(() {
-                  selectVal = value;
+                  this.selectVal = value;
                 });
               },
             ),
           ),
           Visibility(
-            visible: !widget.canEdit,
+            visible: !widget.canSelect,
             child: Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
             ),
           ),
           Expanded(
               child: AutoSizeText(
-            (groupNum != 0)
-                ? "${widget.category.categoryName}\n(Used in $groupNum of your other groups)"
-                : widget.category.categoryName,
-            maxLines: 2,
-            style: TextStyle(fontSize: 20),
-            minFontSize: 12,
-            overflow: TextOverflow.ellipsis,
-          )),
+                  (this.groupNum != 0)
+                      ? "${widget.category.categoryName}\n(Used in $this.groupNum of your other groups)"
+                      : widget.category.categoryName,
+                  maxLines: 2,
+                  style: TextStyle(fontSize: 20),
+                  minFontSize: 12,
+                  overflow: TextOverflow.ellipsis)),
           Padding(
             padding: EdgeInsets.all(MediaQuery.of(context).size.width * .01),
           ),

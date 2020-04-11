@@ -180,7 +180,8 @@ class _GroupsHomeState extends State<GroupsHome>
                                   builder: (context) => UserSettings()));
                         },
                         child: CircleAvatar(
-                            backgroundImage: getUserIconUrl(Globals.user)),
+                            backgroundImage:
+                                getUserIconImage(Globals.user.icon)),
                       ),
                       title: AutoSizeText(
                         Globals.username,

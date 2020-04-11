@@ -6,7 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
-  static Color secondaryColor = Color(0xff106126);
+  static Color pocketPollDarkGreen = Color(0xff106126);
+  static Color pocketPollGreen = Color(0xff5ce080);
+  static Color pocketPollGrey = Color(0xff303030);
   static String username;
   static User user;
   static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
@@ -57,7 +59,7 @@ class Globals {
   static final int maxVotingTime = 9999;
   static final int maxVotingDigits = maxVotingTime.toString().length;
 
-  static String resetUrl =
+  static String resetPasswordUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://pocket-poll-documents.s3.us-east-2.amazonaws.com/login_redirect.html";
   static String imageUrl =
       "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
@@ -71,8 +73,8 @@ class Globals {
   static ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
       primarySwatch: Colors.green,
-      primaryColor: Color(0xff5ce080),
-      accentColor: Color(0xff5ce080),
+      primaryColor: pocketPollGreen,
+      accentColor: pocketPollGreen,
       primaryColorDark: Colors.black,
       buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
@@ -80,21 +82,16 @@ class Globals {
   static ThemeData lightTheme = ThemeData(
       brightness: Brightness.light,
       primarySwatch: Colors.green,
-      primaryColor: Color(0xff5ce080),
-      accentColor: Color(0xff5ce080),
+      primaryColor: pocketPollGreen,
+      accentColor: pocketPollGreen,
       primaryColorDark: Colors.black,
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-
-  static void clearGlobals() {
-    username = null;
-  }
 
   static Future<SharedPreferences> getSharedPrefs() async {
     if (sharedPrefs == null) {
       sharedPrefs = await SharedPreferences.getInstance();
     }
-
     return sharedPrefs;
   }
 }

@@ -26,13 +26,18 @@ class _MembersPageState extends State<MembersPage> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController userController = new TextEditingController();
   final TextEditingController favoriteController = new TextEditingController();
-  List<UserRow> displayedUserRows = new List<UserRow>();
-  List<UserRow> displayedFavoritesRows = new List<UserRow>();
-  bool showFavorites = false;
-  UserRow creator;
+
+  List<UserRow> displayedUserRows;
+  List<UserRow> displayedFavoritesRows;
+  bool showFavorites;
+  UserRow creatorRow; // separate variable for putting it at the top of the list
 
   @override
   void initState() {
+    this.displayedUserRows = new List<UserRow>();
+    this.displayedFavoritesRows = new List<UserRow>();
+    this.showFavorites = false;
+
     getDisplayedFavorites();
     for (Member user in widget.displayedMembers) {
       // if you're creating a group, you can always remove members from the group
@@ -41,7 +46,8 @@ class _MembersPageState extends State<MembersPage> {
       if (!widget.isCreating) {
         // can't delete yourself or the group creator
         displayDelete = user.username != Globals.currentGroup.groupCreator &&
-            user.username != Globals.username && widget.canEdit;
+            user.username != Globals.username &&
+            widget.canEdit;
         displayOwner = user.username == Globals.currentGroup.groupCreator;
       }
       UserRow userRow = new UserRow(user.displayName, user.username, user.icon,
@@ -49,11 +55,12 @@ class _MembersPageState extends State<MembersPage> {
         removeMember(user.username);
       });
       if (displayOwner) {
-        creator = userRow;
+        this.creatorRow = userRow;
       }
-      displayedUserRows.add(userRow);
+      this.displayedUserRows.add(userRow);
       // if favorite is already in group, don't show in the favorites section
-      displayedFavoritesRows
+      this
+          .displayedFavoritesRows
           .removeWhere((row) => row.username == user.username);
     }
     super.initState();
@@ -62,16 +69,17 @@ class _MembersPageState extends State<MembersPage> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: formKey,
+      key: this.formKey,
       child: GestureDetector(
         onTap: () {
+          // allows for anywhere on the page to be clicked to hide the keyboard
           hideKeyboard(context);
         },
         child: WillPopScope(
             onWillPop: handleBackPress,
             child: Scaffold(
               appBar: AppBar(
-                title: (widget.canEdit || widget.isCreating)
+                title: (widget.canEdit)
                     ? Text("Add/Remove Members")
                     : Text("View Members"),
                 leading: IconButton(
@@ -86,18 +94,19 @@ class _MembersPageState extends State<MembersPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Visibility(
-                      visible: widget.canEdit || widget.isCreating,
+                      visible: widget.canEdit,
                       child: Row(
                         children: <Widget>[
                           Visibility(
-                            visible: !showFavorites,
+                            visible: !this.showFavorites,
                             child: Expanded(
                               child: TextFormField(
                                   maxLength: Globals.maxUsernameLength,
-                                  controller: userController,
+                                  controller: this.userController,
                                   validator: (value) {
                                     List<String> allUsers = new List<String>();
-                                    for (Member user in widget.displayedMembers) {
+                                    for (Member user
+                                        in widget.displayedMembers) {
                                       allUsers.add(user.username);
                                     }
                                     return validNewUser(value.trim(), allUsers);
@@ -108,43 +117,47 @@ class _MembersPageState extends State<MembersPage> {
                             ),
                           ),
                           Visibility(
-                            visible: !showFavorites,
+                            visible: !this.showFavorites,
                             child: FlatButton(
                               child: Text("Add User"),
                               onPressed: () {
-                                if (formKey.currentState.validate()) {
+                                if (this.formKey.currentState.validate()) {
                                   addNewMember();
                                 }
                               },
                             ),
                           ),
                           Visibility(
-                            visible: showFavorites,
+                            visible: this.showFavorites,
                             child: Expanded(
                               child: TextFormField(
                                 maxLength: Globals.maxUsernameLength,
-                                controller: favoriteController,
+                                controller: this.favoriteController,
                                 decoration: InputDecoration(
                                     labelText: "Add user from favorites",
                                     counterText: ""),
                                 onChanged: (value) {
+                                  // allows users to type to get suggestions
                                   if (value.isEmpty) {
                                     setState(() {
-                                      displayedFavoritesRows.clear();
+                                      this.displayedFavoritesRows.clear();
                                       getDisplayedFavorites();
                                     });
                                   } else {
                                     List<UserRow> searchRows =
-                                    new List<UserRow>();
-                                    for (Favorite fav in Globals.user.favorites) {
+                                        new List<UserRow>();
+                                    for (Favorite fav
+                                        in Globals.user.favorites) {
                                       // show suggestion if match to username or displayname of a favorite
                                       if ((fav.username.toLowerCase().contains(
-                                          value.toLowerCase()) &&
-                                          !widget.displayedMembers.contains(
-                                              new Member.fromFavorite(
-                                                  fav))) ||
-                                          (fav.displayName.toLowerCase().contains(
-                                              value.toLowerCase()) &&
+                                                  value.toLowerCase()) &&
+                                              !widget.displayedMembers.contains(
+                                                  new Member.fromFavorite(
+                                                      fav))) ||
+                                          (fav.displayName
+                                                  .toLowerCase()
+                                                  .contains(
+                                                      value.toLowerCase()) &&
                                               !widget.displayedMembers.contains(
                                                   new Member.fromFavorite(
                                                       fav)))) {
@@ -161,7 +174,7 @@ class _MembersPageState extends State<MembersPage> {
                                       }
                                     }
                                     setState(() {
-                                      displayedFavoritesRows = searchRows;
+                                      this.displayedFavoritesRows = searchRows;
                                     });
                                   }
                                 },
@@ -171,9 +184,10 @@ class _MembersPageState extends State<MembersPage> {
                           Container(
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: (showFavorites)
+                                color: (this.showFavorites)
                                     ? Theme.of(context).accentColor
-                                    : Theme.of(context).scaffoldBackgroundColor),
+                                    : Theme.of(context)
+                                        .scaffoldBackgroundColor),
                             child: IconButton(
                               icon: Icon(Icons.contacts),
                               tooltip: (this.showFavorites)
@@ -181,13 +195,13 @@ class _MembersPageState extends State<MembersPage> {
                                   : "Show favorites",
                               onPressed: () {
                                 setState(() {
-                                  favoriteController.clear();
-                                  userController.clear();
+                                  this.favoriteController.clear();
+                                  this.userController.clear();
 
-                                  // prevents bug of if user types name that doesn't exist and then hits back, list will be empty
-                                  displayedFavoritesRows.clear();
+                                  // prevents bug if user types name that doesn't exist and then hits back, list will be empty
+                                  this.displayedFavoritesRows.clear();
                                   getDisplayedFavorites();
-                                  showFavorites = !showFavorites;
+                                  this.showFavorites = !this.showFavorites;
                                 });
                               },
                             ),
@@ -198,31 +212,38 @@ class _MembersPageState extends State<MembersPage> {
                     Padding(
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .005)),
+                    Visibility(
+                        visible: (this.showFavorites &&
+                            this.displayedFavoritesRows.isEmpty),
+                        child: Text((Globals.user.favorites.isEmpty)
+                            ? "No favorites found! Go to your user settings page to add some."
+                            : "No more favorites left to add.")),
                     Expanded(
                       child: Scrollbar(
                         child: ListView.builder(
                             shrinkWrap: true,
-                            itemCount: (showFavorites)
-                                ? displayedFavoritesRows.length
-                                : displayedUserRows.length,
+                            itemCount: (this.showFavorites)
+                                ? this.displayedFavoritesRows.length
+                                : this.displayedUserRows.length,
                             itemBuilder: (context, index) {
                               // sorting by alphabetical by displayname for now
-                              displayedUserRows.sort((a, b) => a.displayName
+                              this.displayedUserRows.sort((a, b) => a
+                                  .displayName
                                   .toLowerCase()
                                   .compareTo(b.displayName.toLowerCase()));
                               if (!widget.isCreating) {
                                 // place the owner at the top
-                                displayedUserRows.remove(creator);
-                                displayedUserRows.insert(0, creator);
+                                this.displayedUserRows.remove(creatorRow);
+                                this.displayedUserRows.insert(0, creatorRow);
                               }
-                              displayedFavoritesRows.sort((a, b) => a
+                              this.displayedFavoritesRows.sort((a, b) => a
                                   .displayName
                                   .toLowerCase()
                                   .compareTo(b.displayName.toLowerCase()));
-                              if (showFavorites) {
-                                return displayedFavoritesRows[index];
+                              if (this.showFavorites) {
+                                return this.displayedFavoritesRows[index];
                               } else {
-                                return displayedUserRows[index];
+                                return this.displayedUserRows[index];
                               }
                             }),
                       ),
@@ -235,11 +256,11 @@ class _MembersPageState extends State<MembersPage> {
     );
   }
 
+  // allows for user to exit the favorite section with the back button
   Future<bool> handleBackPress() async {
-    // allows for user to exit the favorite section with the back button
-    if (showFavorites) {
+    if (this.showFavorites) {
       setState(() {
-        showFavorites = false;
+        this.showFavorites = false;
       });
       return false;
     } else {
@@ -247,40 +268,45 @@ class _MembersPageState extends State<MembersPage> {
     }
   }
 
+  // populate the total favorites using the favorites on the local user object
   void getDisplayedFavorites() {
     for (Favorite favorite in Globals.user.favorites) {
       // can't ever add the owner of a group, so it's always false below
-      displayedFavoritesRows.add(new UserRow(
-        favorite.displayName,
-        favorite.username,
-        favorite.icon,
-        false,
-        true,
-        false,
-        addUser: () {
-          addMemberFromFavorites(favorite);
-        },
-      ));
+      this.displayedFavoritesRows.add(new UserRow(
+            favorite.displayName,
+            favorite.username,
+            favorite.icon,
+            false,
+            true,
+            false,
+            addUser: () {
+              addMemberFromFavorites(favorite);
+            },
+          ));
     }
     for (UserRow user in displayedUserRows) {
       // if favorite is already in group, don't show in the favorites section
-      displayedFavoritesRows
+      this
+          .displayedFavoritesRows
           .removeWhere((row) => row.username == user.username);
     }
     for (String username in widget.membersLeft) {
       // if favorite has previously left the group, don't show in the favorites section
-      displayedFavoritesRows.removeWhere((row) => row.username == username);
+      this
+          .displayedFavoritesRows
+          .removeWhere((row) => row.username == username);
     }
   }
 
+  // attempt to add a new member to the group if said user is in the DB
   void addNewMember() async {
-    String username = userController.text.trim();
+    String username = this.userController.text.trim();
     if (widget.membersLeft.contains(username)) {
       showErrorMessage(
           "Error",
           "Cannot add $username because they have previously left this group.",
-          context);
-      hideKeyboard(context);
+          this.context);
+      hideKeyboard(this.context);
     } else {
       ResultStatus<User> resultStatus =
           await UsersManager.getUserData(username: username);
@@ -301,32 +327,34 @@ class _MembersPageState extends State<MembersPage> {
         }));
       } else {
         showErrorMessage(
-            "Error", "Cannot add: ${userController.text}.", context);
-        hideKeyboard(context);
+            "Error", "Cannot add: ${userController.text}.", this.context);
+        hideKeyboard(this.context);
       }
       setState(() {
-        userController.clear();
+        this.userController.clear();
       });
     }
   }
 
+  // add the new user to the list and then display it in the scroll view
   void addMemberFromFavorites(Favorite memberToAdd) {
-    // add the new user to the list and then display it in the scroll view
     widget.displayedMembers.add(new Member.fromFavorite(memberToAdd));
-    displayedUserRows.add(new UserRow(
-        memberToAdd.displayName,
-        memberToAdd.username,
-        memberToAdd.icon,
-        true,
-        false,
-        false, deleteUser: () {
-      removeMember(memberToAdd.username);
-    }));
-    displayedFavoritesRows
+    this.displayedUserRows.add(new UserRow(
+            memberToAdd.displayName,
+            memberToAdd.username,
+            memberToAdd.icon,
+            true,
+            false,
+            false, deleteUser: () {
+          removeMember(memberToAdd.username);
+        }));
+    this
+        .displayedFavoritesRows
         .removeWhere((row) => row.username == memberToAdd.username);
     setState(() {});
   }
 
+  // removes a member from the list
   void removeMember(String username) {
     Member userToRemove;
     for (Member user in widget.displayedMembers) {
@@ -345,20 +373,20 @@ class _MembersPageState extends State<MembersPage> {
     // if removed user is a favorite of the user, add it to the favorites rows
     for (Favorite favorite in Globals.user.favorites) {
       if (favorite.username == username) {
-        displayedFavoritesRows.add(new UserRow(
-          favorite.displayName,
-          favorite.username,
-          favorite.icon,
-          false,
-          true,
-          false,
-          addUser: () {
-            addMemberFromFavorites(favorite);
-          },
-        ));
+        this.displayedFavoritesRows.add(new UserRow(
+              favorite.displayName,
+              favorite.username,
+              favorite.icon,
+              false,
+              true,
+              false,
+              addUser: () {
+                addMemberFromFavorites(favorite);
+              },
+            ));
       }
     }
-    displayedUserRows.remove(rowToRemove);
+    this.displayedUserRows.remove(rowToRemove);
     setState(() {});
   }
 }

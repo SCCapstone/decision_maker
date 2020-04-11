@@ -10,37 +10,37 @@ import 'imports/globals.dart';
 import 'imports/response_item.dart';
 import 'imports/user_tokens_manager.dart';
 
-bool mutexLock = false;
-
 class SignInPage extends StatefulWidget {
   @override
   _SignInState createState() => _SignInState();
 }
 
 class _SignInState extends State<SignInPage> {
-  final formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController usernameController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
   final TextEditingController emailController = new TextEditingController();
   final Future<ResponseItem> responseValue = null;
-  bool signUp = false;
-  bool autoValidate = false;
+  bool signUp;
+  bool autoValidate;
   String email;
   String username;
   String password;
+  bool loading;
 
   @override
   void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    emailController.dispose();
+    this.usernameController.dispose();
+    this.passwordController.dispose();
+    this.emailController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    signUp = false;
-    autoValidate = false;
+    this.loading = false;
+    this.signUp = false;
+    this.autoValidate = false;
     super.initState();
   }
 
@@ -61,47 +61,47 @@ class _SignInState extends State<SignInPage> {
           hideKeyboard(context);
         },
         child: Form(
-          key: formKey,
-          autovalidate: autoValidate,
+          key: this.formKey,
+          autovalidate: this.autoValidate,
           child: ListView(
             padding: EdgeInsets.all(25.0),
             children: <Widget>[
               Visibility(
-                  visible: signUp,
+                  visible: this.signUp,
                   child: TextFormField(
                     keyboardType: TextInputType.emailAddress,
-                    controller: emailController,
+                    controller: this.emailController,
                     maxLength: Globals.maxEmailLength,
                     validator: validEmail,
                     onSaved: (String arg) {
-                      email = arg.trim();
+                      this.email = arg.trim();
                     },
                     style: TextStyle(fontSize: 32),
                     decoration:
                         InputDecoration(labelText: "Email", counterText: ""),
                   )),
               TextFormField(
-                key: new Key("username"),
+                key: Key("login_page:username_input"),
                 maxLength: Globals.maxUsernameLength,
-                controller: usernameController,
+                controller: this.usernameController,
                 validator: validUsername,
                 onSaved: (String arg) {
-                  username = arg.trim();
+                  this.username = arg.trim();
                 },
                 style: TextStyle(fontSize: 32),
                 decoration:
                     InputDecoration(labelText: "Username", counterText: ""),
               ),
               TextFormField(
-                key: new Key("password"),
+                key: Key("login_page:password_input"),
                 obscureText: true,
                 autocorrect: false,
                 // don't allow user's passwords to be saved in their keyboard
                 maxLength: Globals.maxPasswordLength,
-                controller: passwordController,
-                validator: (signUp) ? validNewPassword : validPassword,
+                controller: this.passwordController,
+                validator: (this.signUp) ? validNewPassword : validPassword,
                 onSaved: (String arg) {
-                  password = arg.trim();
+                  this.password = arg.trim();
                 },
                 style: TextStyle(fontSize: 32),
                 decoration:
@@ -114,17 +114,17 @@ class _SignInState extends State<SignInPage> {
                 padding: EdgeInsets.all(5.0),
               ),
               SizedBox(
-                key: new Key("signInOrUp"),
+                key: Key("login_page:sign_in_button"),
                 height: MediaQuery.of(context).size.width * .12,
                 child: RaisedButton(
                   onPressed: () {
-                    if (!mutexLock) {
+                    if (!loading) {
                       // prevents user from spamming the login button if HTTP request is being processed
                       validateInput();
                     }
                   },
                   child: Text(
-                    (signUp) ? "Sign Up" : "Sign In",
+                    (this.signUp) ? "Sign Up" : "Sign In",
                     style: TextStyle(fontSize: 32),
                   ),
                 ),
@@ -133,7 +133,7 @@ class _SignInState extends State<SignInPage> {
                 padding: EdgeInsets.all(10.0),
               ),
               Visibility(
-                visible: !signUp,
+                visible: !this.signUp,
                 child: InkWell(
                   child: Center(
                     child: AutoSizeText(
@@ -147,10 +147,10 @@ class _SignInState extends State<SignInPage> {
                     ),
                   ),
                   onTap: () async {
-                    if (await canLaunch(Globals.resetUrl)) {
-                      await launch(Globals.resetUrl);
+                    if (await canLaunch(Globals.resetPasswordUrl)) {
+                      await launch(Globals.resetPasswordUrl);
                     } else {
-                      throw 'Could not launch ${Globals.resetUrl}';
+                      throw 'Could not launch ${Globals.resetPasswordUrl}';
                     }
                   },
                 ),
@@ -164,7 +164,7 @@ class _SignInState extends State<SignInPage> {
                   Flexible(
                     fit: FlexFit.loose,
                     child: AutoSizeText(
-                      (signUp)
+                      (this.signUp)
                           ? "Already have an account?"
                           : "Create an account?",
                       maxLines: 1,
@@ -177,16 +177,16 @@ class _SignInState extends State<SignInPage> {
                       onPressed: () {
                         setState(() {
                           // reload widget and switch to either sign up or sign in
-                          formKey.currentState.reset();
-                          passwordController.clear();
-                          usernameController.clear();
-                          emailController.clear();
-                          signUp = !signUp;
-                          autoValidate = false;
+                          this.formKey.currentState.reset();
+                          this.passwordController.clear();
+                          this.usernameController.clear();
+                          this.emailController.clear();
+                          this.signUp = !this.signUp;
+                          this.autoValidate = false;
                           hideKeyboard(context);
                         });
                       },
-                      child: Text((!signUp) ? "Sign Up" : "Sign In"),
+                      child: Text((!this.signUp) ? "Sign Up" : "Sign In"),
                     ),
                   )
                 ],
@@ -198,27 +198,27 @@ class _SignInState extends State<SignInPage> {
     );
   }
 
+  // attempt to validate all user input. Highlight errors if they arise
   void validateInput() {
     final form = formKey.currentState;
-    if (formKey.currentState.validate()) {
+    if (this.formKey.currentState.validate()) {
       form.save();
       // all input is valid. Attempt sign in / sign up
-      if (signUp) {
+      if (this.signUp) {
         attemptSignUp();
       } else {
         attemptSignIn();
       }
     } else {
-      setState(() => autoValidate = true);
+      setState(() => this.autoValidate = true);
     }
   }
 
   void attemptSignIn() async {
-    showLoadingDialog(context, "Loading...", false); // show loading dialog
-    mutexLock = true;
+    this.loading = true;
+    showLoadingDialog(this.context, "Loading...", false); // show loading dialog
 
     bool signedIn = false;
-
     final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
         '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
     final cognitoUser = new CognitoUser(this.username, userPool);
@@ -232,25 +232,25 @@ class _SignInState extends State<SignInPage> {
           session.getRefreshToken().getToken(), session.getIdToken().jwtToken);
 
       signedIn = true;
-      Navigator.of(context, rootNavigator: true)
+      this.loading = false;
+      Navigator.of(this.context, rootNavigator: true)
           .pop('dialog'); // dismiss loading dialog
-      mutexLock = false;
     } catch (e) {
-      Navigator.of(context, rootNavigator: true)
+      this.loading = false;
+      Navigator.of(this.context, rootNavigator: true)
           .pop('dialog'); // dismiss loading dialog
-      mutexLock = false;
-      showErrorMessage("Sign In Error", e.message, context);
+      showErrorMessage("Sign In Error", e.message, this.context);
     }
 
     if (signedIn) {
       Navigator.pushReplacement(
-          context, new MaterialPageRoute(builder: (context) => MyApp()));
+          this.context, new MaterialPageRoute(builder: (context) => MyApp()));
     }
   }
 
   void attemptSignUp() async {
-    showLoadingDialog(context, "Loading...", false); // show loading dialog
-    mutexLock = true;
+    this.loading = true;
+    showLoadingDialog(this.context, "Loading...", false); // show loading dialog
 
     final userPool = new CognitoUserPool('us-east-2_ebbPP76nO',
         '7eh4otm1r5p351d1u9j3h3rf1o'); //TODO put in config
@@ -258,22 +258,21 @@ class _SignInState extends State<SignInPage> {
       new AttributeArg(name: 'email', value: this.email),
     ];
 
-    var data;
     try {
-      data = await userPool.signUp(this.username, this.password,
+      var data = await userPool.signUp(this.username, this.password,
           userAttributes: userAttributes);
-      Navigator.of(context, rootNavigator: true)
+      this.loading = false;
+      Navigator.of(this.context, rootNavigator: true)
           .pop('dialog'); // dismiss loading dialog
-      mutexLock = false;
+      if (data != null) {
+        // we do this in order to get the user data from the DB
+        attemptSignIn();
+      }
     } catch (e) {
-      Navigator.of(context, rootNavigator: true)
+      this.loading = false;
+      Navigator.of(this.context, rootNavigator: true)
           .pop('dialog'); // dismiss loading dialog
-      mutexLock = false;
-      showErrorMessage("Sign Up Error", e.message, context);
-    }
-
-    if (data != null) {
-      attemptSignIn();
+      showErrorMessage("Sign Up Error", e.message, this.context);
     }
   }
 }

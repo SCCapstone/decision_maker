@@ -35,7 +35,7 @@ class InternetCheck extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         // when app first loads, see if the user has internet or not
-        color: Color(0xff303030),
+        color: Globals.pocketPollGrey,
         child: AnnotatedRegion(
           value: SystemUiOverlayStyle.dark,
           child: FutureBuilder<bool>(
@@ -45,14 +45,11 @@ class InternetCheck extends StatelessWidget {
                   return Center(
                       child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xff5ce080))));
+                              Globals.pocketPollGreen)));
                 } else {
                   if (!snapshot.data) {
                     return MaterialApp(
-                        home: InternetLoss(
-                          initialCheck: true,
-                        ),
-                        theme: Globals.darkTheme);
+                        home: InternetLoss(), theme: Globals.darkTheme);
                   } else {
                     return MyApp();
                   }
@@ -66,7 +63,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Color(0xff303030),
+        color: Globals.pocketPollGrey,
         child: AnnotatedRegion(
           // make the bottom navigation bar black instead of default white
           value: SystemUiOverlayStyle.dark,
@@ -79,7 +76,7 @@ class MyApp extends StatelessWidget {
                   return Center(
                       child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xff5ce080))));
+                              Globals.pocketPollGreen)));
                 } else {
                   //If and only if the tokens are not valid or don't exist, open the login page.
                   if (!snapshot.data) {
@@ -113,6 +110,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// used to change the theme of the material app. Essentially rebuilds the entire app when theme changes
 class ThemeNotifier with ChangeNotifier {
   ThemeData _themeData;
 

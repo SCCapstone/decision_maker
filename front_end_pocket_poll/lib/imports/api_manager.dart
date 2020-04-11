@@ -41,8 +41,6 @@ Future<ResultStatus<String>> makeApiRequest(
     } on SocketException catch (_) {
       retVal.networkError = true;
     }
-  } else {
-    //clear navigation stack and head to the login page?
   }
   return retVal;
 }

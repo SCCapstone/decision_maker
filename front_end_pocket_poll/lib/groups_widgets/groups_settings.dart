@@ -184,7 +184,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             onTap: () {
                               showGroupImage(
                                   this.icon == null
-                                      ? getGroupIconUrlStr(
+                                      ? getGroupIconImage(
                                           this.currentGroupIcon)
                                       : FileImage(this.icon),
                                   context);
@@ -197,7 +197,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   image: DecorationImage(
                                       fit: BoxFit.cover,
                                       image: this.icon == null
-                                          ? getGroupIconUrlStr(
+                                          ? getGroupIconImage(
                                               this.currentGroupIcon)
                                           : FileImage(this.icon))),
                               child: Container(

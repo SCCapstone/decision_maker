@@ -23,6 +23,7 @@ class EventsManager {
   static final String EVENT_CREATOR = "EventCreator";
   static final String CATEGORY_VERSION = "Version";
 
+  // returns what mode an event is currently in
   static int getEventMode(Event event) {
     DateTime timeNow = DateTime.now();
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
