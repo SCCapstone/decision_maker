@@ -6,7 +6,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
-import 'groups_settings.dart';
+import 'group_settings.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
 
@@ -65,6 +65,7 @@ class _GroupPageState extends State<GroupPage> {
             IconButton(
               icon: Icon(Icons.settings),
               tooltip: "Settings",
+              key: Key("group_page:group_settings_button"),
               onPressed: () {
                 Navigator.push(
                   context,

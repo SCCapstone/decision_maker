@@ -81,7 +81,7 @@ class CategoriesListItem extends StatelessWidget {
               FlatButton(
                 child: Text("Yes"),
                 key: Key(
-                    "categories_list_item:category_edit_button_confirm:${this.index}"),
+                    "categories_list_item:category_delete_button_confirm:${this.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   this.deleteCategory();
@@ -90,7 +90,7 @@ class CategoriesListItem extends StatelessWidget {
               FlatButton(
                 child: Text("No"),
                 key: Key(
-                    "categories_list_item:category_edit_button_denial:${this.index}"),
+                    "categories_list_item:category_delete_button_denial:${this.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },

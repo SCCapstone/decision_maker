@@ -8,8 +8,9 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 class GroupRow extends StatefulWidget {
   final UserGroup group;
   final Function refreshGroups;
+  final int index; // used for integration tests
 
-  GroupRow(this.group, {this.refreshGroups});
+  GroupRow(this.group, this.index, {this.refreshGroups});
 
   @override
   _GroupRowState createState() => _GroupRowState();
@@ -38,6 +39,7 @@ class _GroupRowState extends State<GroupRow> {
                     this.widget.refreshGroups();
                   });
                 },
+                key: Key("group_row:${widget.index}"),
                 child: Container(
                   height: MediaQuery.of(context).size.width * .20,
                   width: MediaQuery.of(context).size.width * .20,

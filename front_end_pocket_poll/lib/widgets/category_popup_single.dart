@@ -38,6 +38,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
       actions: <Widget>[
         FlatButton(
           child: Text("Done"),
+          key: Key("category_popup_single:done_button"),
           onPressed: () {
             widget.handlePopupClosed();
             Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -74,6 +75,8 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                           if (this.categoryRows.length > 0) {
                             return Container(
                               height: MediaQuery.of(context).size.height * .25,
+                              key: Key(
+                                  "category_popup_single:category_container"),
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: this.categoryRows.length,

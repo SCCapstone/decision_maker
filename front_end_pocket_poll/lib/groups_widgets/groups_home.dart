@@ -264,6 +264,7 @@ class _GroupsHomeState extends State<GroupsHome>
                   child: ListTile(
                       leading: Icon(Icons.exit_to_app),
                       title: Text('Log Out', style: TextStyle(fontSize: 16)),
+                      key: Key("groups_home:log_out_button"),
                       onTap: () {
                         logOutUser(context);
                         if (Platform.isAndroid) {

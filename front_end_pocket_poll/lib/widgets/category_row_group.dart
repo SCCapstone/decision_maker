@@ -12,10 +12,11 @@ class CategoryRowGroup extends StatefulWidget {
   final bool selected;
   final Function updateOwnedCategories;
   final bool canSelect;
+  final int index; // used for integration tests
 
   CategoryRowGroup(this.category, this.selected, this.groupCategory,
       this.updateOwnedCategories, this.canSelect,
-      {this.onSelect});
+      {this.onSelect, this.index});
 
   @override
   _CategoryRowGroupState createState() => new _CategoryRowGroupState();
@@ -52,6 +53,8 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             visible: widget.canSelect,
             child: Checkbox(
               value: this.selectVal,
+              key: Key(
+                  "category_row_group:checkbox:${widget.groupCategory}:${widget.index}"),
               onChanged: (bool value) {
                 this.widget.onSelect();
                 setState(() {

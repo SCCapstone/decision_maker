@@ -140,6 +140,7 @@ class _CreateEventState extends State<CreateEvent> {
                       onSaved: (String arg) {
                         this.eventName = arg.trim();
                       },
+                      key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
                           labelText: "Enter an event name", counterText: ""),
                     ),
@@ -162,6 +163,7 @@ class _CreateEventState extends State<CreateEvent> {
                         IconButton(
                           icon: Icon(Icons.add_circle_outline),
                           iconSize: 40,
+                          key: Key("event_create:add_category_button"),
                           onPressed: () {
                             showCategoriesPopup();
                           },
@@ -217,6 +219,7 @@ class _CreateEventState extends State<CreateEvent> {
                             validator: (input) {
                               return validMeridianHour(this.hrController.text);
                             },
+                            key: Key("event_create:hour_input"),
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
                             maxLength: 2,
@@ -276,6 +279,7 @@ class _CreateEventState extends State<CreateEvent> {
                             validator: (val) {
                               return validMinute(this.minController.text);
                             },
+                            key: Key("event_create:minute_input"),
                             enableInteractiveSelection: false,
                             maxLength: 2,
                             decoration: InputDecoration(
@@ -349,6 +353,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 validator: (value) {
                                   return validConsiderDuration(value, true);
                                 },
+                                key: Key("event_create:consider_input"),
                                 maxLength: Globals.maxConsiderDigits,
                                 onChanged: (String arg) {
                                   // if already at max length and you keep typing, setState won't get called again
@@ -431,6 +436,7 @@ class _CreateEventState extends State<CreateEvent> {
                                 validator: (value) {
                                   return validVotingDuration(value, true);
                                 },
+                                key: Key("event_create:vote_input"),
                                 maxLength: Globals.maxVotingDigits,
                                 onChanged: (String arg) {
                                   if (!(arg.length ==
