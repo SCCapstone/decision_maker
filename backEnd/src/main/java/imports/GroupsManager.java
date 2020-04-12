@@ -223,8 +223,7 @@ public class GroupsManager extends DatabaseAccessManager {
         //old group being null signals we're creating a new group
         //updatedEventId being null signals this isn't an event update
         this.updateUsersTable(null, newGroup, null, false, metrics);
-        this.updateCategoriesTable(Collections.emptyMap(), newGroup.getCategories(), newGroupId, "",
-            newGroup.getGroupName());
+        this.updateCategoriesTable(null, newGroup, metrics);
 
         resultStatus = new ResultStatus(true,
             JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
@@ -319,8 +318,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           //update mappings in users and categories tables
           this.updateUsersTable(oldGroup, newGroup, null, false, metrics);
-          this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
-              oldGroup.getGroupName(), groupName);
+          this.updateCategoriesTable(oldGroup, newGroup, metrics);
 
           resultStatus = new ResultStatus(true,
               JsonEncoders
@@ -1163,52 +1161,71 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private void updateCategoriesTable(final Group oldGroup, final Group newGroup,
       final Metrics metrics) {
-    final Set<String> categoriesToUpdate = new HashSet<>();
-    String updateExpression;
-    NameMap nameMap = new NameMap().with("#groupId", groupId);
-    ValueMap valueMap = new ValueMap().withString(":groupName", newGroupName);
-    UpdateItemSpec updateItemSpec = new UpdateItemSpec().withNameMap(nameMap);
+    final String classMethod = "GroupsManager.updateCategoriesTable";
+    metrics.commonSetup(classMethod);
 
-    if (!oldCategories.keySet().equals(newCategories.keySet())) {
+    boolean success = true;
+
+    final Set<String> categoriesToUpdate = new HashSet<>();
+
+    String updateExpression;
+    UpdateItemSpec updateItemSpec;
+    final NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
+    final ValueMap valueMap = new ValueMap().withString(":groupName", newGroup.getGroupName());
+
+    //If this is a new group or the group name was changed all categories need updating
+    if (oldGroup == null || !newGroup.getGroupName().equals(oldGroup.getGroupName())) {
+      categoriesToUpdate.addAll(newGroup.getCategories().keySet());
+    }
+
+    //if the categories aren't the same, something needs to be removed/added
+    if (oldGroup != null && !oldGroup.getCategories().keySet()
+        .equals(newGroup.getCategories().keySet())) {
       // Make copies of the key sets and use removeAll to figure out where they differ
-      final Set<String> newCategoryIds = new HashSet<>(newCategories.keySet());
-      final Set<String> removedCategoryIds = new HashSet<>(oldCategories.keySet());
+      final Set<String> newCategoryIds = new HashSet<>(newGroup.getCategories().keySet());
+      final Set<String> removedCategoryIds = new HashSet<>(oldGroup.getCategories().keySet());
 
       // Note: using removeAll on a HashSet has linear time complexity when
       // another HashSet is passed in
-      newCategoryIds.removeAll(oldCategories.keySet());
-      removedCategoryIds.removeAll((newCategories.keySet()));
+      newCategoryIds.removeAll(oldGroup.getCategories().keySet());
+      removedCategoryIds.removeAll(newGroup.getCategories().keySet());
 
-      if (newGroupName.equals(oldGroupName) && !newCategoryIds.isEmpty()) {
-        // If the group name wasn't changed and we're adding new categories, then only perform
-        // updates for the newly added categories
-        categoriesToUpdate.addAll(newCategoryIds);
-      } else if (!newGroupName.equals(oldGroupName)) {
-        // If the group name was changed, update every category in newCategories to reflect that.
-        // In this case, both the list of categories and the group name were changed.
-        categoriesToUpdate.addAll(newCategories.keySet());
-      }
+      //add these newly added categories for update
+      categoriesToUpdate.addAll(newCategoryIds);
 
       if (!removedCategoryIds.isEmpty()) {
         updateExpression = "remove Groups.#groupId";
-        updateItemSpec.withUpdateExpression(updateExpression);
+        updateItemSpec = new UpdateItemSpec()
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
         for (final String categoryId : removedCategoryIds) {
-          DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
+          try {
+            DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
+          } catch (final Exception e) {
+            success = false;
+            metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
+          }
         }
       }
-    } else if (!newGroupName.equals(oldGroupName)) {
-      // If the group name was changed, update every category in newCategories to reflect that.
-      // In this case, the list of categories wasn't changed, but the group name was.
-      categoriesToUpdate.addAll(newCategories.keySet());
     }
 
     if (!categoriesToUpdate.isEmpty()) {
       updateExpression = "set Groups.#groupId = :groupName";
-      updateItemSpec.withUpdateExpression(updateExpression).withValueMap(valueMap);
+      updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
       for (final String categoryId : categoriesToUpdate) {
-        DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
+        try {
+          DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
+        } catch (final Exception e) {
+          success = false;
+          metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
+        }
       }
     }
+
+    metrics.commonClose(success);
   }
 
   private Map<String, Map> getVotingNumbersSetup(

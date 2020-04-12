@@ -1,0 +1,173 @@
+{
+  "Categories": {
+    "5d24f6fc-40c3-4ba7-96eb-0af51d857def": "UofSC food",
+    "b0d8f81c-9df0-46fe-8d66-147df4c775c2": "Golf Courses"
+  },
+  "DefaultRsvpDuration": 1,
+  "DefaultVotingDuration": 1,
+  "Events": {
+    "6043fd58-d4af-42f1-990e-9ac695fae8bd": {
+      "CategoryId": "b0d8f81c-9df0-46fe-8d66-147df4c775c2",
+      "CategoryName": "Golf Courses",
+      "CreatedDateTime": "2020-04-06 00:56:03",
+      "EventCreator": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "EventName": "Skip vote",
+      "EventStartDateTime": "2020-04-05 21:55:00",
+      "OptedIn": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "RsvpDuration": 1,
+      "SelectedChoice": "Charwood",
+      "TentativeAlgorithmChoices": {
+        "2": "Charwood"
+      },
+      "UtcEventStartSeconds": 1586138100,
+      "Version": 4,
+      "VotingDuration": 0,
+      "VotingNumbers": {
+        "2": {
+
+        }
+      }
+    },
+    "bd94aa7f-2500-4b9c-9bcf-2688f8a97d20": {
+      "CategoryId": "b0d8f81c-9df0-46fe-8d66-147df4c775c2",
+      "CategoryName": "Golf Courses",
+      "CreatedDateTime": "2020-04-06 00:58:03",
+      "EventCreator": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "EventName": "Normal",
+      "EventStartDateTime": "2020-04-05 21:57:00",
+      "OptedIn": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "RsvpDuration": 1,
+      "SelectedChoice": "Charwood",
+      "TentativeAlgorithmChoices": {
+        "1": "Linrick",
+        "2": "Charwood",
+        "6": "Columbia CC"
+      },
+      "UtcEventStartSeconds": 1586138220,
+      "Version": 4,
+      "VotingDuration": 1,
+      "VotingNumbers": {
+        "1": {
+          "johnplaysgolf": 0
+        },
+        "2": {
+          "johnplaysgolf": 1
+        },
+        "6": {
+          "johnplaysgolf": 0
+        }
+      }
+    },
+    "ccbfb0c4-55de-4d19-94c3-96a43890c794": {
+      "CategoryId": "b0d8f81c-9df0-46fe-8d66-147df4c775c2",
+      "CategoryName": "Golf Courses",
+      "CreatedDateTime": "2020-04-06 00:54:11",
+      "EventCreator": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "EventName": "Skip consider",
+      "EventStartDateTime": "2020-04-05 21:54:00",
+      "OptedIn": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": "Oak hills",
+      "TentativeAlgorithmChoices": {
+        "4": "Oak hills",
+        "5": "Lexington CC",
+        "6": "Columbia CC"
+      },
+      "UtcEventStartSeconds": 1586138040,
+      "Version": 4,
+      "VotingDuration": 1,
+      "VotingNumbers": {
+        "4": {
+          "johnplaysgolf": 1
+        },
+        "5": {
+          "johnplaysgolf": 0
+        },
+        "6": {
+          "johnplaysgolf": 0
+        }
+      }
+    },
+    "d850568e-98bd-49ad-9d5c-7f83de40abb3": {
+      "CategoryId": "b0d8f81c-9df0-46fe-8d66-147df4c775c2",
+      "CategoryName": "Golf Courses",
+      "CreatedDateTime": "2020-04-06 00:51:30",
+      "EventCreator": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "EventName": "Skip both",
+      "EventStartDateTime": "2020-04-05 21:51:00",
+      "OptedIn": {
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": "Columbia CC",
+      "TentativeAlgorithmChoices": {
+        "6": "Columbia CC"
+      },
+      "UtcEventStartSeconds": 1586137860,
+      "Version": 4,
+      "VotingDuration": 0,
+      "VotingNumbers": {
+        "6": {
+
+        }
+      }
+    }
+  },
+  "GroupCreator": "johnplaysgolf",
+  "GroupId": "13027fec-7fd7-4290-bd50-4dd84a572a4d",
+  "GroupName": "Final Testing",
+  "Icon": null,
+  "IsOpen": true,
+  "LastActivity": "2020-04-06 01:01:08",
+  "Members": {
+    "johnplaysgolf": {
+      "DisplayName": "Mr. Playsgolf",
+      "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+    },
+    "john_andrews12": {
+      "DisplayName": "John And Rews",
+      "Icon": null
+    }
+  },
+  "MembersLeft": {
+
+  }
+}
