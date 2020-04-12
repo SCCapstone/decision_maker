@@ -334,6 +334,7 @@ public class GroupsManager extends DatabaseAccessManager {
                   .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
         } else {
           resultStatus.resultMessage = errorMessage.get();
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager";
