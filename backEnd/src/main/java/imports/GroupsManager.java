@@ -300,14 +300,24 @@ public class GroupsManager extends DatabaseAccessManager {
             }
 
             UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
                 .withUpdateExpression(updateExpression)
                 .withValueMap(valueMap);
 
-            this.updateItem(updateItemSpec);
+            this.updateItem(groupId, updateItemSpec);
+
+            //clone the old group and update all of the fields since we successfully updated the db
+            final Group newGroup = oldGroup.clone();
+            newGroup.setGroupName(groupName);
+            newGroup.setMembers(membersMapped);
+            newGroup.setCategories(categories);
+            newGroup.setDefaultVotingDuration(defaultVotingDuration);
+            newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
+            newGroup.setOpen(isOpen);
+            if (newIconFileName != null) {
+              newGroup.setIcon(newIconFileName);
+            }
 
             //update mappings in users and categories tables
-            final Group newGroup = new Group(this.getMapByPrimaryKey(groupId));
             this.updateUsersTable(oldGroup, newGroup, null, false, metrics);
             this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
                 oldGroup.getGroupName(), groupName);
@@ -364,10 +374,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           if (removeFromLeftUsersResult.success && removeGroupFromActiveUsers.success
               && removeFromCategoriesResult.success) {
-            DeleteItemSpec deleteItemSpec = new DeleteItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), groupId);
-
-            this.deleteItem(deleteItemSpec);
+            this.deleteItem(groupId);
 
             resultStatus = new ResultStatus(true, "Group deleted successfully!");
 
@@ -454,12 +461,11 @@ public class GroupsManager extends DatabaseAccessManager {
           }
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
               .withNameMap(nameMap)
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap);
 
-          this.updateItem(updateItemSpec);
+          this.updateItem(groupId, updateItemSpec);
 
           //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
           if (newEvent.getRsvpDuration() > 0) {
@@ -537,12 +543,11 @@ public class GroupsManager extends DatabaseAccessManager {
             .with("#username", activeUser);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
             .withUpdateExpression(updateExpression)
             .withNameMap(nameMap)
             .withValueMap(valueMap);
 
-        this.updateItem(updateItemSpec);
+        this.updateItem(groupId, updateItemSpec);
 
         resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
@@ -583,12 +588,11 @@ public class GroupsManager extends DatabaseAccessManager {
               .withBoolean(":memberLeftMap", true);
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
               .withUpdateExpression(updateExpression)
               .withNameMap(nameMap)
               .withValueMap(valueMap);
 
-          this.updateItem(updateItemSpec);
+          this.updateItem(groupId, updateItemSpec);
 
           // remove this group from the Groups attribute in active user object
           // and add it to the GroupsLeft attribute
@@ -605,9 +609,8 @@ public class GroupsManager extends DatabaseAccessManager {
           updateItemSpec = new UpdateItemSpec()
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap)
-              .withNameMap(nameMap)
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+              .withNameMap(nameMap));
+          DatabaseManagers.USERS_MANAGER.updateItem(activeUser, updateItemSpec);
 
           resultStatus = new ResultStatus(true, "Group left successfully.");
         } else {
@@ -662,12 +665,11 @@ public class GroupsManager extends DatabaseAccessManager {
               .withMap(":memberMap", user.asMember().asMap());
 
           UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
               .withUpdateExpression(updateExpression)
               .withNameMap(nameMap)
               .withValueMap(valueMap);
 
-          this.updateItem(updateItemSpec);
+          this.updateItem(groupId, updateItemSpec);
 
           // remove this group from the GroupsLeft attribute in active user object
           // and add it to the Groups attribute
@@ -737,12 +739,11 @@ public class GroupsManager extends DatabaseAccessManager {
             .with("#activeUser", activeUser);
 
         UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
             .withUpdateExpression(updateExpression)
             .withNameMap(nameMap)
             .withValueMap(valueMap);
 
-        this.updateItem(updateItemSpec);
+        this.updateItem(groupId, updateItemSpec);
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: unable to parse request in manager.";
@@ -927,9 +928,7 @@ public class GroupsManager extends DatabaseAccessManager {
             DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
 
         //actually do the delete
-        updateItemSpec
-            .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), username);
-        DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+        DatabaseManagers.USERS_MANAGER.updateItem(username, updateItemSpec);
 
         //if the delete went through, send the notification
         if (removedUser.pushEndpointArnIsSet() && !removedFrom.getGroupCreator().equals(username)) {
@@ -1096,9 +1095,7 @@ public class GroupsManager extends DatabaseAccessManager {
       for (final String oldMember : persistingUsernames) {
         if (!(isNewEvent && oldMember.equals(newEventCreator))) {
           try {
-            updateItemSpec
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember);
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+            DatabaseManagers.USERS_MANAGER.updateItem(oldMember, updateItemSpec);
           } catch (final Exception e) {
             success = false;
             metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
@@ -1113,12 +1110,11 @@ public class GroupsManager extends DatabaseAccessManager {
             final NameMap nameMapEventCreator = new NameMap()
                 .with("#groupId", newGroup.getGroupId());
             final UpdateItemSpec updateItemSpecEventCreator = new UpdateItemSpec()
-                .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), oldMember)
                 .withUpdateExpression(updateExpressionEventCreator)
                 .withValueMap(valueMapEventCreator)
                 .withNameMap(nameMapEventCreator);
 
-            DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpecEventCreator);
+            DatabaseManagers.USERS_MANAGER.updateItem(oldMember, updateItemSpecEventCreator);
           } catch (final Exception e) {
             success = false;
             metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
@@ -1139,9 +1135,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
       for (final String newMember : addedUsernames) {
         try {
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), newMember);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+          DatabaseManagers.USERS_MANAGER.updateItem(newMember, updateItemSpec);
         } catch (Exception e) {
           success = false;
           metrics.log(new ErrorDescriptor<>(newMember, classMethod, e));
@@ -1209,9 +1203,7 @@ public class GroupsManager extends DatabaseAccessManager {
         updateExpression = "remove Groups.#groupId";
         updateItemSpec.withUpdateExpression(updateExpression);
         for (final String categoryId : removedCategoryIds) {
-          updateItemSpec
-              .withPrimaryKey(DatabaseManagers.CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId);
-          DatabaseManagers.CATEGORIES_MANAGER.updateItem(updateItemSpec);
+          DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
         }
       }
     } else if (!newGroupName.equals(oldGroupName)) {
@@ -1224,9 +1216,7 @@ public class GroupsManager extends DatabaseAccessManager {
       updateExpression = "set Groups.#groupId = :groupName";
       updateItemSpec.withUpdateExpression(updateExpression).withValueMap(valueMap);
       for (final String categoryId : categoriesToUpdate) {
-        updateItemSpec
-            .withPrimaryKey(DatabaseManagers.CATEGORIES_MANAGER.getPrimaryKeyIndex(), categoryId);
-        DatabaseManagers.CATEGORIES_MANAGER.updateItem(updateItemSpec);
+        DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
       }
     }
   }
@@ -1348,10 +1338,9 @@ public class GroupsManager extends DatabaseAccessManager {
 
       for (final String groupId : groupIds) {
         updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), groupId)
             .withNameMap(nameMap)
             .withUpdateExpression(updateExpression);
-        this.updateItem(updateItemSpec);
+        this.updateItem(groupId, updateItemSpec);
       }
       resultStatus.success = true;
     } catch (Exception e) {

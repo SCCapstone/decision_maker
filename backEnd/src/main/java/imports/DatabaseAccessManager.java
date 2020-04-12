@@ -87,6 +87,12 @@ public class DatabaseAccessManager {
     return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
   }
 
+  public UpdateItemOutcome updateItem(final String key, final UpdateItemSpec updateItemSpec)
+      throws NullPointerException {
+    updateItemSpec.withPrimaryKey(this.primaryKeyIndex, key);
+    return this.dynamoDb.getTable(this.tableName).updateItem(updateItemSpec);
+  }
+
   public PutItemOutcome putItem(final Item item) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).putItem(new PutItemSpec().withItem(item));
   }
@@ -99,6 +105,12 @@ public class DatabaseAccessManager {
   public DeleteItemOutcome deleteItem(final DeleteItemSpec deleteItemSpec)
       throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName).deleteItem(deleteItemSpec);
+  }
+
+  public DeleteItemOutcome deleteItem(final String key)
+      throws NullPointerException {
+    return this.dynamoDb.getTable(this.tableName)
+        .deleteItem(new DeleteItemSpec().withPrimaryKey(this.primaryKeyIndex, key));
   }
 
   public TransactWriteItemsResult executeWriteTransaction(

@@ -1,6 +1,5 @@
 package imports;
 
-import static imports.GroupsManager.CATEGORIES;
 import static junit.framework.TestCase.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,6 +14,7 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -33,7 +33,6 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import utilities.JsonParsers;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -48,6 +47,22 @@ public class GroupsManagerTest {
   private final String goodCategoryId = "CategoryId1";
 
   private final Set<String> goodGroupIds = ImmutableSet.of("id1", "id2");
+
+  //This edit group input is in reference to the group in bigGroup.json
+  private final ImmutableMap<String, Object> editGroupValidInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "ActiveUser")
+      .put(GroupsManager.GROUP_ID, "GroupId")
+      .put(GroupsManager.GROUP_NAME, "New Name") // updating the name
+      //I removed all of the 'number' usernames and added johnplaysgolf
+      .put(GroupsManager.MEMBERS,
+          ImmutableList.of("johnplaysgolf", "john_andrews12", "josh", "edmond"))
+      //I removed the existing category and added a new one
+      .put(GroupsManager.CATEGORIES, ImmutableMap.of("new_cat_id", "new cat name"))
+      .put(GroupsManager.DEFAULT_VOTING_DURATION, 5) // was 2
+      .put(GroupsManager.DEFAULT_RSVP_DURATION, 5) // was 2
+      .put(GroupsManager.IS_OPEN, true) // was false
+      .put(RequestFields.BATCH_NUMBER, 0)
+      .build();
 
   private final ImmutableMap<String, Object> newEventGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "ActiveUser")
@@ -140,6 +155,24 @@ public class GroupsManagerTest {
   /////////////////////endregion
   // editGroup tests //
   /////////////////////region
+
+  @Test
+  void editGroup_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn("Username").when(this.usersManager).getPrimaryKeyIndex();
+
+      ResultStatus resultStatus = this.groupsManager
+          .editGroup(this.editGroupValidInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
 
   ///////////////////////endregion
   // deleteGroup tests //
@@ -431,7 +464,8 @@ public class GroupsManagerTest {
   @Test
   public void getAllCategoryIds_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
+    doReturn(
+        new Item().withMap(GroupsManager.CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.groupsManager
