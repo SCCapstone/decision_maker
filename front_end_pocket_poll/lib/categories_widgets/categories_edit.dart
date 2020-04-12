@@ -398,10 +398,7 @@ class _EditCategoryState extends State<EditCategory> {
                     TextFormField(
                       controller: copyNameController,
                       textCapitalization: TextCapitalization.sentences,
-                      validator: (value) {
-                        return validCategoryName(value.trim(),
-                            categoryId: widget.category.categoryId);
-                      },
+                      validator: validCategoryName,
                       key:
                           Key("categories_edit:copy_popup_category_name_input"),
                       maxLength: Globals.maxCategoryNameLength,

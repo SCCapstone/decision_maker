@@ -776,7 +776,6 @@ public class GroupsManager extends DatabaseAccessManager {
         membersMap.putIfAbsent(username, user.asMember().asMap());
       } catch (Exception e) {
         success = false; // this may give false alarms as users may just have put in bad usernames
-        System.out.println(new ErrorDescriptor<>(username, classMethod, e).toString());
         metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
@@ -815,6 +814,14 @@ public class GroupsManager extends DatabaseAccessManager {
     if (!members.contains(oldGroup.getGroupCreator())) {
       errorMessage = this.getUpdatedErrorMessage(errorMessage,
           "Error: Group creator cannot be removed from group.");
+    }
+
+    //make a copy so we don't actually update the member map on the old group
+    final Set<String> membersLeftCopy = new HashSet<>(oldGroup.getMembersLeft().keySet());
+    membersLeftCopy.retainAll(members); // calculates the intersection of members left and members
+    if (membersLeftCopy.size() > 0) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage,
+          "Error: Error: Cannot add a user that left.");
     }
 
     if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
