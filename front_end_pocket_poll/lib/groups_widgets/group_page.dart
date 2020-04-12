@@ -260,8 +260,9 @@ class _GroupPageState extends State<GroupPage> {
     It's own method to allow the mark all seen button to disappear if marking the last event seen
    */
   void updatePage() {
-    if (!this.mounted)
+    if (!this.mounted) {
       return; // don't set state if the widget is no longer here
+    }
     setState(() {});
   }
 

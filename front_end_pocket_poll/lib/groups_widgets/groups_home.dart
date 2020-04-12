@@ -615,8 +615,9 @@ class _GroupsHomeState extends State<GroupsHome>
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
       Globals.user = resultStatus.data;
-      if (!this.mounted)
+      if (!this.mounted) {
         return; // don't set state if the widget is no longer here
+      }
       setState(() {
         loadGroups();
       });
