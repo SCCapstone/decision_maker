@@ -267,69 +267,66 @@ public class GroupsManager extends DatabaseAccessManager {
         //TODO similar to what we're doing with the members above (currently we're just relying on
         //TODO user input which is bad
 
-        final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final Group oldGroup = new Group(this.getMapByPrimaryKey(groupId));
 
-        if (this.editGroupInputIsValid(groupId, activeUser, oldGroup, members,
-            defaultVotingDuration, defaultRsvpDuration)) {
+        final Optional<String> errorMessage = this
+            .editGroupInputIsValid(oldGroup, activeUser, members, defaultVotingDuration,
+                defaultRsvpDuration);
+        if (!errorMessage.isPresent()) {
+          //all validation is successful, build transaction actions
+          final Map<String, Object> membersMapped = this
+              .getMembersMapForInsertion(members, metrics);
 
-          if (this.editInputHasPermissions(oldGroup, activeUser)) {
-            //all validation is successful, build transaction actions
-            final Map<String, Object> membersMapped = this
-                .getMembersMapForInsertion(members, metrics);
+          String updateExpression =
+              "set " + GROUP_NAME + " = :name, " + MEMBERS + " = :members, " + CATEGORIES
+                  + " = :categories, " + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
+                  + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration, " + IS_OPEN + " = :isOpen";
+          ValueMap valueMap = new ValueMap()
+              .withString(":name", groupName)
+              .withMap(":members", membersMapped)
+              .withMap(":categories", categories)
+              .withInt(":defaultVotingDuration", defaultVotingDuration)
+              .withInt(":defaultRsvpDuration", defaultRsvpDuration)
+              .withBoolean(":isOpen", isOpen);
 
-            String updateExpression =
-                "set " + GROUP_NAME + " = :name, " + MEMBERS + " = :members, " + CATEGORIES
-                    + " = :categories, " + DEFAULT_VOTING_DURATION + " = :defaultVotingDuration, "
-                    + DEFAULT_RSVP_DURATION + " = :defaultRsvpDuration, " + IS_OPEN + " = :isOpen";
-            ValueMap valueMap = new ValueMap()
-                .withString(":name", groupName)
-                .withMap(":members", membersMapped)
-                .withMap(":categories", categories)
-                .withInt(":defaultVotingDuration", defaultVotingDuration)
-                .withInt(":defaultRsvpDuration", defaultRsvpDuration)
-                .withBoolean(":isOpen", isOpen);
+          //assumption - currently we aren't allowing user's to clear a group's image once set
+          String newIconFileName = null;
+          if (newIcon.isPresent()) {
+            newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
+                .uploadImage(newIcon.get(), metrics).orElseThrow(Exception::new);
 
-            //assumption - currently we aren't allowing user's to clear a group's image once set
-            String newIconFileName = null;
-            if (newIcon.isPresent()) {
-              newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
-                  .uploadImage(newIcon.get(), metrics).orElseThrow(Exception::new);
-
-              updateExpression += ", " + ICON + " = :icon";
-              valueMap.withString(":icon", newIconFileName);
-            }
-
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withUpdateExpression(updateExpression)
-                .withValueMap(valueMap);
-
-            this.updateItem(groupId, updateItemSpec);
-
-            //clone the old group and update all of the fields since we successfully updated the db
-            final Group newGroup = oldGroup.clone();
-            newGroup.setGroupName(groupName);
-            newGroup.setMembers(membersMapped);
-            newGroup.setCategories(categories);
-            newGroup.setDefaultVotingDuration(defaultVotingDuration);
-            newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
-            newGroup.setOpen(isOpen);
-            if (newIconFileName != null) {
-              newGroup.setIcon(newIconFileName);
-            }
-
-            //update mappings in users and categories tables
-            this.updateUsersTable(oldGroup, newGroup, null, false, metrics);
-            this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
-                oldGroup.getGroupName(), groupName);
-
-            resultStatus = new ResultStatus(true,
-                JsonEncoders
-                    .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
-          } else {
-            resultStatus.resultMessage = "Missing permissions.";
+            updateExpression += ", " + ICON + " = :icon";
+            valueMap.withString(":icon", newIconFileName);
           }
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.updateItem(groupId, updateItemSpec);
+
+          //clone the old group and update all of the fields since we successfully updated the db
+          final Group newGroup = oldGroup.clone();
+          newGroup.setGroupName(groupName);
+          newGroup.setMembers(membersMapped);
+          newGroup.setCategories(categories);
+          newGroup.setDefaultVotingDuration(defaultVotingDuration);
+          newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
+          newGroup.setOpen(isOpen);
+          if (newIconFileName != null) {
+            newGroup.setIcon(newIconFileName);
+          }
+
+          //update mappings in users and categories tables
+          this.updateUsersTable(oldGroup, newGroup, null, false, metrics);
+          this.updateCategoriesTable(oldGroup.getCategories(), newGroup.getCategories(), groupId,
+              oldGroup.getGroupName(), groupName);
+
+          resultStatus = new ResultStatus(true,
+              JsonEncoders
+                  .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
         } else {
-          resultStatus.resultMessage = "Invalid request, bad input.";
+          resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager";
@@ -358,7 +355,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
         if (activeUser.equals(group.getGroupCreator())) {
           Set<String> members = group.getMembers().keySet();
           Set<String> membersLeft = group.getMembersLeft().keySet();
@@ -424,13 +421,13 @@ public class GroupsManager extends DatabaseAccessManager {
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
-        final Group oldGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final Group oldGroup = new Group(this.getMapByPrimaryKey(groupId));
         final String eventId = UUID.randomUUID().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final User eventCreator = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
+            DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
         final EventWithCategoryChoices newEvent = new EventWithCategoryChoices(jsonMap);
         newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
@@ -484,7 +481,7 @@ public class GroupsManager extends DatabaseAccessManager {
                 .processPendingEvent(processPendingEventInput, metrics);
           }
 
-          final Group newGroup = new Group(this.getItemByPrimaryKey(groupId).asMap());
+          final Group newGroup = new Group(this.getMapByPrimaryKey(groupId));
 
           //when rsvp is not greater than 0, updateUsersTable gets called by setEventTentativeChoices
           if (newEvent.getRsvpDuration() > 0) {
@@ -523,8 +520,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final Boolean participating = (Boolean) jsonMap.get(RequestFields.PARTICIPATING);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
         String updateExpression;
         ValueMap valueMap = null;
@@ -574,7 +570,7 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
         final String groupCreator = group.getGroupCreator();
 
         if (!groupCreator.equals(activeUser)) {
@@ -649,9 +645,8 @@ public class GroupsManager extends DatabaseAccessManager {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(activeUser).asMap());
+        final Group group = new Group(this.getMapByPrimaryKey(groupId));
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
         final Set<String> groupsLeftIds = user.getGroupsLeft().keySet();
         final Set<String> membersLeftIds = group.getMembersLeft().keySet();
@@ -769,12 +764,12 @@ public class GroupsManager extends DatabaseAccessManager {
     for (String username : members) {
       try {
         //get user's display name
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
 
         membersMap.putIfAbsent(username, user.asMember().asMap());
       } catch (Exception e) {
         success = false; // this may give false alarms as users may just have put in bad usernames
+        System.out.println(new ErrorDescriptor<>(username, classMethod, e).toString());
         metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
@@ -783,41 +778,58 @@ public class GroupsManager extends DatabaseAccessManager {
     return membersMap;
   }
 
-  private boolean editGroupInputIsValid(final String groupId, final String activeUser,
-      final Group oldGroup, final List<String> members, final Integer defaultVotingDuration,
+  /**
+   * This function takes the old definition of a group and checks to see if proposed edits are
+   * valid.
+   *
+   * @param oldGroup              this is the old group definition that is attempting to be edited
+   * @param activeUser            the user doing the edit
+   * @param members               the new list of members for the group
+   * @param defaultVotingDuration the new voting duration
+   * @param defaultRsvpDuration   the new rsvp duration
+   * @return A nullable errorMessage. If null, then there was no error and it is valid
+   */
+  private Optional<String> editGroupInputIsValid(final Group oldGroup, final String activeUser,
+      final List<String> members, final Integer defaultVotingDuration,
       final Integer defaultRsvpDuration) {
-    final String groupCreator = oldGroup.getGroupCreator();
-    final Set<String> membersLeft = oldGroup.getMembersLeft().keySet();
-    boolean isValid = true;
 
-    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(activeUser)) {
-      isValid = false;
-    }
+    String errorMessage = null;
 
-    boolean creatorInGroup = false;
-    //you can't remove the creator (owner) from the group
-    //you can't add someone who has left the group
-    for (String username : members) {
-      if (groupCreator.equals(username)) {
-        creatorInGroup = true;
+    if (oldGroup.isOpen()) {
+      if (!oldGroup.getMembers().containsKey(activeUser)) {
+        errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad permissions.");
       }
-      if (membersLeft.contains(username)) {
-        isValid = false;
-        break;
+    } else {
+      if (!oldGroup.getGroupCreator().equals(activeUser)) {
+        errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad permissions.");
       }
     }
 
-    isValid = isValid && creatorInGroup;
+    if (!members.contains(oldGroup.getGroupCreator())) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage,
+          "Error: Group creator cannot be removed from group.");
+    }
 
     if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
-      isValid = false;
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad voting duration.");
     }
 
     if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
-      isValid = false;
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
     }
 
-    return isValid;
+    return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedErrorMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   private Optional<String> newEventInputIsValid(final Group oldGroup, final Event newEvent) {
@@ -837,24 +849,6 @@ public class GroupsManager extends DatabaseAccessManager {
     return Optional.ofNullable(errorMessage);
   }
 
-  private boolean editInputHasPermissions(final Group oldGroup, final String activeUser) {
-    // if the group is open, any member can edit
-    // otherwise, only the group creator can edit
-    boolean hasPermission = true;
-
-    if (oldGroup.isOpen()) {
-      if (!oldGroup.getMembers().containsKey(activeUser)) {
-        hasPermission = false;
-      }
-    } else {
-      if (!oldGroup.getGroupCreator().equals(activeUser)) {
-        hasPermission = false;
-      }
-    }
-
-    return hasPermission;
-  }
-
   private void sendAddedToGroupNotifications(final Set<String> usernames, final Group addedTo,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.sendAddedToGroupNotifications";
@@ -869,8 +863,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     for (String username : usernames) {
       try {
-        final User user = new User(
-            DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
 
         if (!username.equals(addedTo.getGroupCreator())) {
           //Note: no need to check user's group muted settings since they're just being added
@@ -992,8 +985,7 @@ public class GroupsManager extends DatabaseAccessManager {
     for (String username : usernames) {
       if (!(isNewEvent && username.equals(updatedEventCreator))) {
         try {
-          final User user = new User(
-              DatabaseManagers.USERS_MANAGER.getItemByPrimaryKey(username).asMap());
+          final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
 
           if (user.pushEndpointArnIsSet()) {
             if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())
@@ -1169,9 +1161,8 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  private void updateCategoriesTable(final Map<String, String> oldCategories,
-      final Map<String, String> newCategories, final String groupId, final String oldGroupName,
-      final String newGroupName) {
+  private void updateCategoriesTable(final Group oldGroup, final Group newGroup,
+      final Metrics metrics) {
     final Set<String> categoriesToUpdate = new HashSet<>();
     String updateExpression;
     NameMap nameMap = new NameMap().with("#groupId", groupId);
@@ -1310,7 +1301,7 @@ public class GroupsManager extends DatabaseAccessManager {
     ArrayList<String> categoryIds = new ArrayList<>();
     boolean success = false;
     try {
-      final Group group = new Group(this.getItemByPrimaryKey(groupId).asMap());
+      final Group group = new Group(this.getMapByPrimaryKey(groupId));
       categoryIds = new ArrayList<>(group.getCategories().keySet());
       success = true;
     } catch (Exception e) {
