@@ -239,6 +239,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This methods takes in all of the editable group attributes via that json map. If the inputs are
+   * valid and the requesting user has permissions, then the group gets updated and the necessary
+   * data for denormalization is sent to the groups table and the categories table respectively.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Stand result status object giving insight on whether or not the request was successful
+   */
   public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.editGroup";
     metrics.commonSetup(classMethod);
@@ -1159,6 +1168,15 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
+  /**
+   * This method takes in the old version of a group and the new version of a group after being
+   * edited or created. Depending on the differences, the appropriate denormalized data gets updated
+   * in the categories table.
+   *
+   * @param oldGroup The group definition before an edit or null if this is a group create.
+   * @param newGroup The group definition after a change has been made.
+   * @param metrics  Standard metrics object for profiling and logging.
+   */
   private void updateCategoriesTable(final Group oldGroup, final Group newGroup,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.updateCategoriesTable";
