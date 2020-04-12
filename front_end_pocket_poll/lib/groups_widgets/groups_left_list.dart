@@ -38,6 +38,7 @@ class _GroupsLeftListState extends State<GroupsLeftList> {
           itemBuilder: (context, index) {
             return GroupLeftRow(
               widget.groupsLeft[index],
+              index,
               refreshGroups: widget.refreshGroups,
             );
           },

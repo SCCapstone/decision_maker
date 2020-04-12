@@ -52,6 +52,8 @@ class UserRow extends StatelessWidget {
             child: IconButton(
               icon: Icon(Icons.remove_circle_outline),
               color: Colors.red,
+              tooltip: "Delete",
+              key: Key("user_row:${this.username}:delete"),
               onPressed: this.deleteUser,
             ),
           ),
@@ -68,6 +70,7 @@ class UserRow extends StatelessWidget {
             // show this if the user is typing in a username from their favorites
             child: IconButton(
               icon: Icon(Icons.add_circle_outline),
+              key: Key("user_row:${this.username}:add"),
               color: Colors.greenAccent,
               onPressed: this.addUser,
             ),

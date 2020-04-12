@@ -6,7 +6,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
-import 'groups_settings.dart';
+import 'group_settings.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
 
@@ -65,6 +65,7 @@ class _GroupPageState extends State<GroupPage> {
             IconButton(
               icon: Icon(Icons.settings),
               tooltip: "Settings",
+              key: Key("group_page:group_settings_button"),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -168,11 +169,11 @@ class _GroupPageState extends State<GroupPage> {
       this.errorLoading = false;
       Globals.currentGroup = status.data;
       Globals.currentGroup.currentBatchNum = batchNum;
-      setState(() {});
+      updatePage();
     } else {
       this.errorLoading = true;
       this.errorWidget = groupError(status.errorMessage);
-      setState(() {});
+      updatePage();
     }
   }
 
@@ -259,6 +260,9 @@ class _GroupPageState extends State<GroupPage> {
     It's own method to allow the mark all seen button to disappear if marking the last event seen
    */
   void updatePage() {
+    if (!this.mounted) {
+      return; // don't set state if the widget is no longer here
+    }
     setState(() {});
   }
 

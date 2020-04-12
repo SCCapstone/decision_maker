@@ -31,6 +31,7 @@ class _CategoryPickState extends State<CategoryPick> {
       appBar: AppBar(
         title: Text("Select Categories"),
       ),
+      key: Key("category_pick:scaffold"),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -80,10 +81,15 @@ class _CategoryPickState extends State<CategoryPick> {
 
   // load categories into the category rows using the categories found on local user object
   void getCategories() {
+    int index = 0; // used for integration testing
     for (Category category in Globals.user.ownedCategories) {
-      this.categoryRows.add(CategoryRow(category,
-          widget.selectedCategories.keys.contains(category.categoryId),
-          onSelect: () => selectCategory(category)));
+      this.categoryRows.add(CategoryRow(
+            category,
+            widget.selectedCategories.keys.contains(category.categoryId),
+            onSelect: () => selectCategory(category),
+            index: index,
+          ));
+      index++;
     }
   }
 

@@ -38,6 +38,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
       actions: <Widget>[
         FlatButton(
           child: Text("Done"),
+          key: Key("category_popup_single:done_button"),
           onPressed: () {
             widget.handlePopupClosed();
             Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -61,14 +62,21 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                         if (resultStatus.success) {
                           List<Category> categories = resultStatus.data;
                           CategoriesManager.sortByAlphaAscending(categories);
+                          int index = 0; // used for integration testing
                           for (Category category in categories) {
-                            this.categoryRows.add(CategoryRow(category,
-                                widget.selectedCategory.contains(category),
-                                onSelect: () => selectCategory(category)));
+                            this.categoryRows.add(CategoryRow(
+                                  category,
+                                  widget.selectedCategory.contains(category),
+                                  onSelect: () => selectCategory(category),
+                                  index: index,
+                                ));
+                            index++;
                           }
                           if (this.categoryRows.length > 0) {
                             return Container(
                               height: MediaQuery.of(context).size.height * .25,
+                              key: Key(
+                                  "category_popup_single:category_container"),
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 itemCount: this.categoryRows.length,

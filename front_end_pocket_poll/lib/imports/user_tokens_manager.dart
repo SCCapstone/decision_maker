@@ -76,6 +76,6 @@ Future<void> storeUserTokens(
   (await Globals.getSharedPrefs()).setString(refreshTokenKey, refreshToken);
 }
 
-void clearSharedPrefs() async {
+Future<void> clearSharedPrefs() async {
   (await Globals.getSharedPrefs()).clear();
 }

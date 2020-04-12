@@ -34,6 +34,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             appBar: AppBar(
               title: Text("My Favorites"),
             ),
+            key: Key("favorites_page:scaffold"),
             body: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -48,6 +49,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                               return validNewFavorite(
                                   value.trim(), widget.displayedFavorites);
                             },
+                            key: Key("favorites_page:username_input"),
                             decoration: InputDecoration(
                               labelText: "Enter a username to add",
                               counterText: "",
@@ -55,6 +57,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       ),
                       FlatButton(
                         child: Text("Add User"),
+                        key: Key("favorites_page:add_user_button"),
                         onPressed: () {
                           if (this.formKey.currentState.validate()) {
                             addNewFavorite();

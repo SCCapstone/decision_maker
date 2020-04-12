@@ -221,6 +221,7 @@ class _GroupsHomeState extends State<GroupsHome>
               ListTile(
                   leading: Icon(Icons.settings),
                   title: Text('Settings', style: TextStyle(fontSize: 16)),
+                  key: Key("groups_home:user_settings_button"),
                   onTap: () {
                     // close the drawer menu when clicked
                     Navigator.of(context).pop();
@@ -263,6 +264,7 @@ class _GroupsHomeState extends State<GroupsHome>
                   child: ListTile(
                       leading: Icon(Icons.exit_to_app),
                       title: Text('Log Out', style: TextStyle(fontSize: 16)),
+                      key: Key("groups_home:log_out_button"),
                       onTap: () {
                         logOutUser(context);
                         if (Platform.isAndroid) {
@@ -352,6 +354,7 @@ class _GroupsHomeState extends State<GroupsHome>
                           style: TextStyle(fontSize: 17),
                           minFontSize: 12,
                           overflow: TextOverflow.ellipsis,
+                          key: Key("groups_home:groups_home_tab"),
                         ),
                         AutoSizeText(
                           "Groups Left",
@@ -359,6 +362,7 @@ class _GroupsHomeState extends State<GroupsHome>
                           style: TextStyle(fontSize: 17),
                           minFontSize: 12,
                           overflow: TextOverflow.ellipsis,
+                          key: Key("groups_home:groups_left_tab"),
                         ),
                       ],
                     ),
@@ -554,7 +558,7 @@ class _GroupsHomeState extends State<GroupsHome>
           visible: (!this.searching && this.currentTab == this.groupsHomeTab),
           child: FloatingActionButton(
             child: Icon(Icons.add),
-            key: Key("groups_home:new_category_button"),
+            key: Key("groups_home:new_group_button"),
             onPressed: () {
               // Navigate to second route when tapped.
               Navigator.push(
@@ -611,6 +615,9 @@ class _GroupsHomeState extends State<GroupsHome>
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
       Globals.user = resultStatus.data;
+      if (!this.mounted) {
+        return; // don't set state if the widget is no longer here
+      }
       setState(() {
         loadGroups();
       });

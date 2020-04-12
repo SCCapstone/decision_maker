@@ -9,8 +9,9 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 class GroupLeftRow extends StatefulWidget {
   final GroupLeft group;
   final Function refreshGroups;
+  final int index; // used for integration tests
 
-  GroupLeftRow(this.group, {this.refreshGroups});
+  GroupLeftRow(this.group, this.index, {this.refreshGroups});
 
   @override
   _GroupLeftRowState createState() => _GroupLeftRowState();
@@ -30,6 +31,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
                 onTap: () {
                   confirmRejoinGroup();
                 },
+                key: Key("group_left_row:${widget.index}"),
                 child: Container(
                   height: MediaQuery.of(context).size.width * .20,
                   width: MediaQuery.of(context).size.width * .20,
@@ -83,6 +85,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("group_left_row:confirm_rejoin:${widget.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   tryRejoin();

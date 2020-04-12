@@ -82,12 +82,8 @@ class _MembersPageState extends State<MembersPage> {
                 title: (widget.canEdit)
                     ? Text("Add/Remove Members")
                     : Text("View Members"),
-                leading: IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    onPressed: () {
-                      Navigator.pop(context, true);
-                    }),
               ),
+              key: Key("members_page:scaffold"),
               body: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -111,6 +107,7 @@ class _MembersPageState extends State<MembersPage> {
                                     }
                                     return validNewUser(value.trim(), allUsers);
                                   },
+                                  key: Key("members_page:member_input"),
                                   decoration: InputDecoration(
                                       labelText: "Enter a username to add",
                                       counterText: "")),
@@ -120,6 +117,7 @@ class _MembersPageState extends State<MembersPage> {
                             visible: !this.showFavorites,
                             child: FlatButton(
                               child: Text("Add User"),
+                              key: Key("members_page:add_member_button"),
                               onPressed: () {
                                 if (this.formKey.currentState.validate()) {
                                   addNewMember();
@@ -193,6 +191,7 @@ class _MembersPageState extends State<MembersPage> {
                               tooltip: (this.showFavorites)
                                   ? "Hide Favorites"
                                   : "Show favorites",
+                              key: Key("members_page:show_favorites_button"),
                               onPressed: () {
                                 setState(() {
                                   this.favoriteController.clear();

@@ -67,6 +67,7 @@ class _CreateGroupState extends State<CreateGroup> {
         appBar: AppBar(
           title: Text("Add New Group"),
         ),
+        key: Key("groups_create:scaffold"),
         body: Form(
           key: this.formKey,
           autovalidate: this.autoValidate,
@@ -84,6 +85,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.groupName = arg.trim();
                     },
+                    key: Key("groups_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter a group name", counterText: ""),
                   ),
@@ -124,6 +126,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.considerDuration = int.parse(arg.trim());
                     },
+                    key: Key("groups_create:consider_input"),
                     decoration: InputDecoration(
                         labelText: "Enter a default consider duration (mins)",
                         counterText: ""),
@@ -138,6 +141,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.votingDuration = int.parse(arg.trim());
                     },
+                    key: Key("groups_create:vote_input"),
                     decoration: InputDecoration(
                         labelText: "Enter a default voting duration (mins)",
                         counterText: ""),
@@ -158,6 +162,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
                             icon: Icon(Icons.add),
+                            key: Key("groups_create:add_categories_button"),
                             onPressed: () {
                               hideKeyboard(context);
                               Navigator.push(
@@ -185,6 +190,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
                             icon: Icon(Icons.add),
+                            key: Key("groups_create:add_members_button"),
                             onPressed: () {
                               hideKeyboard(context);
                               Navigator.push(

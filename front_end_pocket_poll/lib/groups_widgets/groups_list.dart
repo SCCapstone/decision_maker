@@ -38,6 +38,7 @@ class _GroupsListState extends State<GroupsList> {
           itemBuilder: (context, index) {
             return GroupRow(
               widget.groups[index],
+              index,
               refreshGroups: widget.refreshGroups,
             );
           },

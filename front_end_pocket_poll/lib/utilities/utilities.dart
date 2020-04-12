@@ -19,11 +19,10 @@ Future<bool> internetCheck() async {
 }
 
 // log out the user and clear all local variables they might have stored
-void logOutUser(BuildContext context) {
+void logOutUser(BuildContext context) async {
   UsersManager.unregisterPushEndpoint();
-  Globals.username = null;
   Globals.activeUserCategories.clear();
-  clearSharedPrefs();
+  await clearSharedPrefs();
 }
 
 ImageProvider getUserIconImage(String iconUrl) {

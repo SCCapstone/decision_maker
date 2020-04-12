@@ -56,6 +56,7 @@ class _SignInState extends State<SignInPage> {
             maxLines: 1,
             minFontSize: 20,
           )),
+      key: Key("login_page:scaffold"),
       body: GestureDetector(
         onTap: () {
           hideKeyboard(context);

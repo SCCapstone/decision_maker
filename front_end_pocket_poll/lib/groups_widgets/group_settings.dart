@@ -135,6 +135,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                         attemptSave();
                       }
                     },
+                    key: Key("group_settings:save_button"),
                     icon: Icon(Icons.save),
                     label: Text("Save")),
               ),
@@ -146,7 +147,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                       tooltip: "Group is locked")),
             ],
           ),
-          key: Key("groups_settings:scaffold"),
+          key: Key("group_settings:scaffold"),
           body: Column(children: <Widget>[
             Form(
               key: this.formKey,
@@ -172,6 +173,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             onSaved: (String arg) {
                               this.groupName = arg.trim();
                             },
+                            key: Key("group_settings:group_name_input"),
                             style: TextStyle(fontSize: 33),
                             decoration: InputDecoration(
                                 labelText: "Group Name", counterText: ""),
@@ -184,8 +186,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                             onTap: () {
                               showGroupImage(
                                   this.icon == null
-                                      ? getGroupIconImage(
-                                          this.currentGroupIcon)
+                                      ? getGroupIconImage(this.currentGroupIcon)
                                       : FileImage(this.icon),
                                   context);
                             },
@@ -247,6 +248,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                         return validConsiderDuration(
                                             value, false);
                                       },
+                                      key: Key("group_settings:conider_input"),
                                       controller:
                                           this.considerDurationController,
                                       onChanged: (String arg) {
@@ -292,6 +294,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                         return validVotingDuration(
                                             value, false);
                                       },
+                                      key: Key("group_settings:vote_input"),
                                       controller: this.votingDurationController,
                                       onChanged: (String arg) {
                                         try {
@@ -333,6 +336,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                         icon: (this.canEdit)
                                             ? Icon(Icons.add)
                                             : Icon(Icons.keyboard_arrow_right),
+                                        key: Key(
+                                            "group_settings:add_categories_button"),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
@@ -371,6 +376,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                         icon: (this.canEdit)
                                             ? Icon(Icons.add)
                                             : Icon(Icons.keyboard_arrow_right),
+                                        key: Key(
+                                            "group_settings:add_members_button"),
                                         onPressed: () {
                                           Navigator.push(
                                               context,
@@ -441,6 +448,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 RaisedButton(
                   child: Text((this.owner) ? "Delete Group" : "Leave Group"),
                   color: Colors.red,
+                  key: Key("group_settings:delete_group_button"),
                   onPressed: () {
                     if (this.owner) {
                       confirmDeleteGroup();
@@ -602,6 +610,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("group_settings:leave_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   tryLeave();
@@ -630,6 +639,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             actions: <Widget>[
               FlatButton(
                 child: Text("Yes"),
+                key: Key("group_settings:delete_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   tryDelete();

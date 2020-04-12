@@ -286,7 +286,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   // update the list of owned categories with categories found in local user object
   void updateOwnedCategories() {
     this.ownedCategoryRows.clear();
-
+    int index = 0; // used for integration tests
     for (Category category in Globals.user.ownedCategories) {
       if (widget.canEdit ||
           Globals.currentGroup.categories.containsKey(category.categoryId)) {
@@ -296,7 +296,9 @@ class _GroupCategoriesState extends State<GroupCategories> {
             false,
             updateOwnedCategories,
             widget.canEdit,
-            onSelect: () => selectCategory(category)));
+            onSelect: () => selectCategory(category),
+            index: index));
+        index++;
       }
     }
     sortOwnedCategoryRows();
@@ -357,6 +359,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     if (resultStatus.success) {
       this.errorLoading = false;
       List<Category> selectedCats = resultStatus.data;
+      int index = 0; // used for integration tests
       for (Category category in selectedCats) {
         if (!Globals.user.ownedCategories.contains(category) &&
             category.groups.containsKey(Globals.currentGroup.groupId)) {
@@ -368,7 +371,9 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 updateOwnedCategories,
                 widget.canEdit,
                 onSelect: () => selectCategory(category),
+                index: index,
               ));
+          index++;
         } else if (Globals.user.ownedCategories.contains(category)) {
           /*
             Separate the categories the user owns. Add every category if the user
@@ -384,7 +389,9 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 false,
                 updateOwnedCategories,
                 widget.canEdit,
-                onSelect: () => selectCategory(category)));
+                onSelect: () => selectCategory(category),
+                index: index));
+            index++;
           }
         }
       }
