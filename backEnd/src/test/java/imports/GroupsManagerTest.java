@@ -162,7 +162,8 @@ public class GroupsManagerTest {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
       doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
-      doReturn("Username").when(this.usersManager).getPrimaryKeyIndex();
+      doReturn(Collections.emptyMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
 
       ResultStatus resultStatus = this.groupsManager
           .editGroup(this.editGroupValidInput, this.metrics);

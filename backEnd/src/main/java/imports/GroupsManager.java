@@ -609,7 +609,7 @@ public class GroupsManager extends DatabaseAccessManager {
           updateItemSpec = new UpdateItemSpec()
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap)
-              .withNameMap(nameMap));
+              .withNameMap(nameMap);
           DatabaseManagers.USERS_MANAGER.updateItem(activeUser, updateItemSpec);
 
           resultStatus = new ResultStatus(true, "Group left successfully.");
@@ -683,9 +683,8 @@ public class GroupsManager extends DatabaseAccessManager {
           updateItemSpec = new UpdateItemSpec()
               .withUpdateExpression(updateExpression)
               .withNameMap(nameMap)
-              .withValueMap(valueMap)
-              .withPrimaryKey(DatabaseManagers.USERS_MANAGER.getPrimaryKeyIndex(), activeUser);
-          DatabaseManagers.USERS_MANAGER.updateItem(updateItemSpec);
+              .withValueMap(valueMap);
+          DatabaseManagers.USERS_MANAGER.updateItem(activeUser, updateItemSpec);
 
           resultStatus = new ResultStatus(true, "Group rejoined successfully.");
         } else {
