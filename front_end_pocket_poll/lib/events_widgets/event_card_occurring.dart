@@ -39,7 +39,6 @@ class _EventCardOccurringState extends State<EventCardOccurring> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * .6,
       ),
-      key: Key("event_card_occurring:${widget.event.eventName}"),
       child: Container(
         child: ListView(
           physics: ClampingScrollPhysics(),

@@ -139,7 +139,7 @@ void main() {
       await driver.tap(displayNameField);
       await driver.enterText("New DisplayName");
 
-      // change to light theme
+      // toggle app theme
       var darkThemeSwitch = find.byValueKey("user_settings:dark_theme_switch");
       await driver.tap(darkThemeSwitch);
 
@@ -300,8 +300,10 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
-      // make sure event is there in right stage
-      await driver.waitFor(find.byValueKey("event_card_consider:$eventName"));
+      // make sure event is there
+      await driver.waitFor(find.descendant(
+          of: find.byValueKey("events_list:event_list"),
+          matching: find.text(eventName)));
     });
 
     test('create_event_skip_consider', () async {
@@ -355,8 +357,10 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
-      // make sure event is there in right stage
-      await driver.waitFor(find.byValueKey("event_card_voting:$eventName"));
+      // make sure event is there
+      await driver.waitFor(find.descendant(
+          of: find.byValueKey("events_list:event_list"),
+          matching: find.text(eventName)));
     });
 
     test('create_event_skip_vote', () async {
@@ -409,8 +413,10 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
-      // make sure event is there in right stage
-      await driver.waitFor(find.byValueKey("event_card_consider:$eventName"));
+      // make sure event is there
+      await driver.waitFor(find.descendant(
+          of: find.byValueKey("events_list:event_list"),
+          matching: find.text(eventName)));
     });
 
     test('create_event_skip_both', () async {
@@ -463,8 +469,10 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
-      // make sure event is there in right stage
-      await driver.waitFor(find.byValueKey("event_card_occurring:$eventName"));
+      // make sure event is there
+      await driver.waitFor(find.descendant(
+          of: find.byValueKey("events_list:event_list"),
+          matching: find.text(eventName)));
     });
 
     test('edit_group', () async {
@@ -547,7 +555,7 @@ void main() {
       await driver.waitFor(find.byValueKey("login_page:scaffold"));
     });
 
-    // Log in as second user to test leaving group
+    // Log in as second user to test leaving group and rejoining
 
     test('leave_group', () async {
       var usernameField = find.byValueKey("login_page:username_input");
@@ -572,14 +580,30 @@ void main() {
           find.byValueKey("group_page:group_settings_button");
       await driver.tap(groupSettingsButton);
       await driver.waitFor(find.byValueKey("group_settings:scaffold"));
-      // leave the group
 
+      // leave the group
       var leaveGroupButton =
           find.byValueKey("group_settings:delete_group_button");
       await driver.tap(leaveGroupButton);
       var leaveConfirm = find.byValueKey("group_settings:leave_confirm");
       await driver.tap(leaveConfirm);
       await driver.waitFor(find.byValueKey("groups_home:scaffold"));
+    });
+
+    test('rejoin_group', () async {
+      var groupsLeftTab = find.byValueKey("groups_home:groups_left_tab");
+      await driver.tap(groupsLeftTab);
+
+      // always try to rejoin the first group
+      var groupToRejoin = find.byValueKey("group_left_row:0");
+      await driver.tap(groupToRejoin);
+      var confirmButton = find.byValueKey("group_left_row:confirm_rejoin:0");
+      await driver.tap(confirmButton);
+
+      // verify the group is now in the groups home tab
+      var groupsHomeTab = find.byValueKey("groups_home:groups_home_tab");
+      await driver.tap(groupsHomeTab);
+      await driver.waitFor(find.byValueKey("group_row:0"));
 
       // log out for next tests
       var drawerOpenButton = find.byTooltip("Open navigation menu");

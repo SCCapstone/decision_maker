@@ -39,7 +39,6 @@ class _EventCardVotingState extends State<EventCardVoting> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * .6,
       ),
-      key: Key("event_card_voting:${widget.event.eventName}"),
       child: Container(
         child: ListView(
           physics: ClampingScrollPhysics(),

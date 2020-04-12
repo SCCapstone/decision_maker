@@ -48,7 +48,6 @@ class _EventsListState extends State<EventsList> {
       );
     } else {
       List<EventCardInterface> eventCards = new List<EventCardInterface>();
-
       for (String eventId in widget.events.keys) {
         EventCardInterface eventCard;
         int eventMode = EventsManager.getEventMode(widget.events[eventId]);
@@ -160,6 +159,7 @@ class _EventsListState extends State<EventsList> {
           child: ListView.builder(
               shrinkWrap: true,
               itemCount: widgetList.length,
+              key: Key("events_list:event_list"),
               itemBuilder: (context, index) {
                 return widgetList[index];
               }));

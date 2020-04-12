@@ -354,6 +354,7 @@ class _GroupsHomeState extends State<GroupsHome>
                           style: TextStyle(fontSize: 17),
                           minFontSize: 12,
                           overflow: TextOverflow.ellipsis,
+                          key: Key("groups_home:groups_home_tab"),
                         ),
                         AutoSizeText(
                           "Groups Left",
@@ -361,6 +362,7 @@ class _GroupsHomeState extends State<GroupsHome>
                           style: TextStyle(fontSize: 17),
                           minFontSize: 12,
                           overflow: TextOverflow.ellipsis,
+                          key: Key("groups_home:groups_left_tab"),
                         ),
                       ],
                     ),
@@ -613,6 +615,8 @@ class _GroupsHomeState extends State<GroupsHome>
     ResultStatus<User> resultStatus = await UsersManager.getUserData();
     if (resultStatus.success) {
       Globals.user = resultStatus.data;
+      if (!this.mounted)
+        return; // don't set state if the widget is no longer here
       setState(() {
         loadGroups();
       });
