@@ -305,14 +305,14 @@ public class GroupsManagerTest {
   }
 
   @Test
-  void editGroup_invalidInputUserNotInOpenGroupAndRemovedOwner_failureResult() {
+  void editGroup_invalidInputUserNotInOpenGroupRemovedOwnerAddedLeft_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
       doReturn(JsonUtils.getItemFromFile("src/test/json/openGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       this.editGroupValidInput.put(RequestFields.ACTIVE_USER, "fakeUser");
-      this.editGroupValidInput.put(GroupsManager.MEMBERS, Collections.emptyList());
+      this.editGroupValidInput.put(GroupsManager.MEMBERS, ImmutableList.of("leftUser"));
 
       ResultStatus resultStatus = this.groupsManager
           .editGroup(this.editGroupValidInput, this.metrics);
