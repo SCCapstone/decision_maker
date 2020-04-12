@@ -169,11 +169,11 @@ class _GroupPageState extends State<GroupPage> {
       this.errorLoading = false;
       Globals.currentGroup = status.data;
       Globals.currentGroup.currentBatchNum = batchNum;
-      setState(() {});
+      updatePage();
     } else {
       this.errorLoading = true;
       this.errorWidget = groupError(status.errorMessage);
-      setState(() {});
+      updatePage();
     }
   }
 
