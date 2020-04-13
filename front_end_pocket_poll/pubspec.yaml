@@ -39,12 +39,12 @@ dependencies:
   add_2_calendar: ^1.4.0
 
 flutter_icons:
-  image_path_android: "assets/icon/pollAlphaBoarder.png"
+  image_path_android: "assets/icon/calendarAlphaBoarder.png"
   image_path_ios: "assets/icon/poll_ios.png"
   android: true
   ios: true
   adaptive_icon_background: "assets/icon/background.png"
-  adaptive_icon_foreground: "assets/icon/pollFg.png"
+  adaptive_icon_foreground: "assets/icon/calendarFg.png"
 
 dev_dependencies:
   flutter_test:
