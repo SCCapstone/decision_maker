@@ -62,7 +62,7 @@ class UsersManager {
         if (responseItem.success) {
           if (responseItem.resultMessage == "User not found.") {
             // have a specific error message for if the user is not found in the DB
-            retVal.errorMessage = "User ($username) not found";
+            retVal.errorMessage = "User ($username) not found.";
           } else {
             retVal.data =
                 User.fromJson(json.decode(responseItem.resultMessage));
