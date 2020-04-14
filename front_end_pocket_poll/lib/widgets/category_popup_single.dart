@@ -91,6 +91,11 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                                     MediaQuery.of(context).size.height * .25,
                                 child: RichText(
                                   text: TextSpan(
+                                    style: TextStyle(
+                                        color:
+                                            (Globals.user.appSettings.darkTheme)
+                                                ? Colors.white
+                                                : Colors.black),
                                     children: [
                                       TextSpan(
                                           text:

@@ -325,8 +325,7 @@ class _MembersPageState extends State<MembersPage> {
           removeMember(newMember.username);
         }));
       } else {
-        showErrorMessage(
-            "Error", "Cannot add: ${userController.text}.", this.context);
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
         hideKeyboard(this.context);
       }
       setState(() {

@@ -54,19 +54,20 @@ class UsersManager {
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
-    User ret;
 
     if (response.success) {
       try {
         Map<String, dynamic> body = jsonDecode(response.data);
-
         ResponseItem responseItem = new ResponseItem.fromJson(body);
-
-        ret = User.fromJson(json.decode(responseItem.resultMessage));
-
         if (responseItem.success) {
-          retVal.success = true;
-          retVal.data = ret;
+          if (responseItem.resultMessage == "User not found.") {
+            // have a specific error message for if the user is not found in the DB
+            retVal.errorMessage = "User ($username) not found.";
+          } else {
+            retVal.data =
+                User.fromJson(json.decode(responseItem.resultMessage));
+            retVal.success = true;
+          }
         } else {
           retVal.errorMessage = "Unable to load user data.";
         }
