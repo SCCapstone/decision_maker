@@ -55,7 +55,7 @@ class _AboutPageState extends State<AboutPage> {
                       children: <Widget>[
                         Expanded(
                           child: Image(
-                            image: AssetImage("assets/images/pollSplash.png"),
+                            image: AssetImage("assets/images/calendarSplash.png"),
                             fit: BoxFit.cover,
                           ),
                         )
