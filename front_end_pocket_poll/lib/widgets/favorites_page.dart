@@ -109,8 +109,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           displayName: newFavorite.displayName,
           icon: newFavorite.icon));
     } else {
-      showErrorMessage(
-          "Error", "Cannot add: ${this.userController.text}", this.context);
+      showErrorMessage("Error", resultStatus.errorMessage, this.context);
       hideKeyboard(this.context);
     }
     setState(() {
