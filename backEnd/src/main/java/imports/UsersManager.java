@@ -30,6 +30,7 @@ import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class UsersManager extends DatabaseAccessManager {
 
@@ -220,7 +221,7 @@ public class UsersManager extends DatabaseAccessManager {
 
           resultStatus = new ResultStatus(true, "User ratings updated successfully!");
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
@@ -409,7 +410,7 @@ public class UsersManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true,
               JsonEncoders.convertObjectToJson(updatedUser.asMap()));
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (final InvalidAttributeValueException iae) {

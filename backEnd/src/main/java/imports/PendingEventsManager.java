@@ -35,6 +35,7 @@ import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class PendingEventsManager extends DatabaseAccessManager {
 
@@ -162,7 +163,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
           }
         } else {
           resultStatus.resultMessage = "Error: Group data not found.";
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Group data not found."));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, "Group data not found."));
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";

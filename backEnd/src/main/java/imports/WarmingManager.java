@@ -6,7 +6,7 @@ import utilities.Metrics;
 import utilities.ResultStatus;
 
 public class WarmingManager {
-  public ResultStatus warmDynamoDBConnections(final Metrics metrics) {
+  public ResultStatus warmAllConnections(final Metrics metrics) {
     final String classMethod = "WarmingManager.warmDynamoDBConnections";
     metrics.commonSetup(classMethod);
 
@@ -15,7 +15,7 @@ public class WarmingManager {
     try {
       DatabaseManagers.USERS_MANAGER.describeTable();
       DatabaseManagers.CATEGORIES_MANAGER.describeTable();
-      DatabaseManagers.USERS_MANAGER.describeTable();
+      DatabaseManagers.GROUPS_MANAGER.describeTable();
       DatabaseManagers.S3_ACCESS_MANAGER.imageBucketExists();
       DatabaseManagers.SNS_ACCESS_MANAGER.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
 
