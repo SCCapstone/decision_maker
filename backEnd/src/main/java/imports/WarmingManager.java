@@ -6,6 +6,14 @@ import utilities.Metrics;
 import utilities.ResultStatus;
 
 public class WarmingManager {
+
+  /**
+   * This method is called by a crop job (CloudWatch Event). It keeps all of our ssl connections and
+   * lambda deployments live
+   *
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Standard result status object giving insight on whether the request was successful
+   */
   public ResultStatus warmAllConnections(final Metrics metrics) {
     final String classMethod = "WarmingManager.warmDynamoDBConnections";
     metrics.commonSetup(classMethod);
