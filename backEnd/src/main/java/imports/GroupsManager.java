@@ -39,6 +39,7 @@ import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class GroupsManager extends DatabaseAccessManager {
 
@@ -246,7 +247,7 @@ public class GroupsManager extends DatabaseAccessManager {
    *
    * @param jsonMap Common request map from endpoint handler containing api input.
    * @param metrics Standard metrics object for profiling and logging
-   * @return Stand result status object giving insight on whether or not the request was successful
+   * @return Standard result status object giving insight on whether the request was successful
    */
   public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.editGroup";
@@ -334,7 +335,7 @@ public class GroupsManager extends DatabaseAccessManager {
                   .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
         } else {
           resultStatus.resultMessage = errorMessage.get();
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
         }
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request in manager";
@@ -499,7 +500,7 @@ public class GroupsManager extends DatabaseAccessManager {
           resultStatus = new ResultStatus(true,
               JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
@@ -1392,7 +1393,7 @@ public class GroupsManager extends DatabaseAccessManager {
    *
    * @param jsonMap Common request map from endpoint handler containing api input
    * @param metrics Standard metrics object for profiling and logging
-   * @return Stand result status object giving insight on whether or not the request was successful
+   * @return Standard result status object giving insight on whether the request was successful
    */
   public ResultStatus handleGetBatchOfEvents(final Map<String, Object> jsonMap,
       final Metrics metrics) {

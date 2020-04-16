@@ -13,7 +13,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.collect.ImmutableList;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +71,7 @@ public class S3AccessManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  ///////////////////////
+  ///////////////////////endregion
   // deleteImage tests //
   ///////////////////////region
 
@@ -106,7 +105,7 @@ public class S3AccessManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
-  /////////////////////////////
+  /////////////////////////////endregion
   // imageBucketExists tests //
   /////////////////////////////region
 

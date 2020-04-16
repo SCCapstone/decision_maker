@@ -24,6 +24,7 @@ import utilities.JsonEncoders;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class CategoriesManager extends DatabaseAccessManager {
 
@@ -85,7 +86,7 @@ public class CategoriesManager extends DatabaseAccessManager {
                 + updatedUsersTableResult.resultMessage;
           }
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {
@@ -221,7 +222,7 @@ public class CategoriesManager extends DatabaseAccessManager {
             resultStatus.applyResultStatus(updatedUsersTableResult);
           }
         } else {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, errorMessage.get()));
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
         }
       } catch (Exception e) {

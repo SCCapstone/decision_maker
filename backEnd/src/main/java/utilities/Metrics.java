@@ -21,6 +21,7 @@ public class Metrics {
   private final LambdaLogger lambdaLogger;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
+  private boolean printMetrics;
 
   public Metrics(final String requestId, final LambdaLogger lambdaLogger) {
     this.functionNames = new LinkedList<>();
@@ -29,6 +30,7 @@ public class Metrics {
     this.lambdaLogger = lambdaLogger;
     this.countMetrics = new HashMap<>();
     this.timeMetrics = new HashMap<>();
+    this.printMetrics = true;
   }
 
   public void setFunctionName(final String functionName) {
@@ -129,25 +131,31 @@ public class Metrics {
     this.lambdaLogger.log(message);
   }
 
-  public void log(final ErrorDescriptor error) {
-    this.lambdaLogger.log(error.withRequestId(this.requestId).toString());
+  public void log(final LoggingDescriptor descriptor) {
+    this.lambdaLogger.log(descriptor.withRequestId(this.requestId).toString());
   }
 
   public void logMetrics() {
-    for (String funcName : this.countMetrics.keySet()) {
-      for (String metricName : this.countMetrics.get(funcName).keySet()) {
-        this.lambdaLogger.log(String
-            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
-                this.countMetrics.get(funcName).get(metricName)));
+    if (this.printMetrics) {
+      for (String funcName : this.countMetrics.keySet()) {
+        for (String metricName : this.countMetrics.get(funcName).keySet()) {
+          this.lambdaLogger.log(String
+              .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
+                  this.countMetrics.get(funcName).get(metricName)));
+        }
       }
-    }
 
-    for (String funcName : this.timeMetrics.keySet()) {
-      for (String metricName : this.timeMetrics.get(funcName).keySet()) {
-        this.lambdaLogger.log(String
-            .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
-                this.timeMetrics.get(funcName).get(metricName)));
+      for (String funcName : this.timeMetrics.keySet()) {
+        for (String metricName : this.timeMetrics.get(funcName).keySet()) {
+          this.lambdaLogger.log(String
+              .format("%s %s %s %s %s", this.requestId, METRIC_MARKER, funcName, metricName,
+                  this.timeMetrics.get(funcName).get(metricName)));
+        }
       }
     }
+  }
+
+  public void setPrintMetrics(boolean printMetrics) {
+    this.printMetrics = printMetrics;
   }
 }

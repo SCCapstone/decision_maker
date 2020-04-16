@@ -60,7 +60,10 @@ public class GroupsPostHandler implements
             resultStatus = DatabaseManagers.GROUPS_MANAGER
                 .handleGetBatchOfEvents(payloadJsonMap, metrics);
           } else if (action.equals("warmingEndpoint")) {
-            resultStatus = new WarmingManager().warmDynamoDBConnections(metrics);
+            resultStatus = new WarmingManager().warmAllConnections(metrics);
+
+            //squelch metrics on warming -> we only want metrics on user impacting cold starts
+            metrics.setPrintMetrics(false);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));
