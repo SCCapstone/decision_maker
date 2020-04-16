@@ -8,7 +8,8 @@ bool validCharacters(String input) {
 }
 
 bool validCharactersPassword(String input) {
-  return RegExp(r"^[a-zA-Z0-9 !@#$%^&*(),.?:{}\[\]\\|<>_~`/']*$|" + r'["]+')
+  return RegExp(
+          "^[a-zA-Z0-9 !@#%&,:;<>_~`/'\\\-\\\^\\\$\\\*\\\(\\\)\\\.\\\?\\\{\\\}\\\"\\\[\\\|\\\]\\\\]*\$")
       .hasMatch(input);
 }
 
@@ -181,7 +182,8 @@ String validNewPassword(String input) {
   if (!RegExp(r'[0-9]+').hasMatch(input)) {
     retVal += "Must contain at least one number.\n";
   }
-  if (!RegExp(r'[!@#$%^&*(),.?":{}\[\]\\|<>_~`/]+|' + r"[']+")
+  if (!RegExp(
+          "[!@#%&,:;<>_~`/'\\\-\\\^\\\$\\\*\\\(\\\)\\\.\\\?\\\{\\\}\\\"\\\[\\\|\\\]\\\\]+")
       .hasMatch(input)) {
     retVal += "Must contain at least one special character.\n";
   }
@@ -203,7 +205,7 @@ String validPassword(String input) {
     retVal = "Password cannot be empty.";
   } else if (input.length > Globals.maxPasswordLength) {
     retVal = "Password is too large.";
-  } else if (!validCharacters(input)) {
+  } else if (!validCharactersPassword(input)) {
     retVal = "Invalid characters.";
   }
   return retVal;
