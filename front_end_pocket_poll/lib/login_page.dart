@@ -23,6 +23,7 @@ class _SignInState extends State<SignInPage> {
   final Future<ResponseItem> responseValue = null;
   bool signUp;
   bool autoValidate;
+  bool showPassword;
   String email;
   String username;
   String password;
@@ -38,6 +39,7 @@ class _SignInState extends State<SignInPage> {
 
   @override
   void initState() {
+    this.showPassword = false;
     this.loading = false;
     this.signUp = false;
     this.autoValidate = false;
@@ -93,20 +95,39 @@ class _SignInState extends State<SignInPage> {
                 decoration:
                     InputDecoration(labelText: "Username", counterText: ""),
               ),
-              TextFormField(
-                key: Key("login_page:password_input"),
-                obscureText: true,
-                autocorrect: false,
-                // don't allow user's passwords to be saved in their keyboard
-                maxLength: Globals.maxPasswordLength,
-                controller: this.passwordController,
-                validator: (this.signUp) ? validNewPassword : validPassword,
-                onSaved: (String arg) {
-                  this.password = arg.trim();
-                },
-                style: TextStyle(fontSize: 32),
-                decoration:
-                    InputDecoration(labelText: "Password", counterText: ""),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      key: Key("login_page:password_input"),
+                      obscureText: !this.showPassword,
+                      autocorrect: false,
+                      // don't allow user's passwords to be saved in their keyboard
+                      maxLength: Globals.maxPasswordLength,
+                      controller: this.passwordController,
+                      validator:
+                          (this.signUp) ? validNewPassword : validPassword,
+                      onSaved: (String arg) {
+                        this.password = arg.trim();
+                      },
+                      style: TextStyle(fontSize: 32),
+                      decoration: InputDecoration(
+                          labelText: "Password", counterText: ""),
+                    ),
+                  ),
+                  IconButton(
+                    icon: (this.showPassword)
+                        ? Icon(Icons.visibility_off)
+                        : Icon(Icons.remove_red_eye),
+                    tooltip:
+                        (this.showPassword) ? "Hide Password" : "Show password",
+                    onPressed: () {
+                      setState(() {
+                        this.showPassword = !this.showPassword;
+                      });
+                    },
+                  )
+                ],
               ),
               Padding(
                 padding: EdgeInsets.all(5.0),
