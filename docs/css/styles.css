@@ -1,0 +1,92 @@
+body {
+	font-size: 15px;
+	font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif;
+	margin: auto;
+
+	min-width: 960px;
+	padding: 0px;
+	background-color: #a6a6a6;
+	/*background-color: #F9F9F9;*/
+	color: #636363;
+
+	min-height: 100%;
+	position:absolute; 
+	top:0; 
+	bottom:0; 
+	right:0; 
+	left:0;
+}
+
+#content {
+	min-width: 590px;
+	width: 60%;
+	min-height:100%;
+	background-color: #F9F9F9;
+	position: absolute;
+	top: 0px;
+	right: 0;
+	left: 0;
+	margin: 0 auto;
+	padding: 15px;
+}
+
+.centered {
+	text-align: center;
+}
+
+.justified {
+	text-align: justify;
+}
+
+.noBottomMargin {
+	margin-bottom: 0px;
+}
+
+.noTopMargin {
+	margin-top: 0px;
+}
+
+.small-spacing {
+	margin: 3px;
+}
+
+.screenshot {
+	width: 100%;
+	text-align: center;
+}
+
+.screenshot img {
+	max-height: 500px;
+}
+
+.youtube {
+	width: 100%;
+	padding-top: 56.25%; /* 315:560 Aspect Ratio */
+	position: relative; /* If you want text inside of it */
+}
+
+.youtube iframe {
+	min-width: 560px;
+	min-height: 315px;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}
+
+/* Setup for the row of user images */
+.column4 {
+  float: left;
+  width: 25%;
+  padding: 15px;
+}
+
+/* Clear floats after image containers */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
