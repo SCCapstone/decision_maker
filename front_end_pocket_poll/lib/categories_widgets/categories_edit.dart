@@ -48,6 +48,7 @@ class _EditCategoryState extends State<EditCategory> {
     this.categoryNameController.dispose();
     for (ChoiceRow choiceRow in this.choiceRows) {
       choiceRow.rateController.dispose();
+      choiceRow.labelController.dispose();
     }
     this.scrollController.dispose();
     super.dispose();

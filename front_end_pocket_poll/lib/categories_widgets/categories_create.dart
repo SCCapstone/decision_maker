@@ -35,6 +35,7 @@ class _CreateCategoryState extends State<CreateCategory> {
     this.categoryNameController.dispose();
     for (ChoiceRow choiceRow in this.choiceRows) {
       choiceRow.rateController.dispose();
+      choiceRow.labelController.dispose();
     }
     this.scrollController.dispose();
     super.dispose();
