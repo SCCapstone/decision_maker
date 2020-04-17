@@ -5,11 +5,9 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.util.StringUtils;
 import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
