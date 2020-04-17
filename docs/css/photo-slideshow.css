@@ -1,4 +1,4 @@
-/* The following css is obtained from https://www.w3schools.com/howto/howto_js_slideshow.asp */
+/* The following css is obtained and adapted from https://www.w3schools.com/howto/howto_js_slideshow.asp */
 * {box-sizing:border-box}
 
 /* Slideshow container */
@@ -46,7 +46,7 @@
   color: black;
   font-size: 15px;
   padding: 8px 12px;
-  position: absolute;
+  /* position: absolute; */
   bottom: 8px;
   width: 100%;
   text-align: center;

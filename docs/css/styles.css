@@ -18,7 +18,7 @@ body {
 }
 
 #content {
-	min-width: 576px;
+	min-width: 590px;
 	width: 60%;
 	min-height:100%;
 	background-color: #F9F9F9;
@@ -57,4 +57,22 @@ body {
 
 .screenshot img {
 	max-height: 500px;
+}
+
+.youtube {
+	width: 100%;
+	padding-top: 56.25%; /* 315:560 Aspect Ratio */
+	position: relative; /* If you want text inside of it */
+}
+
+.youtube iframe {
+	min-width: 560px;
+	min-height: 315px;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
 }

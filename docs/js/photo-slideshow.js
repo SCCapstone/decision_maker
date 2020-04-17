@@ -1,4 +1,4 @@
-//The following js is obtained from https://www.w3schools.com/howto/howto_js_slideshow.asp
+//The following js is obtained and adapted from https://www.w3schools.com/howto/howto_js_slideshow.asp
 var slideIndex = 1;
 // showSlides(slideIndex); // added this to the onload body event
 
