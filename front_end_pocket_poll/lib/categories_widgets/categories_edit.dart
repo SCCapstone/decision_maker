@@ -29,18 +29,9 @@ class _EditCategoryState extends State<EditCategory> {
   final ScrollController scrollController = new ScrollController();
   final int defaultRate = 3;
 
-  // map of choice number to controller that contains the name of the proposed choice
-  final Map<String, TextEditingController> labelControllers =
-      new LinkedHashMap<String, TextEditingController>();
-
-  // map of choice number to controller that contains the rating of the proposed choice
-  final Map<String, TextEditingController> ratesControllers =
-      new LinkedHashMap<String, TextEditingController>();
-
   // preserve the original labels for copying purposes and detecting if changes were made
-  Map<String, String> originalLabels = new LinkedHashMap<String, String>();
-  Map<String, String> originalRatings = new LinkedHashMap<String, String>();
-
+  Map<String, String> originalLabels;
+  Map<String, String> originalRatings;
   FocusNode focusNode;
   bool autoValidate;
   bool isCategoryOwner;
@@ -55,11 +46,9 @@ class _EditCategoryState extends State<EditCategory> {
   @override
   void dispose() {
     this.categoryNameController.dispose();
-    for (TextEditingController tec in this.labelControllers.values) {
-      tec.dispose();
-    }
-    for (TextEditingController tec in this.ratesControllers.values) {
-      tec.dispose();
+    for (ChoiceRow choiceRow in this.choiceRows) {
+      choiceRow.rateController.dispose();
+      choiceRow.labelController.dispose();
     }
     this.scrollController.dispose();
     super.dispose();
@@ -67,6 +56,8 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   void initState() {
+    this.originalLabels = new LinkedHashMap<String, String>();
+    this.originalRatings = new LinkedHashMap<String, String>();
     this.autoValidate = false;
     this.categoryChanged = false;
     this.loading = true;
@@ -255,15 +246,9 @@ class _EditCategoryState extends State<EditCategory> {
                         this.focusNode = new FocusNode();
                         TextEditingController labelController =
                             new TextEditingController();
-                        this.labelControllers.putIfAbsent(
-                            this.nextChoiceNum.toString(),
-                            () => labelController);
                         TextEditingController rateController =
                             new TextEditingController();
                         rateController.text = this.defaultRate.toString();
-                        this.ratesControllers.putIfAbsent(
-                            this.nextChoiceNum.toString(),
-                            () => rateController);
 
                         ChoiceRow choice = new ChoiceRow(
                             this.nextChoiceNum.toString(),
@@ -447,19 +432,15 @@ class _EditCategoryState extends State<EditCategory> {
 
   void checkForChanges() {
     // if lengths differ, then automatically something has changed.
-    bool changed = (this.originalLabels.length != this.labelControllers.length);
-    bool labelChanged = false;
-    for (String choiceId in this.labelControllers.keys) {
-      if (this.originalLabels[choiceId] !=
-          this.labelControllers[choiceId].text) {
-        labelChanged = labelChanged || true;
-      }
-    }
-    bool ratingsChanged = false;
-    for (String choiceId in this.ratesControllers.keys) {
-      if (this.originalRatings[choiceId] !=
-          this.ratesControllers[choiceId].text) {
-        ratingsChanged = ratingsChanged || true;
+    bool changed = (this.originalLabels.length != this.choiceRows.length);
+    bool choiceChanged = false;
+    // check to see if the rating or name for a given choice id changed
+    for (ChoiceRow choiceRow in this.choiceRows) {
+      if (this.originalLabels[choiceRow.choiceNumber] !=
+              choiceRow.labelController.text ||
+          this.originalRatings[choiceRow.choiceNumber] !=
+              choiceRow.rateController.text) {
+        choiceChanged = true;
       }
     }
     // also check for category name change
@@ -467,7 +448,7 @@ class _EditCategoryState extends State<EditCategory> {
       changed = true;
     }
     setState(() {
-      this.categoryChanged = changed || ratingsChanged || labelChanged;
+      this.categoryChanged = changed || choiceChanged;
     });
   }
 
@@ -507,11 +488,9 @@ class _EditCategoryState extends State<EditCategory> {
     for (String choiceId in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = this.category.choices[choiceId];
-      this.labelControllers.putIfAbsent(choiceId, () => labelController);
       // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
-      this.ratesControllers.putIfAbsent(choiceId, () => rateController);
 
       ChoiceRow choice = new ChoiceRow(
         choiceId,
@@ -527,9 +506,9 @@ class _EditCategoryState extends State<EditCategory> {
     Map<String, String> categoryRatings =
         Globals.user.categoryRatings[widget.category.categoryId];
     if (categoryRatings != null) {
-      for (String choiceId in this.labelControllers.keys) {
-        if (categoryRatings.containsKey(choiceId)) {
-          this.ratesControllers[choiceId].text = categoryRatings[choiceId];
+      for (ChoiceRow choiceRow in this.choiceRows) {
+        if (categoryRatings.containsKey(choiceRow.choiceNumber)) {
+          choiceRow.rateController.text = categoryRatings[choiceRow];
         }
       }
     }
@@ -546,13 +525,11 @@ class _EditCategoryState extends State<EditCategory> {
   void setOriginalValues() {
     this.originalRatings.clear();
     this.originalLabels.clear();
-    for (String choiceId in this.labelControllers.keys) {
-      this.originalLabels.putIfAbsent(
-          choiceId, () => this.labelControllers[choiceId].text.toString());
-    }
-    for (String choiceId in this.ratesControllers.keys) {
-      this.originalRatings.putIfAbsent(
-          choiceId, () => this.ratesControllers[choiceId].text.toString());
+    for (ChoiceRow choiceRow in this.choiceRows) {
+      this.originalLabels.putIfAbsent(choiceRow.choiceNumber,
+          () => choiceRow.labelController.text.toString());
+      this.originalRatings.putIfAbsent(choiceRow.choiceNumber,
+          () => choiceRow.rateController.text.toString());
     }
   }
 
@@ -608,10 +585,12 @@ class _EditCategoryState extends State<EditCategory> {
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
       bool duplicates = false;
       Set names = new Set();
-      for (String i in this.labelControllers.keys) {
-        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text.trim());
-        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text.trim());
-        if (!names.add(this.labelControllers[i].text.trim())) {
+      for (ChoiceRow choiceRow in this.choiceRows) {
+        labelsToSave.putIfAbsent(choiceRow.choiceNumber,
+            () => choiceRow.labelController.text.trim());
+        ratesToSave.putIfAbsent(
+            choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
+        if (!names.add(choiceRow.labelController.text.trim())) {
           duplicates = true;
         }
       }
@@ -685,8 +664,6 @@ class _EditCategoryState extends State<EditCategory> {
   void deleteChoice(ChoiceRow choiceRow) {
     setState(() {
       this.choiceRows.remove(choiceRow);
-      this.labelControllers.remove(choiceRow.choiceNumber);
-      this.ratesControllers.remove(choiceRow.choiceNumber);
       hideKeyboard(this.context);
       checkForChanges();
     });

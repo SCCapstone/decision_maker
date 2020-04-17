@@ -7,6 +7,12 @@ bool validCharacters(String input) {
       .hasMatch(input);
 }
 
+bool validCharactersPassword(String input) {
+  return RegExp(
+          "^[a-zA-Z0-9 !@#%&,:;<>_~`/'\\\-\\\^\\\$\\\*\\\(\\\)\\\.\\\?\\\{\\\}\\\"\\\[\\\|\\\]\\\\]*\$")
+      .hasMatch(input);
+}
+
 String validGroupName(String input) {
   input = input.trim(); // sanity check trim
   String retVal;
@@ -15,7 +21,7 @@ String validGroupName(String input) {
   } else if (input.length > Globals.maxGroupNameLength) {
     retVal = "Group name is too large.";
   } else if (!validCharacters(input)) {
-    retVal = "Group name contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -28,7 +34,7 @@ String validEventName(String input) {
   } else if (input.length > Globals.maxEventNameLength) {
     retVal = "Event name is too large.";
   } else if (!validCharacters(input)) {
-    retVal = "Event name contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -101,7 +107,7 @@ String validNewUser(String user, List<String> users) {
   } else if (users.contains(user)) {
     retVal = "Username already added.";
   } else if (!validCharacters(user)) {
-    retVal = "Username contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -114,7 +120,7 @@ String validChoiceName(String input) {
   } else if (input.length > Globals.maxChoiceNameLength) {
     retVal = "Choice name is too large.";
   } else if (!validCharacters(input)) {
-    retVal = "Choice name contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -137,7 +143,7 @@ String validCategoryName(String input, {String categoryId}) {
   } else if (repeat) {
     retVal = "Category name already exists.";
   } else if (!validCharacters(input)) {
-    retVal = "Category name contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -155,7 +161,7 @@ String validEmail(String input) {
   } else if (input.length > Globals.maxEventNameLength) {
     return "Email is too large";
   } else if (!validCharacters(input)) {
-    retVal = "Email contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -176,13 +182,14 @@ String validNewPassword(String input) {
   if (!RegExp(r'[0-9]+').hasMatch(input)) {
     retVal += "Must contain at least one number.\n";
   }
-  if (!RegExp(r'[!@#$%^&*(),.?":{}\[\]\\|<>]+').hasMatch(input)) {
+  if (!RegExp(
+          "[!@#%&,:;<>_~`/'\\\-\\\^\\\$\\\*\\\(\\\)\\\.\\\?\\\{\\\}\\\"\\\[\\\|\\\]\\\\]+")
+      .hasMatch(input)) {
     retVal += "Must contain at least one special character.\n";
   }
-  if (!validCharacters(input)) {
+  if (!validCharactersPassword(input)) {
     retVal += "Password contains invalid characters.\n";
   }
-
   if (retVal == "") {
     retVal = null;
   } else {
@@ -198,8 +205,8 @@ String validPassword(String input) {
     retVal = "Password cannot be empty.";
   } else if (input.length > Globals.maxPasswordLength) {
     retVal = "Password is too large.";
-  } else if (!validCharacters(input)) {
-    retVal = "Password contains invalid characters.";
+  } else if (!validCharactersPassword(input)) {
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -212,7 +219,7 @@ String validUsername(String input) {
   } else if (input.length > Globals.maxUsernameLength) {
     retVal = "Username is too large.";
   } else if (!validCharacters(input)) {
-    retVal = "Username contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -225,7 +232,7 @@ String validDisplayName(String input) {
   } else if (input.length > Globals.maxDisplayNameLength) {
     retVal = "Name is too large.";
   } else if (!validCharacters(input)) {
-    retVal = "Name contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }
@@ -248,7 +255,7 @@ String validNewFavorite(String input, List<Favorite> favorites) {
   } else if (input == Globals.username) {
     retVal = "Cannot add yourself.";
   } else if (!validCharacters(input)) {
-    retVal = "Username contains invalid characters.";
+    retVal = "Invalid characters.";
   }
   return retVal;
 }

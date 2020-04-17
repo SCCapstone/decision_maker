@@ -71,7 +71,8 @@ class _CreateEventState extends State<CreateEvent> {
     this.willVote = true;
 
     // if user is in PM or almost near PM show PM instead of AM initially
-    this.am = (TimeOfDay.now().hour + 1 < 12);
+    this.am =
+        (TimeOfDay.now().hour + 1 < 12) || (TimeOfDay.now().hour + 1 >= 24);
     // provide default values initially, this is never shown to the user however
     DateTime initialTime = DateTime.now().add(Duration(hours: 1));
     this.proposedHr = convertMilitaryHrToMeridian(initialTime.hour);
@@ -531,7 +532,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   /*
       Get the most recent calculated times in case user is just idle on this screen.
-     
+
       Is called by a timer on a fixed interval.
    */
   void refreshTime() {
@@ -589,7 +590,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   /*
       Displays a GUI for selecting the hr/min for the event start time.
-      
+
       The time picker requires an initial time. When the user first opens the page,
       we must provide some random initial time to the GUI.
       For now just using 1 hour past current time
@@ -663,7 +664,7 @@ class _CreateEventState extends State<CreateEvent> {
 
   /*
     Attempts to create the event if all input is valid.
-    
+
     Once it is created the page is popped. Errors are highlighted if present.
    */
   void attemptSave() async {

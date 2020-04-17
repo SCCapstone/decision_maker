@@ -22,14 +22,6 @@ class _CreateCategoryState extends State<CreateCategory> {
   final TextEditingController categoryNameController =
       new TextEditingController();
   final int defaultRate = 3;
-
-  // map of choice number to controller that contains the name of the proposed choice
-  final Map<String, TextEditingController> labelControllers =
-      new LinkedHashMap<String, TextEditingController>();
-
-  // map of choice number to controller that contains the rating of the proposed choice
-  final Map<String, TextEditingController> ratesControllers =
-      new LinkedHashMap<String, TextEditingController>();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
@@ -41,11 +33,9 @@ class _CreateCategoryState extends State<CreateCategory> {
   @override
   void dispose() {
     this.categoryNameController.dispose();
-    for (TextEditingController tec in this.labelControllers.values) {
-      tec.dispose();
-    }
-    for (TextEditingController tec in this.ratesControllers.values) {
-      tec.dispose();
+    for (ChoiceRow choiceRow in this.choiceRows) {
+      choiceRow.rateController.dispose();
+      choiceRow.labelController.dispose();
     }
     this.scrollController.dispose();
     super.dispose();
@@ -56,11 +46,8 @@ class _CreateCategoryState extends State<CreateCategory> {
     this.autoValidate = false;
     // we are creating a category, so thus the first choice value is already set to 1
     TextEditingController initLabelController = new TextEditingController();
-    this.labelControllers.putIfAbsent("1", () => initLabelController);
-
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = this.defaultRate.toString();
-    this.ratesControllers.putIfAbsent("1", () => initRatingController);
 
     this.nextChoiceValue = 2;
 
@@ -170,13 +157,9 @@ class _CreateCategoryState extends State<CreateCategory> {
                   this.focusNode = new FocusNode();
                   TextEditingController labelController =
                       new TextEditingController();
-                  this.labelControllers.putIfAbsent(
-                      this.nextChoiceValue.toString(), () => labelController);
                   TextEditingController rateController =
                       new TextEditingController();
                   rateController.text = this.defaultRate.toString();
-                  this.ratesControllers.putIfAbsent(
-                      this.nextChoiceValue.toString(), () => rateController);
 
                   ChoiceRow choice = new ChoiceRow(
                     this.nextChoiceValue.toString(),
@@ -269,10 +252,12 @@ class _CreateCategoryState extends State<CreateCategory> {
       bool duplicates = false;
       // using a set is more efficient than looping over the maps
       Set names = new Set();
-      for (String i in this.labelControllers.keys) {
-        labelsToSave.putIfAbsent(i, () => this.labelControllers[i].text.trim());
-        ratesToSave.putIfAbsent(i, () => this.ratesControllers[i].text.trim());
-        if (!names.add(this.labelControllers[i].text.trim())) {
+      for (ChoiceRow choiceRow in this.choiceRows) {
+        labelsToSave.putIfAbsent(choiceRow.choiceNumber,
+            () => choiceRow.labelController.text.trim());
+        ratesToSave.putIfAbsent(
+            choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
+        if (!names.add(choiceRow.labelController.text.trim())) {
           duplicates = true;
         }
       }
@@ -326,8 +311,6 @@ class _CreateCategoryState extends State<CreateCategory> {
   void deleteChoice(ChoiceRow choiceRow) {
     setState(() {
       this.choiceRows.remove(choiceRow);
-      this.labelControllers.remove(choiceRow.choiceNumber);
-      this.ratesControllers.remove(choiceRow.choiceNumber);
       hideKeyboard(this.context);
     });
   }
