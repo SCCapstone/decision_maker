@@ -140,7 +140,7 @@ class _SignInState extends State<SignInPage> {
                 height: MediaQuery.of(context).size.width * .12,
                 child: RaisedButton(
                   onPressed: () {
-                    if (!loading) {
+                    if (!this.loading) {
                       // prevents user from spamming the login button if HTTP request is being processed
                       validateInput();
                     }
