@@ -1,5 +1,6 @@
 package imports;
 
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.regions.Regions;
@@ -26,7 +27,7 @@ import models.AppSettings;
 import models.User;
 import utilities.Config;
 import utilities.ErrorDescriptor;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -119,7 +120,7 @@ public class UsersManager extends DatabaseAccessManager {
       final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
       Item user = this.getItemByPrimaryKey(otherUser);
       if (user != null) {
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+        resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(user.asMap()));
       } else {
         resultStatus = new ResultStatus(true, "User not found.");
       }
@@ -149,7 +150,7 @@ public class UsersManager extends DatabaseAccessManager {
           user.withBoolean(FIRST_LOGIN, false);
         }
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+        resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(user.asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: ";
@@ -164,7 +165,7 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   public ResultStatus updateUserChoiceRatings(final Map<String, Object> jsonMap,
-      final Boolean isOwner, final Metrics metrics) {
+      final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -183,10 +184,8 @@ public class UsersManager extends DatabaseAccessManager {
         final Optional<String> errorMessage = this.userRatingsIsValid(ratings);
         if (!errorMessage.isPresent()) {
           final Map<String, Integer> ratingsMapConverted = ratings.entrySet().stream()
-              .collect(toMap(
-                  Entry::getKey,
-                  (e) -> Integer.parseInt(e.getValue().toString()),
-                  (e1, e2) -> e2,
+              .collect(collectingAndThen(
+                  toMap(Entry::getKey, (Map.Entry e) -> Integer.parseInt(e.getValue().toString())),
                   HashMap::new));
 
           final User user = new User(this.getMapByPrimaryKey(activeUser));
@@ -205,7 +204,8 @@ public class UsersManager extends DatabaseAccessManager {
           NameMap nameMap = new NameMap().with("#categoryId", categoryId);
           ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
 
-          if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+          if (user.getOwnedCategories().containsKey(categoryId) && jsonMap
+              .containsKey(CategoriesManager.CATEGORY_NAME)) {
             final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
             updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
             valueMap.withString(":categoryName", categoryName);
@@ -246,32 +246,19 @@ public class UsersManager extends DatabaseAccessManager {
         final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
 
         if (rating < 0 || rating > 5) {
-          errorMessage = this
-              .getUpdatedInvalidMessage(errorMessage, "Error: invalid rating value.");
+          errorMessage = "Error: invalid rating value.";
           break;
         }
       }
     } catch (final Exception e) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage, "Error: invalid ratings map.");
+      errorMessage = "Error: invalid ratings map.";
     }
 
     return Optional.ofNullable(errorMessage);
   }
 
-  private String getUpdatedInvalidMessage(final String current, final String update) {
-    String invalidString;
-    if (current == null) {
-      invalidString = update;
-    } else {
-      invalidString = current + "\n" + update;
-    }
-
-    return invalidString;
-  }
-
   public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "UsersManager.updateUserAppSettings";
+    final String classMethod = "UsersManager.updateUserSettings";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
@@ -299,7 +286,7 @@ public class UsersManager extends DatabaseAccessManager {
 
         final Optional<String> errorMessage = this.userSettingsIsValid(newDisplayName);
         if (!errorMessage.isPresent()) {
-          User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
+          final User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
           //as long as this remains a small group of settings, I think it's okay to always overwrite
           //this does imply that the entire appSettings array is sent from the front end though
@@ -408,7 +395,7 @@ public class UsersManager extends DatabaseAccessManager {
           updatedUser.withBoolean(FIRST_LOGIN, false);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(updatedUser.asMap()));
+              JsonUtils.convertObjectToJson(updatedUser.asMap()));
         } else {
           metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
@@ -429,17 +416,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public Optional<String> userSettingsIsValid(final String displayName) {
+  private Optional<String> userSettingsIsValid(final String displayName) {
     String errorMessage = null;
 
     if (displayName.length() <= 0) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage, "Error: Display name cannot be empty.");
+      errorMessage = "Error: Display name cannot be empty.";
     } else if (displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage,
-              "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH
-                  + "characters.");
+      errorMessage =
+          "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH + "characters.";
     }
 
     return Optional.ofNullable(errorMessage);

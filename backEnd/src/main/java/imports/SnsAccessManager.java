@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import models.Metadata;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -107,7 +107,7 @@ public class SnsAccessManager {
     );
 
     final String jsonNotification =
-        "{\"GCM\": \"" + JsonEncoders.convertObjectToJson(notification) + "\"}";
+        "{\"GCM\": \"" + JsonUtils.convertObjectToJson(notification) + "\"}";
 
     final PublishRequest publishRequest = new PublishRequest()
         .withTargetArn(arn)
@@ -142,7 +142,7 @@ public class SnsAccessManager {
     );
 
     final String jsonNotification =
-        "{\"GCM\": \"" + JsonEncoders.convertObjectToJson(notification) + "\"}";
+        "{\"GCM\": \"" + JsonUtils.convertObjectToJson(notification) + "\"}";
 
     final PublishRequest publishRequest = new PublishRequest()
         .withTargetArn(arn)

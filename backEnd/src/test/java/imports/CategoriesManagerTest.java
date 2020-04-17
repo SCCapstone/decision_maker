@@ -135,7 +135,7 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
 
@@ -144,7 +144,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).putItem(any(PutItemSpec.class));
@@ -155,7 +155,7 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInputBadUserRatingsUpdate_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
 
@@ -164,7 +164,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested\
@@ -183,7 +183,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false); // whole operation
@@ -202,7 +202,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false); // whole operation
@@ -223,7 +223,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false); // whole operation
@@ -241,7 +241,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false); // whole operation
@@ -255,7 +255,7 @@ public class CategoriesManagerTest {
     assertFalse(resultStatus.success);
 
     verify(this.usersManager, times(0))
-        .updateUserChoiceRatings(any(Map.class), any(Boolean.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -273,14 +273,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -296,14 +295,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -319,14 +317,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -341,14 +338,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(2)).getTable(any(String.class));
     verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -362,14 +358,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -386,8 +381,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -406,8 +400,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -427,8 +420,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -447,8 +439,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -462,14 +453,13 @@ public class CategoriesManagerTest {
     doReturn(this.editCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
 
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.editCategoryGoodInput,
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(1)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -485,8 +475,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        eq(true), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(2)).commonClose(false);
@@ -500,8 +489,7 @@ public class CategoriesManagerTest {
         this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        any(Boolean.class), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);
@@ -512,8 +500,7 @@ public class CategoriesManagerTest {
     ResultStatus resultStatus = this.categoriesManager.editCategory(this.badInput, this.metrics);
     assertFalse(resultStatus.success);
 
-    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class),
-        any(Boolean.class), any(Metrics.class));
+    verify(this.usersManager, times(0)).updateUserChoiceRatings(any(Map.class), any(Metrics.class));
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).putItem(any(PutItemSpec.class));
     verify(this.metrics, times(1)).commonClose(false);

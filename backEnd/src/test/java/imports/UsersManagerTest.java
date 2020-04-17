@@ -1,5 +1,6 @@
 package imports;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,8 +14,8 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -23,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +33,7 @@ import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -40,16 +44,16 @@ public class UsersManagerTest {
 
   private UsersManager usersManager;
 
-  private final Map<String, Object> badInput = new HashMap<>();
+  private final Map<String, Object> updateUserChoiceRatingsGoodInput = new HashMap<>(
+      ImmutableMap.of(
+          RequestFields.ACTIVE_USER, "john_andrews12",
+          CategoriesManager.CATEGORY_ID, "ef8dfc02-a79d-4d55-bb03-654a7a31bb16",
+          //removing 1's mapping and adding mapping for 3
+          RequestFields.USER_RATINGS, ImmutableMap.of("2", 5, "3", 4),
+          CategoriesManager.CATEGORY_NAME, "TestName"
+      ));
 
-  private final Map<String, Object> updateUserChoiceRatingsGoodInput = ImmutableMap.of(
-      RequestFields.ACTIVE_USER, "validActiveUser",
-      CategoriesManager.CATEGORY_ID, "CategoryId1",
-      RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", "5"),
-      CategoriesManager.CATEGORY_NAME, "TestName"
-  );
-
-  private final Map<String, Object> updateUserSettingsGoodInput = ImmutableMap.of(
+  private final Map<String, Object> updateUserSettingsGoodInput = new HashMap<>(ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
           UsersManager.APP_SETTINGS_DARK_THEME, true,
@@ -59,7 +63,7 @@ public class UsersManagerTest {
       ),
       UsersManager.DISPLAY_NAME, "DisplayName",
       UsersManager.FAVORITES, ImmutableList.of("fav1")
-  );
+  ));
 
   private final Map<String, Object> updateUserSettingsGoodInputWithIcon = ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
@@ -292,6 +296,23 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void getUserData_otherUserNotFound_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
+
+    ResultStatus resultStatus = this.usersManager
+        .getUserData(ImmutableMap.of(UsersManager.USERNAME, "userName"), this.metrics);
+
+    assertTrue(resultStatus.success);
+    //check the string as it a magic one checked on the front end and we don't want it to change
+    assertEquals(resultStatus.resultMessage, "User not found.");
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+  }
+
+  @Test
   public void getUserData_noDbConnection_failureResult() {
     doReturn(null).when(this.dynamoDB).getTable(any(String.class));
 
@@ -322,39 +343,120 @@ public class UsersManagerTest {
   ///////////////////////////////////region
   @Test
   public void updateUserChoiceRatings_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(UsersManager.CATEGORY_RATINGS, Collections.emptyMap()))
-        .when(this.table).getItem(any(GetItemSpec.class));
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, true, this.metrics);
+      ResultStatus resultStatus = this.usersManager
+          .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, this.metrics);
 
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
 
   @Test
-  public void updateUserChoiceRatings_missingKey_failureResult() {
+  public void updateUserChoiceRatings_validInputNoNameChange_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.updateUserChoiceRatingsGoodInput.remove(CategoriesManager.CATEGORY_NAME);
+      final ResultStatus resultStatus = this.usersManager
+          .updateUserChoiceRatings(this.updateUserChoiceRatingsGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateUserChoiceRatings_validInputNewCategory_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      ResultStatus resultStatus = this.usersManager
+          .updateUserChoiceRatings(ImmutableMap.of(
+              RequestFields.ACTIVE_USER, "john_andrews12",
+              CategoriesManager.CATEGORY_ID, "new-id",
+              //update 1's mapping and adding mapping for 3
+              RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5, "3", 4),
+              CategoriesManager.CATEGORY_NAME, "TestName"
+          ), this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateUserChoiceRatings_mapRatingValues_failureResult() {
     ResultStatus resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics);
+        .updateUserChoiceRatings(ImmutableMap.of(
+            RequestFields.ACTIVE_USER, "john_andrews12",
+            CategoriesManager.CATEGORY_ID, "new-id",
+            //update 1's mapping and adding mapping for 3
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", 10), // greater than 5
+            CategoriesManager.CATEGORY_NAME, "TestName"
+        ), this.metrics);
     assertFalse(resultStatus.success);
 
-    this.badInput.put(RequestFields.ACTIVE_USER, "activeUser");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics);
+        .updateUserChoiceRatings(ImmutableMap.of(
+            RequestFields.ACTIVE_USER, "john_andrews12",
+            CategoriesManager.CATEGORY_ID, "new-id",
+            //update 1's mapping and adding mapping for 3
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", -5), // less than 0
+            CategoriesManager.CATEGORY_NAME, "TestName"
+        ), this.metrics);
     assertFalse(resultStatus.success);
 
-    this.badInput.put(CategoriesManager.CATEGORY_ID, "categoryId");
     resultStatus = this.usersManager
-        .updateUserChoiceRatings(this.badInput, false, this.metrics);
+        .updateUserChoiceRatings(ImmutableMap.of(
+            RequestFields.ACTIVE_USER, "john_andrews12",
+            CategoriesManager.CATEGORY_ID, "new-id",
+            //update 1's mapping and adding mapping for 3
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", "not an int"), // NaN
+            CategoriesManager.CATEGORY_NAME, "TestName"
+        ), this.metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
     verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
     verify(this.metrics, times(3)).commonClose(false);
+  }
+
+  @Test
+  public void updateUserChoiceRatings_missingKey_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .updateUserChoiceRatings(Collections.emptyMap(), this.metrics);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   @Test
@@ -364,8 +466,7 @@ public class UsersManagerTest {
     ResultStatus resultStatus = this.usersManager
         .updateUserChoiceRatings(ImmutableMap.of(RequestFields.ACTIVE_USER, "validActiveUser",
             CategoriesManager.CATEGORY_ID, "CategoryId1",
-            RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5)),
-            false, this.metrics);
+            RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5)), this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(1)).getTable(any(String.class));
@@ -473,6 +574,33 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void updateUserSettings_invalidInputs_successfulResult() {
+    this.updateUserSettingsGoodInput.put(UsersManager.DISPLAY_NAME, "");
+    ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
+    assertFalse(resultStatus.success);
+
+    String veryLongDisplayName = IntStream.range(0, 100).boxed().map(Object::toString)
+        .collect(Collectors.joining(""));
+
+    this.updateUserSettingsGoodInput.put(UsersManager.DISPLAY_NAME, veryLongDisplayName);
+    resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
+    assertFalse(resultStatus.success);
+
+    this.updateUserSettingsGoodInput.put(UsersManager.DISPLAY_NAME, "display name");
+    this.updateUserSettingsGoodInput.put(UsersManager.APP_SETTINGS, ImmutableMap.of(
+        UsersManager.APP_SETTINGS_GROUP_SORT, 5000
+    ));
+    resultStatus = this.usersManager
+        .updateUserSettings(this.updateUserSettingsGoodInput, this.metrics);
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(3)).commonClose(false);
+  }
+
+  @Test
   public void updateUserSettings_validInputDbDiesDuringDisplayNameUpdate_failureResult() {
     doReturn(this.table, this.table, null).when(this.dynamoDB).getTable(any(String.class));
     doReturn("fakePrimaryKey").when(this.groupsManager).getPrimaryKeyIndex();
@@ -520,8 +648,8 @@ public class UsersManagerTest {
 
   @Test
   public void updateUserSettings_invalidInputMissingKeys_failureResult() {
-    ResultStatus resultStatus = this.usersManager
-        .updateUserSettings(this.badInput, this.metrics);
+    final ResultStatus resultStatus = this.usersManager
+        .updateUserSettings(Collections.emptyMap(), this.metrics);
 
     assertFalse(resultStatus.success);
     verify(this.dynamoDB, times(0)).getTable(any(String.class));

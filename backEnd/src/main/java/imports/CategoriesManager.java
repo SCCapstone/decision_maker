@@ -20,7 +20,7 @@ import java.util.UUID;
 import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -75,12 +75,12 @@ public class CategoriesManager extends DatabaseAccessManager {
           //put the entered ratings in the users table
           jsonMap.putIfAbsent(CATEGORY_ID, newCategory.getCategoryId()); // add required key
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, true, metrics);
+              .updateUserChoiceRatings(jsonMap, metrics);
 
           //TODO wrap this operation into a transaction with the above
           if (updatedUsersTableResult.success) {
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(newCategory.asMap()));
+                JsonUtils.convertObjectToJson(newCategory.asMap()));
           } else {
             resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
                 + updatedUsersTableResult.resultMessage;
@@ -212,11 +212,11 @@ public class CategoriesManager extends DatabaseAccessManager {
 
           //put the entered ratings in the users table
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, true, metrics);
+              .updateUserChoiceRatings(jsonMap, metrics);
 
           if (updatedUsersTableResult.success) {
             resultStatus = new ResultStatus(true,
-                JsonEncoders.convertObjectToJson(newCategory.asMap()));
+                JsonUtils.convertObjectToJson(newCategory.asMap()));
           } else {
             resultStatus.resultMessage = "Error in call to users manager.";
             resultStatus.applyResultStatus(updatedUsersTableResult);
@@ -363,7 +363,7 @@ public class CategoriesManager extends DatabaseAccessManager {
         }
       }
 
-      resultMessage = JsonEncoders.convertIterableToJson(categories);
+      resultMessage = JsonUtils.convertIterableToJson(categories);
     }
 
     metrics.commonClose(success);

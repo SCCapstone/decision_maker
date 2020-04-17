@@ -9,7 +9,7 @@ import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
-import utilities.JsonParsers;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -26,7 +26,7 @@ public class UsersPostHandler implements
     metrics.commonSetup(classMethod);
 
     try {
-      final Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
+      final Map<String, Object> jsonMap = JsonUtils.parseInput(request.getBody());
 
       if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
         final Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");
@@ -40,7 +40,7 @@ public class UsersPostHandler implements
 
           if (action.equals("updateUserChoiceRatings")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
-                .updateUserChoiceRatings(payloadJsonMap, false, metrics);
+                .updateUserChoiceRatings(payloadJsonMap, metrics);
           } else if (action.equals("updateUserSettings")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserSettings(payloadJsonMap, metrics);

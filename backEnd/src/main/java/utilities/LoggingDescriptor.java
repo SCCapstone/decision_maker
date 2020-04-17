@@ -38,7 +38,7 @@ public class LoggingDescriptor<T> {
     }
 
     if (this.input != null) {
-      retString += "\n\tinput: " + JsonEncoders.convertObjectToJson(this.input);
+      retString += "\n\tinput: " + JsonUtils.convertObjectToJson(this.input);
     }
 
     if (this.developerMessage != null) {

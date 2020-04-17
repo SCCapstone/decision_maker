@@ -165,7 +165,7 @@ public class GroupsManagerTest {
   void editGroup_validInput_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Optional.of("new icon file name")).when(this.s3AccessManager)
           .uploadImage(any(List.class), any(Metrics.class));
@@ -191,7 +191,7 @@ public class GroupsManagerTest {
   void editGroup_validInputNoIconChangeOpenGroup_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/openGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Collections.emptyMap()).when(this.usersManager)
           .getMapByPrimaryKey(any(String.class));
@@ -217,7 +217,7 @@ public class GroupsManagerTest {
   void editGroup_validInputNoCategoryChanges_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Optional.of("new icon file name")).when(this.s3AccessManager)
           .uploadImage(any(List.class), any(Metrics.class));
@@ -248,7 +248,7 @@ public class GroupsManagerTest {
   void editGroup_validInputCategoryAdded_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Optional.of("new icon file name")).when(this.s3AccessManager)
           .uploadImage(any(List.class), any(Metrics.class));
@@ -280,7 +280,7 @@ public class GroupsManagerTest {
   void editGroup_validInputCategoriesFail_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Optional.of("new icon file name")).when(this.s3AccessManager)
           .uploadImage(any(List.class), any(Metrics.class));
@@ -308,7 +308,7 @@ public class GroupsManagerTest {
   void editGroup_invalidInputUserNotInOpenGroupRemovedOwnerAddedLeft_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/openGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       this.editGroupValidInput.put(RequestFields.ACTIVE_USER, "fakeUser");
@@ -332,7 +332,7 @@ public class GroupsManagerTest {
   void editGroup_invalidInputBadDurations_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/openGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       this.editGroupValidInput.put(GroupsManager.DEFAULT_RSVP_DURATION, -1);
@@ -363,7 +363,7 @@ public class GroupsManagerTest {
   void editGroup_invalidInputUserNotInGroup_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       this.editGroupValidInput.put(RequestFields.ACTIVE_USER, "fakeUser");
@@ -824,7 +824,7 @@ public class GroupsManagerTest {
   public void handleGetBatchOfEvents_validInput_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       final ResultStatus resultStatus = this.groupsManager
@@ -844,7 +844,7 @@ public class GroupsManagerTest {
   public void handleGetBatchOfEvents_userNotInGroup_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-      doReturn(JsonUtils.getItemFromFile("src/test/json/bigGroup.json")).when(this.table)
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
       this.handleGetBatchOfEventsGoodInput.replace(RequestFields.ACTIVE_USER, "notIntGroup");
