@@ -1,5 +1,9 @@
 package utilities;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
+
+import com.google.common.base.Functions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import models.EventWithCategoryChoices;
 import models.User;
@@ -20,11 +23,12 @@ public class NondeterministicOptimalChoiceSelector {
   private Map<String, User> allUsers;
   private Metrics metrics;
 
-  public NondeterministicOptimalChoiceSelector(final EventWithCategoryChoices event, final List<User> users,
+  public NondeterministicOptimalChoiceSelector(final EventWithCategoryChoices event,
+      final List<User> users,
       final Metrics metrics) {
     this.event = event;
     this.allUsers = users.stream()
-        .collect(Collectors.toMap(User::getUsername, u -> u, (u1, u2) -> u2, HashMap::new));
+        .collect(collectingAndThen(toMap(User::getUsername, u -> u), HashMap::new));
     this.metrics = metrics;
     this.resetRatingsCountsByChoice(); // setup the default empty histogram
   }
@@ -127,7 +131,7 @@ public class NondeterministicOptimalChoiceSelector {
 
   private Map<Integer, Integer> getEmptyRatingCountsMap() {
     return IntStream.range(0, 6).boxed()
-        .collect(Collectors.toMap(i -> i, i -> 0, (i1, i2) -> i2, HashMap::new));
+        .collect(collectingAndThen(toMap(Functions.identity(), (Integer i) -> 0), HashMap::new));
   }
 
   //This methods sums the product of all ratings times their counts
@@ -147,8 +151,8 @@ public class NondeterministicOptimalChoiceSelector {
             this.getSumOfRatingsCounts(e1.getValue()) > this.getSumOfRatingsCounts(e2.getValue())
                 ? -1 : 1)
         .limit(x)
-        .collect(Collectors
-            .toMap(Entry::getKey, e -> this.event.getCategoryChoices().get(e.getKey()),
-                (e1, e2) -> e2, HashMap::new));
+        .collect(collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry e) -> this.event.getCategoryChoices().get(e.getKey())),
+            HashMap::new));
   }
 }

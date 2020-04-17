@@ -1,14 +1,13 @@
 package imports;
 
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.util.StringUtils;
 import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,7 +34,7 @@ import models.Metadata;
 import models.User;
 import models.UserGroup;
 import utilities.ErrorDescriptor;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -104,7 +103,7 @@ public class GroupsManager extends DatabaseAccessManager {
               batchNumber);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(groupForApiResponse.asMap()));
+              JsonUtils.convertObjectToJson(groupForApiResponse.asMap()));
         } else {
           resultStatus.resultMessage = "Error: user is not a member of the group.";
         }
@@ -143,10 +142,8 @@ public class GroupsManager extends DatabaseAccessManager {
       Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
           .entrySet()
           .stream()
-          .collect(toMap(
-              Entry::getKey,
-              (e) -> new EventForSorting(e.getValue(), now),
-              (e1, e2) -> e2,
+          .collect(collectingAndThen(
+              toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
               LinkedHashMap::new));
 
       //then we sort all of the events up to the oldestEvent being asked for
@@ -155,7 +152,7 @@ public class GroupsManager extends DatabaseAccessManager {
           .stream()
           .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
           .limit(oldestEventIndex)
-          .collect(toMap(Entry::getKey, (e) -> (Event) e.getValue(), (e1, e2) -> e2,
+          .collect(collectingAndThen(toMap(Entry::getKey, (Map.Entry e) -> (Event) e.getValue()),
               LinkedHashMap::new));
 
       //then we sort in the opposite direction and get the appropriate number of events
@@ -227,7 +224,7 @@ public class GroupsManager extends DatabaseAccessManager {
         this.updateCategoriesTable(null, newGroup, metrics);
 
         resultStatus = new ResultStatus(true,
-            JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+            JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: Unable to parse request.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -331,7 +328,7 @@ public class GroupsManager extends DatabaseAccessManager {
           this.updateCategoriesTable(oldGroup, newGroup, metrics);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders
+              JsonUtils
                   .convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
         } else {
           resultStatus.resultMessage = errorMessage.get();
@@ -498,7 +495,7 @@ public class GroupsManager extends DatabaseAccessManager {
           }
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+              JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
         } else {
           metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
@@ -1419,7 +1416,7 @@ public class GroupsManager extends DatabaseAccessManager {
           group.setEvents(this.getBatchOfEvents(group, batchNumber));
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(group.getEventsMap()));
+              JsonUtils.convertObjectToJson(group.getEventsMap()));
         } else {
           resultStatus.resultMessage = "Error: user is not a member of the group.";
         }

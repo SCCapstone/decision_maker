@@ -1,0 +1,174 @@
+{
+  "AppSettings": {
+    "CategorySort": 1,
+    "DarkTheme": true,
+    "GroupSort": 0,
+    "Muted": false
+  },
+  "CategoryRatings": {
+    "33461026-1f62-46e6-a621-81d53b36f5d6": {
+      "1": 3,
+      "2": 3,
+      "3": 3,
+      "4": 3,
+      "5": 3,
+      "6": 3,
+      "7": 3,
+      "8": 3,
+      "9": 3,
+      "10": 4,
+      "11": 0,
+      "12": 3,
+      "13": 5,
+      "14": 4,
+      "15": 3,
+      "16": 3,
+      "17": 3,
+      "18": 3,
+      "19": 3
+    },
+    "4c27a381-cff9-4ed5-9020-41dc0f0f70c5": {
+      "1": 4,
+      "2": 2,
+      "7": 5,
+      "8": 3,
+      "9": 2,
+      "10": 5,
+      "11": 0,
+      "12": 3,
+      "13": 5,
+      "14": 3
+    },
+    "982d23a3-8927-4708-9012-ab01f98ad18c": {
+      "1": 3,
+      "2": 3,
+      "3": 2,
+      "4": 5
+    },
+    "b752c28e-2925-4bda-aa9f-32cbbf0ecab5": {
+      "1": 3
+    },
+    "e09168c0-b409-497e-8b37-0eac332d84ac": {
+      "1": 4,
+      "2": 2,
+      "7": 5,
+      "8": 3,
+      "9": 2,
+      "10": 5,
+      "11": 0,
+      "12": 3,
+      "13": 5,
+      "14": 3
+    },
+    "ef8dfc02-a79d-4d55-bb03-654a7a31bb16": {
+      "1": 3,
+      "2": 5
+    },
+    "fbf6cb66-0258-4a92-bfbd-7976d4c650de": {
+      "1": 3,
+      "2": 5
+    }
+  },
+  "DisplayName": "John And Rews",
+  "FavoriteOf": {
+    "johnplaysgolf": true,
+    "josh": true
+  },
+  "Favorites": {
+    "edmond": {
+      "DisplayName": "Edmond",
+      "Icon": "243663c1-e204-4369-9b5a-f3329ab8ba15.jpg"
+    },
+    "johnplaysgolf": {
+      "DisplayName": "Mr. Playsgolf",
+      "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+    },
+    "josh": {
+      "DisplayName": "Josh Rapoport",
+      "Icon": "a0355f79-c285-43df-b9c1-b5417ffc60e7.jpg"
+    }
+  },
+  "Groups": {
+    "114aad53-23ba-4559-9c2b-849a81196e48": {
+      "EventsUnseen": {
+        "04b08055-e824-4dc9-b32c-d193a6e5dfa9": true,
+        "54e29e27-ab07-4543-a5e5-f0a3b0d2f8b2": true,
+        "dc86344f-c33d-4e78-bbdd-c23efbc2c874": true,
+        "f24a3050-3820-4ec4-b766-2a069d2ea921": true
+      },
+      "GroupName": "Test",
+      "Icon": null,
+      "LastActivity": "2020-04-12 13:50:08",
+      "Muted": false
+    },
+    "383f1e4f-22c2-4a1b-a61a-f54ad641ece9": {
+      "EventsUnseen": {
+        "078b3911-2ca3-41a5-a9f8-833af7551c43": true,
+        "184227f2-9b5a-4200-95f7-802104631211": true,
+        "1d238288-d8e0-45ef-a81a-8f048d8fc261": true,
+        "3c348bb8-0191-41d6-a9c6-0ef2753314a9": true,
+        "596caf15-4a5c-463b-aae5-1ed25d6f5aaa": true,
+        "6432c731-0821-4859-8b7e-625b1869d0b2": true,
+        "69760246-c54f-49fc-8502-34d1a0f2b28c": true,
+        "81acdb2e-64e4-471f-b933-73e1378a0bb1": true,
+        "87c5cc3c-d01f-4286-82a0-7fdd346ab827": true,
+        "953a4b00-18e4-4225-987d-87c2967f7d65": true,
+        "96828feb-16cb-4f95-b815-e15a141cd195": true,
+        "9b9ce392-10c0-4c2a-b23b-b49225012d6a": true,
+        "a1caa757-49d6-4c66-8d37-c09e01c1c999": true,
+        "a2f94812-a86a-4ec0-b6db-34c2df8b54f0": true,
+        "a505be54-05eb-45b6-821d-a5e5a62defe9": true,
+        "d35a5839-8e52-4e8a-909f-1e1b0e864bf1": true,
+        "eb3740f5-5303-48ae-9d3e-2a4e3a59000b": true,
+        "ff5710f4-521e-4cab-8661-7a81fa9da335": true
+      },
+      "GroupName": "Ape Developars",
+      "Icon": "72786333-18db-4ec0-8c6d-0a2b3344bfc5.jpg",
+      "LastActivity": "2020-04-16 19:28:08",
+      "Muted": false
+    },
+    "50363167-f7fa-4edd-a459-471187e06307": {
+      "EventsUnseen": {
+        "1f9649bb-73eb-4e65-8bf7-3215410f3724": true,
+        "642ad27c-b035-4df5-9689-d30eb688e30a": true,
+        "69e828da-3020-4a58-8330-e8fd8b3027f9": true,
+        "be343f37-cdc3-4ed1-9919-1747a2384bfb": true
+      },
+      "GroupName": "Work Friends",
+      "Icon": "c5d16576-f146-4ddd-b400-b52aeec782d9.jpg",
+      "LastActivity": "2020-04-16 14:25:08",
+      "Muted": false
+    },
+    "b2dfdbdf-e240-422e-a525-68e6cab138e7": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "Sports Galore",
+      "Icon": "c4de9ad0-104a-4bca-82fb-8f27231e8d6d.jpg",
+      "LastActivity": "2020-04-05 22:30:08",
+      "Muted": false
+    },
+    "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "New Test!",
+      "Icon": null,
+      "LastActivity": "2020-03-29 07:07:21",
+      "Muted": false
+    }
+  },
+  "GroupsLeft": {
+    "5530f12d-6e66-4869-bdd6-fb42b0c6ffa5": {
+      "GroupName": "Josh's Squad",
+      "Icon": "af8e67b7-f93b-40fc-aaa9-4cd5ebdbaed0.jpg"
+    }
+  },
+  "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg",
+  "OwnedCategories": {
+    "4c27a381-cff9-4ed5-9020-41dc0f0f70c5": "Movies",
+    "e09168c0-b409-497e-8b37-0eac332d84ac": "Movies2",
+    "ef8dfc02-a79d-4d55-bb03-654a7a31bb16": "Quick Bites"
+  },
+  "Username": "john_andrews12"
+}

@@ -1,10 +1,12 @@
 package models;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
+
 import imports.CategoriesManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import lombok.Data;
 
 @Data
@@ -20,8 +22,8 @@ public class EventWithCategoryChoices extends Event {
   public void setCategoryChoicesRawMap(final Map<String, Object> jsonMap) {
     this.categoryChoices = null;
     if (jsonMap != null) {
-      this.categoryChoices = jsonMap.entrySet().stream().collect(Collectors
-          .toMap(Entry::getKey, (e) -> (String) e.getValue(), (e1, e2) -> e2, HashMap::new));
+      this.categoryChoices = jsonMap.entrySet().stream().collect(collectingAndThen(
+          toMap(Entry::getKey, (Map.Entry e) -> (String) e.getValue()), HashMap::new));
     }
   }
 
@@ -37,7 +39,7 @@ public class EventWithCategoryChoices extends Event {
     super.setCategoryFields(category);
     this.setCategoryChoices(category.getChoices());
   }
-  
+
   public Map<String, Object> asEventMap() {
     return super.asMap();
   }

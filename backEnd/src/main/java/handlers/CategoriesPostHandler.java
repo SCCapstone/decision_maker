@@ -9,7 +9,7 @@ import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
-import utilities.JsonParsers;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -26,7 +26,7 @@ public class CategoriesPostHandler implements
     metrics.commonSetup(classMethod);
 
     try {
-      final Map<String, Object> jsonMap = JsonParsers.parseInput(request.getBody());
+      final Map<String, Object> jsonMap = JsonUtils.parseInput(request.getBody());
 
       if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {
         final Map<String, Object> payloadJsonMap = (Map<String, Object>) jsonMap.get("payload");

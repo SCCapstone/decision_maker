@@ -1,5 +1,6 @@
 package imports;
 
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.regions.Regions;
@@ -26,7 +27,7 @@ import models.AppSettings;
 import models.User;
 import utilities.Config;
 import utilities.ErrorDescriptor;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -109,6 +110,16 @@ public class UsersManager extends DatabaseAccessManager {
     return groupIds;
   }
 
+  /**
+   * This method does one of two things: 1) It gets the active user's data. If the active user's
+   * data does not exist, we assume this is their first login and we enter a new user object in the
+   * db. 2) It gets another user's data based on the passed in USERNAME key. If the requested user's
+   * data does not exist, the magic string of 'User not found.' is returned.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Standard result status object giving insight on whether the request was successful
+   */
   public ResultStatus getUserData(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.getUserData";
     metrics.commonSetup(classMethod);
@@ -119,7 +130,7 @@ public class UsersManager extends DatabaseAccessManager {
       final String otherUser = (String) jsonMap.get(UsersManager.USERNAME);
       Item user = this.getItemByPrimaryKey(otherUser);
       if (user != null) {
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+        resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(user.asMap()));
       } else {
         resultStatus = new ResultStatus(true, "User not found.");
       }
@@ -149,7 +160,7 @@ public class UsersManager extends DatabaseAccessManager {
           user.withBoolean(FIRST_LOGIN, false);
         }
 
-        resultStatus = new ResultStatus(true, JsonEncoders.convertObjectToJson(user.asMap()));
+        resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(user.asMap()));
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request. Exception message: ";
@@ -163,8 +174,17 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method takes in the active user, a category id, and a map of choice rating. Using this
+   * information if updates a users CategoryRatings attribute map to contain the appropriate ratings
+   * for the categoryId. It merges old choice ratings with new ones to preserve historical data.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Standard result status object giving insight on whether the request was successful
+   */
   public ResultStatus updateUserChoiceRatings(final Map<String, Object> jsonMap,
-      final Boolean isOwner, final Metrics metrics) {
+      final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -183,10 +203,8 @@ public class UsersManager extends DatabaseAccessManager {
         final Optional<String> errorMessage = this.userRatingsIsValid(ratings);
         if (!errorMessage.isPresent()) {
           final Map<String, Integer> ratingsMapConverted = ratings.entrySet().stream()
-              .collect(toMap(
-                  Entry::getKey,
-                  (e) -> Integer.parseInt(e.getValue().toString()),
-                  (e1, e2) -> e2,
+              .collect(collectingAndThen(
+                  toMap(Entry::getKey, (Map.Entry e) -> Integer.parseInt(e.getValue().toString())),
                   HashMap::new));
 
           final User user = new User(this.getMapByPrimaryKey(activeUser));
@@ -205,7 +223,8 @@ public class UsersManager extends DatabaseAccessManager {
           NameMap nameMap = new NameMap().with("#categoryId", categoryId);
           ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
 
-          if (isOwner && jsonMap.containsKey(CategoriesManager.CATEGORY_NAME)) {
+          if (user.getOwnedCategories().containsKey(categoryId) && jsonMap
+              .containsKey(CategoriesManager.CATEGORY_NAME)) {
             final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
             updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";
             valueMap.withString(":categoryName", categoryName);
@@ -246,43 +265,38 @@ public class UsersManager extends DatabaseAccessManager {
         final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
 
         if (rating < 0 || rating > 5) {
-          errorMessage = this
-              .getUpdatedInvalidMessage(errorMessage, "Error: invalid rating value.");
+          errorMessage = "Error: invalid rating value.";
           break;
         }
       }
     } catch (final Exception e) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage, "Error: invalid ratings map.");
+      errorMessage = "Error: invalid ratings map.";
     }
 
     return Optional.ofNullable(errorMessage);
   }
 
-  private String getUpdatedInvalidMessage(final String current, final String update) {
-    String invalidString;
-    if (current == null) {
-      invalidString = update;
-    } else {
-      invalidString = current + "\n" + update;
-    }
-
-    return invalidString;
-  }
-
+  /**
+   * This method handles the api request to update a users settings such as display name, icon,
+   * favorites, and other app settings.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input
+   * @param metrics Standard metrics object for profiling and logging
+   * @return Standard result status object giving insight on whether the request was successful
+   */
   public ResultStatus updateUserSettings(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "UsersManager.updateUserAppSettings";
+    final String classMethod = "UsersManager.updateUserSettings";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
     /*
      If the user's display name or the icon changes:
-       loop through a user's groups and favorites of and update accordingly
+       loop through a user's groups and favorites-of and update accordingly
      If a user's Favorites change
        need to reach out and pull new favorites data in
        need to go out and delete favorites of map from removed favorites
-     Maybe just blind update the app settings -> the code will definitely be simpler
+     Blind update the app settings to simplify the code
      */
 
     final List<String> requiredKeys = Arrays
@@ -299,7 +313,7 @@ public class UsersManager extends DatabaseAccessManager {
 
         final Optional<String> errorMessage = this.userSettingsIsValid(newDisplayName);
         if (!errorMessage.isPresent()) {
-          User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
+          final User oldUser = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
           //as long as this remains a small group of settings, I think it's okay to always overwrite
           //this does imply that the entire appSettings array is sent from the front end though
@@ -408,7 +422,7 @@ public class UsersManager extends DatabaseAccessManager {
           updatedUser.withBoolean(FIRST_LOGIN, false);
 
           resultStatus = new ResultStatus(true,
-              JsonEncoders.convertObjectToJson(updatedUser.asMap()));
+              JsonUtils.convertObjectToJson(updatedUser.asMap()));
         } else {
           metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
           resultStatus.resultMessage = errorMessage.get();
@@ -429,17 +443,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  public Optional<String> userSettingsIsValid(final String displayName) {
+  private Optional<String> userSettingsIsValid(final String displayName) {
     String errorMessage = null;
 
     if (displayName.length() <= 0) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage, "Error: Display name cannot be empty.");
+      errorMessage = "Error: Display name cannot be empty.";
     } else if (displayName.length() > MAX_DISPLAY_NAME_LENGTH) {
-      errorMessage = this
-          .getUpdatedInvalidMessage(errorMessage,
-              "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH
-                  + "characters.");
+      errorMessage =
+          "Error: Display name cannot be longer than " + MAX_DISPLAY_NAME_LENGTH + "characters.";
     }
 
     return Optional.ofNullable(errorMessage);

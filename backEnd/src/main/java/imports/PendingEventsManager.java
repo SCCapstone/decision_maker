@@ -31,7 +31,7 @@ import models.User;
 import utilities.NondeterministicOptimalChoiceSelector;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
-import utilities.JsonEncoders;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
@@ -75,7 +75,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             scannerId);
 
     try {
-      StringBuilder escapedInput = new StringBuilder(JsonEncoders.convertMapToJson(input));
+      StringBuilder escapedInput = new StringBuilder(JsonUtils.convertMapToJson(input));
       IOStreamsHelper
           .removeAllInstancesOf(escapedInput,
               '\\'); // step function doesn't like these in the input

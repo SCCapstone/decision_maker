@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
-import utilities.JsonParsers;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
@@ -25,7 +25,7 @@ public class PendingEventResolutionHandler implements RequestStreamHandler {
     ResultStatus resultStatus = new ResultStatus();
 
     try {
-      Map<String, Object> jsonMap = JsonParsers.parseInput(inputStream);
+      Map<String, Object> jsonMap = JsonUtils.parseInput(inputStream);
       resultStatus = DatabaseManagers.PENDING_EVENTS_MANAGER.processPendingEvent(jsonMap, metrics);
     } catch (Exception e) {
       resultStatus.resultMessage = "Exception occurred in handler.";
