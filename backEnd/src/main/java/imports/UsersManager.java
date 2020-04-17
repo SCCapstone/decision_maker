@@ -176,7 +176,7 @@ public class UsersManager extends DatabaseAccessManager {
 
   /**
    * This method takes in the active user, a category id, and a map of choice rating. Using this
-   * information if updates a users CategoryRatings attribute map to contain to appropriate ratings
+   * information if updates a users CategoryRatings attribute map to contain the appropriate ratings
    * for the categoryId. It merges old choice ratings with new ones to preserve historical data.
    *
    * @param jsonMap Common request map from endpoint handler containing api input
@@ -277,8 +277,8 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method handles the api request to update a users settings. This includes things like
-   * display name, icon, favorites, and other app settings.
+   * This method handles the api request to update a users settings such as display name, icon,
+   * favorites, and other app settings.
    *
    * @param jsonMap Common request map from endpoint handler containing api input
    * @param metrics Standard metrics object for profiling and logging
