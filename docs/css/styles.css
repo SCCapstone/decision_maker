@@ -1,0 +1,60 @@
+body {
+	font-size: 15px;
+	font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif;
+	margin: auto;
+
+	min-width: 960px;
+	padding: 0px;
+	background-color: #a6a6a6;
+	/*background-color: #F9F9F9;*/
+	color: #636363;
+
+	min-height: 100%;
+	position:absolute; 
+	top:0; 
+	bottom:0; 
+	right:0; 
+	left:0;
+}
+
+#content {
+	min-width: 576px;
+	width: 60%;
+	min-height:100%;
+	background-color: #F9F9F9;
+	position: absolute;
+	top: 0px;
+	right: 0;
+	left: 0;
+	margin: 0 auto;
+	padding: 15px;
+}
+
+.centered {
+	text-align: center;
+}
+
+.justified {
+	text-align: justify;
+}
+
+.noBottomMargin {
+	margin-bottom: 0px;
+}
+
+.noTopMargin {
+	margin-top: 0px;
+}
+
+.small-spacing {
+	margin: 3px;
+}
+
+.screenshot {
+	width: 100%;
+	text-align: center;
+}
+
+.screenshot img {
+	max-height: 500px;
+}
