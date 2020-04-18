@@ -70,6 +70,7 @@ public class GroupsManager extends DatabaseAccessManager {
   public static final String SELECTED_CHOICE = "SelectedChoice";
 
   public static final Integer MAX_DURATION = 10000;
+  public static final Integer MAX_EVENT_NAME_LENGTH = 30;
   public static final Integer EVENTS_BATCH_SIZE = 25;
 
   public GroupsManager() {
@@ -120,6 +121,17 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method is imperative for not overloading the front end with data. Since a group can have
+   * an unlimited number of events, we need to limit how many we return at any one time. This is why
+   * we're batching events. This function sorts all of the events from the first one to the oldest
+   * in the batch, then it flips the sort and gets the top 'n' where 'n' is the number in the
+   * batch.
+   *
+   * @param group       The group we are trying to get a batch of events for.
+   * @param batchNumber The index of events to get. Index i gets events (i, (i + 1) * batch size]
+   * @return A mapping of eventIds to event objects contained in the requested batch.
+   */
   public Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
@@ -127,6 +139,7 @@ public class GroupsManager extends DatabaseAccessManager {
     //linked hash maps maintain order whereas normal hash maps do not
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
+    //get all of the events from the first event to the oldest event in the batch
     if (group.getEvents().size() > newestEventIndex) {
       //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
       if (group.getEvents().size() < oldestEventIndex) {
@@ -154,22 +167,22 @@ public class GroupsManager extends DatabaseAccessManager {
           .limit(oldestEventIndex)
           .collect(collectingAndThen(toMap(Entry::getKey, (Map.Entry e) -> (Event) e.getValue()),
               LinkedHashMap::new));
-
-      //then we sort in the opposite direction and get the appropriate number of events
-      final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
-      Collections.reverse(reverseOrderKeys);
-
-      Map<String, Event> temp = new HashMap<>();
-      for (String eventId : reverseOrderKeys) {
-        temp.put(eventId, eventsBatch.get(eventId));
-
-        if (temp.size() >= oldestEventIndex - newestEventIndex) {
-          break;
-        }
-      }
-
-      eventsBatch = temp;
     } // else there are no events in this range and we return the empty map
+
+    //then we sort in the opposite direction and get the appropriate number of events for the batch
+    final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
+    Collections.reverse(reverseOrderKeys);
+
+    Map<String, Event> temp = new HashMap<>();
+    for (String eventId : reverseOrderKeys) {
+      temp.put(eventId, eventsBatch.get(eventId));
+
+      if (temp.size() >= oldestEventIndex - newestEventIndex) {
+        break;
+      }
+    }
+
+    eventsBatch = temp;
 
     return eventsBatch;
   }
@@ -847,18 +860,27 @@ public class GroupsManager extends DatabaseAccessManager {
 
   private Optional<String> newEventInputIsValid(final Group oldGroup, final Event newEvent) {
     String errorMessage = null;
-    //TODO - make this make sense - or maybe put thrown exceptions in the setting of the model attributes!
-//    if (StringUtils.isNullOrEmpty(groupId) || StringUtils.isNullOrEmpty(categoryId)) {
-//      isValid = false;
-//    }
-//
-//    if (votingDuration <= 0 || votingDuration > MAX_DURATION) {
-//      isValid = false;
-//    }
-//
-//    if (rsvpDuration < 0 || rsvpDuration > MAX_DURATION) {
-//      isValid = false;
-//    }
+
+    if (!oldGroup.getMembers().keySet().contains(newEvent.getEventCreatorUsername())) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: creator not in group");
+    }
+
+    if (newEvent.getRsvpDuration() < 0 || newEvent.getRsvpDuration() > MAX_DURATION) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: invalid consider duration");
+    }
+
+    if (newEvent.getVotingDuration() < 0 || newEvent.getVotingDuration() > MAX_DURATION) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: invalid voting duration");
+    }
+
+    if (newEvent.getEventName().length() <= 0) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: event name is empty");
+    }
+
+    if (newEvent.getEventName().length() > MAX_EVENT_NAME_LENGTH) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: event name too long");
+    }
+
     return Optional.ofNullable(errorMessage);
   }
 
@@ -1394,7 +1416,7 @@ public class GroupsManager extends DatabaseAccessManager {
    */
   public ResultStatus handleGetBatchOfEvents(final Map<String, Object> jsonMap,
       final Metrics metrics) {
-    final String classMethod = "GroupsManager.getBatchOfEvents";
+    final String classMethod = "GroupsManager.handleGetBatchOfEvents";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
