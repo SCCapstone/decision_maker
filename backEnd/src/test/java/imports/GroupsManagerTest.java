@@ -841,6 +841,28 @@ public class GroupsManagerTest {
   }
 
   @Test
+  public void handleGetBatchOfEvents_validInputBatchTooLarge_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.handleGetBatchOfEventsGoodInput.replace(RequestFields.BATCH_NUMBER, 10000);
+      final ResultStatus resultStatus = this.groupsManager
+          .handleGetBatchOfEvents(this.handleGetBatchOfEventsGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      assertEquals(resultStatus.resultMessage, "{}"); // empty map
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
   public void handleGetBatchOfEvents_userNotInGroup_failureResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));

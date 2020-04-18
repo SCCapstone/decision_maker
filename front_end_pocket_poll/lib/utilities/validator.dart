@@ -158,7 +158,7 @@ String validEmail(String input) {
     retVal = "Email cannot be empty.";
   } else if (!input.contains("@")) {
     retVal = "Enter a valid email address.";
-  } else if (input.length > Globals.maxEventNameLength) {
+  } else if (input.length > Globals.maxEmailLength) {
     return "Email is too large";
   } else if (!validCharacters(input)) {
     retVal = "Invalid characters.";
