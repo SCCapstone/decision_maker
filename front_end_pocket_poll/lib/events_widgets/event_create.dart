@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
@@ -705,12 +706,13 @@ class _CreateEventState extends State<CreateEvent> {
             considerDuration: int.parse(this.considerDuration));
 
         showLoadingDialog(context, "Creating event...", true);
-        ResultStatus result =
+        ResultStatus<Group> result =
             await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
         Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
         if (result.success) {
-          Navigator.of(this.context).pop();
+          Globals.currentGroup = result.data;
+          Navigator.of(this.context).pop("Event Created");
         } else {
           showErrorMessage("Error", result.errorMessage, this.context);
         }

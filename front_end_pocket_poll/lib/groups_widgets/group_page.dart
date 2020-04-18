@@ -148,8 +148,14 @@ class _GroupPageState extends State<GroupPage> {
           onPressed: () {
             Navigator.push(context,
                     MaterialPageRoute(builder: (context) => CreateEvent()))
-                .then((_) {
-              this.refreshList();
+                .then((val) {
+              if (val != null) {
+                // this means that an event was created, so don't make an API call to refresh
+                updatePage();
+              } else {
+                // no event created, so make API call to make sure page is most up to date
+                refreshList();
+              }
             });
           },
         ),

@@ -214,8 +214,9 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus> newEvent(String groupId, Event event) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+  static Future<ResultStatus<Group>> newEvent(
+      String groupId, Event event) async {
+    ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = newEventAction;
@@ -233,6 +234,8 @@ class GroupsManager {
         Map<String, dynamic> body = jsonDecode(response.data);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
         if (responseItem.success) {
+          retVal.data =
+              new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to create event.";
