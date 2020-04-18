@@ -122,6 +122,17 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method is imperative for not overloading the front end with data. Since a group can have
+   * an unlimited number of events, we need to limit how many we return at any one time. This is why
+   * we're watching events. This function sorts all of the events from the first one to the oldest
+   * in the batch, then it flips the sort and gets the top 'n' where 'n' is the number in the
+   * batch.
+   *
+   * @param group       The group we are trying to get a batch of events for.
+   * @param batchNumber The index of events to get. Index i gets events (i, (i + 1) * batch size]
+   * @return A mapping of eventIds to event objects contained in the requested batch.
+   */
   public Map<String, Event> getBatchOfEvents(final Group group, final Integer batchNumber) {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
