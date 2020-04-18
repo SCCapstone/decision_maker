@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import models.Category;
 import models.Event;
@@ -125,7 +124,7 @@ public class GroupsManager extends DatabaseAccessManager {
   /**
    * This method is imperative for not overloading the front end with data. Since a group can have
    * an unlimited number of events, we need to limit how many we return at any one time. This is why
-   * we're watching events. This function sorts all of the events from the first one to the oldest
+   * we're batching events. This function sorts all of the events from the first one to the oldest
    * in the batch, then it flips the sort and gets the top 'n' where 'n' is the number in the
    * batch.
    *
@@ -140,7 +139,7 @@ public class GroupsManager extends DatabaseAccessManager {
     //linked hash maps maintain order whereas normal hash maps do not
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
-    //get all of the events from the first event to the oldest event
+    //get all of the events from the first event to the oldest event in the batch
     if (group.getEvents().size() > newestEventIndex) {
       //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
       if (group.getEvents().size() < oldestEventIndex) {

@@ -841,7 +841,7 @@ public class GroupsManagerTest {
   }
 
   @Test
-  public void handleGetBatchOfEvents_validInputBatchTooLarge_successfulResult() {
+  public void handleGetBatchOfEvents_batchIndexTooLarge_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
       doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
