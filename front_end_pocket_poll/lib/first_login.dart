@@ -76,7 +76,7 @@ class _FirstLoginState extends State<FirstLogin> {
                   Column(
                     children: [
                       Container(
-                          width: MediaQuery.of(context).size.width * .8,
+                          width: MediaQuery.of(context).size.width * .90,
                           child: TextFormField(
                             maxLength: Globals.maxDisplayNameLength,
                             controller: this.displayNameController,
@@ -85,7 +85,7 @@ class _FirstLoginState extends State<FirstLogin> {
                               this._displayName = arg.trim();
                             },
                             onSaved: (String arg) {},
-                            style: TextStyle(fontSize: 25),
+                            style: TextStyle(fontSize: 20),
                             decoration: InputDecoration(
                                 labelText: "Nickname (@${Globals.username})",
                                 counterText: ""),

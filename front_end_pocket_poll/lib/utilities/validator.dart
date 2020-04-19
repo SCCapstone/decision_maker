@@ -218,6 +218,8 @@ String validUsername(String input) {
     retVal = "Username cannot be empty.";
   } else if (input.length > Globals.maxUsernameLength) {
     retVal = "Username is too large.";
+  } else if (input.contains(" ")) {
+    retVal = "No spaces allowed.";
   } else if (!validCharacters(input)) {
     retVal = "Invalid characters.";
   }
