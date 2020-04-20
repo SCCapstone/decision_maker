@@ -28,6 +28,8 @@ class _SignInState extends State<SignInPage> {
   String username;
   String password;
   bool loading;
+  FocusNode usernameFocus;
+  FocusNode passwordFocus;
 
   @override
   void dispose() {
@@ -39,6 +41,8 @@ class _SignInState extends State<SignInPage> {
 
   @override
   void initState() {
+    this.usernameFocus = new FocusNode();
+    this.passwordFocus = new FocusNode();
     this.showPassword = false;
     this.loading = false;
     this.signUp = false;
@@ -71,29 +75,78 @@ class _SignInState extends State<SignInPage> {
             children: <Widget>[
               Visibility(
                   visible: this.signUp,
-                  child: TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    controller: this.emailController,
-                    maxLength: Globals.maxEmailLength,
-                    validator: validEmail,
-                    onSaved: (String arg) {
-                      this.email = arg.trim();
-                    },
-                    style: TextStyle(fontSize: 32),
-                    decoration:
-                        InputDecoration(labelText: "Email", counterText: ""),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextFormField(
+                          keyboardType: TextInputType.emailAddress,
+                          controller: this.emailController,
+                          maxLength: Globals.maxEmailLength,
+                          validator: validEmail,
+                          onSaved: (String arg) {
+                            this.email = arg.trim();
+                          },
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (form) {
+                            // when user hits the next button on their keyboard, takes them to the username field
+                            FocusScope.of(context)
+                                .requestFocus(this.usernameFocus);
+                          },
+                          style: TextStyle(fontSize: 32),
+                          decoration: InputDecoration(
+                              labelText: "Email", counterText: ""),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.help_outline),
+                        tooltip: "Help",
+                        onPressed: () {
+                          showHelpMessage(
+                              "Email Help",
+                              "Currently the email is only used for resetting passwords.",
+                              context);
+                        },
+                      )
+                    ],
                   )),
-              TextFormField(
-                key: Key("login_page:username_input"),
-                maxLength: Globals.maxUsernameLength,
-                controller: this.usernameController,
-                validator: validUsername,
-                onSaved: (String arg) {
-                  this.username = arg.trim();
-                },
-                style: TextStyle(fontSize: 32),
-                decoration:
-                    InputDecoration(labelText: "Username", counterText: ""),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      key: Key("login_page:username_input"),
+                      maxLength: Globals.maxUsernameLength,
+                      controller: this.usernameController,
+                      validator: validUsername,
+                      onSaved: (String arg) {
+                        this.username = arg.trim();
+                      },
+                      focusNode: usernameFocus,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (form) {
+                        // when user hits the next button on their keyboard, takes them to the password field
+                        FocusScope.of(context).requestFocus(this.passwordFocus);
+                      },
+                      style: TextStyle(fontSize: 32),
+                      decoration: InputDecoration(
+                          labelText: "Username", counterText: ""),
+                    ),
+                  ),
+                  Visibility(
+                    visible: this.signUp,
+                    child: IconButton(
+                      icon: Icon(Icons.help_outline),
+                      tooltip: "Help",
+                      onPressed: () {
+                        showHelpMessage(
+                            "Username Help",
+                            "The username uniquely identifies an account within the app. "
+                                "You will use this to login to your account, so don't forget it! "
+                                "Other users will use this to add you to groups.",
+                            context);
+                      },
+                    ),
+                  )
+                ],
               ),
               Row(
                 children: <Widget>[
@@ -105,10 +158,15 @@ class _SignInState extends State<SignInPage> {
                       // don't allow user's passwords to be saved in their keyboard
                       maxLength: Globals.maxPasswordLength,
                       controller: this.passwordController,
+                      focusNode: passwordFocus,
                       validator:
                           (this.signUp) ? validNewPassword : validPassword,
                       onSaved: (String arg) {
                         this.password = arg.trim();
+                      },
+                      onFieldSubmitted: (form) {
+                        // when user hits the next button on their keyboard, tries to sign in/up
+                        validateInput();
                       },
                       style: TextStyle(fontSize: 32),
                       decoration: InputDecoration(

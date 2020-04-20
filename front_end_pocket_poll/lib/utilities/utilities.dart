@@ -133,6 +133,27 @@ void showErrorMessage(
       });
 }
 
+// shows a help message popup with a custom title and body
+void showHelpMessage(String helpTitle, String helpMsg, BuildContext context) {
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(helpTitle),
+          key: Key("utilities:help_message_popup"),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+          content: Text(helpMsg),
+        );
+      });
+}
+
 // shows a loading dialog. Used for API calls.
 void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
   showDialog(

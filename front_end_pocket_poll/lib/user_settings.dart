@@ -64,7 +64,7 @@ class _UserSettingsState extends State<UserSettings> {
       child: Scaffold(
           resizeToAvoidBottomInset: true,
           appBar: AppBar(
-            title: Text("My Settings"),
+            title: Text("Settings"),
             actions: <Widget>[
               Visibility(
                 visible: this.editing,
@@ -90,7 +90,7 @@ class _UserSettingsState extends State<UserSettings> {
                     Column(
                       children: [
                         Container(
-                            width: MediaQuery.of(context).size.width * .8,
+                            width: MediaQuery.of(context).size.width * .90,
                             child: TextFormField(
                               maxLength: Globals.maxDisplayNameLength,
                               controller: this.displayNameController,
@@ -101,7 +101,7 @@ class _UserSettingsState extends State<UserSettings> {
                               },
                               key: Key("user_settings:displayName_input"),
                               onSaved: (String arg) {},
-                              style: TextStyle(fontSize: 25),
+                              style: TextStyle(fontSize: 20),
                               decoration: InputDecoration(
                                   labelText: "Nickname (@${Globals.username})",
                                   counterText: ""),

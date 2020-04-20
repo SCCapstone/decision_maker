@@ -72,7 +72,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
           Expanded(
               child: AutoSizeText(
                   (this.groupNum != 0)
-                      ? "${widget.category.categoryName}\n(Used in $this.groupNum of your other groups)"
+                      ? "${widget.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
                       : widget.category.categoryName,
                   maxLines: 2,
                   style: TextStyle(fontSize: 20),

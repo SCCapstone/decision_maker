@@ -508,7 +508,7 @@ class _EditCategoryState extends State<EditCategory> {
     if (categoryRatings != null) {
       for (ChoiceRow choiceRow in this.choiceRows) {
         if (categoryRatings.containsKey(choiceRow.choiceNumber)) {
-          choiceRow.rateController.text = categoryRatings[choiceRow];
+          choiceRow.rateController.text = categoryRatings[choiceRow.choiceNumber];
         }
       }
     }
