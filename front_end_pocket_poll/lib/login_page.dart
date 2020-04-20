@@ -103,8 +103,7 @@ class _SignInState extends State<SignInPage> {
                         onPressed: () {
                           showHelpMessage(
                               "Email Help",
-                              "Your email address is currently only used for resetting "
-                                  "your password should you forget it.",
+                              "Currently the email is only used for resetting passwords.",
                               context);
                         },
                       )
@@ -140,9 +139,9 @@ class _SignInState extends State<SignInPage> {
                       onPressed: () {
                         showHelpMessage(
                             "Username Help",
-                            "Your username is your unique identifier "
-                                "used to sign in to the app and for your friends to "
-                                "add you to their favorites list or a group.",
+                            "The username uniquely identifies an account within the app. "
+                                "You will use this to login to your account, so don't forget it! "
+                                "Other users will use this to add you to groups.",
                             context);
                       },
                     ),
