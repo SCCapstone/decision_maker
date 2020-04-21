@@ -135,7 +135,7 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
 
@@ -144,7 +144,7 @@ public class CategoriesManagerTest {
 
     assertTrue(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested
     verify(this.table, times(1)).putItem(any(PutItemSpec.class));
@@ -155,7 +155,7 @@ public class CategoriesManagerTest {
   public void addNewCategory_validInputBadUserRatingsUpdate_failureResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(new ResultStatus(false, "usersManagerBroken")).when(this.usersManager)
-        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     doReturn(newCategoryGoodUser.asMap()).when(this.usersManager)
         .getMapByPrimaryKey(any(String.class));
 
@@ -164,7 +164,7 @@ public class CategoriesManagerTest {
 
     assertFalse(resultStatus.success);
     verify(this.usersManager, times(1))
-        .updateUserChoiceRatings(any(Map.class), any(Metrics.class));
+        .updateUserChoiceRatings(any(Map.class), eq(true), any(Metrics.class));
     //TODO we need to update the function to try to revert what it has already done maybe? -> 2 calls then
     verify(this.dynamoDB, times(1)).getTable(
         any(String.class)); // the db is hit twice, but only once by the dependency being tested\

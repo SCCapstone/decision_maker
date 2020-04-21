@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.JsonUtils;
@@ -363,6 +364,32 @@ public class UsersManagerTest {
   }
 
   @Test
+  public void updateUserChoiceRatings_validInputNewCategory_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      ResultStatus resultStatus = this.usersManager
+          .updateUserChoiceRatings(ImmutableMap.of(
+              RequestFields.ACTIVE_USER, "john_andrews12",
+              CategoriesManager.CATEGORY_ID, "new-id",
+              RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5, "3", 4),
+              CategoriesManager.CATEGORY_NAME, "TestName"
+          ), true, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
   public void updateUserChoiceRatings_validInputNoNameChange_successfulResult() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
@@ -385,24 +412,29 @@ public class UsersManagerTest {
   }
 
   @Test
-  public void updateUserChoiceRatings_validInputNewCategory_successfulResult() {
+  public void updateUserChoiceRatings_validInputNewCategoryWrongMethod_successfulResultBadUpdate() {
     try {
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
       doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
 
-      ResultStatus resultStatus = this.usersManager
+      final ResultStatus resultStatus = this.usersManager
           .updateUserChoiceRatings(ImmutableMap.of(
               RequestFields.ACTIVE_USER, "john_andrews12",
               CategoriesManager.CATEGORY_ID, "new-id",
-              //update 1's mapping and adding mapping for 3
               RequestFields.USER_RATINGS, ImmutableMap.of("1", 1, "2", 5, "3", 4),
               CategoriesManager.CATEGORY_NAME, "TestName"
           ), this.metrics);
 
       assertTrue(resultStatus.success);
-      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+
+      //here we're making sure the category name didn't get updated when using the wrong method
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertFalse(argument.getValue().getValueMap().containsKey(":categoryName"));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.metrics, times(1)).commonClose(true);
     } catch (final Exception e) {
