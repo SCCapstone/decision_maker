@@ -56,10 +56,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
               key: Key(
                   "category_row_group:checkbox:${widget.groupCategory}:${widget.index}"),
               onChanged: (bool value) {
-                this.widget.onSelect();
-                setState(() {
-                  this.selectVal = value;
-                });
+                selectCategory(value);
               },
             ),
           ),
@@ -70,14 +67,18 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             ),
           ),
           Expanded(
-              child: AutoSizeText(
-                  (this.groupNum != 0)
-                      ? "${widget.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
-                      : widget.category.categoryName,
-                  maxLines: 2,
-                  style: TextStyle(fontSize: 20),
-                  minFontSize: 12,
-                  overflow: TextOverflow.ellipsis)),
+              child: GestureDetector(
+                  onTap: () {
+                    selectCategory(!this.selectVal);
+                  },
+                  child: AutoSizeText(
+                      (this.groupNum != 0)
+                          ? "${widget.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
+                          : widget.category.categoryName,
+                      maxLines: 2,
+                      style: TextStyle(fontSize: 20),
+                      minFontSize: 12,
+                      overflow: TextOverflow.ellipsis))),
           Padding(
             padding: EdgeInsets.all(MediaQuery.of(context).size.width * .01),
           ),
@@ -106,5 +107,12 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
       decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
+  }
+
+  void selectCategory(bool value) {
+    this.widget.onSelect();
+    setState(() {
+      this.selectVal = value;
+    });
   }
 }

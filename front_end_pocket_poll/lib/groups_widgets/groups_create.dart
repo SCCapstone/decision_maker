@@ -22,6 +22,12 @@ class CreateGroup extends StatefulWidget {
 }
 
 class _CreateGroupState extends State<CreateGroup> {
+  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
+  final TextEditingController groupNameController = new TextEditingController();
+  final TextEditingController votingDurationController =
+      new TextEditingController();
+  final TextEditingController considerDurationController =
+      new TextEditingController();
   bool autoValidate;
   bool isOpen;
   String groupName;
@@ -29,22 +35,19 @@ class _CreateGroupState extends State<CreateGroup> {
   int considerDuration;
   File groupIcon;
   List<Member> groupMembers;
+  FocusNode considerFocus;
+  FocusNode votingFocus;
 
   // map of categoryIds -> categoryName
   Map<String, String> groupCategories = new Map<String, String>();
-
-  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
-  final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController votingDurationController =
-      new TextEditingController();
-  final TextEditingController considerDurationController =
-      new TextEditingController();
 
   @override
   void initState() {
     this.autoValidate = false;
     this.isOpen = true;
     this.groupMembers = new List<Member>();
+    this.considerFocus = new FocusNode();
+    this.votingFocus = new FocusNode();
     super.initState();
   }
 
@@ -85,6 +88,11 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.groupName = arg.trim();
                     },
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (form) {
+                      // when user hits the done button on keyboard, hide it.
+                      FocusScope.of(context).requestFocus(this.considerFocus);
+                    },
                     key: Key("groups_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter a group name", counterText: ""),
@@ -123,6 +131,12 @@ class _CreateGroupState extends State<CreateGroup> {
                     validator: (value) {
                       return validConsiderDuration(value, true);
                     },
+                    textInputAction: TextInputAction.next,
+                    focusNode: considerFocus,
+                    onFieldSubmitted: (form) {
+                      // when user hits the done button on keyboard, hide it.
+                      FocusScope.of(context).requestFocus(this.votingFocus);
+                    },
                     onSaved: (String arg) {
                       this.considerDuration = int.parse(arg.trim());
                     },
@@ -137,6 +151,12 @@ class _CreateGroupState extends State<CreateGroup> {
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       return validVotingDuration(value, true);
+                    },
+                    textInputAction: TextInputAction.done,
+                    focusNode: votingFocus,
+                    onFieldSubmitted: (form) {
+                      // when user hits the done button on keyboard, hide it.
+                      hideKeyboard(context);
                     },
                     onSaved: (String arg) {
                       this.votingDuration = int.parse(arg.trim());
