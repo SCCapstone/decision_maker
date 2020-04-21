@@ -185,6 +185,13 @@ public class UsersManager extends DatabaseAccessManager {
    */
   public ResultStatus updateUserChoiceRatings(final Map<String, Object> jsonMap,
       final Metrics metrics) {
+    return this.updateUserChoiceRatings(jsonMap, false, metrics);
+  }
+
+  //Same doc as above with the addition of the 'isNewCategory' param. This param tell the function
+  //that the category has just been created and therefore the active user is the owner
+  public ResultStatus updateUserChoiceRatings(final Map<String, Object> jsonMap,
+      final boolean isNewCategory, final Metrics metrics) {
     final String classMethod = "UsersManager.updateUserChoiceRatings";
     metrics.commonSetup(classMethod);
 
@@ -223,7 +230,7 @@ public class UsersManager extends DatabaseAccessManager {
           NameMap nameMap = new NameMap().with("#categoryId", categoryId);
           ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
 
-          if (user.getOwnedCategories().containsKey(categoryId) && jsonMap
+          if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId)) && jsonMap
               .containsKey(CategoriesManager.CATEGORY_NAME)) {
             final String categoryName = (String) jsonMap.get(CategoriesManager.CATEGORY_NAME);
             updateExpression += ", " + OWNED_CATEGORIES + ".#categoryId = :categoryName";

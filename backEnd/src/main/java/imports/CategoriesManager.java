@@ -75,7 +75,7 @@ public class CategoriesManager extends DatabaseAccessManager {
           //put the entered ratings in the users table
           jsonMap.putIfAbsent(CATEGORY_ID, newCategory.getCategoryId()); // add required key
           ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, metrics);
+              .updateUserChoiceRatings(jsonMap, true, metrics);
 
           //TODO wrap this operation into a transaction with the above
           if (updatedUsersTableResult.success) {
