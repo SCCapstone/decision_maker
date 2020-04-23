@@ -10,7 +10,8 @@ class CategoryRow extends StatefulWidget {
   final bool selected;
   final int index; // used for integration tests
 
-  CategoryRow(this.category, this.selected, {this.onSelect, this.index});
+  CategoryRow(this.category, this.selected,
+      {@required this.onSelect, this.index});
 
   @override
   _CategoryRow createState() => new _CategoryRow();
@@ -18,11 +19,9 @@ class CategoryRow extends StatefulWidget {
 
 class _CategoryRow extends State<CategoryRow> {
   String categoryText;
-  bool selected;
 
   @override
   void initState() {
-    this.selected = widget.selected;
     // only show owner username in row if the user doesn't own it
     bool isActiveUserCategoryOwner = widget.category.owner == Globals.username;
     if (isActiveUserCategoryOwner) {
@@ -38,27 +37,30 @@ class _CategoryRow extends State<CategoryRow> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: Key("category_row:container:${widget.category.categoryId}"),
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Checkbox(
-            value: this.selected,
+            value: widget.selected,
             key: Key("category_row:checkbox:${widget.index}"),
             onChanged: (bool value) {
-              this.widget.onSelect();
-              setState(() {
-                this.selected = value;
-              });
+              selectCategory(value);
             },
           ),
           Expanded(
-            child: AutoSizeText(
-              this.categoryText,
-              minFontSize: 12,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 20),
+            child: GestureDetector(
+              onTap: () {
+                selectCategory(!widget.selected);
+              },
+              child: AutoSizeText(
+                this.categoryText,
+                minFontSize: 12,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 20),
+              ),
             ),
           ),
         ],
@@ -66,5 +68,9 @@ class _CategoryRow extends State<CategoryRow> {
       decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: getBorderColor()))),
     );
+  }
+
+  void selectCategory(bool value) {
+    this.widget.onSelect();
   }
 }
