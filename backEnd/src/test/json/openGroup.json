@@ -168,6 +168,7 @@
     }
   },
   "MembersLeft": {
-    "leftUser": true
+    "leftUser": true,
+    "edmond2": true
   }
 }

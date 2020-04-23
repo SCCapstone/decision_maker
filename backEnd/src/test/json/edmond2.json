@@ -1,0 +1,88 @@
+{
+  "AppSettings": {
+    "CategorySort": 1,
+    "DarkTheme": true,
+    "GroupSort": 0,
+    "Muted": false
+  },
+  "CategoryRatings": {
+    "52be1d31-656a-4f54-bc5f-b93ad5481025": {
+      "1": 3,
+      "2": 4,
+      "3": 4,
+      "4": 5,
+      "5": 1,
+      "6": 4,
+      "7": 2,
+      "8": 0,
+      "9": 5
+    },
+    "5a25aebc-6e10-4b4a-898e-ef2580976a26": {
+      "1": 4,
+      "2": 5,
+      "3": 3,
+      "4": 3,
+      "5": 3
+    },
+    "bf98fb9b-9d05-4c96-95a2-6f4b9caf8a28": {
+      "1": 4,
+      "2": 5,
+      "3": 3,
+      "4": 3,
+      "6": 3
+    },
+    "f0b5db4b-13d3-447a-ba99-37d6b2379a18": {
+      "1": 4,
+      "2": 5,
+      "3": 3,
+      "4": 3,
+      "5": 3
+    }
+  },
+  "DisplayName": "Edmond",
+  "FavoriteOf": {
+    "john_andrews12": true,
+    "johnplaysgolf": true
+  },
+  "Favorites": {
+
+  },
+  "Groups": {
+    "385eec2f-d54d-4f50-839d-35ae289566c2": {
+      "EventsUnseen": {
+        "096ea608-cb41-4bfb-87d1-261235db6f5a": true,
+        "1d8239e2-925d-46b0-90b6-cbcbd93dc99c": true,
+        "89710e22-ee32-4524-974c-e8cad9ce5621": true,
+        "eea098f3-e6a7-48bc-8a35-0c7c98e0d0fe": true,
+        "fa106894-5144-4aee-9449-f2a0e8e48b85": true
+      },
+      "GroupName": "Freshman Friends",
+      "Icon": "aedf35fd-b099-4656-8aba-f5286156e6a3.jpg",
+      "LastActivity": "2020-04-18 21:22:20",
+      "Muted": false
+    }
+  },
+  "GroupsLeft": {
+    "383f1e4f-22c2-4a1b-a61a-f54ad641ece9": {
+      "GroupName": "Ape Developars",
+      "Icon": "72786333-18db-4ec0-8c6d-0a2b3344bfc5.jpg"
+    },
+    "b2dfdbdf-e240-422e-a525-68e6cab138e7": {
+      "GroupName": "AC Flora Bros!",
+      "Icon": "a2c6567e-c91d-4581-ade5-6ecfd15b7d98.jpg"
+    },
+    "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48": {
+      "GroupName": "New Test!",
+      "Icon": null
+    },
+    "13027fec-7fd7-4290-bd50-4dd84a572a4d": {
+      "GroupName": "Final Testing",
+      "Icon": null
+    }
+  },
+  "Icon": "243663c1-e204-4369-9b5a-f3329ab8ba15.jpg",
+  "OwnedCategories": {
+    "52be1d31-656a-4f54-bc5f-b93ad5481025": "Movies"
+  },
+  "Username": "edmond2"
+}

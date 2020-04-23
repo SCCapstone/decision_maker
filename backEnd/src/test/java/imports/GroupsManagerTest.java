@@ -77,9 +77,26 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
+  //The leave group inputs are in reference to the group in bigGroup.json
   private final Map<String, Object> leaveGroupGoodInput = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "ActiveUser")
-      .put(GroupsManager.GROUP_ID, "GroupId")
+      .put(RequestFields.ACTIVE_USER, "johnplaysgolf")
+      .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
+      .build();
+
+  private final Map<String, Object> leaveGroupBadInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "john_andrews12")
+      .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
+      .build();
+
+  //The rejoin group inputs are in reference to the group in openGroup.json
+  private final Map<String, Object> rejoinGroupGoodInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "edmond2")
+      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
+      .build();
+
+  private final Map<String, Object> rejoinGroupBadInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "john_andrews12")
+      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
       .build();
 
   private final Map<String, Object> deleteGroupGoodInput = ImmutableMap.<String, Object>builder()
@@ -677,9 +694,6 @@ public class GroupsManagerTest {
     assertFalse(result.success);
   }
 */
-  ///////////////////////////////////endregion
-  // editInputHasPermissions tests //
-  ///////////////////////////////////region
 
   ////////////////////////////endregion
   // updateUsersTable tests //
@@ -785,6 +799,70 @@ public class GroupsManagerTest {
   // leaveGroup tests //
   //////////////////////region
   @Test
+  public void leaveGroup_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .leaveGroup(this.leaveGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void leaveGroup_activeUserIsOwner_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .leaveGroup(this.leaveGroupBadInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void leaveGroup_noDbConnection_failureResult() {
+    try {
+      doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .leaveGroup(this.leaveGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
   public void leaveGroup_missingKeys_failureResult() {
     ResultStatus resultStatus = this.groupsManager
         .leaveGroup(this.badInput, metrics);
@@ -802,6 +880,98 @@ public class GroupsManagerTest {
   ///////////////////////endregion
   // rejoinGroup tests //
   ///////////////////////region
+  @Test
+  public void rejoinGroup_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("edmond2.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .rejoinGroup(this.rejoinGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void rejoinGroup_userHasNotLeftGroup_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .rejoinGroup(this.rejoinGroupBadInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void rejoinGroup_discrepancyBetweenGroupsLeftAndMembersLeft_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("openGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("edmond2.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .rejoinGroup(this.rejoinGroupBadInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void rejoinGroup_noDbConnection_failureResult() {
+    try {
+      doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+      ResultStatus resultStatus = this.groupsManager
+          .rejoinGroup(this.rejoinGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(0)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
   @Test
   public void rejoinGroup_missingKeys_failureResult() {
     ResultStatus resultStatus = this.groupsManager
