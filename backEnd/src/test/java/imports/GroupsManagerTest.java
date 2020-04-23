@@ -79,16 +79,21 @@ public class GroupsManagerTest {
 
   private final Map<String, Object> leaveGroupGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "johnplaysgolf")
-      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
+      .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
       .build();
 
-  private final Map<String, Object> leaveRejoinGroupBadInput = ImmutableMap.<String, Object>builder()
+  private final Map<String, Object> leaveGroupBadInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "john_andrews12")
-      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
+      .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
       .build();
 
   private final Map<String, Object> rejoinGroupGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "edmond2")
+      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
+      .build();
+
+  private final Map<String, Object> rejoinGroupBadInput = ImmutableMap.<String, Object>builder()
+      .put(RequestFields.ACTIVE_USER, "john_andrews12")
       .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
       .build();
 
@@ -821,7 +826,7 @@ public class GroupsManagerTest {
           .getItem(any(GetItemSpec.class));
 
       ResultStatus resultStatus = this.groupsManager
-          .leaveGroup(this.leaveRejoinGroupBadInput, this.metrics);
+          .leaveGroup(this.leaveGroupBadInput, this.metrics);
 
       assertFalse(resultStatus.success);
       verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
@@ -907,7 +912,7 @@ public class GroupsManagerTest {
           .getMapByPrimaryKey(any(String.class));
 
       ResultStatus resultStatus = this.groupsManager
-          .rejoinGroup(this.leaveRejoinGroupBadInput, this.metrics);
+          .rejoinGroup(this.rejoinGroupBadInput, this.metrics);
 
       assertFalse(resultStatus.success);
       verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
@@ -931,7 +936,7 @@ public class GroupsManagerTest {
           .getMapByPrimaryKey(any(String.class));
 
       ResultStatus resultStatus = this.groupsManager
-          .rejoinGroup(this.leaveRejoinGroupBadInput, this.metrics);
+          .rejoinGroup(this.rejoinGroupBadInput, this.metrics);
 
       assertFalse(resultStatus.success);
       verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
