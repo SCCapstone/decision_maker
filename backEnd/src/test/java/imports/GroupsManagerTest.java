@@ -77,6 +77,7 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "GroupId")
       .build();
 
+  //The leave group inputs are in reference to the group in bigGroup.json
   private final Map<String, Object> leaveGroupGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "johnplaysgolf")
       .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
@@ -87,6 +88,7 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48")
       .build();
 
+  //The rejoin group inputs are in reference to the group in openGroup.json
   private final Map<String, Object> rejoinGroupGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "edmond2")
       .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d")
