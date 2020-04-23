@@ -82,7 +82,7 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   public ResultStatus getGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "GroupsManager.getGroups";
+    final String classMethod = "GroupsManager.getGroup";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
