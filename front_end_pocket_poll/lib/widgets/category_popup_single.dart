@@ -7,10 +7,9 @@ import 'package:front_end_pocket_poll/models/category.dart';
 import 'category_row.dart';
 
 class CategoryPopupSingle extends StatefulWidget {
-  final List<Category> selectedCategory; // max of one element in this list
-  final Function handlePopupClosed;
+  final Category initialSelectedCategory;
 
-  CategoryPopupSingle(this.selectedCategory, {this.handlePopupClosed});
+  CategoryPopupSingle(this.initialSelectedCategory);
 
   @override
   _CategoryPopupSingleState createState() => _CategoryPopupSingleState();
@@ -18,6 +17,7 @@ class CategoryPopupSingle extends StatefulWidget {
 
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   List<Widget> categoryRows;
+  Category selectedCategory;
   Future<ResultStatus<List<Category>>> resultFuture;
   bool loading;
   bool errorLoading;
@@ -25,6 +25,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
 
   @override
   void initState() {
+    this.selectedCategory = widget.initialSelectedCategory;
     this.categoryRows = new List<Widget>();
     this.resultFuture = CategoriesManager.getAllCategoriesFromGroup(
         Globals.currentGroup.groupId);
@@ -40,8 +41,8 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
           child: Text("Done"),
           key: Key("category_popup_single:done_button"),
           onPressed: () {
-            widget.handlePopupClosed();
-            Navigator.of(context, rootNavigator: true).pop('dialog');
+            Navigator.of(context, rootNavigator: true)
+                .pop(this.selectedCategory);
           },
         ),
       ],
@@ -61,18 +62,22 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                             snapshot.data;
                         if (resultStatus.success) {
                           List<Category> categories = resultStatus.data;
-                          CategoriesManager.sortByAlphaAscending(categories);
-                          int index = 0; // used for integration testing
-                          for (Category category in categories) {
-                            this.categoryRows.add(CategoryRow(
-                                  category,
-                                  widget.selectedCategory.contains(category),
-                                  onSelect: () => selectCategory(category),
-                                  index: index,
-                                ));
-                            index++;
-                          }
-                          if (this.categoryRows.length > 0) {
+
+                          if (categories.length > 0) {
+                            CategoriesManager.sortByAlphaAscending(categories);
+                            int index = 0; // used for integration testing
+                            for (Category category in categories) {
+                              this.categoryRows.add(CategoryRow(
+                                    category,
+                                    this.selectedCategory != null &&
+                                        this.selectedCategory.categoryId ==
+                                            category.categoryId,
+                                    onSelect: () => selectCategory(category),
+                                    index: index,
+                                  ));
+                              index++;
+                            }
+
                             return Container(
                               height: MediaQuery.of(context).size.height * .25,
                               key: Key(
@@ -131,15 +136,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   void selectCategory(Category category) {
     setState(() {
       this.categoryRows.clear();
-      if (widget.selectedCategory.contains(category)) {
-        widget.selectedCategory.remove(category);
-      } else if (widget.selectedCategory.isEmpty) {
-        widget.selectedCategory.add(category);
-      } else {
-        // only one category can be selected
-        widget.selectedCategory.clear();
-        widget.selectedCategory.add(category);
-      }
+      this.selectedCategory = category;
     });
   }
 }
