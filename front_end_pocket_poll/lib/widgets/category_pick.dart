@@ -20,8 +20,7 @@ class _CategoryPickState extends State<CategoryPick> {
 
   @override
   void initState() {
-    this.categoryRows = new List<Widget>();
-    this.getCategories();
+    this.loadCategoryRows();
     super.initState();
   }
 
@@ -64,7 +63,7 @@ class _CategoryPickState extends State<CategoryPick> {
                                               CategoriesHome())).then((val) {
                                     setState(() {
                                       // check if the user actually added any categories, if so populate them
-                                      this.getCategories();
+                                      this.loadCategoryRows();
                                     });
                                   });
                                 })
@@ -80,7 +79,9 @@ class _CategoryPickState extends State<CategoryPick> {
   }
 
   // load categories into the category rows using the categories found on local user object
-  void getCategories() {
+  void loadCategoryRows() {
+    this.categoryRows = new List<Widget>(); // reset the rows
+
     int index = 0; // used for integration testing
     for (Category category in Globals.user.ownedCategories) {
       this.categoryRows.add(CategoryRow(
@@ -102,6 +103,8 @@ class _CategoryPickState extends State<CategoryPick> {
         widget.selectedCategories
             .putIfAbsent(category.categoryId, () => category.categoryName);
       }
+
+      this.loadCategoryRows();
     });
   }
 }

@@ -30,10 +30,10 @@ class _CreateEventState extends State<CreateEvent> {
   final TextEditingController hrController = new TextEditingController();
   final TextEditingController minController = new TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final List<Category> categorySelected = new List<Category>(); // only 1 item
 
   Timer timer;
   String eventName;
+  Category selectedCategory;
   String votingDuration;
   String considerDuration;
   String eventStartDateFormatted;
@@ -516,7 +516,7 @@ class _CreateEventState extends State<CreateEvent> {
                 children: <Widget>[
                   RaisedButton.icon(
                       onPressed: () {
-                        if (this.categorySelected.isEmpty) {
+                        if (this.selectedCategory == null) {
                           showErrorMessage(
                               "Error", "Select a category.", context);
                         } else {
@@ -543,27 +543,22 @@ class _CreateEventState extends State<CreateEvent> {
   // display a popup for picking a category for this event
   void showCategoriesPopup() {
     showDialog(
-        context: this.context,
-        child: CategoryPopupSingle(
-          this.categorySelected,
-          handlePopupClosed: categoryPopupClosed,
-        )).then((value) {
-      categoryPopupClosed();
+            context: this.context,
+            child: CategoryPopupSingle(this.selectedCategory))
+        .then((selectedCategory) {
+      hideKeyboard(this.context); // close keyboard
+      setState(() {
+        this.selectedCategory = selectedCategory;
+      });
     });
-  }
-
-  // callback method for whenever popup is closed. Currently just closes keyboard if open
-  void categoryPopupClosed() {
-    hideKeyboard(this.context);
-    setState(() {});
   }
 
   // if the user has selected a category, then display that name instead of default message
   String getCategoryActionMessage() {
-    if (this.categorySelected.isEmpty) {
+    if (this.selectedCategory == null) {
       return "Select Category";
     } else {
-      return this.categorySelected.first.categoryName;
+      return this.selectedCategory.categoryName;
     }
   }
 
@@ -697,8 +692,8 @@ class _CreateEventState extends State<CreateEvent> {
       } else {
         Event event = new Event(
             eventName: this.eventName.trim(),
-            categoryId: this.categorySelected.first.categoryId,
-            categoryName: this.categorySelected.first.categoryName,
+            categoryId: this.selectedCategory.categoryId,
+            categoryName: this.selectedCategory.categoryName,
             createdDateTime:
                 DateTime.parse(DateTime.now().toString().substring(0, 19)),
             eventStartDateTime: this.proposedEventDateTime,

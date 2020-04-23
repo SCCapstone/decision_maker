@@ -7,10 +7,11 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 class CategoryRow extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
-  bool selected;
+  final bool selected;
   final int index; // used for integration tests
 
-  CategoryRow(this.category, this.selected, {this.onSelect, this.index});
+  CategoryRow(this.category, this.selected,
+      {@required this.onSelect, this.index});
 
   @override
   _CategoryRow createState() => new _CategoryRow();
@@ -36,6 +37,7 @@ class _CategoryRow extends State<CategoryRow> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: Key("category_row:container:${widget.category.categoryId}"),
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,9 +71,6 @@ class _CategoryRow extends State<CategoryRow> {
   }
 
   void selectCategory(bool value) {
-    setState(() {
-      widget.selected = value;
-    });
     this.widget.onSelect();
   }
 }
