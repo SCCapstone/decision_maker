@@ -577,6 +577,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method allows a user to remove themselves from a group. Anyone who leaves a group via
+   * this method can't be added back to the group by someone else. They have to rejoin the group
+   * themselves.
+   *
+   * @param jsonMap The map containing the json request sent from the front end. Must contain the
+   *                GroupId for the group the user is attempting to leave.
+   * @param metrics Standard metrics object for profiling and logging
+   */
   public ResultStatus leaveGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.leaveGroup";
     metrics.commonSetup(classMethod);
