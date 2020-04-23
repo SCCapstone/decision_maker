@@ -10,7 +10,8 @@ class CategoryRow extends StatefulWidget {
   final bool selected;
   final int index; // used for integration tests
 
-  CategoryRow(this.category, this.selected, {this.onSelect, this.index});
+  CategoryRow(this.category, this.selected,
+      {@required this.onSelect, this.index});
 
   @override
   _CategoryRow createState() => new _CategoryRow();
