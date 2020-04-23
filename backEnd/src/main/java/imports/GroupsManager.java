@@ -1243,7 +1243,7 @@ public class GroupsManager extends DatabaseAccessManager {
         updateExpression = "remove Groups.#groupId";
         updateItemSpec = new UpdateItemSpec()
             .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
+            .withNameMap(nameMap);
         for (final String categoryId : removedCategoryIds) {
           try {
             DatabaseManagers.CATEGORIES_MANAGER.updateItem(categoryId, updateItemSpec);
