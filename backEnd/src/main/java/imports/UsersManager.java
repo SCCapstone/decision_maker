@@ -738,6 +738,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method handles removing one of a user's owned categories.
+   *
+   * @param username   The username of the user that owns the category that is being removed.
+   * @param categoryId The id of the owned category being removed.
+   * @param metrics    Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus removeOwnedCategory(final String username, final String categoryId,
       final Metrics metrics) {
     final String classMethod = "UsersManager.removeOwnedCategory";

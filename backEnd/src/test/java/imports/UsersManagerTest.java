@@ -854,6 +854,43 @@ public class UsersManagerTest {
   // removeOwnedCategory tests //
   ///////////////////////////////region
 
+  private final String removeOwnedCategoryCategoryId = "categoryId";
+
+  @Test
+  public void removeOwnedCategory_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    final ResultStatus resultStatus = this.usersManager
+        .removeOwnedCategory("username", this.removeOwnedCategoryCategoryId, this.metrics);
+
+    assertTrue(resultStatus.success);
+
+    //make sure the entered category id is what is getting removed
+    final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+    verify(this.table).updateItem(argument.capture());
+    assertEquals(argument.getValue().getNameMap().get("#categoryId"),
+        this.removeOwnedCategoryCategoryId);
+
+    verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.metrics, times(0)).commonClose(false);
+  }
+
+  @Test
+  public void removeOwnedCategory_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    final ResultStatus resultStatus = this.usersManager
+        .removeOwnedCategory("username", "categoryId", this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   ////////////////////////////////endregion
   // removeGroupFromUsers tests //
   ////////////////////////////////region
