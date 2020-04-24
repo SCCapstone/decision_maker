@@ -30,10 +30,18 @@ public class SnsAccessManager {
   private final Regions region = Regions.US_EAST_1; //TODO migrate everything to us east 1 and move this to config
   private static final String USER_DATA_KEY = "CustomUserData";
 
-  private AmazonSNSClient client = (AmazonSNSClient) AmazonSNSClient.builder()
-      .withRegion(this.region)
-      .withCredentials(new EnvironmentVariableCredentialsProvider())
-      .build();
+  private AmazonSNSClient client;
+
+  public SnsAccessManager() {
+    this.client = (AmazonSNSClient) AmazonSNSClient.builder()
+        .withRegion(this.region)
+        .withCredentials(new EnvironmentVariableCredentialsProvider())
+        .build();
+  }
+
+  public SnsAccessManager(final AmazonSNSClient amazonSnsClient) {
+    this.client = amazonSnsClient;
+  }
 
   public CreatePlatformEndpointResult registerPlatformEndpoint(
       final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics) {
@@ -158,7 +166,7 @@ public class SnsAccessManager {
       publishResult = new PublishResult();
     }
 
-    return  publishResult;
+    return publishResult;
   }
 
   public GetPlatformApplicationAttributesResult getPlatformAttributes(final String platformArn) {
