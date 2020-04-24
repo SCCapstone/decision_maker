@@ -8,7 +8,7 @@ class SettingsInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: AutoSizeText("User Settings",
+        title: AutoSizeText("Settings",
             style: TextStyle(fontSize: 40), maxLines: 1, minFontSize: 20),
         centerTitle: true,
       ),

@@ -508,7 +508,8 @@ class _EditCategoryState extends State<EditCategory> {
     if (categoryRatings != null) {
       for (ChoiceRow choiceRow in this.choiceRows) {
         if (categoryRatings.containsKey(choiceRow.choiceNumber)) {
-          choiceRow.rateController.text = categoryRatings[choiceRow.choiceNumber];
+          choiceRow.rateController.text =
+              categoryRatings[choiceRow.choiceNumber];
         }
       }
     }
@@ -537,6 +538,7 @@ class _EditCategoryState extends State<EditCategory> {
     Copies the category by using the current original ratings and names for choices
    */
   void copyCategory(String categoryName) async {
+    hideKeyboard(this.context);
     Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
     Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
     for (String i in this.originalLabels.keys) {
@@ -577,6 +579,7 @@ class _EditCategoryState extends State<EditCategory> {
     returns a success then the page is popped. Else an error message is displayed.
    */
   void saveCategory() async {
+    hideKeyboard(this.context);
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
       showErrorMessage("Error", "Must have at least one choice!", this.context);

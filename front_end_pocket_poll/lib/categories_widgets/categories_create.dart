@@ -243,6 +243,7 @@ class _CreateCategoryState extends State<CreateCategory> {
     returns a success then the page is popped. Else an error message is displayed.
    */
   void saveCategory() async {
+    hideKeyboard(this.context);
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
       showErrorMessage("Error", "Must have at least one choice!", this.context);
