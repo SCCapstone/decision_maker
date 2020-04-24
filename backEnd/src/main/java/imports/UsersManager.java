@@ -699,7 +699,9 @@ public class UsersManager extends DatabaseAccessManager {
               .withEndpointArn(user.getPushEndpointArn());
           DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
 
-          resultStatus = new ResultStatus(true, "endpoint unregistered");
+          resultStatus = ResultStatus.successful("endpoint unregistered");
+        } else {
+          resultStatus = ResultStatus.successful("no endpoint to unregister");
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));

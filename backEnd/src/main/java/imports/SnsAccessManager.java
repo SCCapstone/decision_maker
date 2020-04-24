@@ -114,7 +114,7 @@ public class SnsAccessManager {
    * @param deleteEndpointRequest A request containing the details of the endpoint to be deleted.
    */
   public DeleteEndpointResult unregisterPlatformEndpoint(
-      final DeleteEndpointRequest deleteEndpointRequest) {
+      final DeleteEndpointRequest deleteEndpointRequest) throws InvalidParameterException {
     return this.client.deleteEndpoint(deleteEndpointRequest);
   }
 

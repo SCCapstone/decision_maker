@@ -16,6 +16,8 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -138,6 +140,9 @@ public class UsersManagerTest {
   private S3AccessManager s3AccessManager;
 
   @Mock
+  private SnsAccessManager snsAccessManager;
+
+  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -148,6 +153,7 @@ public class UsersManagerTest {
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
+    DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
   }
 
   /////////////////////////////
@@ -698,6 +704,87 @@ public class UsersManagerTest {
   //////////////////////////////////endregion
   // unregisterPushEndpoint tests //
   //////////////////////////////////region
+
+  @Test
+  public void unregisterPushEndpoint_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "john_andrews12"),
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_validInputUserDidNotHaveEndpoint_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("edmond2.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "edmond2"),
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_snsFailsToDeleteArn_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doThrow(InvalidParameterException.class).when(this.snsAccessManager)
+          .unregisterPlatformEndpoint(any(DeleteEndpointRequest.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "john_andrews12"),
+              this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_missingRequestKeys_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .unregisterPushEndpoint(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   ///////////////////////////////endregion
   // removeOwnedCategory tests //
