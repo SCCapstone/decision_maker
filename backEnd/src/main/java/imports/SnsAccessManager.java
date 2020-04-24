@@ -161,7 +161,9 @@ public class SnsAccessManager {
    * @param arn      The arn of the target of this message.
    * @param title    The title of the notification.
    * @param body     The body of the notification.
-   * @param tag      The tag to be attached to the notification.
+   * @param tag      The tag to be attached to the notification. The tag stops multiple messages
+   *                 about the same subject from appearing on the user's device. For example, a
+   *                 second message about a specific event will replace the first message.
    * @param metadata This contains the action and payload information to be used by the front end.
    */
   public PublishResult sendMessage(final String arn, final String title, final String body,
