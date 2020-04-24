@@ -563,7 +563,7 @@ public class UsersManager extends DatabaseAccessManager {
    *
    * @param jsonMap The map containing the json request sent from the front end. This must contain a
    *                value for one of the sort settings (CategorySort or GroupSort).
-   * @param metrics Standard metrics object for profiling and logging
+   * @param metrics Standard metrics object for profiling and logging.
    */
   public ResultStatus updateSortSetting(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.updateSortSetting";
@@ -625,6 +625,15 @@ public class UsersManager extends DatabaseAccessManager {
     }
   }
 
+  /**
+   * This function takes in a device token registered in google cloud messaging and creates a SNS
+   * endpoint for this token and then registers the ARM of the SNS endpoint on the user item.
+   *
+   * @param jsonMap The map containing the json request payload sent from the front end. This must
+   *                contain the active user and the firebase messaging token.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus createPlatformEndpointAndStoreArn(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "UsersManager.createPlatformEndpointAndStoreArn";
@@ -675,6 +684,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This function takes in a username and if that user has a push notification associated with
+   * their account it gets removed from their user item.
+   *
+   * @param jsonMap The map containing the json request payload sent from the front end..
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus unregisterPushEndpoint(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "UsersManager.unregisterPushEndpoint";
@@ -697,8 +714,9 @@ public class UsersManager extends DatabaseAccessManager {
 
           this.updateItem(updateItemSpec);
 
-          //we've made it here without exception, now we try to actually delete the arn
-          //If the following fails we're still safe as there's no reference to the arn in the db anymore
+          //we've made it here without exception which means the user doesn't have record of the
+          //endpoint anymore, now we try to actually delete the arn. If the following fails we're
+          //still safe as there's no reference to the arn in the db anymore
           final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
               .withEndpointArn(user.getPushEndpointArn());
           DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
