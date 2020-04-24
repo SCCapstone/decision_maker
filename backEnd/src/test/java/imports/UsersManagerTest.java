@@ -707,6 +707,119 @@ public class UsersManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
+  ///////////////////////endregion
+  // updateSortSetting //
+  ///////////////////////region
+
+  private Map<String, Object> updateSortSettingGroupGoodInput = new HashMap<>(ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "john_andrews12",
+      UsersManager.APP_SETTINGS_GROUP_SORT, 3
+  ));
+
+  private Map<String, Object> updateSortSettingCategoryGoodInput = new HashMap<>(ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "john_andrews12",
+      UsersManager.APP_SETTINGS_CATEGORY_SORT, 1
+  ));
+
+  @Test
+  public void updateSortSetting_validInputGroupSort_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_validInputCategorySort_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingCategoryGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_invalidGroupSortValue_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.updateSortSettingGroupGoodInput.put(UsersManager.APP_SETTINGS_GROUP_SORT, 8);
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_invalidInputNoSortKey_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.updateSortSettingGroupGoodInput.remove(UsersManager.APP_SETTINGS_GROUP_SORT);
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .updateSortSetting(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   /////////////////////////////////////////////endregion
   // createPlatformEndpointAndStoreArn tests //
   /////////////////////////////////////////////region

@@ -45,7 +45,7 @@ public class AppSettings {
     }
   }
 
-  private void setGroupSort(final Integer groupSort) throws InvalidAttributeValueException {
+  public void setGroupSort(final Integer groupSort) throws InvalidAttributeValueException {
     // these values decode to have meaning in globals.dart on the front end
     final List<Integer> validGroupSortValues = ImmutableList.of(0, 1, 2, 3);
     if (validGroupSortValues.contains(groupSort)) {
@@ -56,7 +56,7 @@ public class AppSettings {
     }
   }
 
-  private void setCategorySort(final Integer categorySort) throws InvalidAttributeValueException {
+  public void setCategorySort(final Integer categorySort) throws InvalidAttributeValueException {
     // these values decode to have meaning in globals.dart on the front end
     final List<Integer> validCategorySortValues = ImmutableList.of(1, 2);
     if (validCategorySortValues.contains(categorySort)) {

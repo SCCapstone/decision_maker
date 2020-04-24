@@ -569,50 +569,47 @@ public class UsersManager extends DatabaseAccessManager {
     final String classMethod = "UsersManager.updateSortSetting";
     metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
-        jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT) ||
-            jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
+    ResultStatus resultStatus = null;
+
+    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
-        AppSettings appSettings;
-        Map<String, Object> appSettingsMap = user.getAppSettings().asMap();
-        String updateExpression = "";
-        ValueMap valueMap = new ValueMap();
+        final User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
         if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
-          Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
-          appSettingsMap.put(APP_SETTINGS_GROUP_SORT, groupSort);
-          // if the sort value is invalid, an exception will be thrown by AppSettings.SetGroupSort
-          appSettings = new AppSettings(appSettingsMap);
-          updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort";
-          valueMap.withInt(":groupSort", groupSort);
+          user.getAppSettings().setGroupSort((Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT));
         } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
-          Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
-          appSettingsMap.put(APP_SETTINGS_CATEGORY_SORT, categorySort);
-          // if the sort value is invalid, an exception will be thrown by AppSettings.SetCategorySort
-          appSettings = new AppSettings(appSettingsMap);
-          updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort";
-          valueMap.withInt(":categorySort", categorySort);
+          user.getAppSettings().setCategorySort((Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT));
+        } else {
+          resultStatus = ResultStatus.failure("Error: settings key not defined.");
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
+              "Settings key in request payload not set."));
         }
 
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
+        //this will only be set by an error at this point
+        if (resultStatus == null) {
+          final String updateExpression = "set " + APP_SETTINGS + " = :settingsMap";
+          final ValueMap valueMap = new ValueMap()
+              .withMap(":settingsMap", user.getAppSettings().asMap());
 
-        this.updateItem(updateItemSpec);
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.updateItem(activeUser, updateItemSpec);
+          resultStatus = ResultStatus.successful("Sort value updated successfully.");
+        }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Exception inside of manager.";
+        resultStatus = ResultStatus.failure("Exception inside of manager.");
       }
     } else {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
+      resultStatus = ResultStatus.failure("Error: Required request keys not found.");
     }
+
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
