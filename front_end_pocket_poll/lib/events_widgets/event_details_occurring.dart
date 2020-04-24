@@ -62,6 +62,22 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.date_range),
+            iconSize: 30,
+            tooltip: "Add to My Calendar",
+            onPressed: () {
+              calendar.Event calendarEvent = calendar.Event(
+                title: this.event.eventName,
+                startDate: this.event.eventStartDateTime,
+                endDate: this.event.eventStartDateTime.add(Duration(hours: 1)),
+                allDay: false,
+              );
+              calendar.Add2Calendar.addEvent2Cal(calendarEvent);
+            },
+          )
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
@@ -178,28 +194,6 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
               ),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton.icon(
-              icon: Icon(Icons.date_range),
-              label: Text("Add to My Calendar"),
-              onPressed: () {
-                calendar.Event calendarEvent = calendar.Event(
-                  title: this.event.eventName,
-                  startDate: this.event.eventStartDateTime,
-                  endDate:
-                      this.event.eventStartDateTime.add(Duration(hours: 1)),
-                  allDay: false,
-                );
-                calendar.Add2Calendar.addEvent2Cal(calendarEvent);
-              },
-            ),
-          ],
         ),
       ),
     );

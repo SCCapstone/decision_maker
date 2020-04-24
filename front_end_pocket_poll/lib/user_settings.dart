@@ -148,6 +148,7 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         RaisedButton.icon(
                             onPressed: () {
+                              hideKeyboard(this.context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -287,6 +288,7 @@ class _UserSettingsState extends State<UserSettings> {
 
   // attempts to save the user settings if the input is valid
   void saveSettings() async {
+    hideKeyboard(this.context);
     final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -306,7 +308,6 @@ class _UserSettingsState extends State<UserSettings> {
 
       if (resultStatus.success) {
         setState(() {
-          hideKeyboard(this.context);
           // reset everything and reflect changes made
           this.originalFavorites.clear();
           this.originalFavorites.addAll(this.displayedFavorites);
@@ -316,7 +317,6 @@ class _UserSettingsState extends State<UserSettings> {
           changeTheme(this.context);
         });
       } else {
-        hideKeyboard(this.context);
         showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {

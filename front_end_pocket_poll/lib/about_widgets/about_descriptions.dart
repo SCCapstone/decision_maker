@@ -12,7 +12,7 @@ class AboutDescriptions {
 
   static Html settings = Html(data: """
       <h2>Location</h2>
-      <p>Access user settings by clicking either your personal icon or the settings icon in the left drawer menu accessible from the home page.</p>
+      <p>Access settings by clicking either your personal icon or the settings icon in the left drawer menu accessible from the home page.</p>
       <h2>Features</h2>
       <p>If you prefer brighter screens, try out the light theme.</p>
       <p>If your pocket is getting polled a little too much, you can turn off notifications entirely. You won't receive any more notifications regarding upcoming events or being added to groups.</p>
@@ -58,6 +58,6 @@ class AboutDescriptions {
       <p>If you have notifications enabled, you will receive a notification whenever a event goes to a different stage.</p>
       <p>When creating an event, the consider and voting stages can be skipped by either hitting the skip buttons next to the input fields or by putting the number 0 in for the time.</p>
       <p>The default consider and voting durations are set in the group settings page.</p>
-      <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the "Add to My Calendar" button.</P>
+      <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the calendar icon button in the top right corner of the page.</P>
     """);
 }
