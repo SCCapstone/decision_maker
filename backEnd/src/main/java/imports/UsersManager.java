@@ -624,7 +624,7 @@ public class UsersManager extends DatabaseAccessManager {
 
   /**
    * This function takes in a device token registered in google cloud messaging and creates a SNS
-   * endpoint for this token and then registers the ARM of the SNS endpoint on the user item.
+   * endpoint for this token and then registers the ARN of the SNS endpoint on the user item.
    *
    * @param jsonMap The map containing the json request payload sent from the front end. This must
    *                contain the active user and the firebase messaging token.
@@ -685,7 +685,7 @@ public class UsersManager extends DatabaseAccessManager {
    * This function takes in a username and if that user has a push notification associated with
    * their account it gets removed from their user item.
    *
-   * @param jsonMap The map containing the json request payload sent from the front end..
+   * @param jsonMap The map containing the json request payload sent from the front end.
    * @param metrics Standard metrics object for profiling and logging.
    * @return Standard result status object giving insight on whether the request was successful.
    */
