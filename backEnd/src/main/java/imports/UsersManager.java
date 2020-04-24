@@ -639,6 +639,8 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String deviceToken = (String) jsonMap.get(RequestFields.DEVICE_TOKEN);
+
+        //first thing to do is register the device token with SNS
         final CreatePlatformEndpointRequest createPlatformEndpointRequest =
             new CreatePlatformEndpointRequest()
                 .withPlatformApplicationArn(Config.PUSH_SNS_PLATFORM_ARN)
@@ -647,8 +649,10 @@ public class UsersManager extends DatabaseAccessManager {
         final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
             .registerPlatformEndpoint(createPlatformEndpointRequest, metrics);
 
+        //this creation will give us a new ARN for the sns endpoint associated with the device token
         final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
 
+        //we need to register the ARN for the user's device on the user item
         final String updateExpression = "set " + PUSH_ENDPOINT_ARN + " = :userEndpointArn";
         final ValueMap valueMap = new ValueMap().withString(":userEndpointArn", userEndpointArn);
         final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
@@ -657,7 +661,7 @@ public class UsersManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         this.updateItem(updateItemSpec);
-        resultStatus = new ResultStatus(true, "user post arn set successfully");
+        resultStatus = ResultStatus.successful("user push arn set successfully");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Exception inside of manager.";

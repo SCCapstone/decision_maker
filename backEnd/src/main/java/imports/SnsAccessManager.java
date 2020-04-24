@@ -1,5 +1,6 @@
 package imports;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNSClient;
@@ -53,7 +54,8 @@ public class SnsAccessManager {
    *                                      UsersManager.unregisterPushEndpoint().
    */
   public CreatePlatformEndpointResult registerPlatformEndpoint(
-      final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics) {
+      final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics)
+      throws AmazonServiceException {
     CreatePlatformEndpointResult createPlatformEndpointResult = null;
 
     //The error handling here is obtained from aws doc: https://docs.aws.amazon.com/sns/latest/dg/mobile-platform-endpoint.html#mobile-platform-endpoint-sdk-examples
@@ -101,8 +103,6 @@ public class SnsAccessManager {
         // Rethrow the exception, the input is actually bad.
         throw ipe;
       }
-    } catch (Exception e) {
-      throw e;
     }
 
     return createPlatformEndpointResult;

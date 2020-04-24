@@ -5,17 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
 import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.google.common.collect.ImmutableList;
@@ -385,6 +389,12 @@ public class UsersManagerTest {
           ), true, this.metrics);
 
       assertTrue(resultStatus.success);
+
+      //here we're making sure the category name DOES get updated
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertTrue(argument.getValue().getValueMap().containsKey(":categoryName"));
+
       verify(this.dynamoDB, times(2)).getTable(any(String.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -438,9 +448,9 @@ public class UsersManagerTest {
       final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
       verify(this.table).updateItem(argument.capture());
       assertFalse(argument.getValue().getValueMap().containsKey(":categoryName"));
-      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
 
       verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.metrics, times(1)).commonClose(true);
     } catch (final Exception e) {
@@ -700,6 +710,60 @@ public class UsersManagerTest {
   /////////////////////////////////////////////endregion
   // createPlatformEndpointAndStoreArn tests //
   /////////////////////////////////////////////region
+
+  private final Map<String, Object> createPlatformEndpointAndStoreArnGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "activeUser",
+      RequestFields.DEVICE_TOKEN, "googleCloudDeviceToken"
+  );
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_validInput_successfulResult() {
+    try {
+      doReturn(new CreatePlatformEndpointResult().withEndpointArn("arn:1234"))
+          .when(this.snsAccessManager)
+          .registerPlatformEndpoint(any(CreatePlatformEndpointRequest.class), eq(this.metrics));
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .createPlatformEndpointAndStoreArn(this.createPlatformEndpointAndStoreArnGoodInput,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_snsFailedToRegisterToken_failureResult() {
+    doThrow(AmazonServiceException.class).when(this.snsAccessManager).registerPlatformEndpoint(any(
+        CreatePlatformEndpointRequest.class), eq(this.metrics));
+
+    final ResultStatus resultStatus = this.usersManager
+        .createPlatformEndpointAndStoreArn(this.createPlatformEndpointAndStoreArnGoodInput,
+            this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_missingRequestKeys_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .createPlatformEndpointAndStoreArn(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   //////////////////////////////////endregion
   // unregisterPushEndpoint tests //
