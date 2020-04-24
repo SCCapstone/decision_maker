@@ -43,6 +43,15 @@ public class SnsAccessManager {
     this.client = amazonSnsClient;
   }
 
+  /**
+   * This method is used to create a new platform endpoint to be used for SNS.
+   *
+   * @param createPlatformEndpointRequest A request containing the details of the platform endpoint
+   *                                      that is to be created.
+   * @param metrics                       Standard metrics object for profiling and logging. In this
+   *                                      method, we just need the metrics object when calling
+   *                                      UsersManager.unregisterPushEndpoint().
+   */
   public CreatePlatformEndpointResult registerPlatformEndpoint(
       final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics) {
     CreatePlatformEndpointResult createPlatformEndpointResult = null;
@@ -99,11 +108,23 @@ public class SnsAccessManager {
     return createPlatformEndpointResult;
   }
 
+  /**
+   * This method is used to delete platform endpoints that are no longer being used.
+   *
+   * @param deleteEndpointRequest A request containing the details of the endpoint to be deleted.
+   */
   public DeleteEndpointResult unregisterPlatformEndpoint(
       final DeleteEndpointRequest deleteEndpointRequest) {
     return this.client.deleteEndpoint(deleteEndpointRequest);
   }
 
+  /**
+   * This method is used to send a message to a user such that the notification will not pop up for
+   * that user.
+   *
+   * @param arn      The arn of the target of this message.
+   * @param metadata This contains the action and payload information to be used by the front end.
+   */
   //to allow the notification to get sent without popping up, just don't add the notification
   public PublishResult sendMutedMessage(final String arn, final Metadata metadata) {
     Map<String, Object> notification = ImmutableMap.of(
@@ -131,9 +152,18 @@ public class SnsAccessManager {
       publishResult = new PublishResult();
     }
 
-    return  publishResult;
+    return publishResult;
   }
 
+  /**
+   * This method is used to send a message to a user such that they will see a notification.
+   *
+   * @param arn      The arn of the target of this message.
+   * @param title    The title of the notification.
+   * @param body     The body of the notification.
+   * @param tag      The tag to be attached to the notification.
+   * @param metadata This contains the action and payload information to be used by the front end.
+   */
   public PublishResult sendMessage(final String arn, final String title, final String body,
       final String tag, final Metadata metadata) {
     Map<String, Object> notification = ImmutableMap.of(
@@ -169,6 +199,11 @@ public class SnsAccessManager {
     return publishResult;
   }
 
+  /**
+   * This method is used to fetch attributes when given a target arn.
+   *
+   * @param platformArn The arn of the platform that we want to fetch the attributes of.
+   */
   public GetPlatformApplicationAttributesResult getPlatformAttributes(final String platformArn) {
     return this.client
         .getPlatformApplicationAttributes(
