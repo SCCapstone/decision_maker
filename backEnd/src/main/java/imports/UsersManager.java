@@ -563,56 +563,53 @@ public class UsersManager extends DatabaseAccessManager {
    *
    * @param jsonMap The map containing the json request sent from the front end. This must contain a
    *                value for one of the sort settings (CategorySort or GroupSort).
-   * @param metrics Standard metrics object for profiling and logging
+   * @param metrics Standard metrics object for profiling and logging.
    */
   public ResultStatus updateSortSetting(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.updateSortSetting";
     metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
-    if (jsonMap.containsKey(RequestFields.ACTIVE_USER) && (
-        jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT) ||
-            jsonMap.containsKey(APP_SETTINGS_GROUP_SORT))) {
+    ResultStatus resultStatus = null;
+
+    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER);
+
+    if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
-        AppSettings appSettings;
-        Map<String, Object> appSettingsMap = user.getAppSettings().asMap();
-        String updateExpression = "";
-        ValueMap valueMap = new ValueMap();
+        final User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
 
         if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
-          Integer groupSort = (Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT);
-          appSettingsMap.put(APP_SETTINGS_GROUP_SORT, groupSort);
-          // if the sort value is invalid, an exception will be thrown by AppSettings.SetGroupSort
-          appSettings = new AppSettings(appSettingsMap);
-          updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_GROUP_SORT + " = :groupSort";
-          valueMap.withInt(":groupSort", groupSort);
+          user.getAppSettings().setGroupSort((Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT));
         } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
-          Integer categorySort = (Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT);
-          appSettingsMap.put(APP_SETTINGS_CATEGORY_SORT, categorySort);
-          // if the sort value is invalid, an exception will be thrown by AppSettings.SetCategorySort
-          appSettings = new AppSettings(appSettingsMap);
-          updateExpression +=
-              "set " + APP_SETTINGS + "." + APP_SETTINGS_CATEGORY_SORT + " = :categorySort";
-          valueMap.withInt(":categorySort", categorySort);
+          user.getAppSettings().setCategorySort((Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT));
+        } else {
+          resultStatus = ResultStatus.failure("Error: settings key not defined.");
+          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
+              "Settings key in request payload not set."));
         }
 
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withPrimaryKey(this.getPrimaryKeyIndex(), activeUser)
-            .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
+        //this will only be set by an error at this point
+        if (resultStatus == null) {
+          final String updateExpression = "set " + APP_SETTINGS + " = :settingsMap";
+          final ValueMap valueMap = new ValueMap()
+              .withMap(":settingsMap", user.getAppSettings().asMap());
 
-        this.updateItem(updateItemSpec);
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.updateItem(activeUser, updateItemSpec);
+          resultStatus = ResultStatus.successful("Sort value updated successfully.");
+        }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Exception inside of manager.";
+        resultStatus = ResultStatus.failure("Exception inside of manager.");
       }
     } else {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
+      resultStatus = ResultStatus.failure("Error: Required request keys not found.");
     }
+
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
@@ -625,6 +622,15 @@ public class UsersManager extends DatabaseAccessManager {
     }
   }
 
+  /**
+   * This function takes in a device token registered in google cloud messaging and creates a SNS
+   * endpoint for this token and then registers the ARN of the SNS endpoint on the user item.
+   *
+   * @param jsonMap The map containing the json request payload sent from the front end. This must
+   *                contain the active user and the firebase messaging token.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus createPlatformEndpointAndStoreArn(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "UsersManager.createPlatformEndpointAndStoreArn";
@@ -639,6 +645,8 @@ public class UsersManager extends DatabaseAccessManager {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String deviceToken = (String) jsonMap.get(RequestFields.DEVICE_TOKEN);
+
+        //first thing to do is register the device token with SNS
         final CreatePlatformEndpointRequest createPlatformEndpointRequest =
             new CreatePlatformEndpointRequest()
                 .withPlatformApplicationArn(Config.PUSH_SNS_PLATFORM_ARN)
@@ -647,8 +655,10 @@ public class UsersManager extends DatabaseAccessManager {
         final CreatePlatformEndpointResult createPlatformEndpointResult = DatabaseManagers.SNS_ACCESS_MANAGER
             .registerPlatformEndpoint(createPlatformEndpointRequest, metrics);
 
+        //this creation will give us a new ARN for the sns endpoint associated with the device token
         final String userEndpointArn = createPlatformEndpointResult.getEndpointArn();
 
+        //we need to register the ARN for the user's device on the user item
         final String updateExpression = "set " + PUSH_ENDPOINT_ARN + " = :userEndpointArn";
         final ValueMap valueMap = new ValueMap().withString(":userEndpointArn", userEndpointArn);
         final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
@@ -657,7 +667,7 @@ public class UsersManager extends DatabaseAccessManager {
             .withValueMap(valueMap);
 
         this.updateItem(updateItemSpec);
-        resultStatus = new ResultStatus(true, "user post arn set successfully");
+        resultStatus = ResultStatus.successful("user push arn set successfully");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Exception inside of manager.";
@@ -671,6 +681,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This function takes in a username and if that user has a push notification associated with
+   * their account it gets removed from their user item.
+   *
+   * @param jsonMap The map containing the json request payload sent from the front end.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus unregisterPushEndpoint(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "UsersManager.unregisterPushEndpoint";
@@ -693,13 +711,16 @@ public class UsersManager extends DatabaseAccessManager {
 
           this.updateItem(updateItemSpec);
 
-          //we've made it here without exception, now we try to actually delete the arn
-          //If the following fails we're still safe as there's no reference to the arn in the db anymore
+          //we've made it here without exception which means the user doesn't have record of the
+          //endpoint anymore, now we try to actually delete the arn. If the following fails we're
+          //still safe as there's no reference to the arn in the db anymore
           final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
               .withEndpointArn(user.getPushEndpointArn());
           DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
 
-          resultStatus = new ResultStatus(true, "endpoint unregistered");
+          resultStatus = ResultStatus.successful("endpoint unregistered");
+        } else {
+          resultStatus = ResultStatus.successful("no endpoint to unregister");
         }
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -714,6 +735,14 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method handles removing one of a user's owned categories.
+   *
+   * @param username   The username of the user that owns the category that is being removed.
+   * @param categoryId The id of the owned category being removed.
+   * @param metrics    Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus removeOwnedCategory(final String username, final String categoryId,
       final Metrics metrics) {
     final String classMethod = "UsersManager.removeOwnedCategory";

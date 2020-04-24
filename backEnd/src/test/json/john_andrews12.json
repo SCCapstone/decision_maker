@@ -170,5 +170,6 @@
     "e09168c0-b409-497e-8b37-0eac332d84ac": "Movies2",
     "ef8dfc02-a79d-4d55-bb03-654a7a31bb16": "Quick Bites"
   },
-  "Username": "john_andrews12"
+  "Username": "john_andrews12",
+  "PushEndpointArn": "arn:aws:sns:us-east-1:871532548613:endpoint/GCM/PocketPollMessaging/2e449c30-ef69-3ba7-9ef0-dfe1a8273e1d"
 }

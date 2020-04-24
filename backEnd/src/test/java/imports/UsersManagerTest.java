@@ -5,17 +5,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
+import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
+import com.amazonaws.services.sns.model.DeleteEndpointRequest;
+import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -138,6 +144,9 @@ public class UsersManagerTest {
   private S3AccessManager s3AccessManager;
 
   @Mock
+  private SnsAccessManager snsAccessManager;
+
+  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -148,6 +157,7 @@ public class UsersManagerTest {
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
+    DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
   }
 
   /////////////////////////////
@@ -379,6 +389,12 @@ public class UsersManagerTest {
           ), true, this.metrics);
 
       assertTrue(resultStatus.success);
+
+      //here we're making sure the category name DOES get updated
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertTrue(argument.getValue().getValueMap().containsKey(":categoryName"));
+
       verify(this.dynamoDB, times(2)).getTable(any(String.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
@@ -432,9 +448,9 @@ public class UsersManagerTest {
       final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
       verify(this.table).updateItem(argument.capture());
       assertFalse(argument.getValue().getValueMap().containsKey(":categoryName"));
-      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
 
       verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.metrics, times(1)).commonClose(true);
     } catch (final Exception e) {
@@ -691,17 +707,302 @@ public class UsersManagerTest {
     verify(this.metrics, times(1)).commonClose(false);
   }
 
+  ///////////////////////endregion
+  // updateSortSetting //
+  ///////////////////////region
+
+  private Map<String, Object> updateSortSettingGroupGoodInput = new HashMap<>(ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "john_andrews12",
+      UsersManager.APP_SETTINGS_GROUP_SORT, 3
+  ));
+
+  private Map<String, Object> updateSortSettingCategoryGoodInput = new HashMap<>(ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "john_andrews12",
+      UsersManager.APP_SETTINGS_CATEGORY_SORT, 1
+  ));
+
+  @Test
+  public void updateSortSetting_validInputGroupSort_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_validInputCategorySort_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingCategoryGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_invalidGroupSortValue_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.updateSortSettingGroupGoodInput.put(UsersManager.APP_SETTINGS_GROUP_SORT, 8);
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_invalidInputNoSortKey_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.updateSortSettingGroupGoodInput.remove(UsersManager.APP_SETTINGS_GROUP_SORT);
+      final ResultStatus resultStatus = this.usersManager
+          .updateSortSetting(this.updateSortSettingGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateSortSetting_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .updateSortSetting(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   /////////////////////////////////////////////endregion
   // createPlatformEndpointAndStoreArn tests //
   /////////////////////////////////////////////region
+
+  private final Map<String, Object> createPlatformEndpointAndStoreArnGoodInput = ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "activeUser",
+      RequestFields.DEVICE_TOKEN, "googleCloudDeviceToken"
+  );
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_validInput_successfulResult() {
+    try {
+      doReturn(new CreatePlatformEndpointResult().withEndpointArn("arn:1234"))
+          .when(this.snsAccessManager)
+          .registerPlatformEndpoint(any(CreatePlatformEndpointRequest.class), eq(this.metrics));
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .createPlatformEndpointAndStoreArn(this.createPlatformEndpointAndStoreArnGoodInput,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_snsFailedToRegisterToken_failureResult() {
+    doThrow(AmazonServiceException.class).when(this.snsAccessManager).registerPlatformEndpoint(any(
+        CreatePlatformEndpointRequest.class), eq(this.metrics));
+
+    final ResultStatus resultStatus = this.usersManager
+        .createPlatformEndpointAndStoreArn(this.createPlatformEndpointAndStoreArnGoodInput,
+            this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void createPlatformEndpointAndStoreArn_missingRequestKeys_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .createPlatformEndpointAndStoreArn(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   //////////////////////////////////endregion
   // unregisterPushEndpoint tests //
   //////////////////////////////////region
 
+  @Test
+  public void unregisterPushEndpoint_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "john_andrews12"),
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_validInputUserDidNotHaveEndpoint_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("edmond2.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "edmond2"),
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_snsFailsToDeleteArn_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doThrow(InvalidParameterException.class).when(this.snsAccessManager)
+          .unregisterPlatformEndpoint(any(DeleteEndpointRequest.class));
+
+      final ResultStatus resultStatus = this.usersManager
+          .unregisterPushEndpoint(ImmutableMap.of(RequestFields.ACTIVE_USER, "john_andrews12"),
+              this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void unregisterPushEndpoint_missingRequestKeys_failureResult() {
+    final ResultStatus resultStatus = this.usersManager
+        .unregisterPushEndpoint(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   ///////////////////////////////endregion
   // removeOwnedCategory tests //
   ///////////////////////////////region
+
+  private final String removeOwnedCategoryCategoryId = "categoryId";
+
+  @Test
+  public void removeOwnedCategory_validInput_successfulResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+    final ResultStatus resultStatus = this.usersManager
+        .removeOwnedCategory("username", this.removeOwnedCategoryCategoryId, this.metrics);
+
+    assertTrue(resultStatus.success);
+
+    //make sure the entered category id is what is getting removed
+    final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+    verify(this.table).updateItem(argument.capture());
+    assertEquals(argument.getValue().getNameMap().get("#categoryId"),
+        this.removeOwnedCategoryCategoryId);
+
+    verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(1)).commonClose(true);
+    verify(this.metrics, times(0)).commonClose(false);
+  }
+
+  @Test
+  public void removeOwnedCategory_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    final ResultStatus resultStatus = this.usersManager
+        .removeOwnedCategory("username", "categoryId", this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   ////////////////////////////////endregion
   // removeGroupFromUsers tests //

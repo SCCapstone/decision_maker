@@ -25,4 +25,12 @@ public class ResultStatus {
     this.resultMessage += "\n\n" + otherStatus.resultMessage;
     return this;
   }
+
+  public static ResultStatus successful(final String resultMessage) {
+    return new ResultStatus(true, resultMessage);
+  }
+
+  public static ResultStatus failure(final String resultMessage) {
+    return new ResultStatus(false, resultMessage);
+  }
 }
