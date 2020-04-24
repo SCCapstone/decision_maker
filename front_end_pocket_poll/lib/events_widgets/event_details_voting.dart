@@ -69,6 +69,22 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 36),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.date_range),
+            iconSize: 30,
+            tooltip: "Add to My Calendar",
+            onPressed: () {
+              calendar.Event calendarEvent = calendar.Event(
+                title: this.event.eventName,
+                startDate: this.event.eventStartDateTime,
+                endDate: this.event.eventStartDateTime.add(Duration(hours: 1)),
+                allDay: false,
+              );
+              calendar.Add2Calendar.addEvent2Cal(calendarEvent);
+            },
+          )
+        ],
         leading: BackButton(),
       ),
       body: RefreshIndicator(
@@ -181,7 +197,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                         style: TextStyle(fontSize: 16),
                       )),
                   Container(
-                    height: MediaQuery.of(context).size.height * .27,
+                    height: MediaQuery.of(context).size.height * .22,
                     width: MediaQuery.of(context).size.width * .95,
                     child: PageView.builder(
                       controller: this.pageController,
@@ -209,28 +225,6 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
               ),
             ],
           ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            RaisedButton.icon(
-              icon: Icon(Icons.date_range),
-              label: Text("Add to My Calendar"),
-              onPressed: () {
-                calendar.Event calendarEvent = calendar.Event(
-                  title: this.event.eventName,
-                  startDate: this.event.eventStartDateTime,
-                  endDate:
-                      this.event.eventStartDateTime.add(Duration(hours: 1)),
-                  allDay: false,
-                );
-                calendar.Add2Calendar.addEvent2Cal(calendarEvent);
-              },
-            ),
-          ],
         ),
       ),
     );

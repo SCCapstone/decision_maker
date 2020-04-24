@@ -714,6 +714,7 @@ class _GroupSettingsState extends State<GroupSettings> {
     If success then the local current group is updated with the value returned by the DB.
    */
   void attemptSave() async {
+    hideKeyboard(this.context);
     final form = this.formKey.currentState;
     if (form.validate() && this.validGroupIcon) {
       // b/c url is entered in a popup dialog, can't share the same form so must use another flag
@@ -756,7 +757,6 @@ class _GroupSettingsState extends State<GroupSettings> {
           this.editing = false;
           this.autoValidate = false;
           this.newIcon = false;
-          hideKeyboard(this.context);
         });
       } else {
         showErrorMessage("Error", resultStatus.errorMessage, this.context);

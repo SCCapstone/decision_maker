@@ -79,7 +79,7 @@ class UserManual extends StatelessWidget {
                             key: Key(
                                 "user_manual:settings_info_gesture_detector"),
                             child: AutoSizeText(
-                              "User Settings",
+                              "Settings",
                               minFontSize: 12,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
