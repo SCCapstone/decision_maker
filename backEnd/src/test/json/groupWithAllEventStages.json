@@ -1,0 +1,262 @@
+{
+  "Categories": {
+    "038b60ea-838b-44d5-a5a0-2f000f16140c": "asdf",
+    "5a25aebc-6e10-4b4a-898e-ef2580976a26": "Lunch Options",
+    "709dac52-5e1c-4468-886c-81dc718ff94d": "third"
+  },
+  "DefaultRsvpDuration": 5,
+  "DefaultVotingDuration": 5,
+  "Events": {
+    "0fe7c737-ef19-4540-b4c8-39f1d3e2264f": {
+      "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
+      "CategoryName": "Lunch Options",
+      "CreatedDateTime": "2020-04-25 02:41:00",
+      "EventCreator": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        }
+      },
+      "EventName": "In Voting",
+      "EventStartDateTime": "2020-04-24 23:40:00",
+      "OptedIn": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        },
+        "john_andrews12": {
+          "DisplayName": "John Andrews",
+          "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+        },
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        },
+        "wogan": {
+          "DisplayName": "willwogan",
+          "Icon": "6c3c1c55-8b93-440f-9341-1126323b233c.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": null,
+      "TentativeAlgorithmChoices": {
+        "1": "Beezers",
+        "2": "Cool Beans",
+        "4": "Saharas"
+      },
+      "UtcEventStartSeconds": 1587786000,
+      "Version": 1,
+      "VotingDuration": 5,
+      "VotingNumbers": {
+        "1": {
+
+        },
+        "2": {
+
+        },
+        "4": {
+
+        }
+      }
+    },
+    "in-voting-with-votes": {
+      "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
+      "CategoryName": "Lunch Options",
+      "CreatedDateTime": "2020-04-25 02:41:00",
+      "EventCreator": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        }
+      },
+      "EventName": "In Voting No Votes",
+      "EventStartDateTime": "2020-04-24 23:45:00",
+      "OptedIn": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        },
+        "john_andrews12": {
+          "DisplayName": "John Andrews",
+          "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+        },
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        },
+        "wogan": {
+          "DisplayName": "willwogan",
+          "Icon": "6c3c1c55-8b93-440f-9341-1126323b233c.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": null,
+      "TentativeAlgorithmChoices": {
+        "1": "Beezers",
+        "2": "Cool Beans",
+        "4": "Saharas"
+      },
+      "UtcEventStartSeconds": 1587786000,
+      "Version": 1,
+      "VotingDuration": 5,
+      "VotingNumbers": {
+        "1": {
+          "john_andrews12": 1,
+          "jha2": 0
+        },
+        "2": {
+          "wogan": 1,
+          "johnplaysgolf": 1
+        },
+        "4": {
+          "wogan": 0
+        }
+      }
+    },
+    "253b8594-e66d-4f15-88dd-3acbbde76a9c": {
+      "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
+      "CategoryName": "Lunch Options",
+      "Choices": {
+        "1": "Beezers",
+        "2": "Cool Beans",
+        "3": "Moes",
+        "4": "Saharas",
+        "5": "Wired Cafe"
+      },
+      "CreatedDateTime": "2020-04-25 02:41:29",
+      "EventCreator": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        }
+      },
+      "EventName": "In consider skipping voting",
+      "EventStartDateTime": "2020-04-24 23:41:00",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John Andrews",
+          "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+        }
+      },
+      "RsvpDuration": 5,
+      "SelectedChoice": null,
+      "TentativeAlgorithmChoices": {
+
+      },
+      "UtcEventStartSeconds": 1587786060,
+      "Version": 1,
+      "VotingDuration": 0,
+      "VotingNumbers": {
+
+      }
+    },
+    "593e9c8e-a713-40ff-ae55-5d5bdfe940f4": {
+      "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
+      "CategoryName": "Lunch Options",
+      "Choices": {
+        "1": "Beezers",
+        "2": "Cool Beans",
+        "3": "Moes",
+        "4": "Saharas",
+        "5": "Wired Cafe"
+      },
+      "CreatedDateTime": "2020-04-25 02:41:12",
+      "EventCreator": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        }
+      },
+      "EventName": "In consider",
+      "EventStartDateTime": "2020-04-24 23:41:00",
+      "OptedIn": {
+        "john_andrews12": {
+          "DisplayName": "John Andrews",
+          "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+        }
+      },
+      "RsvpDuration": 5,
+      "SelectedChoice": null,
+      "TentativeAlgorithmChoices": {
+
+      },
+      "UtcEventStartSeconds": 1587786060,
+      "Version": 1,
+      "VotingDuration": 5,
+      "VotingNumbers": {
+
+      }
+    },
+    "859c86d2-20e8-4c12-9d95-77a693c74c5d": {
+      "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
+      "CategoryName": "Lunch Options",
+      "CreatedDateTime": "2020-04-25 02:40:25",
+      "EventCreator": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        }
+      },
+      "EventName": "Finalized",
+      "EventStartDateTime": "2020-04-24 23:40:00",
+      "OptedIn": {
+        "jha2": {
+          "DisplayName": "John",
+          "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+        },
+        "john_andrews12": {
+          "DisplayName": "John Andrews",
+          "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+        },
+        "johnplaysgolf": {
+          "DisplayName": "Mr. Playsgolf",
+          "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+        },
+        "wogan": {
+          "DisplayName": "willwogan",
+          "Icon": "6c3c1c55-8b93-440f-9341-1126323b233c.jpg"
+        }
+      },
+      "RsvpDuration": 0,
+      "SelectedChoice": "Beezers",
+      "TentativeAlgorithmChoices": {
+        "1": "Beezers"
+      },
+      "UtcEventStartSeconds": 1587786000,
+      "Version": 1,
+      "VotingDuration": 0,
+      "VotingNumbers": {
+        "1": {
+
+        }
+      }
+    }
+  },
+  "GroupCreator": "jha2",
+  "GroupId": "b702b849-d981-4b74-bb93-18819a2c1156",
+  "GroupName": "Event stages testing",
+  "Icon": null,
+  "IsOpen": true,
+  "LastActivity": "2020-04-25 02:41:42",
+  "Members": {
+    "jha2": {
+      "DisplayName": "John",
+      "Icon": "f5c74744-687b-4802-8321-5de8f18c0d0a.jpg"
+    },
+    "john_andrews12": {
+      "DisplayName": "John Andrews",
+      "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+    },
+    "johnplaysgolf": {
+      "DisplayName": "Mr. Playsgolf",
+      "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg"
+    },
+    "wogan": {
+      "DisplayName": "willwogan",
+      "Icon": "6c3c1c55-8b93-440f-9341-1126323b233c.jpg"
+    }
+  },
+  "MembersLeft": {
+
+  }
+}
