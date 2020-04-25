@@ -22,7 +22,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import models.Category;
 import models.Event;
 import models.EventWithCategoryChoices;
@@ -42,7 +44,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
   public static final String SCANNER_ID = "ScannerId";
 
   public static final String DELIM = ";";
-  private static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
+  public static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
 
   private static final String STEP_FUNCTION_ARN = "arn:aws:states:us-east-2:871532548613:stateMachine:EventResolver";
 
@@ -131,7 +133,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
             updatedEvent.setTentativeAlgorithmChoices(tentativeChoices);
           } else {
             //we need to set the selected choice as the one with the highest percent
-            updatedEvent.setSelectedChoice(this.getSelectedChoice(event, metrics));
+            updatedEvent.setSelectedChoice(this.getSelectedChoice(event));
           }
 
           //update the event with whatever got added to it
@@ -140,7 +142,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
           if (updatedEvent.getSelectedChoice() == null) {
             //this event is still pending, add it back into the pending events table
-            ResultStatus updatePendingEvent = this
+            final ResultStatus updatePendingEvent = this
                 .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics);
             if (updatePendingEvent.success) {
               resultStatus = new ResultStatus(true, "Event updated successfully");
@@ -149,15 +151,14 @@ public class PendingEventsManager extends DatabaseAccessManager {
             }
           } else {
             //event finalized -> remove the entry from the pending events table
-            String updateExpression = "remove #groupEventKey";
-            NameMap nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
+            final String updateExpression = "remove #groupEventKey";
+            final NameMap nameMap = new NameMap().with("#groupEventKey", groupId + DELIM + eventId);
 
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withPrimaryKey(this.getPrimaryKeyIndex(), scannerId)
+            final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withUpdateExpression(updateExpression)
                 .withNameMap(nameMap);
 
-            this.updateItem(updateItemSpec);
+            this.updateItem(scannerId, updateItemSpec);
 
             resultStatus = new ResultStatus(true, "Pending event finalized successfully");
           }
@@ -196,21 +197,16 @@ public class PendingEventsManager extends DatabaseAccessManager {
         event.setCategoryChoices(category.getChoices());
       }
 
-      try {
-        final List<User> optedInUsers = new ArrayList<>();
-        for (String username : event.getOptedIn().keySet()) {
-          optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
-        }
-
-        final NondeterministicOptimalChoiceSelector nondeterministicOptimalChoiceSelector =
-            new NondeterministicOptimalChoiceSelector(event, optedInUsers, metrics);
-        nondeterministicOptimalChoiceSelector.crunch(K);
-        returnValue = nondeterministicOptimalChoiceSelector.getTopXChoices(numberOfChoices);
-      } catch (final Exception e) {
-        metrics.log(new ErrorDescriptor<>(event.asMap(), classMethod, e));
+      final List<User> optedInUsers = new ArrayList<>();
+      for (String username : event.getOptedIn().keySet()) {
+        optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
       }
+
+      final NondeterministicOptimalChoiceSelector nondeterministicOptimalChoiceSelector =
+          new NondeterministicOptimalChoiceSelector(event, optedInUsers, metrics);
+      nondeterministicOptimalChoiceSelector.crunch(K);
+      returnValue = nondeterministicOptimalChoiceSelector.getTopXChoices(numberOfChoices);
     } catch (Exception e) {
-      // we have an event pointing to a non existent category
       returnValue.putIfAbsent("1", "Error");
       success = false;
       metrics.log(new ErrorDescriptor<>(event, classMethod, e));
@@ -221,10 +217,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   private String getKeyWithMaxMapping(final Map<String, Integer> input) {
-    if (input == null || input.isEmpty()) {
-      return ""; // maybe throw an exception idk
-    }
-
     String maxKey = null;
     for (final String key : input.keySet()) {
       if (maxKey == null || input.get(key) > input.get(maxKey)) {
@@ -235,43 +227,36 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return maxKey;
   }
 
-  public String getSelectedChoice(final Event event, final Metrics metrics) {
+  private String getSelectedChoice(final Event event) {
     final String classMethod = "PendingEventsManager.getSelectedChoice";
     String selectedChoice;
 
-    try {
-      final Map<String, Integer> votingSums = new HashMap<>();
-      final Map<String, Map<String, Integer>> votingNumbers = event.getVotingNumbers();
-      for (final String choiceId : votingNumbers.keySet()) {
-        Integer sum = 0;
-        for (final Integer vote : votingNumbers.get(choiceId).values()) {
-          //I think this could technically just be sum += vote, but this is more safe
-          if (vote == 1) {
-            sum++;
-          }
-        }
-
-        votingSums.put(choiceId, sum);
+    final Map<String, Integer> votingSums = new HashMap<>();
+    final Map<String, Map<String, Integer>> votingNumbers = event.getVotingNumbers();
+    for (final String choiceId : votingNumbers.keySet()) {
+      Integer sum = 0;
+      for (final Integer vote : votingNumbers.get(choiceId).values()) {
+        //the vote values are restricted to 0 or 1 in GroupsManager.voteForChoice
+        sum += vote;
       }
 
-      //we determine what the highest vote value was
-      final Integer maxVoteValue = votingSums.get(this.getKeyWithMaxMapping(votingSums));
-
-      //we then get all choice ids that had that max vote
-      final List<String> maxChoiceIds = votingSums.entrySet().stream()
-          .filter(e -> e.getValue().equals(maxVoteValue))
-          .map(Entry::getKey).collect(Collectors.toList());
-
-      //pick one randomly
-      final String selectedMaxChoiceId = maxChoiceIds
-          .get(new Random().nextInt(maxChoiceIds.size()));
-
-      //set the appropriate choice label
-      selectedChoice = event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
-    } catch (Exception e) {
-      selectedChoice = "Error";
-      metrics.log(new ErrorDescriptor<>(event, classMethod, e));
+      votingSums.put(choiceId, sum);
     }
+
+    //we determine what the highest vote value was
+    final Integer maxVoteValue = votingSums.get(this.getKeyWithMaxMapping(votingSums));
+
+    //we then get all choice ids that had that max vote
+    final List<String> maxChoiceIds = votingSums.entrySet().stream()
+        .filter(e -> e.getValue().equals(maxVoteValue))
+        .map(Entry::getKey).collect(Collectors.toList());
+
+    //pick one randomly
+    final String selectedMaxChoiceId = maxChoiceIds
+        .get(new Random().nextInt(maxChoiceIds.size()));
+
+    //set the appropriate choice label
+    selectedChoice = event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
 
     return selectedChoice;
   }
@@ -379,38 +364,36 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
     metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus = ResultStatus.successful("Pending events deleted successfully");
 
-    StringBuilder updateExpression = new StringBuilder();
-    final NameMap nameMap = new NameMap();
+    try {
+      final List<String> eventIdsList = new ArrayList<>(eventIds);
+      final String updateExpression =
+          "remove " + IntStream.range(0, eventIdsList.size()).boxed().map(i -> "#groupEventKey" + i)
+              .collect(Collectors.joining(", "));
 
-    int i = 0;
-    String groupEventKey;
-    for (final String eventId : eventIds) {
-      //this will create distinct name maps for every key we need to remove
-      groupEventKey = "#groupEventKey" + i;
-      if (i == 0) {
-        updateExpression.append("remove ").append(groupEventKey);
-        nameMap.with(groupEventKey, groupId + DELIM + eventId);
-      } else {
-        updateExpression.append(", ").append(groupEventKey);
-        nameMap.with(groupEventKey, groupId + DELIM + eventId);
+      final NameMap nameMap = new NameMap();
+      IntStream.range(0, eventIdsList.size()).boxed()
+          .forEach(i -> nameMap.with("#groupEventKey" + i, groupId + DELIM + eventIdsList.get(i)));
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap);
+
+      final int numberOfPartitions = Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY));
+      for (int i = 1; i <= numberOfPartitions; i++) {
+        try {
+          this.updateItem(Integer.valueOf(i).toString(), updateItemSpec);
+        } catch (final Exception e) {
+          metrics.log(new ErrorDescriptor<>(i, classMethod, e));
+          resultStatus = ResultStatus.failure("Exception in " + classMethod);
+        }
       }
-      i++;
-    }
-
-    final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-        .withUpdateExpression(updateExpression.toString())
-        .withNameMap(nameMap);
-
-    final int numberOfPartitions = Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY));
-    for (i = 1; i <= numberOfPartitions; i++) {
-      try {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), Integer.valueOf(i).toString());
-        this.updateItem(updateItemSpec);
-      } catch (final Exception e) {
-        metrics.log(new ErrorDescriptor<>(i, classMethod, e));
-      }
+    } catch (final Exception e) {
+      metrics.log(
+          new ErrorDescriptor<>(String.format("GroupId: %s, EventIds: %s", groupId, eventIds),
+              classMethod, e));
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     metrics.commonClose(resultStatus.success);
