@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import models.Category;
@@ -30,11 +29,11 @@ import models.Event;
 import models.EventWithCategoryChoices;
 import models.GroupWithCategoryChoices;
 import models.User;
-import utilities.NondeterministicOptimalChoiceSelector;
 import utilities.ErrorDescriptor;
 import utilities.IOStreamsHelper;
 import utilities.JsonUtils;
 import utilities.Metrics;
+import utilities.NondeterministicOptimalChoiceSelector;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
@@ -94,6 +93,16 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return success;
   }
 
+  /**
+   * This function handles tokaing a pending event and figuring out what needs to be done to it so
+   * that it can process to the next level.
+   *
+   * @param jsonMap Standard json map containing the payload of an api request. This payload must
+   *                have the group id and the event id of the pending event as well as the index of
+   *                the pending events container that the event is in.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus processPendingEvent(final Map<String, Object> jsonMap,
       final Metrics metrics) {
     final String classMethod = "PendingEventsManager.processPendingEvent";
@@ -141,7 +150,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
               .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
 
           if (updatedEvent.getSelectedChoice() == null) {
-            //this event is still pending, add it back into the pending events table
+            //if this event is still pending, add it back into the pending events table
             final ResultStatus updatePendingEvent = this
                 .addPendingEvent(groupId, eventId, event.getVotingDuration(), metrics);
             if (updatePendingEvent.success) {
@@ -179,6 +188,15 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method handles getting the top N choices for an event based on the considered users'
+   * category choice ratings.
+   *
+   * @param event           This is the event that tentative choices are being gotten for.
+   * @param numberOfChoices This is the number of tentative choices we want to set.
+   * @param metrics         Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   private Map<String, String> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
       final Integer numberOfChoices, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
@@ -228,10 +246,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   private String getSelectedChoice(final Event event) {
-    final String classMethod = "PendingEventsManager.getSelectedChoice";
-    String selectedChoice;
-
     final Map<String, Integer> votingSums = new HashMap<>();
+
+    //reminder: the votingNumbers is a map from choice ids to maps of username to 0 or 1 (no or yes)
     final Map<String, Map<String, Integer>> votingNumbers = event.getVotingNumbers();
     for (final String choiceId : votingNumbers.keySet()) {
       Integer sum = 0;
@@ -243,27 +260,34 @@ public class PendingEventsManager extends DatabaseAccessManager {
       votingSums.put(choiceId, sum);
     }
 
-    //we determine what the highest vote value was
-    final Integer maxVoteValue = votingSums.get(this.getKeyWithMaxMapping(votingSums));
+    //determine what the highest vote sum is
+    final Integer maxVoteSum = votingSums.get(this.getKeyWithMaxMapping(votingSums));
 
-    //we then get all choice ids that had that max vote
+    //we then get all choice ids that had that max vote sun
     final List<String> maxChoiceIds = votingSums.entrySet().stream()
-        .filter(e -> e.getValue().equals(maxVoteValue))
+        .filter(e -> e.getValue().equals(maxVoteSum))
         .map(Entry::getKey).collect(Collectors.toList());
 
-    //pick one randomly
+    //pick one of the max keys randomly
     final String selectedMaxChoiceId = maxChoiceIds
         .get(new Random().nextInt(maxChoiceIds.size()));
 
-    //set the appropriate choice label
-    selectedChoice = event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
-
-    return selectedChoice;
+    //return the appropriate choice label
+    return event.getTentativeAlgorithmChoices().get(selectedMaxChoiceId);
   }
 
+  /**
+   * This method handles adding a pending event into one of the pending event table partitions.
+   *
+   * @param groupId      The group that the pending event belongs to.
+   * @param eventId      The event that is pending.
+   * @param pollDuration The duration that the event will pend for.
+   * @param metrics      Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus addPendingEvent(final String groupId, final String eventId,
       final Integer pollDuration, final Metrics metrics) {
-    if (pollDuration <= 0) {
+    if (pollDuration <= 0) { // there no 'pending' needed for zero minutes of duration
       return new ResultStatus(true, "No insert needed");
     }
 
@@ -304,21 +328,30 @@ public class PendingEventsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method is run every minute by a cron job. I looks at one of the partitions of the pending
+   * events table and if there are any pending events that are ready to be processed, then it kicks
+   * off a step function process to handle that event's resolution.
+   *
+   * @param scannerId The partition of the table that this function should scan for ready events.
+   * @param metrics   Standard metrics object for profiling and logging.
+   */
   public void scanPendingEvents(final String scannerId, final Metrics metrics) {
     final String classMethod = "PendingEventsManager.scanPendingEvents";
     metrics.commonSetup(classMethod);
 
-    boolean success = true; // if anything fails we'll set this to false so "everything" fails -> we investigate
+    //if anything fails we'll set this to false so "everything" fails -> we can then investigate
+    boolean success = true;
 
     try {
-      Item pendingEvents = this.getItemByPrimaryKey(scannerId);
-
-      Map<String, Object> pendingEventsData = pendingEvents.asMap();
-      LocalDateTime resolutionDate, currentDate = LocalDateTime.now(ZoneId.of("UTC"));
+      final Map<String, Object> pendingEventsData = this.getItemByPrimaryKey(scannerId).asMap();
+      final LocalDateTime currentDate = LocalDateTime.now(ZoneId.of("UTC"));
+      LocalDateTime resolutionDate;
 
       String groupId, eventId;
       List<String> keyPair;
       for (String key : pendingEventsData.keySet()) {
+        //skip the scanner id key as it isn't real pending event data
         if (!key.equals(SCANNER_ID)) {
           try {
             resolutionDate = LocalDateTime
@@ -341,8 +374,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
             }
           } catch (Exception e) {
             metrics.log(
-                new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key, classMethod,
-                    e));
+                new ErrorDescriptor<>(String.format("scanner id: %s, key: %s", scannerId, key),
+                    classMethod, e));
             success = false;
           }
         }
@@ -355,6 +388,15 @@ public class PendingEventsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
+  /**
+   * This event handles removing all of a groups pending events from any of the pending event table
+   * partitions
+   *
+   * @param groupId The group that all of the pending events are being deleted for.
+   * @param eventIds A set of all of the pending event ids that need deleting.
+   * @param metrics      Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus deleteAllPendingGroupEvents(final String groupId, final Set<String> eventIds,
       final Metrics metrics) {
     if (eventIds.isEmpty()) {
@@ -364,6 +406,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
     final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
     metrics.commonSetup(classMethod);
 
+    //assume success, we'll set to fail if anything goes wrong
     ResultStatus resultStatus = ResultStatus.successful("Pending events deleted successfully");
 
     try {
