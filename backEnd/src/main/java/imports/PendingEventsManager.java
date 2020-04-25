@@ -329,7 +329,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method is run every minute by a cron job. I looks at one of the partitions of the pending
+   * This method is run every minute by a cron job. It looks at one of the partitions of the pending
    * events table and if there are any pending events that are ready to be processed, then it kicks
    * off a step function process to handle that event's resolution.
    *
@@ -392,9 +392,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
    * This event handles removing all of a groups pending events from any of the pending event table
    * partitions
    *
-   * @param groupId The group that all of the pending events are being deleted for.
+   * @param groupId  The group that all of the pending events are being deleted for.
    * @param eventIds A set of all of the pending event ids that need deleting.
-   * @param metrics      Standard metrics object for profiling and logging.
+   * @param metrics  Standard metrics object for profiling and logging.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus deleteAllPendingGroupEvents(final String groupId, final Set<String> eventIds,
