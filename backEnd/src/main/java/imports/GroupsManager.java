@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.google.common.collect.ImmutableMap;
+import exceptions.InvalidAttributeValueException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -212,7 +213,7 @@ public class GroupsManager extends DatabaseAccessManager {
         //sanity check, add the active user to this mapping to make sure his data is added
         members.add(activeUser);
 
-        final Map<String, Object> membersMapped = this.getMembersMapForInsertion(members, metrics);
+        final Map<String, Object> membersMapped = this.getMembersMapForInsertion(members);
         jsonMap.put(MEMBERS, membersMapped); // put overwrites current value
 
         //TODO update the categories passed in to be a list of ids, then create categories map
@@ -239,7 +240,7 @@ public class GroupsManager extends DatabaseAccessManager {
         resultStatus = new ResultStatus(true,
             JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
       } catch (Exception e) {
-        resultStatus.resultMessage = "Error: Unable to parse request.";
+        resultStatus.resultMessage = "Exception in " + classMethod;
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
       }
     } else {
@@ -294,7 +295,7 @@ public class GroupsManager extends DatabaseAccessManager {
         if (!errorMessage.isPresent()) {
           //all validation is successful, build transaction actions
           final Map<String, Object> membersMapped = this
-              .getMembersMapForInsertion(members, metrics);
+              .getMembersMapForInsertion(members);
 
           String updateExpression =
               "set " + GROUP_NAME + " = :name, " + MEMBERS + " = :members, " + CATEGORIES
@@ -578,8 +579,8 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method allows a user to remove themselves from a group. Anyone who leaves a group via
-   * this method can't be added back to the group by someone else. They have to rejoin the group
+   * This method allows a user to remove themselves from a group. Anyone who leaves a group via this
+   * method can't be added back to the group by someone else. They have to rejoin the group
    * themselves.
    *
    * @param jsonMap The map containing the json request sent from the front end. Must contain the
@@ -781,27 +782,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  private Map<String, Object> getMembersMapForInsertion(final List<String> members,
-      final Metrics metrics) {
-    final String classMethod = "GroupsManager.getMembersMapForInsertion";
-    metrics.commonSetup(classMethod);
-    boolean success = true;
-
+  private Map<String, Object> getMembersMapForInsertion(final List<String> members)
+      throws InvalidAttributeValueException {
     final Map<String, Object> membersMap = new HashMap<>();
 
-    for (String username : members) {
-      try {
-        //get user's display name
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
-
-        membersMap.putIfAbsent(username, user.asMember().asMap());
-      } catch (Exception e) {
-        success = false; // this may give false alarms as users may just have put in bad usernames
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
-      }
+    for (String username : new HashSet<>(members)) {
+      final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+      membersMap.putIfAbsent(username, user.asMember().asMap());
     }
 
-    metrics.commonClose(success);
     return membersMap;
   }
 
@@ -1312,8 +1301,12 @@ public class GroupsManager extends DatabaseAccessManager {
       NameMap nameMap = new NameMap();
 
       //set all of the update statements
-      if (oldEvent.getTentativeAlgorithmChoices().isEmpty() && !updatedEvent
-          .getTentativeAlgorithmChoices().isEmpty()) {
+      if (oldEvent.getTentativeAlgorithmChoices().isEmpty()) {
+        //if the old event did not have tentative choices set, it must have be getting them
+        if (updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
+          throw new Exception("Empty tentative choices must be filled!");
+        }
+
         updateExpression +=
             ", " + EVENTS + ".#eventId." + TENTATIVE_CHOICES + " = :tentativeChoices, "
                 + EVENTS + ".#eventId." + VOTING_NUMBERS + " = :votingNumbers";
@@ -1361,6 +1354,7 @@ public class GroupsManager extends DatabaseAccessManager {
       metrics.log(new ErrorDescriptor<>(oldGroup.asMap(), classMethod, e));
       resultStatus.resultMessage = "Exception in " + classMethod;
     }
+
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
