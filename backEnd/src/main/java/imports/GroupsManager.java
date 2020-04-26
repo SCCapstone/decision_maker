@@ -975,8 +975,7 @@ public class GroupsManager extends DatabaseAccessManager {
           } else {
             DatabaseManagers.SNS_ACCESS_MANAGER.sendMessage(removedUser.getPushEndpointArn(),
                 isGroupDelete ? "Group Deleted" : "Removed from group", removedFrom.getGroupName(),
-                removedFrom.getGroupId(),
-                metadata);
+                removedFrom.getGroupId(), metadata);
           }
         }
       } catch (Exception e) {
