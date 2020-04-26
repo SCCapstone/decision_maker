@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1143,6 +1145,35 @@ public class GroupsManagerTest {
 
       final ResultStatus resultStatus = this.groupsManager
           .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputNewTentativeChoicesNewEvent_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      group.setLastActivity(LocalDateTime.now(ZoneId.of("UTC"))
+          .format(this.groupsManager.getDateTimeFormatter())); // set this to now so no change will be detected
+      //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
+      final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
+          .clone();
+      newEvent.setTentativeAlgorithmChoices(ImmutableMap.of("1", "choice", "2", "c2"));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, true,
               this.metrics);
 
       assertTrue(resultStatus.success);
