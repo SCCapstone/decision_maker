@@ -200,7 +200,7 @@ class _GroupsHomeState extends State<GroupsHome>
                                 MaterialPageRoute(
                                     builder: (context) => UserSettings()))
                             .then((_) {
-                              refreshList();
+                          refreshList();
                         });
                       },
                     ),
@@ -706,9 +706,11 @@ class _GroupsHomeState extends State<GroupsHome>
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
         String eventId = notification.payload[EventsManager.EVENT_ID];
+        String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
           Globals.user.groups[groupId].eventsUnseen
               .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].lastActivity = date;
         }
         if (Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group

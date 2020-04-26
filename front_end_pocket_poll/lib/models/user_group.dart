@@ -5,7 +5,7 @@ class UserGroup implements GroupInterface {
   final String groupId;
   final String groupName;
   final String icon;
-  final String lastActivity;
+  String lastActivity;
   final Map<String, bool> eventsUnseen;
 
   bool muted;
