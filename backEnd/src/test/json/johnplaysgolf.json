@@ -1,0 +1,214 @@
+{
+  "AppSettings": {
+    "CategorySort": 1,
+    "DarkTheme": true,
+    "GroupSort": 0,
+    "Muted": false
+  },
+  "CategoryRatings": {
+    "33461026-1f62-46e6-a621-81d53b36f5d6": {
+      "1": 3,
+      "2": 4,
+      "3": 2,
+      "4": 3,
+      "5": 3,
+      "6": 0,
+      "7": 4,
+      "8": 2,
+      "9": 3,
+      "10": 4,
+      "11": 0,
+      "12": 3,
+      "13": 5,
+      "14": 3,
+      "15": 3,
+      "16": 1,
+      "17": 3,
+      "18": 4,
+      "19": 0
+    },
+    "4c27a381-cff9-4ed5-9020-41dc0f0f70c5": {
+      "1": 3,
+      "2": 2,
+      "7": 3,
+      "8": 5,
+      "9": 4,
+      "10": 3,
+      "11": 0,
+      "12": 4,
+      "13": 5,
+      "14": 2
+    },
+    "4ec6f658-966a-44a1-8580-a0007c9c9755": {
+      "1": 5,
+      "2": 0,
+      "3": 3
+    },
+    "5d24f6fc-40c3-4ba7-96eb-0af51d857def": {
+      "1": 3,
+      "2": 5,
+      "3": 4,
+      "4": 3,
+      "5": 5,
+      "6": 2,
+      "7": 2
+    },
+    "6ae86f2e-8488-4a92-bca8-08e20701de6a": {
+      "1": 5,
+      "2": 5,
+      "3": 3,
+      "4": 3,
+      "5": 3,
+      "6": 3,
+      "7": 3,
+      "8": 3,
+      "9": 3,
+      "10": 3,
+      "11": 3,
+      "12": 3,
+      "13": 1,
+      "14": 3,
+      "15": 3,
+      "16": 3
+    },
+    "7b4f7af3-e831-401c-b8c6-338f91e7d7ed": {
+      "1": 5,
+      "2": 3
+    },
+    "982d23a3-8927-4708-9012-ab01f98ad18c": {
+      "1": 4,
+      "2": 0,
+      "3": 3,
+      "4": 4
+    },
+    "b0d8f81c-9df0-46fe-8d66-147df4c775c2": {
+      "1": 3,
+      "2": 0,
+      "3": 3,
+      "4": 5,
+      "5": 4,
+      "6": 5,
+      "7": 2
+    },
+    "ef8dfc02-a79d-4d55-bb03-654a7a31bb16": {
+      "1": 4,
+      "2": 5
+    }
+  },
+  "DisplayName": "Mr. Playsgolf",
+  "FavoriteOf": {
+    "john_andrews12": true,
+    "josh": true
+  },
+  "Favorites": {
+    "edmond": {
+      "DisplayName": "Edmond",
+      "Icon": "243663c1-e204-4369-9b5a-f3329ab8ba15.jpg"
+    },
+    "john": {
+      "DisplayName": "The real John",
+      "Icon": "5ece590b-df76-45a6-a0c2-178df782e4a3.jpg"
+    },
+    "john_andrews12": {
+      "DisplayName": "John Andrews",
+      "Icon": "90cbe9b0-5cce-49cd-b2ad-f038995bf70e.jpg"
+    },
+    "josh": {
+      "DisplayName": "Josh Rapoport",
+      "Icon": "a0355f79-c285-43df-b9c1-b5417ffc60e7.jpg"
+    },
+    "wogan": {
+      "DisplayName": "willwogan",
+      "Icon": "6c3c1c55-8b93-440f-9341-1126323b233c.jpg"
+    }
+  },
+  "Groups": {
+    "383f1e4f-22c2-4a1b-a61a-f54ad641ece9": {
+      "EventsUnseen": {
+        "51e898c3-2c5a-4bf8-bb49-0c4ad47e5982": true
+      },
+      "GroupName": "Ape Developars",
+      "Icon": "72786333-18db-4ec0-8c6d-0a2b3344bfc5.jpg",
+      "LastActivity": "2020-04-24 21:42:21",
+      "Muted": true
+    },
+    "50363167-f7fa-4edd-a459-471187e06307": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "Work Friends",
+      "Icon": "c5d16576-f146-4ddd-b400-b52aeec782d9.jpg",
+      "LastActivity": "2020-04-16 14:25:08",
+      "Muted": false
+    },
+    "5530f12d-6e66-4869-bdd6-fb42b0c6ffa5": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "Josh's Squad",
+      "Icon": "f701a2ae-016e-425b-a03c-bf7ffdaecf96.jpg",
+      "LastActivity": "2020-04-16 14:42:20",
+      "Muted": false
+    },
+    "a72f3960-e00e-42d8-b431-9bd2977ac464": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "Move Gang",
+      "Icon": "750616b9-d222-4753-a933-ec46cff3e5b5.jpg",
+      "LastActivity": "2020-04-13 18:19:29",
+      "Muted": false
+    },
+    "b2dfdbdf-e240-422e-a525-68e6cab138e7": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "Sports Galore",
+      "Icon": "97231067-e899-46ce-aa4e-77df5e6a3aab.jpg",
+      "LastActivity": "2020-04-05 22:30:08",
+      "Muted": true
+    },
+    "b702b849-d981-4b74-bb93-18819a2c1156": {
+      "EventsUnseen": {
+        "0fe7c737-ef19-4540-b4c8-39f1d3e2264f": true,
+        "253b8594-e66d-4f15-88dd-3acbbde76a9c": true,
+        "4e1c1f2e-44c1-48db-8f14-f1e853bcd226": true,
+        "593e9c8e-a713-40ff-ae55-5d5bdfe940f4": true,
+        "859c86d2-20e8-4c12-9d95-77a693c74c5d": true
+      },
+      "GroupName": "Event stages testing",
+      "Icon": null,
+      "LastActivity": "2020-04-25 02:53:08",
+      "Muted": true
+    },
+    "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "New Test!",
+      "Icon": null,
+      "LastActivity": "2020-03-29 07:07:21",
+      "Muted": true
+    },
+    "13027fec-7fd7-4290-bd50-4dd84a572a4d": {
+      "EventsUnseen": {
+
+      },
+      "GroupName": "New Test!",
+      "Icon": null,
+      "LastActivity": "2020-03-29 08:07:21",
+      "Muted": false
+    }
+  },
+  "GroupsLeft": {
+
+  },
+  "Icon": "f904398d-12e4-41c3-90f0-b167e42f0388.jpg",
+  "OwnedCategories": {
+    "4ec6f658-966a-44a1-8580-a0007c9c9755": "Ways to lift",
+    "5d24f6fc-40c3-4ba7-96eb-0af51d857def": "UofSC food",
+    "b0d8f81c-9df0-46fe-8d66-147df4c775c2": "Golf Courses"
+  },
+  "PushEndpointArn": "arn:aws:sns:us-east-1:871532548613:endpoint/GCM/PocketPollMessaging/08204052-e0a3-386d-bb06-4db21d7ab28d",
+  "Username": "johnplaysgolf"
+}

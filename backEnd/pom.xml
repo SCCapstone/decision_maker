@@ -187,6 +187,8 @@
                                     <excludes>
                                         <exclude>**handlers.*</exclude>
                                         <exclude>**utilities.*</exclude>
+                                        <exclude>**models.*</exclude>
+                                        <exclude>**exceptions.*</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>
@@ -201,6 +203,8 @@
                                     <excludes>
                                         <exclude>**handlers.*</exclude>
                                         <exclude>**utilities.*</exclude>
+                                        <exclude>**models.*</exclude>
+                                        <exclude>**exceptions.*</exclude>
                                     </excludes>
                                     <limits>
                                         <limit>

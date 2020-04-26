@@ -55,10 +55,6 @@ public class DatabaseAccessManager {
     this.dynamoDb = dynamoDB;
   }
 
-  public String getTableName() {
-    return this.tableName;
-  }
-
   public String getPrimaryKeyIndex() {
     return this.primaryKeyIndex;
   }
@@ -67,9 +63,6 @@ public class DatabaseAccessManager {
     return this.dateTimeFormatter;
   }
 
-  public Item getItem(final GetItemSpec getItemSpec) throws NullPointerException {
-    return this.dynamoDb.getTable(this.tableName).getItem(getItemSpec);
-  }
 
   public Item getItemByPrimaryKey(final String primaryKey) throws NullPointerException {
     return this.dynamoDb.getTable(this.tableName)
@@ -113,15 +106,16 @@ public class DatabaseAccessManager {
         .deleteItem(new DeleteItemSpec().withPrimaryKey(this.primaryKeyIndex, key));
   }
 
-  public TransactWriteItemsResult executeWriteTransaction(
-      final TransactWriteItemsRequest transactWriteItemsRequest) {
-    return this.client.transactWriteItems(transactWriteItemsRequest);
-  }
-
-  public TransactGetItemsResult executeGetTransaction(
-      final TransactGetItemsRequest transactGetItemsRequest) {
-    return this.client.transactGetItems(transactGetItemsRequest);
-  }
+  //Commenting these until they are used. Will be imperative for adding transactions in the future
+//  public TransactWriteItemsResult executeWriteTransaction(
+//      final TransactWriteItemsRequest transactWriteItemsRequest) {
+//    return this.client.transactWriteItems(transactWriteItemsRequest);
+//  }
+//
+//  public TransactGetItemsResult executeGetTransaction(
+//      final TransactGetItemsRequest transactGetItemsRequest) {
+//    return this.client.transactGetItems(transactGetItemsRequest);
+//  }
 
   public TableDescription describeTable() {
     return this.dynamoDb.getTable(this.tableName).describe();

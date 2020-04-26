@@ -3,33 +3,46 @@ package imports;
 import static junit.framework.TestCase.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import models.Event;
+import models.Group;
+import models.Metadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.JsonUtils;
@@ -65,18 +78,6 @@ public class GroupsManagerTest {
           .put(GroupsManager.ICON, ImmutableList.of(0, 1, 2, 3, 4, 5, 6)) // new file data
           .build());
 
-  private final Map<String, Object> newEventGoodInput = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "ActiveUser")
-      .put(GroupsManager.EVENT_NAME, "EventName")
-      .put(GroupsManager.CATEGORY_ID, "CategoryId")
-      .put(GroupsManager.CATEGORY_NAME, "CategoryName")
-      .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
-      .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-      .put(GroupsManager.VOTING_DURATION, 50)
-      .put(GroupsManager.RSVP_DURATION, 50)
-      .put(GroupsManager.GROUP_ID, "GroupId")
-      .build();
-
   //The leave group inputs are in reference to the group in bigGroup.json
   private final Map<String, Object> leaveGroupGoodInput = ImmutableMap.<String, Object>builder()
       .put(RequestFields.ACTIVE_USER, "johnplaysgolf")
@@ -100,32 +101,11 @@ public class GroupsManagerTest {
       .build();
 
   private final Map<String, Object> deleteGroupGoodInput = ImmutableMap.<String, Object>builder()
-      .put(RequestFields.ACTIVE_USER, "ActiveUser")
-      .put(GroupsManager.GROUP_ID, "GroupId")
+      .put(RequestFields.ACTIVE_USER, "john_andrews12") // openGroup.json owner
+      .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d") // openGroup.json
       .build();
 
-  private final Item deleteGroupItem = new Item()
-      .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("categoryId1", "categoryName1"))
-      .withMap(GroupsManager.MEMBERS, ImmutableMap.of("username1",
-          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName1", UsersManager.ICON, "icon1")))
-      .withMap(GroupsManager.MEMBERS_LEFT, ImmutableMap.of("username2",
-          ImmutableMap.of(UsersManager.DISPLAY_NAME, "displayName2", UsersManager.ICON, "icon2")))
-      .withString(GroupsManager.GROUP_CREATOR, "ActiveUser");
-
   private final Map<String, Object> badInput = new HashMap<>();
-
-  private final Map<String, Object> newEventBadInput = Maps
-      .newHashMap(ImmutableMap.<String, Object>builder()
-          .put(RequestFields.ACTIVE_USER, "ActiveUser")
-          .put(GroupsManager.EVENT_NAME, "EventName")
-          .put(GroupsManager.CATEGORY_ID, "CategoryId")
-          .put(GroupsManager.CATEGORY_NAME, "CategoryName")
-          .put(GroupsManager.CREATED_DATE_TIME, "CreatedDateTime")
-          .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
-          .put(GroupsManager.VOTING_DURATION, 50)
-          .put(GroupsManager.RSVP_DURATION, 50)
-          .put(GroupsManager.GROUP_ID, "GroupId")
-          .build());
 
   private final Map<String, Object> handleGetBatchOfEventsGoodInput = Maps
       .newHashMap(ImmutableMap.<String, Object>builder()
@@ -153,6 +133,9 @@ public class GroupsManagerTest {
   private S3AccessManager s3AccessManager;
 
   @Mock
+  private SnsAccessManager snsAccessManager;
+
+  @Mock
   private Metrics metrics;
 
   @BeforeEach
@@ -164,15 +147,219 @@ public class GroupsManagerTest {
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
     DatabaseManagers.PENDING_EVENTS_MANAGER = this.pendingEventsManager;
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
+    DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
   }
 
   ////////////////////
   // getGroup tests //
   ////////////////////region
 
+  private final Map<String, Object> getGroupGoodInput = new HashMap<>(ImmutableMap.of(
+      RequestFields.ACTIVE_USER, "john_andrews12",
+      GroupsManager.GROUP_ID, "groupId",
+      RequestFields.BATCH_NUMBER, 1
+  ));
+
+  @Test
+  public void getGroup_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .getGroup(this.getGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void getGroup_invalidInputNotAMember_failureResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      this.getGroupGoodInput.put(RequestFields.ACTIVE_USER, "not_a_member");
+      final ResultStatus resultStatus = this.groupsManager
+          .getGroup(this.getGroupGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void getGroup_missingRequestKeys_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .getGroup(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void getGroup_noDbConnection_failureResult() {
+    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+
+    this.getGroupGoodInput.put(RequestFields.ACTIVE_USER, "not_a_member");
+    final ResultStatus resultStatus = this.groupsManager
+        .getGroup(this.getGroupGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
   //////////////////////////endregion
   // createNewGroup tests //
   //////////////////////////region
+
+  private final Map<String, Object> createNewGroupGoodInput = Maps
+      .newHashMap(ImmutableMap.<String, Object>builder()
+          .put(RequestFields.ACTIVE_USER, "john_andrews12") // group creator
+          .put(GroupsManager.GROUP_ID, "GroupId")
+          .put(GroupsManager.GROUP_NAME, "New Name")
+          .put(GroupsManager.MEMBERS,
+              new ArrayList<>(
+                  ImmutableList.of("john_andrews12", "edmond2", "johnplaysgolf", "user", "user2")))
+          //I removed the existing category and added a new one
+          .put(GroupsManager.CATEGORIES, ImmutableMap.of("new_cat_id", "new cat name"))
+          .put(GroupsManager.DEFAULT_VOTING_DURATION, 5)
+          .put(GroupsManager.DEFAULT_RSVP_DURATION, 5)
+          .put(GroupsManager.IS_OPEN, true)
+          .put(GroupsManager.ICON, ImmutableList.of(0, 1, 2, 3, 4, 5, 6)) // new file data
+          .build());
+
+  @Test
+  public void createNewGroup_validInput_successfulResult() {
+    try {
+      final Map groupCreator = JsonUtils.getItemFromFile("john_andrews12.json").asMap();
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(
+          groupCreator, // first five for insert
+          groupCreator,
+          groupCreator,
+          groupCreator,
+          groupCreator,
+          //these five are for notification
+          JsonUtils.getItemFromFile("edmond2.json").asMap(), // no push arn
+          JsonUtils.getItemFromFile("edmond2.json")
+              .withString(UsersManager.PUSH_ENDPOINT_ARN, "arn:1234").asMap(), // app muted
+          groupCreator,
+          JsonUtils.getItemFromFile("johnplaysgolf.json").asMap(), // app not muted
+          null // cause error in send notification
+      ).when(this.usersManager).getMapByPrimaryKey(any(String.class));
+      doReturn(Optional.of("imageFileUrl")).when(this.s3AccessManager)
+          .uploadImage(any(List.class), eq(this.metrics));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .createNewGroup(this.createNewGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).putItem(any(PutItemSpec.class));
+      verify(this.usersManager, times(10))
+          .getMapByPrimaryKey(any(String.class)); // usernames pulled for insert and notifications
+      verify(this.metrics, times(3)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void createNewGroup_validInputNoIcon_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+
+      this.createNewGroupGoodInput.remove(GroupsManager.ICON);
+      final ResultStatus resultStatus = this.groupsManager
+          .createNewGroup(this.createNewGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).putItem(any(PutItemSpec.class));
+      verify(this.usersManager, times(10))
+          .getMapByPrimaryKey(any(String.class)); // usernames pulled for insert and notifications
+      verify(this.metrics, times(4)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void createNewGroup_validInputUserUpdatesFail_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doThrow(NullPointerException.class).when(this.usersManager)
+          .updateItem(any(String.class), any(UpdateItemSpec.class));
+
+      this.createNewGroupGoodInput.remove(GroupsManager.ICON);
+      final ResultStatus resultStatus = this.groupsManager
+          .createNewGroup(this.createNewGroupGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).putItem(any(PutItemSpec.class));
+      verify(this.usersManager, times(10))
+          .getMapByPrimaryKey(any(String.class)); // usernames pulled for insert and notifications
+      verify(this.metrics, times(3)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void createNewGroup_badUsernamesEntered_failureResult() {
+    doReturn(null).when(this.usersManager).getMapByPrimaryKey(any(String.class));
+
+    this.createNewGroupGoodInput.remove(GroupsManager.ICON);
+    final ResultStatus resultStatus = this.groupsManager
+        .createNewGroup(this.createNewGroupGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void createNewGroup_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .createNewGroup(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   /////////////////////endregion
   // editGroup tests //
@@ -181,13 +368,19 @@ public class GroupsManagerTest {
   @Test
   void editGroup_validInput_successfulResult() {
     try {
+      final Map john = JsonUtils.getItemFromFile("john_andrews12.json").asMap();
+      final Map removed1 = john; // not muted at all
+      final Map removed2 = JsonUtils.getItemFromFile("edmond2.json").asMap(); // no push arn
+      final Map removed3 = JsonUtils.getItemFromFile("edmond2.json")
+          .withString(UsersManager.PUSH_ENDPOINT_ARN, "arn:1234").asMap(); // app muted
+      final Map removed4 = JsonUtils.getItemFromFile("johnplaysgolf.json").asMap(); // group muted
       doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
       doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
           .getItem(any(GetItemSpec.class));
       doReturn(Optional.of("new icon file name")).when(this.s3AccessManager)
           .uploadImage(any(List.class), any(Metrics.class));
-      doReturn(Collections.emptyMap()).when(this.usersManager)
-          .getMapByPrimaryKey(any(String.class));
+      doReturn(john, john, john, john, removed1, removed2, removed3, removed4)
+          .when(this.usersManager).getMapByPrimaryKey(any(String.class));
 
       ResultStatus resultStatus = this.groupsManager
           .editGroup(this.editGroupValidInput, this.metrics);
@@ -196,7 +389,8 @@ public class GroupsManagerTest {
       verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-      verify(this.metrics, times(6)).commonClose(true);
+      verify(this.usersManager, times(9)).getMapByPrimaryKey(any(String.class));
+      verify(this.metrics, times(5)).commonClose(true);
       verify(this.metrics, times(0)).commonClose(false);
     } catch (final Exception e) {
       System.out.println(e);
@@ -214,7 +408,6 @@ public class GroupsManagerTest {
           .getMapByPrimaryKey(any(String.class));
 
       this.editGroupValidInput.remove(GroupsManager.ICON);
-
       ResultStatus resultStatus = this.groupsManager
           .editGroup(this.editGroupValidInput, this.metrics);
 
@@ -222,7 +415,7 @@ public class GroupsManagerTest {
       verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-      verify(this.metrics, times(6)).commonClose(true);
+      verify(this.metrics, times(5)).commonClose(true);
       verify(this.metrics, times(0)).commonClose(false);
     } catch (final Exception e) {
       System.out.println(e);
@@ -253,7 +446,7 @@ public class GroupsManagerTest {
       verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-      verify(this.metrics, times(6)).commonClose(true);
+      verify(this.metrics, times(5)).commonClose(true);
       verify(this.metrics, times(0)).commonClose(false);
     } catch (final Exception e) {
       System.out.println(e);
@@ -285,7 +478,7 @@ public class GroupsManagerTest {
       verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-      verify(this.metrics, times(6)).commonClose(true);
+      verify(this.metrics, times(5)).commonClose(true);
       verify(this.metrics, times(0)).commonClose(false);
     } catch (final Exception e) {
       System.out.println(e);
@@ -313,7 +506,7 @@ public class GroupsManagerTest {
       verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
       verify(this.table, times(1)).getItem(any(GetItemSpec.class));
       verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(4)).commonClose(true);
       verify(this.metrics, times(1)).commonClose(false);
     } catch (final Exception e) {
       System.out.println(e);
@@ -426,69 +619,125 @@ public class GroupsManagerTest {
   ///////////////////////endregion
   // deleteGroup tests //
   ///////////////////////region
-  /*@Test
+
+  @Test
   public void deleteGroup_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
+    try {
+      final Group groupToDelete = new Group(JsonUtils.getItemFromFile("openGroup.json").asMap());
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+          .removeGroupsLeftFromUsers(groupToDelete.getMembersLeft().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(JsonUtils.getItemFromFile("johnplaysgolf.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
+          .removeGroupFromCategories(groupToDelete.getCategories().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(groupToDelete.asItem()).when(this.table)
+          .getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.groupsManager
-        .deleteGroup(this.deleteGroupGoodInput, metrics);
+      final ResultStatus resultStatus = this.groupsManager
+          .deleteGroup(this.deleteGroupGoodInput, metrics);
 
-    assertTrue(resultStatus.success);
-    verify(this.usersManager, times(1))
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).deleteItem(any(DeleteItemSpec.class));
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(2)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
 
   @Test
   public void deleteGroup_validInputUsersTableError_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
+    try {
+      final Group groupToDelete = new Group(JsonUtils.getItemFromFile("openGroup.json").asMap());
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(new ResultStatus(false, "usersManagerFails")).when(this.usersManager)
+          .removeGroupsLeftFromUsers(groupToDelete.getMembersLeft().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
+          .removeGroupFromCategories(groupToDelete.getCategories().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(groupToDelete.asItem()).when(this.table)
+          .getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.groupsManager
-        .deleteGroup(this.deleteGroupGoodInput, metrics);
+      final ResultStatus resultStatus = this.groupsManager
+          .deleteGroup(this.deleteGroupGoodInput, metrics);
 
-    assertFalse(resultStatus.success);
-    verify(this.usersManager, times(1))
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
 
   @Test
   public void deleteGroup_validInputCategoriesTableError_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    doReturn(this.deleteGroupItem).when(this.table).getItem(any(GetItemSpec.class));
+    try {
+      final Group groupToDelete = new Group(JsonUtils.getItemFromFile("openGroup.json").asMap());
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+          .removeGroupsLeftFromUsers(groupToDelete.getMembersLeft().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(new ResultStatus(false, "categoriesManagerFails")).when(this.categoriesManager)
+          .removeGroupFromCategories(groupToDelete.getCategories().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap(),
+          JsonUtils.getItemFromFile("edmond2.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doReturn(groupToDelete.asItem()).when(this.table)
+          .getItem(any(GetItemSpec.class));
 
-    ResultStatus resultStatus = this.groupsManager
-        .deleteGroup(this.deleteGroupGoodInput, metrics);
+      final ResultStatus resultStatus = this.groupsManager
+          .deleteGroup(this.deleteGroupGoodInput, metrics);
 
-    assertFalse(resultStatus.success);
-    verify(this.usersManager, times(1))
-        .removeGroupsLeftFromUsers(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.categoriesManager, times(1))
-        .removeGroupFromCategories(any(Set.class), any(String.class), any(Metrics.class));
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-  }*/
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void deleteGroup_validInputDeleteUsersError_failureResult() {
+    try {
+      final Group groupToDelete = new Group(JsonUtils.getItemFromFile("openGroup.json").asMap());
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(new ResultStatus(true, "usersManagerWorks")).when(this.usersManager)
+          .removeGroupsLeftFromUsers(groupToDelete.getMembersLeft().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(new ResultStatus(true, "categoriesManagerWorks")).when(this.categoriesManager)
+          .removeGroupFromCategories(groupToDelete.getCategories().keySet(),
+              groupToDelete.getGroupId(), this.metrics);
+      doReturn(null).when(this.usersManager).getMapByPrimaryKey(any(String.class));
+      doReturn(groupToDelete.asItem()).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .deleteGroup(this.deleteGroupGoodInput, metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(2)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
 
   @Test
   public void deleteGroup_userIsNotGroupCreator_failureResult() {
@@ -534,174 +783,517 @@ public class GroupsManagerTest {
   ////////////////////endregion
   // newEvent tests //
   ////////////////////region
-//  @Test
-//  public void newEvent_validInput_successfulResult() {
-//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))).when(this.table)
-//        .getItem(any(GetItemSpec.class));
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics);
-//
-//    assertTrue(result.success);
-//    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-//    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(true);
-//  }
-//
-//  @Test
-//  public void newEvent_missingRequestKeys_failureResult() {
-//    this.newEventBadInput.remove(GroupsManager.GROUP_ID);
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventBadInput, this.metrics);
-//
-//    assertFalse(result.success);
-//    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-//    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
-//
-//  @Test
-//  public void newEvent_badInput_failureResult() {
-//    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, "General Kenobi!");
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventBadInput, this.metrics);
-//
-//    assertFalse(result.success);
-//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-//    verify(this.table, times(0)).putItem(any(PutItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
-//
-//  @Test
-//  public void newEvent_groupNotFound_failureResult() {
-//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics);
-//
-//    assertFalse(result.success);
-//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
 
-//  @Test
-//  public void newEvent_missingMembersField_failureResult() {
-//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap("NoMembers", ImmutableMap.of("user1", "name1"))).when(this.table)
-//        .getItem(any(GetItemSpec.class));
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics);
-//
-//    assertFalse(result.success);
-//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-//    verify(this.table, times(1)).getItem(any(GetItemSpec.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
+  private final Map<String, Object> newEventGoodInput = new HashMap<>(
+      ImmutableMap.<String, Object>builder()
+          .put(RequestFields.ACTIVE_USER, "john_andrews12")
+          .put(GroupsManager.EVENT_NAME, "Event Name")
+          .put(GroupsManager.CATEGORY_ID, "CategoryId")
+          .put(GroupsManager.EVENT_START_DATE_TIME, "EventStartDateTime")
+          .put(GroupsManager.VOTING_DURATION, 50)
+          .put(GroupsManager.RSVP_DURATION, 50)
+          .put(GroupsManager.GROUP_ID, "GroupId")
+          .put(GroupsManager.UTC_EVENT_START_SECONDS, 123456)
+          .build());
 
-//  @Test
-//  public void newEvent_noDbConnection_failureResult() {
-//    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
-//
-//    ResultStatus resultStatus = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics);
-//
-//    assertFalse(resultStatus.success);
-//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-//    verify(this.metrics, times(1)).commonClose(false);
-//  }
+  @Test
+  public void newEvent_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("categoryLunchOptions.json").asMap())
+          .when(this.categoriesManager).getMapByPrimaryKey(any(String.class));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .newEvent(this.newEventGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.pendingEventsManager, times(1))
+          .addPendingEvent(any(String.class), any(String.class), eq(50), eq(this.metrics));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void newEvent_validInputSkipRsvp_successfulResult() {
+    //verify pending events processPendingEvent gets called
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("categoryLunchOptions.json").asMap())
+          .when(this.categoriesManager).getMapByPrimaryKey(any(String.class));
+      doReturn("1").when(this.pendingEventsManager).getPartitionKey();
+
+      this.newEventGoodInput.put(GroupsManager.RSVP_DURATION, 0);
+      final ResultStatus resultStatus = this.groupsManager
+          .newEvent(this.newEventGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.pendingEventsManager, times(1))
+          .processPendingEvent(any(Map.class), eq(this.metrics));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void newEvent_validInputUserUpdatesFail_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("categoryLunchOptions.json").asMap())
+          .when(this.categoriesManager).getMapByPrimaryKey(any(String.class));
+      doThrow(NullPointerException.class).when(this.usersManager)
+          .updateItem(any(String.class), any(UpdateItemSpec.class));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .newEvent(this.newEventGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).getItem(any(GetItemSpec.class));
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.pendingEventsManager, times(1))
+          .addPendingEvent(any(String.class), any(String.class), eq(50), eq(this.metrics));
+      verify(this.metrics, times(4)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void newEvent_invalidInputs_failureResult() {
+    //verify pending events processPendingEvent gets called
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("bigGroup.json")).when(this.table)
+          .getItem(any(GetItemSpec.class));
+
+      //user that is not in the group
+      this.newEventGoodInput.put(RequestFields.ACTIVE_USER, "johnplaysgolf");
+      doReturn(JsonUtils.getItemFromFile("johnplaysgolf.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class));
+
+      this.newEventGoodInput.put(GroupsManager.RSVP_DURATION, GroupsManager.MAX_DURATION + 5);
+      this.newEventGoodInput.put(GroupsManager.VOTING_DURATION, GroupsManager.MAX_DURATION + 5);
+      this.newEventGoodInput.put(GroupsManager.EVENT_NAME, "");
+      ResultStatus resultStatus = this.groupsManager.newEvent(this.newEventGoodInput, this.metrics);
+      assertFalse(resultStatus.success);
+
+      this.newEventGoodInput.put(GroupsManager.RSVP_DURATION, -1);
+      this.newEventGoodInput.put(GroupsManager.VOTING_DURATION, -1);
+      this.newEventGoodInput.put(GroupsManager.EVENT_NAME,
+          IntStream.range(0, GroupsManager.MAX_EVENT_NAME_LENGTH + 5).boxed().map(Object::toString)
+              .collect(Collectors.joining("")));
+      resultStatus = this.groupsManager.newEvent(this.newEventGoodInput, this.metrics);
+      assertFalse(resultStatus.success);
+
+      verify(this.dynamoDB, times(2)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(2)).getItem(any(GetItemSpec.class));
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(2)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void newEvent_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .newEvent(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void newEvent_noDbConnection_failureResult() {
+    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+    doReturn(null).when(this.table).getItem(any(GetItemSpec.class));
+
+    this.newEventGoodInput.put(GroupsManager.RSVP_DURATION, 0);
+    final ResultStatus resultStatus = this.groupsManager
+        .newEvent(this.newEventGoodInput, this.metrics);
+
+    assertFalse(resultStatus.success);
+    verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
 
   //////////////////////////endregion
   // optInOutOfEvent tests //
   //////////////////////////region
 
-  ////////////////////////////////////////endregion
-  // updateMembersMapForInsertion tests //
-  ////////////////////////////////////////region
+  private final Map<String, Object> optInOutOfEventGoodInput = new HashMap<>(ImmutableMap.of(
+      GroupsManager.GROUP_ID, "b702b849-d981-4b74-bb93-18819a2c1156",
+      RequestFields.PARTICIPATING, true,
+      RequestFields.EVENT_ID, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", // in consider
+      RequestFields.ACTIVE_USER, "john_andrews12"
+  ));
 
-  ////////////////////////////endregion
-  // editGroupInputIsValid tests //
-  ////////////////////////////region
-
-  /////////////////////////////////endregion
-  // validEventInput tests //
-  /////////////////////////////////region
-//  @Test
-//  public void validEventInput_validInput_successfulResult() {
-//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-//    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1"))).when(this.table)
-//        .getItem(any(GetItemSpec.class));
-//
-//    ResultStatus result = this.groupsManager
-//        .newEvent(this.newEventGoodInput, this.metrics);
-//    assertTrue(result.success);
-//  }
-/*
   @Test
-  public void validEventInput_emptyString_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
-        .when(this.table)
-        .getItem(any(GetItemSpec.class));
+  public void optInOutOfEvent_validInputParticipating_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
 
-    this.newEventBadInput.put(GroupsManager.GROUP_ID, "");
-    this.newEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      final ResultStatus resultStatus = this.groupsManager
+          .optInOutOfEvent(this.optInOutOfEventGoodInput, this.metrics);
 
-    this.newEventBadInput.put(GroupsManager.GROUP_ID, "GroupId");
-    this.newEventBadInput.put(GroupsManager.CATEGORY_ID, "");
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      assertTrue(resultStatus.success);
+
+      //here we're making sure the user map gets inserted
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertTrue(argument.getValue().getValueMap().containsKey(":userMap"));
+      assertEquals("set ", argument.getValue().getUpdateExpression().substring(0, 4));
+
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
 
   @Test
-  public void validEventInput_invalidVotingDuration_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
-        .when(this.table).getItem(any(GetItemSpec.class));
+  public void optInOutOfEvent_validInputNotParticipating_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
 
-    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, -1);
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      this.optInOutOfEventGoodInput.put(RequestFields.PARTICIPATING, false);
+      final ResultStatus resultStatus = this.groupsManager
+          .optInOutOfEvent(this.optInOutOfEventGoodInput, this.metrics);
 
-    this.newEventBadInput.put(GroupsManager.VOTING_DURATION, 1000000);
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      assertTrue(resultStatus.success);
+
+      //here we're making sure the user map gets removed
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertNull(argument.getValue().getValueMap());
+      assertEquals("remove ", argument.getValue().getUpdateExpression().substring(0, 7));
+
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
 
   @Test
-  public void validEventInput_invalidRsvpDuration_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    doReturn(new Item().withMap(GroupsManager.MEMBERS, ImmutableMap.of("user1", "name1")))
-        .when(this.table).getItem(any(GetItemSpec.class));
+  public void optInOutOfEvent_invalidInputUserNotInGroup_successfulResult() {
+    try {
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
 
-    this.newEventBadInput.put(GroupsManager.RSVP_DURATION, -1);
-    ResultStatus result = this.groupsManager
-        .newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      this.optInOutOfEventGoodInput.put(GroupsManager.GROUP_ID, "not_a_real_group_id");
+      final ResultStatus resultStatus = this.groupsManager
+          .optInOutOfEvent(this.optInOutOfEventGoodInput, this.metrics);
 
-    this.newEventBadInput.put(GroupsManager.RSVP_DURATION, 1000000);
-    result = this.groupsManager.newEvent(this.newEventBadInput, this.metrics);
-    assertFalse(result.success);
+      assertFalse(resultStatus.success);
+
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
   }
-*/
 
-  ////////////////////////////endregion
-  // updateUsersTable tests //
-  ////////////////////////////region
+  @Test
+  public void optInOutOfEvent_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .optInOutOfEvent(Collections.emptyMap(), this.metrics);
 
-  /////////////////////////////////endregion
-  // updateCategoriesTable tests //
-  /////////////////////////////////region
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void optInOutOfEvent_noDbConnection_failureResult() {
+    try {
+      doReturn(null).when(this.usersManager).getMapByPrimaryKey("john_andrews12");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .optInOutOfEvent(this.optInOutOfEventGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  ///////////////////////endregion
+  // updateEvent tests //
+  ///////////////////////region
+
+  @Test
+  public void updateEvent_validInputNewTentativeChoicesAndSelectedChoiceNewEvent_successfulResult
+      () {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
+      final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
+          .clone();
+      newEvent.setTentativeAlgorithmChoices(ImmutableMap.of("1", "choice", "2", "c2"));
+      newEvent.setSelectedChoice("choice");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, true,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputNewTentativeChoicesAndSelectedChoice_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
+      final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
+          .clone();
+      newEvent.setTentativeAlgorithmChoices(ImmutableMap.of("1", "choice", "2", "c2"));
+      newEvent.setSelectedChoice("choice");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputNewTentativeChoices_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
+      final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
+          .clone();
+      newEvent.setTentativeAlgorithmChoices(ImmutableMap.of("1", "choice", "2", "c2"));
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputFromVotingToSelected_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //0fe7c737-ef19-4540-b4c8-39f1d3e2264f is in voting
+      final Event newEvent = group.getEvents().get("0fe7c737-ef19-4540-b4c8-39f1d3e2264f")
+          .clone();
+      newEvent.setSelectedChoice("Winner!");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "0fe7c737-ef19-4540-b4c8-39f1d3e2264f", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputFromVotingToSelectedAllUserMessages_successfulResult() {
+    try {
+      final Map u1 = JsonUtils.getItemFromFile("john_andrews12.json").asMap(); // not muted at all
+      final Map u2 = JsonUtils.getItemFromFile("edmond2.json").asMap(); // no push arn
+      final Map u3 = JsonUtils.getItemFromFile("edmond2.json")
+          .withString(UsersManager.PUSH_ENDPOINT_ARN, "arn:1234").asMap(); // app muted
+      final Map u4 = JsonUtils.getItemFromFile("johnplaysgolf.json").asMap(); // group muted
+
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(u1, u2, u3, u4).when(this.usersManager).getMapByPrimaryKey(any(String.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //0fe7c737-ef19-4540-b4c8-39f1d3e2264f is in voting
+      final Event newEvent = group.getEvents().get("0fe7c737-ef19-4540-b4c8-39f1d3e2264f")
+          .clone();
+      newEvent.setSelectedChoice("Winner!");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "0fe7c737-ef19-4540-b4c8-39f1d3e2264f", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(5)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_validInputFromVotingToSelectedErrorSendingMessages_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey(any(String.class)); // not muted at all
+      doThrow(AmazonServiceException.class).when(this.snsAccessManager)
+          .sendMessage(any(String.class), any(String.class), any(String.class), any(String.class),
+              any(Metadata.class));
+
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //0fe7c737-ef19-4540-b4c8-39f1d3e2264f is in voting
+      final Event newEvent = group.getEvents().get("0fe7c737-ef19-4540-b4c8-39f1d3e2264f")
+          .clone();
+      newEvent.setSelectedChoice("Winner!");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "0fe7c737-ef19-4540-b4c8-39f1d3e2264f", newEvent, false,
+              this.metrics);
+
+      assertTrue(resultStatus.success);
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(4)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_invalidInputNothingToUpdate_failureResult() {
+    try {
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //859c86d2-20e8-4c12-9d95-77a693c74c5d is finalized
+      final Event newEvent = group.getEvents().get("859c86d2-20e8-4c12-9d95-77a693c74c5d")
+          .clone();
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "859c86d2-20e8-4c12-9d95-77a693c74c5d", newEvent, false,
+              this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void updateEvent_invalidInputNotSettingTentativeChoices_failureResult() {
+    try {
+      final Group group = new Group(
+          JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
+      //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
+      final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
+          .clone();
+
+      final ResultStatus resultStatus = this.groupsManager
+          .updateEvent(group, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", newEvent, false,
+              this.metrics);
+
+      assertFalse(resultStatus.success);
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
 
   /////////////////////////////endregion
   // getAllCategoryIds tests //
@@ -711,7 +1303,8 @@ public class GroupsManagerTest {
   public void getAllCategoryIds_validInput_successfulResult() {
     doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
     doReturn(
-        new Item().withMap(GroupsManager.CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
+        new Item()
+            .withMap(GroupsManager.CATEGORIES, ImmutableMap.of("id", "name", "id2", "name2")))
         .when(this.table).getItem(any(GetItemSpec.class));
 
     List<String> categoryIds = this.groupsManager
@@ -987,9 +1580,130 @@ public class GroupsManagerTest {
     verify(this.metrics, times(2)).commonClose(false);
   }
 
+  ///////////////////endregion
+  // voteForChoice //
+  ///////////////////region
+
+  private final Map<String, Object> voteForChoiceGoodInput = new HashMap<>(ImmutableMap.of(
+      GroupsManager.GROUP_ID, "b702b849-d981-4b74-bb93-18819a2c1156",
+      RequestFields.EVENT_ID, "593e9c8e-a713-40ff-ae55-5d5bdfe940f4", // in consider
+      RequestFields.CHOICE_ID, "3", // Moes
+      RequestFields.VOTE_VALUE, 1,
+      RequestFields.ACTIVE_USER, "john_andrews12"
+  ));
+
+  @Test
+  public void voteForChoice_validInput_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
+
+      final ResultStatus resultStatus = this.groupsManager
+          .voteForChoice(this.voteForChoiceGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+
+      //here we're making sure the correct vote value gets set
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertEquals(new BigDecimal(1), argument.getValue().getValueMap().get(":voteValue"));
+
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void voteForChoice_validInputVoteValueOutOfRange_successfulResult() {
+    try {
+      doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
+
+      this.voteForChoiceGoodInput.put(RequestFields.VOTE_VALUE, 8);
+      final ResultStatus resultStatus = this.groupsManager
+          .voteForChoice(this.voteForChoiceGoodInput, this.metrics);
+
+      assertTrue(resultStatus.success);
+
+      //here we're making sure the correct vote value gets set
+      final ArgumentCaptor<UpdateItemSpec> argument = ArgumentCaptor.forClass(UpdateItemSpec.class);
+      verify(this.table).updateItem(argument.capture());
+      assertEquals(new BigDecimal(0), argument.getValue().getValueMap().get(":voteValue"));
+
+      verify(this.dynamoDB, times(1)).getTable(any(String.class)); // total # of db interactions
+      verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
+      verify(this.metrics, times(1)).commonClose(true);
+      verify(this.metrics, times(0)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void voteForChoice_invalidInputUserNotInGroup_failureResult() {
+    try {
+      doReturn(JsonUtils.getItemFromFile("john_andrews12.json").asMap()).when(this.usersManager)
+          .getMapByPrimaryKey("john_andrews12");
+
+      this.voteForChoiceGoodInput.put(GroupsManager.GROUP_ID, "not_a_real_group_id");
+      final ResultStatus resultStatus = this.groupsManager
+          .voteForChoice(this.voteForChoiceGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
+  @Test
+  public void voteForChoice_missingRequestKey_failureResult() {
+    final ResultStatus resultStatus = this.groupsManager
+        .voteForChoice(Collections.emptyMap(), this.metrics);
+
+    assertFalse(resultStatus.success);
+
+    verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+    verify(this.metrics, times(0)).commonClose(true);
+    verify(this.metrics, times(1)).commonClose(false);
+  }
+
+  @Test
+  public void voteForChoice_noDbConnection_failureResult() {
+    try {
+      doReturn(null).when(this.usersManager).getMapByPrimaryKey("john_andrews12");
+
+      this.voteForChoiceGoodInput.put(GroupsManager.GROUP_ID, "not_a_real_group_id");
+      final ResultStatus resultStatus = this.groupsManager
+          .voteForChoice(this.voteForChoiceGoodInput, this.metrics);
+
+      assertFalse(resultStatus.success);
+
+      verify(this.dynamoDB, times(0)).getTable(any(String.class)); // total # of db interactions
+      verify(this.metrics, times(0)).commonClose(true);
+      verify(this.metrics, times(1)).commonClose(false);
+    } catch (final Exception e) {
+      System.out.println(e);
+      fail();
+    }
+  }
+
   //////////////////////////////////endregion
   // handleGetBatchOfEvents tests //
   //////////////////////////////////region
+
   @Test
   public void handleGetBatchOfEvents_validInput_successfulResult() {
     try {
