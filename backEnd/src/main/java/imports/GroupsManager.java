@@ -543,6 +543,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           final Group newGroup = oldGroup.clone();
           newGroup.getEvents().putIfAbsent(eventId, newEvent);
+          newGroup.setLastActivity(lastActivity);
 
           //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
           if (newEvent.getRsvpDuration() > 0) {
