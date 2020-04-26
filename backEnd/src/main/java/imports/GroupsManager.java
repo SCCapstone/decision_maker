@@ -442,6 +442,7 @@ public class GroupsManager extends DatabaseAccessManager {
       try {
         final String groupId = (String) jsonMap.get(GROUP_ID);
         final Group oldGroup = new Group(this.getMapByPrimaryKey(groupId));
+
         final String eventId = UUID.randomUUID().toString();
         final String lastActivity = LocalDateTime.now(ZoneId.of("UTC"))
             .format(this.getDateTimeFormatter());
@@ -477,7 +478,7 @@ public class GroupsManager extends DatabaseAccessManager {
             valueMap.withMap(":map", newEvent.asEventMap());
           }
 
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
               .withNameMap(nameMap)
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap);
@@ -501,7 +502,8 @@ public class GroupsManager extends DatabaseAccessManager {
                 .processPendingEvent(processPendingEventInput, metrics);
           }
 
-          final Group newGroup = new Group(this.getMapByPrimaryKey(groupId));
+          final Group newGroup = oldGroup.clone();
+          newGroup.getEvents().putIfAbsent(eventId, newEvent);
 
           //when rsvp is not greater than 0, updateUsersTable gets called by setEventTentativeChoices
           if (newEvent.getRsvpDuration() > 0) {
@@ -540,32 +542,38 @@ public class GroupsManager extends DatabaseAccessManager {
         final Boolean participating = (Boolean) jsonMap.get(RequestFields.PARTICIPATING);
         final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+
         final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
-        String updateExpression;
-        ValueMap valueMap = null;
+        if (user.getGroups().containsKey(groupId)) {
+          String updateExpression;
+          ValueMap valueMap = null;
 
-        if (participating) { // add the user to the optIn
-          updateExpression =
-              "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :userMap";
-          valueMap = new ValueMap()
-              .withMap(":userMap", user.asMember().asMap());
+          if (participating) { // add the user to the optIn
+            updateExpression =
+                "set " + EVENTS + ".#eventId." + OPTED_IN + ".#username = :userMap";
+            valueMap = new ValueMap()
+                .withMap(":userMap", user.asMember().asMap());
+          } else {
+            updateExpression = "remove " + EVENTS + ".#eventId." + OPTED_IN + ".#username";
+          }
+
+          final NameMap nameMap = new NameMap()
+              .with("#eventId", eventId)
+              .with("#username", activeUser);
+
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap);
+
+          this.updateItem(groupId, updateItemSpec);
+
+          resultStatus = new ResultStatus(true, "Opted in/out successfully");
         } else {
-          updateExpression = "remove " + EVENTS + ".#eventId." + OPTED_IN + ".#username";
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, "User not in group"));
+          resultStatus.resultMessage = "Error: User not in group.";
         }
-
-        final NameMap nameMap = new NameMap()
-            .with("#eventId", eventId)
-            .with("#username", activeUser);
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withUpdateExpression(updateExpression)
-            .withNameMap(nameMap)
-            .withValueMap(valueMap);
-
-        this.updateItem(groupId, updateItemSpec);
-
-        resultStatus = new ResultStatus(true, "Opted in/out successfully");
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus.resultMessage = "Error: Unable to parse request in manager.";
@@ -747,27 +755,33 @@ public class GroupsManager extends DatabaseAccessManager {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         Integer voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
 
-        if (voteValue != 1) {
-          voteValue = 0;
+        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
+
+        if (user.getGroups().containsKey(groupId)) {
+          if (voteValue != 1) {
+            voteValue = 0;
+          }
+
+          final String updateExpression =
+              "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." +
+                  "#activeUser = :voteValue";
+          final ValueMap valueMap = new ValueMap().withInt(":voteValue", voteValue);
+          final NameMap nameMap = new NameMap()
+              .with("#eventId", eventId)
+              .with("#choiceId", choiceId)
+              .with("#activeUser", activeUser);
+
+          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withNameMap(nameMap)
+              .withValueMap(valueMap);
+
+          this.updateItem(groupId, updateItemSpec);
+          resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
+        } else {
+          resultStatus.resultMessage = "Error: user not in group.";
+          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, "User not in group."));
         }
-
-        String updateExpression =
-            "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." +
-                "#activeUser = :voteValue";
-        ValueMap valueMap = new ValueMap().withInt(":voteValue", voteValue);
-
-        final NameMap nameMap = new NameMap()
-            .with("#eventId", eventId)
-            .with("#choiceId", choiceId)
-            .with("#activeUser", activeUser);
-
-        UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withUpdateExpression(updateExpression)
-            .withNameMap(nameMap)
-            .withValueMap(valueMap);
-
-        this.updateItem(groupId, updateItemSpec);
-        resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } catch (Exception e) {
         resultStatus.resultMessage = "Error: unable to parse request in manager.";
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
@@ -1084,7 +1098,9 @@ public class GroupsManager extends DatabaseAccessManager {
     UpdateItemSpec updateItemSpec;
 
     //update users with new group mapping based on which attributes were updated
-    if (oldGroup != null && persistingUsernames.size() > 0) {
+    if (oldGroup != null) {
+      //NOTE: There will always be at least 1 user in the group (the creator)
+
       //since this group already exists, we're just updating the mappings that have changed for existing users
       //for simplicity in the code, we'll always update the group name
       updateExpression = "set " + UsersManager.GROUPS + ".#groupId." + GROUP_NAME + " = :groupName";
@@ -1095,8 +1111,7 @@ public class GroupsManager extends DatabaseAccessManager {
         valueMap.withString(":groupIcon", newGroup.getIcon());
       }
 
-      if (newGroup.lastActivityIsSet() && !newGroup.getLastActivity()
-          .equals(oldGroup.getLastActivity())) {
+      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
         updateExpression +=
             ", " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
         valueMap.withString(":lastActivity", newGroup.getLastActivity());
@@ -1116,16 +1131,11 @@ public class GroupsManager extends DatabaseAccessManager {
           .withNameMap(nameMap);
 
       for (final String oldMember : persistingUsernames) {
-        if (!(isNewEvent && oldMember.equals(newEventCreator))) {
-          try {
+        try {
+          if (!isNewEvent || !oldMember.equals(newEventCreator)) {
             DatabaseManagers.USERS_MANAGER.updateItem(oldMember, updateItemSpec);
-          } catch (final Exception e) {
-            success = false;
-            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
-          }
-        } else if (isNewEvent) {
-          // this means the oldMember is the event creator, we should only update the last activity
-          try {
+          } else { // This must be a new event because boolean logic
+            // this means the oldMember is the event creator, we should only update the last activity
             final String updateExpressionEventCreator =
                 "set " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
             final ValueMap valueMapEventCreator = new ValueMap()
@@ -1138,10 +1148,10 @@ public class GroupsManager extends DatabaseAccessManager {
                 .withNameMap(nameMapEventCreator);
 
             DatabaseManagers.USERS_MANAGER.updateItem(oldMember, updateItemSpecEventCreator);
-          } catch (final Exception e) {
-            success = false;
-            metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
           }
+        } catch (final Exception e) {
+          success = false;
+          metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
         }
       }
     }
@@ -1171,23 +1181,13 @@ public class GroupsManager extends DatabaseAccessManager {
       this.removeUsersFromGroupAndSendNotificationsOnEdit(removedUsernames, oldGroup, metrics);
     }
 
-    try {
-      //blind send...
-      this.sendAddedToGroupNotifications(addedUsernames, newGroup, metrics);
-    } catch (final Exception e) {
-      success = false;
-      metrics.log(new ErrorDescriptor<>(addedUsernames, classMethod, e));
-    }
+    //blind send...
+    this.sendAddedToGroupNotifications(addedUsernames, newGroup, metrics);
 
     if (updatedEventId != null) {
-      try {
-        //blind send...
-        this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, isNewEvent,
-            metrics);
-      } catch (Exception e) {
-        success = false;
-        metrics.log(new ErrorDescriptor<>(newMembers, classMethod, e));
-      }
+      //blind send...
+      this.sendEventUpdatedNotification(newMembers, newGroup, updatedEventId, isNewEvent,
+          metrics);
     }
 
     metrics.commonClose(success);

@@ -179,7 +179,7 @@
       "GroupName": "Event stages testing",
       "Icon": null,
       "LastActivity": "2020-04-25 02:53:08",
-      "Muted": false
+      "Muted": true
     },
     "bc9c84d9-ae4d-4b75-9f3c-8f9c598e2f48": {
       "EventsUnseen": {
