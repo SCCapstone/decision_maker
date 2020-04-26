@@ -542,7 +542,7 @@ public class GroupsManager extends DatabaseAccessManager {
           }
 
           final Group newGroup = oldGroup.clone();
-          newGroup.getEvents().putIfAbsent(eventId, newEvent);
+          newGroup.getEvents().put(eventId, newEvent);
           newGroup.setLastActivity(lastActivity);
 
           //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
@@ -1169,7 +1169,7 @@ public class GroupsManager extends DatabaseAccessManager {
         valueMap.withString(":groupIcon", newGroup.getIcon());
       }
 
-      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
+      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity()) || isNewEvent) {
         updateExpression +=
             ", " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
         valueMap.withString(":lastActivity", newGroup.getLastActivity());
