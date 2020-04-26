@@ -350,7 +350,7 @@ class _EditCategoryState extends State<EditCategory> {
         context: this.context,
         builder: (context) {
           return AlertDialog(
-            title: Text("Copy \"${widget.category.categoryName}\""),
+            title: Text("Copy \"${this.category.categoryName}\""),
             actions: <Widget>[
               FlatButton(
                 child: Text("Cancel"),

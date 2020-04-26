@@ -196,9 +196,12 @@ class _GroupsHomeState extends State<GroupsHome>
                         // close the drawer menu when clicked
                         Navigator.of(context).pop();
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => UserSettings()));
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserSettings()))
+                            .then((_) {
+                              refreshList();
+                        });
                       },
                     ),
                   ),
@@ -565,7 +568,7 @@ class _GroupsHomeState extends State<GroupsHome>
                 context,
                 MaterialPageRoute(builder: (context) => CreateGroup()),
               ).then((val) {
-                loadGroups();
+                refreshList();
               });
             },
           ),

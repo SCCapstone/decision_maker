@@ -69,7 +69,9 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
           Expanded(
               child: GestureDetector(
                   onTap: () {
-                    selectCategory(!this.selectVal);
+                    if (widget.canSelect) {
+                      selectCategory(!this.selectVal);
+                    }
                   },
                   child: AutoSizeText(
                       (this.groupNum != 0)
