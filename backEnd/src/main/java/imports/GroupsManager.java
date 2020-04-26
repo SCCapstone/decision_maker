@@ -82,6 +82,15 @@ public class GroupsManager extends DatabaseAccessManager {
     super("groups", "GroupId", Regions.US_EAST_2, dynamoDB);
   }
 
+  /**
+   * This method gets and returns a group item. It should be noted that returned groups only get a
+   * limited number of events which is why the batch number is needed. This tells which events we
+   * want information on.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus getGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.getGroup";
     metrics.commonSetup(classMethod);
@@ -188,6 +197,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return eventsBatch;
   }
 
+  /**
+   * This method handles creating a new group item within the dynamo db. It handles validating all
+   * of the input fields and then de-normalizing the data to the necessary locations in the
+   * users/categories tables.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.createNewGroup";
     metrics.commonSetup(classMethod);
@@ -206,7 +224,7 @@ public class GroupsManager extends DatabaseAccessManager {
               .uploadImage((List<Integer>) jsonMap.get(ICON), metrics)
               .orElseThrow(Exception::new);
 
-          jsonMap.put(ICON, newIconFileName); // put overwrites current value
+          jsonMap.put(ICON, newIconFileName); // put overwrites current value (byte array->filename)
         }
 
         final List<String> members = (List<String>) jsonMap.get(MEMBERS);
@@ -257,8 +275,8 @@ public class GroupsManager extends DatabaseAccessManager {
    * data for denormalization is sent to the groups table and the categories table respectively.
    *
    * @param jsonMap Common request map from endpoint handler containing api input.
-   * @param metrics Standard metrics object for profiling and logging
-   * @return Standard result status object giving insight on whether the request was successful
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus editGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.editGroup";
@@ -362,6 +380,14 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method handles deleting a group item from the db. In addition, it handles removing all of
+   * the denormalized data from the users/categories tables.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus deleteGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.deleteGroup";
     metrics.commonSetup(classMethod);
@@ -429,6 +455,16 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method handles creating a new event within a group. It validates the input, updates the
+   * table and then updating the denormalized user group maps accordingly. Note: if this event is
+   * going to skip rsvp, control is passed to the pending events manager is used to handle this
+   * flow.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus newEvent(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.newEvent";
     metrics.commonSetup(classMethod);
@@ -450,6 +486,8 @@ public class GroupsManager extends DatabaseAccessManager {
         final User eventCreator = new User(
             DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
+        //we use the 'WithCategoryChoices' variant so that if we need to save the snapshot of the
+        //category, then we'll have the data present for that.
         final EventWithCategoryChoices newEvent = new EventWithCategoryChoices(jsonMap);
         newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
 
@@ -472,6 +510,7 @@ public class GroupsManager extends DatabaseAccessManager {
           ValueMap valueMap = new ValueMap()
               .withString(":lastActivity", lastActivity);
 
+          //if skipping rsvp -> only need to store the event map (don't need category choices)
           if (newEvent.getRsvpDuration() > 0) {
             valueMap.withMap(":map", newEvent.asMap());
           } else {
@@ -485,7 +524,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
           this.updateItem(groupId, updateItemSpec);
 
-          //Hope it works, we aren't using transactions yet (that's why I'm not doing anything with result.
+          //Hope it works, we aren't using transactions yet (that's why nothing done with result).
           if (newEvent.getRsvpDuration() > 0) {
             final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
                 .addPendingEvent(groupId, eventId, newEvent.getRsvpDuration(), metrics);
@@ -505,7 +544,7 @@ public class GroupsManager extends DatabaseAccessManager {
           final Group newGroup = oldGroup.clone();
           newGroup.getEvents().putIfAbsent(eventId, newEvent);
 
-          //when rsvp is not greater than 0, updateUsersTable gets called by setEventTentativeChoices
+          //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
           if (newEvent.getRsvpDuration() > 0) {
             this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
           }
@@ -528,6 +567,13 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method allows a user to opt in or out of an event.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus optInOutOfEvent(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.optInOutOfEvent";
     metrics.commonSetup(classMethod);
@@ -545,6 +591,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
+        //only allow the user to opt in/out if they're a member of the group
         if (user.getGroups().containsKey(groupId)) {
           String updateExpression;
           ValueMap valueMap = null;
@@ -738,6 +785,13 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method allows a user to vote for a tentative choice on an event.
+   *
+   * @param jsonMap Common request map from endpoint handler containing api input.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "GroupsManager.voteForChoice";
     metrics.commonSetup(classMethod);
@@ -757,6 +811,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
         final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
 
+        //only allow the user to vote if they are in the group
         if (user.getGroups().containsKey(groupId)) {
           if (voteValue != 1) {
             voteValue = 0;
@@ -912,9 +967,10 @@ public class GroupsManager extends DatabaseAccessManager {
       try {
         final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
 
+        //don't send a notification to the creator as they know they just created the group
         if (!username.equals(addedTo.getGroupCreator())) {
-          //Note: no need to check user's group muted settings since they're just being added
           if (user.pushEndpointArnIsSet()) {
+            //Note: no need to check user's group muted settings since they're just being added
             if (user.getAppSettings().isMuted()) {
               DatabaseManagers.SNS_ACCESS_MANAGER
                   .sendMutedMessage(user.getPushEndpointArn(), metadata);
@@ -1016,12 +1072,12 @@ public class GroupsManager extends DatabaseAccessManager {
             .getEventCreatorDisplayName();
 
     if (updatedEvent.getSelectedChoice() != null) {
-      //we just transitioned to a having a selected choice -> occurring
+      //we just transitioned to a having a selected choice -> stage: occurring
       action = "eventChosen";
       eventChangeBody =
           updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
-      //we just transitioned to getting tentative choices -> we need to vote
+      //we just transitioned to getting tentative choices -> stage: voting
       action = "eventVoting";
       eventChangeBody = "Vote for " + updatedEvent.getEventName();
     } // else the event was indeed just created
@@ -1271,11 +1327,13 @@ public class GroupsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
+  //This method takes in a list of TentatvieAlgorithmChoices and builds the corresponding
+  //default voting numbers map
   private Map<String, Map> getVotingNumbersSetup(
       final Map<String, String> tentativeAlgorithmChoices) {
     final Map<String, Map> votingNumbers = new HashMap<>();
 
-    //we're filling a map keyed by choiceId with empty maps
+    //we're filling a map keyed by choiceId mapped to empty maps
     for (String choiceId : tentativeAlgorithmChoices.keySet()) {
       votingNumbers.put(choiceId, ImmutableMap.of());
     }
@@ -1283,6 +1341,20 @@ public class GroupsManager extends DatabaseAccessManager {
     return votingNumbers;
   }
 
+  /**
+   * This method handles updating an event in a group. It does this by taking in the old group
+   * definition and the updated event and it compares what was on the group to what is being put on
+   * the group. In this way, it can know what was updated and it can know what data needs to be
+   * denormalized to the users table.
+   *
+   * @param oldGroup     The group object before the event was updated.
+   * @param eventId      The id of the event that was update.
+   * @param updatedEvent The event object with the updates registered.
+   * @param isNewEvent   Is this update for a new event or for one that has been pending for some
+   *                     duration?
+   * @param metrics      Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus updateEvent(final Group oldGroup, final String eventId,
       final Event updatedEvent, final Boolean isNewEvent, final Metrics metrics) {
     final String classMethod = "GroupsManager.updateEvent";
@@ -1359,6 +1431,13 @@ public class GroupsManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
+  /**
+   * This method gets all of the category ids on a group.
+   *
+   * @param groupId The group id to be pulled.
+   * @param metrics Standard metrics object for profiling and logging.
+   * @return This list of categoryIds or any empty list if there was an exception.
+   */
   public List<String> getAllCategoryIds(final String groupId, final Metrics metrics) {
     final String classMethod = "GroupsManager.getAllCategoryIds";
     metrics.commonSetup(classMethod);
@@ -1377,8 +1456,15 @@ public class GroupsManager extends DatabaseAccessManager {
     return categoryIds;
   }
 
-  // This function is called when a category is deleted and updates each item in the groups table
-  // that was linked to the category accordingly.
+  /**
+   * This function is called when a category is deleted and updates each item in the groups table
+   * that was linked to the category accordingly.
+   *
+   * @param groupIds   A set of group ids that need to have the category id removed from them.
+   * @param categoryId The catgory id to be removed.
+   * @param metrics    Standard metrics object for profiling and logging.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus removeCategoryFromGroups(final Set<String> groupIds, final String categoryId,
       final Metrics metrics) {
     final String classMethod = "GroupsManager.removeCategoryFromGroups";
