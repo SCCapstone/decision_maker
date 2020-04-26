@@ -1061,6 +1061,7 @@ public class GroupsManager extends DatabaseAccessManager {
     final Map<String, Object> payload = updatedEvent.asMap();
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
     payload.putIfAbsent(GROUP_NAME, group.getGroupName());
+    payload.putIfAbsent(LAST_ACTIVITY, group.getLastActivity());
     payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
     String action = "eventCreated";
