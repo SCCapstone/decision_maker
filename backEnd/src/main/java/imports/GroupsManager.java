@@ -542,7 +542,8 @@ public class GroupsManager extends DatabaseAccessManager {
           }
 
           final Group newGroup = oldGroup.clone();
-          newGroup.getEvents().putIfAbsent(eventId, newEvent);
+          newGroup.getEvents().put(eventId, newEvent);
+          newGroup.setLastActivity(lastActivity);
 
           //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
           if (newEvent.getRsvpDuration() > 0) {
@@ -1060,6 +1061,7 @@ public class GroupsManager extends DatabaseAccessManager {
     final Map<String, Object> payload = updatedEvent.asMap();
     payload.putIfAbsent(GROUP_ID, group.getGroupId());
     payload.putIfAbsent(GROUP_NAME, group.getGroupName());
+    payload.putIfAbsent(LAST_ACTIVITY, group.getLastActivity());
     payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
     String action = "eventCreated";
@@ -1167,7 +1169,7 @@ public class GroupsManager extends DatabaseAccessManager {
         valueMap.withString(":groupIcon", newGroup.getIcon());
       }
 
-      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity())) {
+      if (!newGroup.getLastActivity().equals(oldGroup.getLastActivity()) || isNewEvent) {
         updateExpression +=
             ", " + UsersManager.GROUPS + ".#groupId." + LAST_ACTIVITY + " = :lastActivity";
         valueMap.withString(":lastActivity", newGroup.getLastActivity());

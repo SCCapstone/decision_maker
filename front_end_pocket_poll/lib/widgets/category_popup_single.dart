@@ -104,12 +104,12 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                                     children: [
                                       TextSpan(
                                           text:
-                                              "No categories found in this group. Navigate to the group settings page "),
+                                              "No categories found in this group. Click on this icon:  "),
                                       WidgetSpan(
                                         child: Icon(Icons.settings),
                                       ),
                                       TextSpan(
-                                          text: " of this group to add some."),
+                                          text: " found in the top right corner of the group's page to add some."),
                                     ],
                                   ),
                                 ));

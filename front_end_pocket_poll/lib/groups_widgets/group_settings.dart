@@ -348,7 +348,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                             .selectedCategories,
                                                         canEdit: this.canEdit,
                                                       ))).then((_) {
-                                            saveCategories();
+                                            if (this.canEdit) {
+                                              saveCategories();
+                                            }
                                           });
                                         },
                                       )),
@@ -389,7 +391,9 @@ class _GroupSettingsState extends State<GroupSettings> {
                                                           false,
                                                           this.canEdit))).then(
                                               (_) {
-                                            saveMembers();
+                                            if (this.canEdit) {
+                                              saveMembers();
+                                            }
                                           });
                                         },
                                       )),

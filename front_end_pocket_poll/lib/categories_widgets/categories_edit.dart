@@ -350,7 +350,7 @@ class _EditCategoryState extends State<EditCategory> {
         context: this.context,
         builder: (context) {
           return AlertDialog(
-            title: Text("Copy \"${widget.category.categoryName}\""),
+            title: Text("Copy \"${this.category.categoryName}\""),
             actions: <Widget>[
               FlatButton(
                 child: Text("Cancel"),
@@ -580,31 +580,52 @@ class _EditCategoryState extends State<EditCategory> {
    */
   void saveCategory() async {
     hideKeyboard(this.context);
+
+    Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
+    Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
+    bool duplicates = false;
+    Set names = new Set();
+    for (ChoiceRow choiceRow in this.choiceRows) {
+      labelsToSave.putIfAbsent(
+          choiceRow.choiceNumber, () => choiceRow.labelController.text.trim());
+      ratesToSave.putIfAbsent(
+          choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
+      if (!names.add(choiceRow.labelController.text.trim())) {
+        duplicates = true;
+      }
+    }
+
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
       showErrorMessage("Error", "Must have at least one choice!", this.context);
-    } else if (form.validate()) {
-      Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
-      Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
-      bool duplicates = false;
-      Set names = new Set();
-      for (ChoiceRow choiceRow in this.choiceRows) {
-        labelsToSave.putIfAbsent(choiceRow.choiceNumber,
-            () => choiceRow.labelController.text.trim());
-        ratesToSave.putIfAbsent(
-            choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
-        if (!names.add(choiceRow.labelController.text.trim())) {
-          duplicates = true;
-        }
+    } else if (!this.isCategoryOwner) {
+      // not the owner so only save these new ratings
+      showLoadingDialog(this.context, "Saving changes...", true);
+      ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
+          this.category.categoryId, ratesToSave);
+      Navigator.of(this.context, rootNavigator: true).pop('dialog');
+
+      if (resultStatus.success) {
+        // update local ratings
+        Globals.user.categoryRatings.update(
+            widget.category.categoryId, (existing) => ratesToSave,
+            ifAbsent: () => ratesToSave);
+        setState(() {
+          setOriginalValues();
+          this.categoryChanged = false;
+        });
+      } else {
+        showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
-      hideKeyboard(this.context);
+    } else if (form.validate()) {
+      // the owner is trying to save the category, so now check choice names/category name
       if (duplicates) {
         setState(() {
           showErrorMessage(
               "Input Error", "No duplicate choices allowed!", this.context);
           this.autoValidate = true;
         });
-      } else if (this.isCategoryOwner) {
+      } else {
         showLoadingDialog(this.context, "Saving changes...", true);
         ResultStatus<Category> resultStatus =
             await CategoriesManager.addOrEditCategory(
@@ -628,25 +649,6 @@ class _EditCategoryState extends State<EditCategory> {
               widget.category.categoryId, (existing) => ratesToSave,
               ifAbsent: () => ratesToSave);
 
-          setState(() {
-            setOriginalValues();
-            this.categoryChanged = false;
-          });
-        } else {
-          showErrorMessage("Error", resultStatus.errorMessage, this.context);
-        }
-      } else {
-        // not the owner so only save these new ratings
-        showLoadingDialog(this.context, "Saving changes...", true);
-        ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
-            this.category.categoryId, ratesToSave);
-        Navigator.of(this.context, rootNavigator: true).pop('dialog');
-
-        if (resultStatus.success) {
-          // update local ratings
-          Globals.user.categoryRatings.update(
-              widget.category.categoryId, (existing) => ratesToSave,
-              ifAbsent: () => ratesToSave);
           setState(() {
             setOriginalValues();
             this.categoryChanged = false;
