@@ -19,6 +19,7 @@ public class CategoriesPostHandler implements
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
+
     ResultStatus resultStatus = new ResultStatus();
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
@@ -26,6 +27,8 @@ public class CategoriesPostHandler implements
     metrics.commonSetup(classMethod);
 
     try {
+      final String requestUrl = request.getPath();
+
       final Map<String, Object> jsonMap = JsonUtils.parseInput(request.getBody());
 
       if (jsonMap.containsKey("action") && jsonMap.containsKey("payload")) {

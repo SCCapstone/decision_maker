@@ -4,19 +4,16 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec;
-import com.amazonaws.services.dynamodbv2.document.spec.PutItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -44,112 +41,6 @@ public class CategoriesManager extends DatabaseAccessManager {
 
   public CategoriesManager(final DynamoDB dynamoDB) {
     super("categories", "CategoryId", Regions.US_EAST_2, dynamoDB);
-  }
-
-  public ResultStatus addNewCategory(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "CategoriesManager.addNewCategory";
-    metrics.commonSetup(classMethod);
-
-    //validate data, log results as there should be some validation already on the front end
-    ResultStatus resultStatus = new ResultStatus();
-
-    final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, CATEGORY_NAME, CHOICES);
-
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
-      try {
-        final String nextCategoryIndex = UUID.randomUUID().toString();
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-
-        final Category newCategory = new Category(jsonMap);
-        newCategory.updateNextChoiceNo();
-        newCategory.setVersion(1);
-        newCategory.setOwner(activeUser);
-        newCategory.setCategoryId(nextCategoryIndex);
-        newCategory.setGroups(Collections.emptyMap());
-
-        Optional<String> errorMessage = this.newCategoryIsValid(newCategory, metrics);
-        if (!errorMessage.isPresent()) {
-          this.putItem(newCategory);
-
-          //put the entered ratings in the users table
-          jsonMap.putIfAbsent(CATEGORY_ID, newCategory.getCategoryId()); // add required key
-          ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, true, metrics);
-
-          //TODO wrap this operation into a transaction with the above
-          if (updatedUsersTableResult.success) {
-            resultStatus = new ResultStatus(true,
-                JsonUtils.convertObjectToJson(newCategory.asMap()));
-          } else {
-            resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
-                + updatedUsersTableResult.resultMessage;
-          }
-        } else {
-          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
-          resultStatus.resultMessage = errorMessage.get();
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Error: Unable to parse request.";
-      }
-    } else {
-      metrics.log(
-          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
-    final String classMethod = "CategoryManager.newCategoryIsValid";
-    metrics.commonSetup(classMethod);
-
-    String errorMessage = null;
-
-    try {
-      final User user = new User(
-          DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(newCategory.getOwner()));
-
-      if (user.getOwnedCategories().size() >= MAX_NUMBER_OF_CATEGORIES) {
-        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
-            "Error: user already has maximum allowed number of categories.");
-      }
-
-      for (String categoryName : user.getOwnedCategories().values()) {
-        if (categoryName.equals(newCategory.getCategoryName())) {
-          errorMessage = this.getUpdatedInvalidMessage(errorMessage,
-              "Error: user can not own two categories with the same name.");
-          break;
-        }
-      }
-
-      if (newCategory.getChoices().size() < 1) {
-        errorMessage = this.getUpdatedInvalidMessage(errorMessage,
-            "Error: category must have at least one choice.");
-      }
-
-      for (String choiceLabel : newCategory.getChoices().values()) {
-        if (choiceLabel.trim().length() < 1) {
-          errorMessage = this
-              .getUpdatedInvalidMessage(errorMessage, "Error: choice labels cannot be empty.");
-          break;
-        }
-      }
-
-      if (newCategory.getCategoryName().trim().length() < 1) {
-        errorMessage = this
-            .getUpdatedInvalidMessage(errorMessage, "Error: category name can not be empty.");
-      }
-    } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
-      errorMessage = this.getUpdatedInvalidMessage(errorMessage, "Exception");
-    }
-
-    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
-    return Optional.ofNullable(errorMessage);
   }
 
   private String getUpdatedInvalidMessage(final String current, final String update) {

@@ -107,8 +107,6 @@ public class GroupsManagerTest {
       .put(GroupsManager.GROUP_ID, "13027fec-7fd7-4290-bd50-4dd84a572a4d") // openGroup.json
       .build();
 
-  private final Map<String, Object> badInput = new HashMap<>();
-
   private final Map<String, Object> handleGetBatchOfEventsGoodInput = Maps
       .newHashMap(ImmutableMap.<String, Object>builder()
           .put(RequestFields.ACTIVE_USER, "john_andrews12")
@@ -757,17 +755,11 @@ public class GroupsManagerTest {
 
   @Test
   public void deleteGroup_missingKeys_failureResult() {
-    ResultStatus resultStatus = this.groupsManager
-        .deleteGroup(this.badInput, metrics);
-    assertFalse(resultStatus.success);
-
-    this.badInput.put(RequestFields.ACTIVE_USER, "ActiveUser");
-
-    resultStatus = this.groupsManager.deleteGroup(this.badInput, metrics);
+    ResultStatus resultStatus = this.groupsManager.deleteGroup(Collections.emptyMap(), metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(2)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   @Test
@@ -1166,7 +1158,8 @@ public class GroupsManagerTest {
       final Group group = new Group(
           JsonUtils.getItemFromFile("groupWithAllEventStages.json").asMap());
       group.setLastActivity(LocalDateTime.now(ZoneId.of("UTC"))
-          .format(this.groupsManager.getDateTimeFormatter())); // set this to now so no change will be detected
+          .format(this.groupsManager
+              .getDateTimeFormatter())); // set this to now so no change will be detected
       //593e9c8e-a713-40ff-ae55-5d5bdfe940f4 is in consider
       final Event newEvent = group.getEvents().get("593e9c8e-a713-40ff-ae55-5d5bdfe940f4")
           .clone();
@@ -1488,17 +1481,11 @@ public class GroupsManagerTest {
 
   @Test
   public void leaveGroup_missingKeys_failureResult() {
-    ResultStatus resultStatus = this.groupsManager
-        .leaveGroup(this.badInput, metrics);
-    assertFalse(resultStatus.success);
-
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-
-    resultStatus = this.groupsManager.leaveGroup(this.badInput, metrics);
+    ResultStatus resultStatus = this.groupsManager.leaveGroup(Collections.emptyMap(), metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(2)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   ///////////////////////endregion
@@ -1598,17 +1585,11 @@ public class GroupsManagerTest {
 
   @Test
   public void rejoinGroup_missingKeys_failureResult() {
-    ResultStatus resultStatus = this.groupsManager
-        .leaveGroup(this.badInput, metrics);
-    assertFalse(resultStatus.success);
-
-    this.badInput.put(RequestFields.ACTIVE_USER, "testId");
-
-    resultStatus = this.groupsManager.rejoinGroup(this.badInput, metrics);
+    ResultStatus resultStatus = this.groupsManager.leaveGroup(Collections.emptyMap(), metrics);
     assertFalse(resultStatus.success);
 
     verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(2)).commonClose(false);
+    verify(this.metrics, times(1)).commonClose(false);
   }
 
   ///////////////////endregion

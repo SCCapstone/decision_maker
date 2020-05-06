@@ -1,13 +1,20 @@
 package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
-import imports.CategoriesManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 
 @Data
 public class Category implements Model {
+
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String CATEGORY_NAME = "CategoryName";
+  public static final String CHOICES = "Choices";
+  public static final String GROUPS = "Groups";
+  public static final String NEXT_CHOICE_NO = "NextChoiceNo";
+  public static final String VERSION = "Version";
+  public static final String OWNER = "Owner";
 
   private String categoryId;
   private String categoryName;
@@ -18,34 +25,34 @@ public class Category implements Model {
   private Map<String, String> groups;
 
   public Category(final Map<String, Object> jsonMap) {
-    this.setCategoryId((String) jsonMap.get(CategoriesManager.CATEGORY_ID));
-    this.setCategoryName((String) jsonMap.get(CategoriesManager.CATEGORY_NAME));
-    this.setOwner((String) jsonMap.get(CategoriesManager.OWNER));
-    this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(CategoriesManager.NEXT_CHOICE_NO)));
-    this.setVersion(this.getIntFromObject(jsonMap.get(CategoriesManager.VERSION)));
-    this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
-    this.setGroupsRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.GROUPS));
+    this.setCategoryId((String) jsonMap.get(CATEGORY_ID));
+    this.setCategoryName((String) jsonMap.get(CATEGORY_NAME));
+    this.setOwner((String) jsonMap.get(OWNER));
+    this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(NEXT_CHOICE_NO)));
+    this.setVersion(this.getIntFromObject(jsonMap.get(VERSION)));
+    this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CHOICES));
+    this.setGroupsRawMap((Map<String, Object>) jsonMap.get(GROUPS));
   }
 
   public Item asItem() {
     Item modelAsItem = Item.fromMap(this.asMap());
 
     //change the category id to be the primary key
-    modelAsItem.removeAttribute(CategoriesManager.CATEGORY_ID);
-    modelAsItem.withPrimaryKey(CategoriesManager.CATEGORY_ID, this.getCategoryId());
+    modelAsItem.removeAttribute(CATEGORY_ID);
+    modelAsItem.withPrimaryKey(CATEGORY_ID, this.getCategoryId());
 
     return modelAsItem;
   }
 
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_ID, this.categoryId);
-    modelAsMap.putIfAbsent(CategoriesManager.CATEGORY_NAME, this.categoryName);
-    modelAsMap.putIfAbsent(CategoriesManager.OWNER, this.owner);
-    modelAsMap.putIfAbsent(CategoriesManager.NEXT_CHOICE_NO, this.nextChoiceNo);
-    modelAsMap.putIfAbsent(CategoriesManager.VERSION, this.version);
-    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.choices);
-    modelAsMap.putIfAbsent(CategoriesManager.GROUPS, this.groups);
+    modelAsMap.putIfAbsent(CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(OWNER, this.owner);
+    modelAsMap.putIfAbsent(NEXT_CHOICE_NO, this.nextChoiceNo);
+    modelAsMap.putIfAbsent(VERSION, this.version);
+    modelAsMap.putIfAbsent(CHOICES, this.choices);
+    modelAsMap.putIfAbsent(GROUPS, this.groups);
     return modelAsMap;
   }
 
