@@ -1,5 +1,6 @@
 package models;
 
+import com.amazonaws.services.dynamodbv2.document.Item;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +47,10 @@ public class User {
   private Map<String, Boolean> favoriteOf;
   @Setter(AccessLevel.NONE)
   private Map<String, Favorite> favorites;
+
+  public User(final Item userItem) throws InvalidAttributeValueException {
+    this(userItem.asMap());
+  }
 
   public User(final Map<String, Object> jsonMap) throws InvalidAttributeValueException {
     this.setUsername((String) jsonMap.get(USERNAME));

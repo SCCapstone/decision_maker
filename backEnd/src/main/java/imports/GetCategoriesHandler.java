@@ -5,47 +5,60 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.AllArgsConstructor;
+import models.Group;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-@AllArgsConstructor
-public class GetCategoriesHandler implements ApiRequestHandler {
+public class GetCategoriesHandler extends ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
+  public GetCategoriesHandler(final DbAccessManager dbAccessManager,
+      final Map<String, Object> requestBody, final Metrics metrics) {
+    super(dbAccessManager, requestBody, metrics);
+  }
 
-  public ResultStatus handle(final Map<String, Object> jsonMap, final Metrics metrics) {
+  @Override
+  public ResultStatus handle() {
     final String classMethod = "GetCategoriesHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
     String resultMessage = "";
     List<String> categoryIds = new ArrayList<>();
 
-    //notice, due to how the ActiveUser key is set for every call, it's check must be last!
-    if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
-      categoryIds = (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS);
-    } else if (jsonMap.containsKey(GroupsManager.GROUP_ID)) {
-      String groupId = (String) jsonMap.get(DatabaseManagers.GROUPS_MANAGER.getPrimaryKeyIndex());
-      categoryIds = DatabaseManagers.GROUPS_MANAGER.getAllCategoryIds(groupId, metrics);
-    } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
-      String username = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-      categoryIds = DatabaseManagers.USERS_MANAGER.getAllOwnedCategoryIds(username, metrics);
-      List<String> groupIds = DatabaseManagers.USERS_MANAGER.getAllGroupIds(username, metrics);
+    try {
+      //notice, due to how the ActiveUser key is set for every call, it's check must be last!
+      if (this.requestBody.containsKey(RequestFields.CATEGORY_IDS)) {
+        categoryIds = (List<String>) this.requestBody.get(RequestFields.CATEGORY_IDS);
+      } else if (this.requestBody.containsKey(GroupsManager.GROUP_ID)) {
+        final String groupId = (String) this.requestBody.get(Group.GROUP_ID);
+        final Group group = this.dbAccessManager.getGroup(groupId);
+        categoryIds = new ArrayList<>(group.getCategories().keySet());
+      } else if (this.requestBody.containsKey(RequestFields.ACTIVE_USER)) {
+        final String activeUser = (String) this.requestBody.get(RequestFields.ACTIVE_USER);
+        final User user = this.dbAccessManager.getUser(activeUser);
+        //final List<String> groupIds = new ArrayList<>(user.getGroups().keySet());
 
-      for (String groupId : groupIds) {
-        List<String> groupCategoryIds = DatabaseManagers.GROUPS_MANAGER
-            .getAllCategoryIds(groupId, metrics);
-        categoryIds.addAll(groupCategoryIds);
+        //we're going to get the user's owned categories along with the categories the user has
+        //access to via their groups
+        categoryIds = new ArrayList<>(user.getOwnedCategories().keySet());
+//      for (String groupId : groupIds) {
+//        final Group group = this.dbAccessManager.getGroup(groupId);
+//        categoryIds.addAll(new ArrayList<>(group.getCategories().keySet()));
+//      }
+      } else {
+        success = false;
+        resultMessage = "Error: query key not defined.";
+        this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod,
+            "lookup key not in request payload/active user not set"));
       }
-    } else {
+    } catch (final Exception e) {
       success = false;
-      resultMessage = "Error: query key not defined.";
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
-          "lookup key not in request payload/active user not set"));
+      resultMessage = "Error: exception in " + classMethod;
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
     }
 
     if (success) {
@@ -57,15 +70,14 @@ public class GetCategoriesHandler implements ApiRequestHandler {
         try {
           categories.add(this.dbAccessManager.getCategoryMap(id));
         } catch (Exception e) {
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
         }
       }
 
       resultMessage = JsonUtils.convertIterableToJson(categories);
     }
 
-    metrics.commonClose(success);
-
+    this.metrics.commonClose(success);
     return new ResultStatus(success, resultMessage);
   }
 }

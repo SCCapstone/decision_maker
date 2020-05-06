@@ -1459,43 +1459,6 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   /**
-   * This function is called when a category is deleted and updates each item in the groups table
-   * that was linked to the category accordingly.
-   *
-   * @param groupIds   A set of group ids that need to have the category id removed from them.
-   * @param categoryId The catgory id to be removed.
-   * @param metrics    Standard metrics object for profiling and logging.
-   * @return Standard result status object giving insight on whether the request was successful.
-   */
-  public ResultStatus removeCategoryFromGroups(final Set<String> groupIds, final String categoryId,
-      final Metrics metrics) {
-    final String classMethod = "GroupsManager.removeCategoryFromGroups";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    try {
-      final String updateExpression = "remove Categories.#categoryId";
-      final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-      UpdateItemSpec updateItemSpec;
-
-      for (final String groupId : groupIds) {
-        updateItemSpec = new UpdateItemSpec()
-            .withNameMap(nameMap)
-            .withUpdateExpression(updateExpression);
-        this.updateItem(groupId, updateItemSpec);
-      }
-      resultStatus.success = true;
-    } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
-      resultStatus.resultMessage = "Error: Unable to parse request.";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  /**
    * This function takes in a group and batch number and gets the appropriate map of events for the
    * group based on the batch number. This method is used in the 'infinitely' scrolling list of
    * events on a group's page. Using this, we continue to get the next set or 'batch' of events.

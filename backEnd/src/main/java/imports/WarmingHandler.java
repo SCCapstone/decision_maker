@@ -1,20 +1,25 @@
 package imports;
 
 import java.util.Map;
-import lombok.AllArgsConstructor;
 import utilities.Config;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
-@AllArgsConstructor
-public class WarmingHandler implements ApiRequestHandler {
+public class WarmingHandler extends ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
+  public WarmingHandler(final DbAccessManager dbAccessManager,
+      final Map<String, Object> requestBody, final Metrics metrics) {
+    super(dbAccessManager, requestBody, metrics);
+  }
 
-  public ResultStatus handle(final Map<String, Object> jsonMap, final Metrics metrics) {
+  @Override
+  public ResultStatus handle() {
     final String classMethod = "WarmingHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
+
+    //squelch metrics on warming -> we only want metrics on user impacting cold starts
+    this.metrics.setPrintMetrics(false);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -25,10 +30,10 @@ public class WarmingHandler implements ApiRequestHandler {
 
       resultStatus = new ResultStatus(true, "Endpoints warmed.");
     } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>("input", classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>("", classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

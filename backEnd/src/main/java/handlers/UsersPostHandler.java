@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import imports.DatabaseManagers;
-import imports.WarmingManager;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
@@ -38,10 +37,7 @@ public class UsersPostHandler implements
 
           final String action = (String) jsonMap.get("action");
 
-          if (action.equals("updateUserChoiceRatings")) {
-            resultStatus = DatabaseManagers.USERS_MANAGER
-                .updateUserChoiceRatings(payloadJsonMap, metrics);
-          } else if (action.equals("updateUserSettings")) {
+          if (action.equals("updateUserSettings")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .updateUserSettings(payloadJsonMap, metrics);
           } else if (action.equals("updateSortSetting")) {
@@ -62,11 +58,6 @@ public class UsersPostHandler implements
           } else if (action.equals("markAllEventsSeen")) {
             resultStatus = DatabaseManagers.USERS_MANAGER
                 .markAllEventsSeen(payloadJsonMap, metrics);
-          } else if (action.equals("warmingEndpoint")) {
-            resultStatus = new WarmingManager().warmAllConnections(metrics);
-
-            //squelch metrics on warming -> we only want metrics on user impacting cold starts
-            metrics.setPrintMetrics(false);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered.";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));

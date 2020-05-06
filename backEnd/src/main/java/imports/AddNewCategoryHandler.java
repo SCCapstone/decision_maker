@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -16,76 +15,104 @@ import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
-@AllArgsConstructor
-public class AddNewCategoryHandler implements ApiRequestHandler {
+public class AddNewCategoryHandler extends ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
+  public static final Integer DEFAULT_CATEGORY_VERSION = 1;
 
-  private DbAccessManager dbAccessManager;
+  public AddNewCategoryHandler(final DbAccessManager dbAccessManager,
+      final Map<String, Object> requestBody, final Metrics metrics) {
+    super(dbAccessManager, requestBody, metrics);
+  }
 
-  public ResultStatus handle(final Map<String, Object> jsonMap, final Metrics metrics) {
+  @Override
+  public ResultStatus handle() {
     final String classMethod = "AddNewCategoryHandler.handle";
-    metrics.commonSetup(classMethod);
 
-    //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_NAME,
             Category.CHOICES);
 
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
+    if (this.requestBody.keySet().containsAll(requiredKeys)) {
       try {
-        final String nextCategoryIndex = UUID.randomUUID().toString();
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String activeUser = (String) this.requestBody.get((RequestFields.ACTIVE_USER));
+        final String categoryName = (String) this.requestBody.get(Category.CATEGORY_NAME);
+        final Map<String, Object> choices = (Map<String, Object>) this.requestBody
+            .get(Category.CHOICES);
+        final Map<String, Object> userRatings = (Map<String, Object>) this.requestBody
+            .get(RequestFields.USER_RATINGS);
 
-        final Category newCategory = new Category(jsonMap);
-        newCategory.updateNextChoiceNo();
-        newCategory.setVersion(1);
-        newCategory.setOwner(activeUser);
-        newCategory.setCategoryId(nextCategoryIndex);
-        newCategory.setGroups(Collections.emptyMap());
-
-        Optional<String> errorMessage = this.newCategoryIsValid(newCategory, metrics);
-        if (!errorMessage.isPresent()) {
-          this.dbAccessManager.putCategory(newCategory);
-
-          //put the entered ratings in the users table
-          jsonMap
-              .putIfAbsent(Category.CATEGORY_ID, newCategory.getCategoryId()); // add required key
-          //TODO create handler class an call handle on it for this action
-          ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, true, metrics);
-
-          //TODO wrap this operation into a transaction with the above
-          if (updatedUsersTableResult.success) {
-            resultStatus = new ResultStatus(true,
-                JsonUtils.convertObjectToJson(newCategory.asMap()));
-          } else {
-            resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
-                + updatedUsersTableResult.resultMessage;
-          }
-        } else {
-          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
-          resultStatus.resultMessage = errorMessage.get();
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Error: Unable to parse request.";
+        resultStatus = this.handle(activeUser, categoryName, choices, userRatings);
+      } catch (final Exception e) {
+        //something couldn't get parsed
+        this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+        resultStatus.resultMessage = "Error: Invalid request.";
       }
     } else {
-      metrics.log(
-          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod,
+          "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
-  private Optional<String> newCategoryIsValid(final Category newCategory, final Metrics metrics) {
+  public ResultStatus handle(final String activeUser, final String categoryName,
+      final Map<String, Object> choices, final Map<String, Object> userRatings) {
+    final String classMethod = "AddNewCategoryHandler.handle";
+    this.metrics.commonSetup(classMethod);
+
+    //validate data, log results as there should be some validation already on the front end
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+      final String nextCategoryIndex = UUID.randomUUID().toString();
+
+      final Category newCategory = new Category();
+      newCategory.setCategoryId(nextCategoryIndex);
+      newCategory.setCategoryName(categoryName);
+      newCategory.setVersion(DEFAULT_CATEGORY_VERSION);
+      newCategory.setOwner(activeUser);
+      newCategory.setGroups(Collections.emptyMap());
+      newCategory.setChoicesRawMap(choices);
+      newCategory.updateNextChoiceNo();
+
+      Optional<String> errorMessage = this.newCategoryIsValid(newCategory);
+      if (!errorMessage.isPresent()) {
+        this.dbAccessManager.putCategory(newCategory);
+
+        //put the entered ratings in the users table
+        final ResultStatus updatedUsersTableResult = new UpdateUserChoiceRatingsHandler(
+            this.dbAccessManager, this.requestBody, this.metrics)
+            .handle(activeUser, newCategory.getCategoryId(), null, true);
+
+        //TODO wrap this operation into a transaction with the above
+        if (updatedUsersTableResult.success) {
+          resultStatus = new ResultStatus(true,
+              JsonUtils.convertObjectToJson(newCategory.asMap()));
+        } else {
+          resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
+              + updatedUsersTableResult.resultMessage;
+        }
+      } else {
+        this.metrics
+            .log(new WarningDescriptor<>(this.requestBody, classMethod, errorMessage.get()));
+        resultStatus.resultMessage = errorMessage.get();
+      }
+    } catch (Exception e) {
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+      resultStatus.resultMessage = "Error: Unable to parse request.";
+    }
+
+    this.metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  private Optional<String> newCategoryIsValid(final Category newCategory) {
     final String classMethod = "CategoryManager.newCategoryIsValid";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;
 
@@ -123,11 +150,11 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
             .getUpdatedErrorMessage(errorMessage, "Error: category name can not be empty.");
       }
     } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>(newCategory.asMap(), classMethod, e));
       errorMessage = this.getUpdatedErrorMessage(errorMessage, "Exception");
     }
 
-    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
+    this.metrics.commonClose(errorMessage == null);
     return Optional.ofNullable(errorMessage);
   }
 

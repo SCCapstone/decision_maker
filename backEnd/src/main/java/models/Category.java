@@ -3,9 +3,13 @@ package models;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
 public class Category implements Model {
 
   public static final String CATEGORY_ID = "CategoryId";
@@ -23,6 +27,10 @@ public class Category implements Model {
   private Integer version;
   private Map<String, String> choices;
   private Map<String, String> groups;
+
+  public Category(final Item categoryItem) {
+    this(categoryItem.asMap());
+  }
 
   public Category(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(CATEGORY_ID));

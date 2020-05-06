@@ -12,9 +12,11 @@ import imports.ApiRequestHandler;
 import imports.DeleteCategoryHandler;
 import imports.EditCategoryHandler;
 import imports.GetCategoriesHandler;
+import imports.UpdateUserChoiceRatingsHandler;
 import imports.WarmingHandler;
 import java.lang.reflect.Constructor;
 import java.util.Map;
+import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -31,15 +33,17 @@ public class ProxyPostHandler implements
           .put("getCategories", GetCategoriesHandler.class)
           .put("deleteCategory", DeleteCategoryHandler.class)
           .put("warmingEndpoint", WarmingHandler.class)
+          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsHandler.class)
           .build());
 
-  private final Class[] defaultConstructor = new Class[]{DbAccessManager.class};
+  private final Class[] defaultConstructor = new Class[]{DbAccessManager.class, Map.class,
+      Metrics.class};
 
   private DbAccessManager dbAccessManager = new DbAccessManager();
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
     try {
@@ -57,24 +61,31 @@ public class ProxyPostHandler implements
             jsonMap.put(RequestFields.ACTIVE_USER,
                 GetActiveUser.getActiveUserFromRequest(request, context));
 
-            //TODO use DI for this part.
+            //TODO use DI for this part (inject the db access manager).
             Class<? extends ApiRequestHandler> actionHandlerClass = this.actionsToHandlers
                 .get(action);
             Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
             ApiRequestHandler apiRequestHandler = (ApiRequestHandler) c
-                .newInstance(this.dbAccessManager);
-            resultStatus = apiRequestHandler.handle(jsonMap, metrics);
+                .newInstance(this.dbAccessManager, jsonMap, metrics);
+            resultStatus = apiRequestHandler.handle();
           } else {
             //bad request body, log warning
+            resultStatus = ResultStatus.failure("Error: Bad request body.");
           }
         } else {
           //bad action, log warning
+          resultStatus = ResultStatus.failure("Error: Invalid action.");
         }
       } else {
         //bad request, log warning
+        resultStatus = ResultStatus.failure("Error: Bad request format.");
       }
     } catch (final Exception e) {
-
+      //exception, log error
+      metrics.log(new ErrorDescriptor<>(
+          ImmutableMap.of("path", request.getPath(), "body", request.getBody()),
+          "ProxyPostHandler.handleRequest", e));
+      resultStatus = ResultStatus.failure("Error: Exception occurred.");
     }
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());

@@ -1,15 +1,11 @@
 package imports;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Table;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,12 +19,9 @@ import utilities.ResultStatus;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
-public class WarmingManagerTest {
+public class WarmingHandlerTest {
 
   private WarmingHandler warmingHandler;
-  private UsersManager usersManager;
-  private GroupsManager groupsManager;
-  private CategoriesManager categoriesManager;
 
   @Mock
   private DbAccessManager dbAccessManager;

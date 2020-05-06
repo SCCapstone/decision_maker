@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
 import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -16,82 +15,118 @@ import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
-@AllArgsConstructor
-public class EditCategoryHandler implements ApiRequestHandler {
+public class EditCategoryHandler extends ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
+  public EditCategoryHandler(final DbAccessManager dbAccessManager,
+      final Map<String, Object> requestBody, final Metrics metrics) {
+    super(dbAccessManager, requestBody, metrics);
+  }
 
-  public ResultStatus handle(final Map<String, Object> jsonMap, final Metrics metrics) {
-    String classMethod = "EditCategoryHandler.handle";
-    metrics.commonSetup(classMethod);
+  @Override
+  public ResultStatus handle() {
+    final String classMethod = "EditCategoryHandler.handle";
 
     ResultStatus resultStatus = new ResultStatus();
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_ID, Category.CATEGORY_NAME,
-            Category.CHOICES);
+        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_ID,
+            Category.CATEGORY_NAME, Category.CHOICES);
 
-    //validate data, log results as there should be some validation already on the front end
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
+    if (this.requestBody.keySet().containsAll(requiredKeys)) {
       try {
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String activeUser = (String) this.requestBody.get((RequestFields.ACTIVE_USER));
+        final String categoryId = (String) this.requestBody.get(Category.CATEGORY_ID);
+        final String categoryName = (String) this.requestBody.get(Category.CATEGORY_NAME);
+        final Map<String, Object> choices = (Map<String, Object>) this.requestBody
+            .get(Category.CHOICES);
+        final Map<String, Object> userRatings = (Map<String, Object>) this.requestBody
+            .get(RequestFields.USER_RATINGS);
 
-        final Category newCategory = new Category(jsonMap);
-        final Category oldCategory = this.dbAccessManager.getCategory(newCategory.getCategoryId());
-
-        Optional<String> errorMessage = this
-            .editCategoryIsValid(newCategory, oldCategory, activeUser, metrics);
-        if (!errorMessage.isPresent()) {
-          //make sure the new category has everything set on it for the encoding in the api response
-          newCategory.updateNextChoiceNo();
-          newCategory.setVersion(this.determineVersionNumber(newCategory, oldCategory));
-          newCategory.setGroups(oldCategory.getGroups());
-          newCategory.setOwner(oldCategory.getOwner());
-
-          // only edit the category definition if something has changed
-          if (!newCategory.getVersion().equals(oldCategory.getVersion())) {
-            String updateExpression =
-                "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, " + Category.NEXT_CHOICE_NO
-                    + " = :next, " + Category.VERSION + " = :version";
-            ValueMap valueMap = new ValueMap()
-                .withString(":name", newCategory.getCategoryName())
-                .withMap(":map", newCategory.getChoices())
-                .withInt(":next", newCategory.getNextChoiceNo())
-                .withInt(":version", newCategory.getVersion());
-
-            UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                .withUpdateExpression(updateExpression)
-                .withValueMap(valueMap);
-
-            this.dbAccessManager.updateCategory(newCategory.getCategoryId(), updateItemSpec);
-          }
-
-          //put the entered ratings in the users table
-          ResultStatus updatedUsersTableResult = DatabaseManagers.USERS_MANAGER
-              .updateUserChoiceRatings(jsonMap, metrics);
-
-          if (updatedUsersTableResult.success) {
-            resultStatus = new ResultStatus(true,
-                JsonUtils.convertObjectToJson(newCategory.asMap()));
-          } else {
-            resultStatus.resultMessage = "Error in call to users manager.";
-            resultStatus.applyResultStatus(updatedUsersTableResult);
-          }
-        } else {
-          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, errorMessage.get()));
-          resultStatus.resultMessage = errorMessage.get();
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Error: Unable to parse request.";
+        resultStatus = this.handle(activeUser, categoryId, categoryName, choices, userRatings);
+      } catch (final Exception e) {
+        //something couldn't get parsed
+        this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+        resultStatus.resultMessage = "Error: Invalid request.";
       }
     } else {
-      metrics.log(
-          new ErrorDescriptor<>(jsonMap, classMethod, "Error: Required request keys not found."));
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod,
+          "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
 
-    metrics.commonClose(resultStatus.success);
+    return resultStatus;
+  }
+
+  public ResultStatus handle(final String activeUser, final String categoryId,
+      final String categoryName, final Map<String, Object> choices,
+      final Map<String, Object> userRatings) {
+    final String classMethod = "EditCategoryHandler.handle";
+    this.metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus = new ResultStatus();
+
+    try {
+
+      final Category newCategory = new Category();
+      newCategory.setCategoryId(categoryId);
+      newCategory.setCategoryName(categoryName);
+      newCategory.setChoicesRawMap(choices);
+
+      final Category oldCategory = this.dbAccessManager.getCategory(categoryId);
+
+      Optional<String> errorMessage = this
+          .editCategoryIsValid(newCategory, oldCategory, activeUser);
+      if (!errorMessage.isPresent()) {
+        //make sure the new category has everything set on it for the encoding in the api response
+        newCategory.updateNextChoiceNo();
+        newCategory.setVersion(this.determineVersionNumber(newCategory, oldCategory));
+        newCategory.setGroups(oldCategory.getGroups());
+        newCategory.setOwner(oldCategory.getOwner());
+
+        // only edit the category definition if something has changed
+        if (!newCategory.getVersion().equals(oldCategory.getVersion())) {
+          String updateExpression =
+              "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, "
+                  + Category.NEXT_CHOICE_NO
+                  + " = :next, " + Category.VERSION + " = :version";
+          ValueMap valueMap = new ValueMap()
+              .withString(":name", newCategory.getCategoryName())
+              .withMap(":map", newCategory.getChoices())
+              .withInt(":next", newCategory.getNextChoiceNo())
+              .withInt(":version", newCategory.getVersion());
+
+          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+              .withUpdateExpression(updateExpression)
+              .withValueMap(valueMap);
+
+          this.dbAccessManager.updateCategory(newCategory.getCategoryId(), updateItemSpec);
+        }
+
+        //TODO maybe try to build a transaction out of this?
+
+        //put the entered ratings in the users table
+        final ResultStatus updatedUsersTableResult =
+            new UpdateUserChoiceRatingsHandler(this.dbAccessManager, this.requestBody, this.metrics)
+            .handle(activeUser, categoryId, userRatings);
+
+        if (updatedUsersTableResult.success) {
+          resultStatus = new ResultStatus(true,
+              JsonUtils.convertObjectToJson(newCategory.asMap()));
+        } else {
+          resultStatus.resultMessage = "Error in call to users manager.";
+          resultStatus.applyResultStatus(updatedUsersTableResult);
+        }
+      } else {
+        this.metrics
+            .log(new WarningDescriptor<>(this.requestBody, classMethod, errorMessage.get()));
+        resultStatus.resultMessage = errorMessage.get();
+      }
+    } catch (Exception e) {
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+      resultStatus.resultMessage = "Error: Unable to parse request.";
+    }
+
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -122,15 +157,15 @@ public class EditCategoryHandler implements ApiRequestHandler {
   }
 
   private Optional<String> editCategoryIsValid(final Category editCategory,
-      final Category oldCategory, final String activeUser, final Metrics metrics) {
+      final Category oldCategory, final String activeUser) {
     final String classMethod = "CategoryManager.editCategoryIsValid";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;
 
     try {
       if (oldCategory.getOwner().equals(activeUser)) {
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
+        final User user = this.dbAccessManager.getUser(activeUser);
 
         for (String categoryId : user.getOwnedCategories().keySet()) {
           //this is an update and the name might not have changed so we have to see if a different
@@ -166,11 +201,11 @@ public class EditCategoryHandler implements ApiRequestHandler {
             .getUpdatedErrorMessage(errorMessage, "Error: category name can not be empty.");
       }
     } catch (Exception e) {
-      metrics.log(new ErrorDescriptor<>(editCategory.asMap(), classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>(editCategory.asMap(), classMethod, e));
       errorMessage = this.getUpdatedErrorMessage(errorMessage, "Exception");
     }
 
-    metrics.commonClose(errorMessage == null); // we should get pinged by invalid calls
+    this.metrics.commonClose(errorMessage == null);
     return Optional.ofNullable(errorMessage);
   }
 
