@@ -17,14 +17,14 @@ import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
 @AllArgsConstructor
-public class AddNewCategoryHandler implements Handler {
+public class AddNewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
 
   private DbAccessManager dbAccessManager;
 
   public ResultStatus handle(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "CategoriesManager.addNewCategory";
+    final String classMethod = "AddNewCategoryHandler.handle";
     metrics.commonSetup(classMethod);
 
     //validate data, log results as there should be some validation already on the front end

@@ -8,7 +8,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import imports.AddNewCategoryHandler;
 import imports.DbAccessManager;
-import imports.Handler;
+import imports.ApiRequestHandler;
+import imports.DeleteCategoryHandler;
+import imports.EditCategoryHandler;
+import imports.GetCategoriesHandler;
+import imports.WarmingHandler;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import utilities.GetActiveUser;
@@ -20,9 +24,13 @@ import utilities.ResultStatus;
 public class ProxyPostHandler implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-  private final Map<String, Class<? extends Handler>> actionsToHandlers = Maps
-      .newHashMap(ImmutableMap.<String, Class<? extends Handler>>builder()
+  private final Map<String, Class<? extends ApiRequestHandler>> actionsToHandlers = Maps
+      .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestHandler>>builder()
           .put("addNewCategory", AddNewCategoryHandler.class)
+          .put("editCategory", EditCategoryHandler.class)
+          .put("getCategories", GetCategoriesHandler.class)
+          .put("deleteCategory", DeleteCategoryHandler.class)
+          .put("warmingEndpoint", WarmingHandler.class)
           .build());
 
   private final Class[] defaultConstructor = new Class[]{DbAccessManager.class};
@@ -50,10 +58,12 @@ public class ProxyPostHandler implements
                 GetActiveUser.getActiveUserFromRequest(request, context));
 
             //TODO use DI for this part.
-            Class<? extends Handler> actionHandlerClass = this.actionsToHandlers.get(action);
+            Class<? extends ApiRequestHandler> actionHandlerClass = this.actionsToHandlers
+                .get(action);
             Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
-            Handler handler = (Handler) c.newInstance(this.dbAccessManager);
-            handler.handle(jsonMap, metrics);
+            ApiRequestHandler apiRequestHandler = (ApiRequestHandler) c
+                .newInstance(this.dbAccessManager);
+            resultStatus = apiRequestHandler.handle(jsonMap, metrics);
           } else {
             //bad request body, log warning
           }
@@ -65,7 +75,7 @@ public class ProxyPostHandler implements
       }
     } catch (final Exception e) {
 
-    } 
+    }
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

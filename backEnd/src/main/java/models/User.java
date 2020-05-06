@@ -1,7 +1,6 @@
 package models;
 
 import exceptions.InvalidAttributeValueException;
-import imports.UsersManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -10,6 +9,24 @@ import lombok.Setter;
 
 @Data
 public class User {
+
+  public static final String USERNAME = "Username";
+  public static final String DISPLAY_NAME = "DisplayName";
+  public static final String ICON = "Icon";
+  public static final String APP_SETTINGS = "AppSettings";
+  public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
+  public static final String APP_SETTINGS_MUTED = "Muted";
+  public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
+  public static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
+  public static final String GROUPS = "Groups";
+  public static final String GROUPS_LEFT = "GroupsLeft";
+  public static final String CATEGORY_RATINGS = "CategoryRatings";
+  public static final String OWNED_CATEGORIES = "OwnedCategories";
+  public static final String FAVORITES = "Favorites";
+  public static final String FAVORITE_OF = "FavoriteOf";
+  public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
+  public static final String EVENTS_UNSEEN = "EventsUnseen";
+  public static final String FIRST_LOGIN = "FirstLogin";
 
   private String username;
   private String displayName;
@@ -31,18 +48,18 @@ public class User {
   private Map<String, Favorite> favorites;
 
   public User(final Map<String, Object> jsonMap) throws InvalidAttributeValueException {
-    this.setUsername((String) jsonMap.get(UsersManager.USERNAME));
-    this.setDisplayName((String) jsonMap.get(UsersManager.DISPLAY_NAME));
-    this.setIcon((String) jsonMap.get(UsersManager.ICON));
-    this.setPushEndpointArn((String) jsonMap.get(UsersManager.PUSH_ENDPOINT_ARN));
+    this.setUsername((String) jsonMap.get(USERNAME));
+    this.setDisplayName((String) jsonMap.get(DISPLAY_NAME));
+    this.setIcon((String) jsonMap.get(ICON));
+    this.setPushEndpointArn((String) jsonMap.get(PUSH_ENDPOINT_ARN));
     this.setAppSettings(
-        new AppSettings((Map<String, Object>) jsonMap.get(UsersManager.APP_SETTINGS)));
-    this.setGroups((Map<String, Object>) jsonMap.get(UsersManager.GROUPS));
-    this.setGroupsLeft((Map<String, Object>) jsonMap.get(UsersManager.GROUPS_LEFT));
-    this.setCategoryRatings((Map<String, Object>) jsonMap.get(UsersManager.CATEGORY_RATINGS));
-    this.setOwnedCategories((Map<String, Object>) jsonMap.get(UsersManager.OWNED_CATEGORIES));
-    this.setFavoriteOf((Map<String, Object>) jsonMap.get(UsersManager.FAVORITE_OF));
-    this.setFavorites((Map<String, Object>) jsonMap.get(UsersManager.FAVORITES));
+        new AppSettings((Map<String, Object>) jsonMap.get(APP_SETTINGS)));
+    this.setGroups((Map<String, Object>) jsonMap.get(GROUPS));
+    this.setGroupsLeft((Map<String, Object>) jsonMap.get(GROUPS_LEFT));
+    this.setCategoryRatings((Map<String, Object>) jsonMap.get(CATEGORY_RATINGS));
+    this.setOwnedCategories((Map<String, Object>) jsonMap.get(OWNED_CATEGORIES));
+    this.setFavoriteOf((Map<String, Object>) jsonMap.get(FAVORITE_OF));
+    this.setFavorites((Map<String, Object>) jsonMap.get(FAVORITES));
   }
 
   public Member asMember() {

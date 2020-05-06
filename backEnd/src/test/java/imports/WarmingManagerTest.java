@@ -25,16 +25,13 @@ import utilities.ResultStatus;
 @RunWith(JUnitPlatform.class)
 public class WarmingManagerTest {
 
-  private WarmingManager warmingManager;
+  private WarmingHandler warmingHandler;
   private UsersManager usersManager;
   private GroupsManager groupsManager;
   private CategoriesManager categoriesManager;
 
   @Mock
-  private Table table;
-
-  @Mock
-  private DynamoDB dynamoDB;
+  private DbAccessManager dbAccessManager;
 
   @Mock
   private S3AccessManager s3AccessManager;
@@ -47,32 +44,22 @@ public class WarmingManagerTest {
 
   @BeforeEach
   private void init() {
-    this.warmingManager = new WarmingManager();
+    this.warmingHandler = new WarmingHandler(this.dbAccessManager);
 
-    this.usersManager = new UsersManager(this.dynamoDB);
-    this.groupsManager = new GroupsManager(this.dynamoDB);
-    this.categoriesManager = new CategoriesManager(this.dynamoDB);
-
-    DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
-    DatabaseManagers.USERS_MANAGER = this.usersManager;
-    DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
     DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
   }
 
-  ////////////////////////region
-  // warmAllConnections //
   ////////////////////////
+  // warmAllConnections //
+  ////////////////////////region
 
   @Test
   void warmAllConnections_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-
-    final ResultStatus resultStatus = this.warmingManager.warmAllConnections(this.metrics);
+    final ResultStatus resultStatus = this.warmingHandler.handle(null, this.metrics);
 
     assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(3)).getTable(any(String.class));
-    verify(this.table, times(3)).describe();
+    verify(this.dbAccessManager, times(1)).describeTables();;
     verify(this.s3AccessManager, times(1)).imageBucketExists();
     verify(this.snsAccessManager, times(1)).getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
     verify(this.metrics, times(1)).commonClose(true);
@@ -80,13 +67,11 @@ public class WarmingManagerTest {
 
   @Test
   void warmAllConnections_validInputBrokenDependency_failureResult() {
-    doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
+    doThrow(NullPointerException.class).when(this.dbAccessManager).describeTables();
 
-    final ResultStatus resultStatus = this.warmingManager.warmAllConnections(this.metrics);
+    final ResultStatus resultStatus = this.warmingHandler.handle(null, this.metrics);
 
     assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).describe();
     verify(this.s3AccessManager, times(0)).imageBucketExists();
     verify(this.snsAccessManager, times(0)).getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
     verify(this.metrics, times(1)).commonClose(false);

@@ -736,43 +736,6 @@ public class UsersManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method handles removing one of a user's owned categories.
-   *
-   * @param username   The username of the user that owns the category that is being removed.
-   * @param categoryId The id of the owned category being removed.
-   * @param metrics    Standard metrics object for profiling and logging.
-   * @return Standard result status object giving insight on whether the request was successful.
-   */
-  public ResultStatus removeOwnedCategory(final String username, final String categoryId,
-      final Metrics metrics) {
-    final String classMethod = "UsersManager.removeOwnedCategory";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    try {
-      final String updateExpression = "remove " + OWNED_CATEGORIES + ".#categoryId";
-      final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-
-      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withPrimaryKey(this.getPrimaryKeyIndex(), username)
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap);
-
-      this.updateItem(updateItemSpec);
-      resultStatus = new ResultStatus(true, "Owned category removed successfully");
-    } catch (Exception e) {
-      metrics.log(
-          new ErrorDescriptor<>(String.format("Username: %s, categoryId: %s", username, categoryId),
-              classMethod, e));
-      resultStatus.resultMessage = "Exception in manager";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  /**
    * This method removes a given group from each user that is or was in the group.
    *
    * @param membersLeft A set containing all of the members who have left the group.
