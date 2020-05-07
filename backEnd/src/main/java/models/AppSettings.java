@@ -2,7 +2,7 @@ package models;
 
 import com.google.common.collect.ImmutableList;
 import exceptions.InvalidAttributeValueException;
-import imports.UsersManager;
+import handlers.UsersManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

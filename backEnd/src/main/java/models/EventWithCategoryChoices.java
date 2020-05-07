@@ -3,7 +3,7 @@ package models;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
-import imports.CategoriesManager;
+import handlers.CategoriesManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;

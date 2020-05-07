@@ -5,7 +5,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.Update;
-import imports.DbAccessManager;
+import managers.DbAccessManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;

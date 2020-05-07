@@ -1,7 +1,7 @@
 package models;
 
-import imports.CategoriesManager;
-import imports.GroupsManager;
+import handlers.CategoriesManager;
+import handlers.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;

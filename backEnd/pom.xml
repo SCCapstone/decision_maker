@@ -53,6 +53,11 @@
             <artifactId>guava</artifactId>
             <version>28.0-jre</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.2.3</version>
+        </dependency>
 
         <!-- Provided dependencies -->
         <dependency>
@@ -185,7 +190,7 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <excludes>
-                                        <exclude>**handlers.*</exclude>
+                                        <exclude>**controllers.*</exclude>
                                         <exclude>**utilities.*</exclude>
                                         <exclude>**models.*</exclude>
                                         <exclude>**exceptions.*</exclude>
@@ -201,7 +206,7 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <excludes>
-                                        <exclude>**handlers.*</exclude>
+                                        <exclude>**controllers.*</exclude>
                                         <exclude>**utilities.*</exclude>
                                         <exclude>**models.*</exclude>
                                         <exclude>**exceptions.*</exclude>

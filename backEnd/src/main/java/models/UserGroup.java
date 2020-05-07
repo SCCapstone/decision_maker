@@ -1,7 +1,7 @@
 package models;
 
-import imports.GroupsManager;
-import imports.UsersManager;
+import handlers.GroupsManager;
+import handlers.UsersManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

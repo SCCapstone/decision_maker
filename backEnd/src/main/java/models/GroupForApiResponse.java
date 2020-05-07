@@ -1,6 +1,6 @@
 package models;
 
-import imports.DatabaseManagers;
+import handlers.DatabaseManagers;
 import java.util.Map;
 import lombok.Data;
 

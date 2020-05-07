@@ -1,6 +1,6 @@
 package models;
 
-import imports.UsersManager;
+import handlers.UsersManager;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
