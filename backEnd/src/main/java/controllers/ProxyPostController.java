@@ -6,17 +6,10 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import handlers.AddNewCategoryHandler;
-import managers.DbAccessManager;
-import handlers.ApiRequestHandler;
-import handlers.DeleteCategoryHandler;
-import handlers.EditCategoryHandler;
-import handlers.GetCategoriesHandler;
-import handlers.UpdateUserChoiceRatingsHandler;
-import handlers.WarmingHandler;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import managers.DbAccessManager;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonUtils;
@@ -27,18 +20,17 @@ import utilities.ResultStatus;
 public class ProxyPostController implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-  private final Map<String, Class<? extends ApiRequestHandler>> actionsToHandlers = Maps
-      .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestHandler>>builder()
-          .put("addNewCategory", AddNewCategoryHandler.class)
-          .put("editCategory", EditCategoryHandler.class)
-          .put("getCategories", GetCategoriesHandler.class)
-          .put("deleteCategory", DeleteCategoryHandler.class)
-          .put("warmingEndpoint", WarmingHandler.class)
-          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsHandler.class)
+  private final Map<String, Class<? extends ApiRequestController>> actionsToHandlers = Maps
+      .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
+          .put("addNewCategory", AddNewCategoryController.class)
+//          .put("editCategory", EditCategoryController.class)
+//          .put("getCategories", GetCategoriesController.class)
+//          .put("deleteCategory", DeleteCategoryController.class)
+//          .put("warmingEndpoint", WarmingController.class)
+//          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsController.class)
           .build());
 
-  private final Class[] defaultConstructor = new Class[]{DbAccessManager.class, Map.class,
-      Metrics.class};
+  private final Class[] defaultConstructor = new Class[] {}; // the default constructor
 
   private DbAccessManager dbAccessManager = new DbAccessManager();
 
@@ -65,12 +57,11 @@ public class ProxyPostController implements
                 GetActiveUser.getActiveUserFromRequest(request, context));
 
             //TODO use DI for this part (inject the db access manager).
-            Class<? extends ApiRequestHandler> actionHandlerClass = this.actionsToHandlers
+            Class<? extends ApiRequestController> actionHandlerClass = this.actionsToHandlers
                 .get(action);
             Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
-            ApiRequestHandler apiRequestHandler = (ApiRequestHandler) c
-                .newInstance(this.dbAccessManager, jsonMap, metrics);
-            resultStatus = apiRequestHandler.handle();
+            ApiRequestController apiRequestHandler = (ApiRequestController) c.newInstance();
+            resultStatus = apiRequestHandler.processApiRequest(jsonMap, metrics);
           } else {
             //bad request body, log warning
             resultStatus = ResultStatus.failure("Error: Bad request body.");

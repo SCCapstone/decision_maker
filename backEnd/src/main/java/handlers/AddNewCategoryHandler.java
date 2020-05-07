@@ -2,9 +2,9 @@ package handlers;
 
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
-import exceptions.MissingApiRequestKeyException;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,51 +17,30 @@ import utilities.AttributeValueUtils;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
-import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
-public class AddNewCategoryHandler extends ApiRequestHandler {
+public class AddNewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
   public static final Integer DEFAULT_CATEGORY_VERSION = 1;
 
-  public AddNewCategoryHandler(final DbAccessManager dbAccessManager,
-      final Map<String, Object> requestBody, final Metrics metrics) {
-    super(dbAccessManager, requestBody, metrics);
-  }
+  private final DbAccessManager dbAccessManager;
+  private final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
+  private final Map<String, Object> requestBody;
+  private final Metrics metrics;
 
-  @Override
-  public ResultStatus handle() throws MissingApiRequestKeyException {
-    final String classMethod = "AddNewCategoryHandler.handle";
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_NAME,
-            Category.CHOICES);
-
-    if (this.requestBody.keySet().containsAll(requiredKeys)) {
-      try {
-        final String activeUser = (String) this.requestBody.get((RequestFields.ACTIVE_USER));
-        final String categoryName = (String) this.requestBody.get(Category.CATEGORY_NAME);
-        final Map<String, Object> choices = (Map<String, Object>) this.requestBody
-            .get(Category.CHOICES);
-        final Map<String, Object> userRatings = (Map<String, Object>) this.requestBody
-            .get(RequestFields.USER_RATINGS);
-
-        resultStatus = this.handle(activeUser, categoryName, choices, userRatings);
-      } catch (final Exception e) {
-        //something couldn't get parsed
-        this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
-        resultStatus.resultMessage = "Error: Invalid request.";
-      }
-    } else {
-      throw new MissingApiRequestKeyException(requiredKeys);
-    }
-
-    return resultStatus;
+  @Inject
+  public AddNewCategoryHandler(
+      final DbAccessManager dbAccessManager,
+      @Assisted final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler,
+      @Assisted final Map<String, Object> requestBody,
+      @Assisted final Metrics metrics) {
+    this.dbAccessManager = dbAccessManager;
+    this.updateUserChoiceRatingsHandler = updateUserChoiceRatingsHandler;
+    this.requestBody = requestBody;
+    this.metrics = metrics;
   }
 
   public ResultStatus handle(final String activeUser, final String categoryName,
@@ -87,8 +66,7 @@ public class AddNewCategoryHandler extends ApiRequestHandler {
       Optional<String> errorMessage = this.newCategoryIsValid(newCategory);
       if (!errorMessage.isPresent()) {
         //get the update data for entering the user ratings into the users table
-        final ResultStatus<UpdateItemData> updatedUsersTableResult = new UpdateUserChoiceRatingsHandler(
-            this.dbAccessManager, this.requestBody, this.metrics)
+        final ResultStatus<UpdateItemData> updatedUsersTableResult = this.updateUserChoiceRatingsHandler
             .handle(activeUser, newCategory.getCategoryId(), userRatings, false, true);
 
         if (updatedUsersTableResult.success) {

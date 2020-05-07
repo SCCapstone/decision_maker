@@ -5,58 +5,34 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import exceptions.MissingApiRequestKeyException;
-import java.util.Arrays;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import managers.DbAccessManager;
-import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
-import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
-public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
+public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
 
-  public UpdateUserChoiceRatingsHandler(final DbAccessManager dbAccessManager,
-      final Map<String, Object> requestBody, final Metrics metrics) {
-    super(dbAccessManager, requestBody, metrics);
-  }
+  private final DbAccessManager dbAccessManager;
+  private final Map<String, Object> requestBody;
+  private final Metrics metrics;
 
-  @Override
-  public ResultStatus handle() throws MissingApiRequestKeyException {
-    final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
-
-    ResultStatus resultStatus;
-
-    final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, CategoriesManager.CATEGORY_ID,
-            RequestFields.USER_RATINGS);
-
-    if (this.requestBody.keySet().containsAll(requiredKeys)) {
-      try {
-        final String activeUser = (String) this.requestBody.get((RequestFields.ACTIVE_USER));
-        final String categoryId = (String) this.requestBody.get(Category.CATEGORY_ID);
-        final Map<String, Object> userRatings = (Map<String, Object>) this.requestBody
-            .get(RequestFields.USER_RATINGS);
-
-        resultStatus = this.handle(activeUser, categoryId, userRatings, true);
-      } catch (final Exception e) {
-        //something couldn't get parsed
-        this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
-        resultStatus = ResultStatus.failure("Exception in " + classMethod);
-      }
-    } else {
-      throw new MissingApiRequestKeyException(requiredKeys);
-    }
-
-    return resultStatus;
+  @Inject
+  public UpdateUserChoiceRatingsHandler(
+      final DbAccessManager dbAccessManager,
+      @Assisted final Map<String, Object> requestBody,
+      @Assisted final Metrics metrics) {
+    this.dbAccessManager = dbAccessManager;
+    this.requestBody = requestBody;
+    this.metrics = metrics;
   }
 
   /**
