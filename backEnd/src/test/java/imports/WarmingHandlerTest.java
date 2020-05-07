@@ -37,7 +37,7 @@ public class WarmingHandlerTest {
 
   @BeforeEach
   private void init() {
-    this.warmingHandler = new WarmingHandler(this.dbAccessManager);
+    this.warmingHandler = new WarmingHandler(this.dbAccessManager, null, this.metrics);
 
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
     DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
@@ -49,10 +49,11 @@ public class WarmingHandlerTest {
 
   @Test
   void warmAllConnections_validInput_successfulResult() {
-    final ResultStatus resultStatus = this.warmingHandler.handle(null, this.metrics);
+    final ResultStatus resultStatus = this.warmingHandler.handle();
 
     assertTrue(resultStatus.success);
-    verify(this.dbAccessManager, times(1)).describeTables();;
+    verify(this.dbAccessManager, times(1)).describeTables();
+    ;
     verify(this.s3AccessManager, times(1)).imageBucketExists();
     verify(this.snsAccessManager, times(1)).getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
     verify(this.metrics, times(1)).commonClose(true);
@@ -62,7 +63,7 @@ public class WarmingHandlerTest {
   void warmAllConnections_validInputBrokenDependency_failureResult() {
     doThrow(NullPointerException.class).when(this.dbAccessManager).describeTables();
 
-    final ResultStatus resultStatus = this.warmingHandler.handle(null, this.metrics);
+    final ResultStatus resultStatus = this.warmingHandler.handle();
 
     assertFalse(resultStatus.success);
     verify(this.s3AccessManager, times(0)).imageBucketExists();

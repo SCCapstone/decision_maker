@@ -1,5 +1,6 @@
 package imports;
 
+import exceptions.MissingApiRequestKeyException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -14,7 +15,7 @@ public class ApiRequestHandler {
   public final Metrics metrics;
 
   // this must be overwritten otherwise this exception will be thrown
-  public ResultStatus handle() {
+  public ResultStatus handle() throws MissingApiRequestKeyException {
     throw new NotImplementedException();
   }
 }

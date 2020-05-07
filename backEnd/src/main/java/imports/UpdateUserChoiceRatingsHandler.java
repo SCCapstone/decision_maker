@@ -3,9 +3,9 @@ package imports;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import exceptions.MissingApiRequestKeyException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +18,7 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
 public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
@@ -28,10 +29,10 @@ public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
   }
 
   @Override
-  public ResultStatus handle() {
+  public ResultStatus handle() throws MissingApiRequestKeyException {
     final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, CategoriesManager.CATEGORY_ID,
@@ -44,16 +45,14 @@ public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
         final Map<String, Object> userRatings = (Map<String, Object>) this.requestBody
             .get(RequestFields.USER_RATINGS);
 
-        resultStatus = this.handle(activeUser, categoryId, userRatings);
+        resultStatus = this.handle(activeUser, categoryId, userRatings, true);
       } catch (final Exception e) {
         //something couldn't get parsed
         this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
-        resultStatus.resultMessage = "Error: Invalid request.";
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
-      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod,
-          "Required request keys not found"));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
+      throw new MissingApiRequestKeyException(requiredKeys);
     }
 
     return resultStatus;
@@ -67,17 +66,19 @@ public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
    * @param activeUser Common request map from endpoint handler containing api input
    * @param categoryId Standard metrics object for profiling and logging
    * @param ratings    This is the map of choice ids to user rate values
+   * @param updateDb   This boolean tells the method whether or not it should update the db. If
+   *                   false, this generally means the update will be part of a transaction.
    * @return Standard result status object giving insight on whether the request was successful
    */
-  public ResultStatus handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings) {
-    return this.handle(activeUser, categoryId, ratings, false);
+  public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
+      final Map<String, Object> ratings, final boolean updateDb) {
+    return this.handle(activeUser, categoryId, ratings, updateDb, false);
   }
 
   //Same doc as above with the addition of the 'isNewCategory' param. This param tell the function
   //that the category has just been created and therefore the active user is the owner
-  public ResultStatus handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings, final boolean isNewCategory) {
+  public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
+      final Map<String, Object> ratings, final boolean updateDb, final boolean isNewCategory) {
     final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -115,24 +116,29 @@ public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
           valueMap.withString(":categoryName", categoryName);
         }
 
-        final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-            .withNameMap(nameMap)
+        final UpdateItemData updateItemData = new UpdateItemData(activeUser,
+            DbAccessManager.USERS_TABLE_NAME)
             .withUpdateExpression(updateExpression)
-            .withValueMap(valueMap);
+            .withValueMap(valueMap)
+            .withNameMap(nameMap);
 
-        this.dbAccessManager.updateUser(activeUser, updateItemSpec);
+        if (updateDb) {
+          this.dbAccessManager.updateUser(updateItemData);
+        }
 
-        resultStatus = ResultStatus.successful("User ratings updated successfully!");
+        resultStatus = new ResultStatus<>(true, updateItemData,
+            "User ratings updated successfully!");
       } else {
         this.metrics
             .log(new WarningDescriptor<>(this.requestBody, classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (final Exception e) {
-      this.metrics.log(new WarningDescriptor<>(this.requestBody, classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
+    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -141,7 +147,7 @@ public class UpdateUserChoiceRatingsHandler extends ApiRequestHandler {
 
     try {
       for (final String choiceId : ratings.keySet()) {
-        final Integer rating = Integer.parseInt(ratings.get(choiceId).toString());
+        final int rating = Integer.parseInt(ratings.get(choiceId).toString());
 
         if (rating < 0 || rating > 5) {
           errorMessage = "Error: invalid rating value.";

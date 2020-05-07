@@ -3,12 +3,10 @@ package models;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 public class Category implements Model {
 

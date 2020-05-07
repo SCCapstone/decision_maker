@@ -1337,7 +1337,7 @@ public class GroupsManager extends DatabaseAccessManager {
 
     //we're filling a map keyed by choiceId mapped to empty maps
     for (String choiceId : tentativeAlgorithmChoices.keySet()) {
-      votingNumbers.put(choiceId, ImmutableMap.of());
+      votingNumbers.put(choiceId, new HashMap<>());
     }
 
     return votingNumbers;

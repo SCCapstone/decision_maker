@@ -15,6 +15,7 @@ import imports.GetCategoriesHandler;
 import imports.UpdateUserChoiceRatingsHandler;
 import imports.WarmingHandler;
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 import java.util.Map;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
@@ -43,6 +44,8 @@ public class ProxyPostHandler implements
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
+    final String classMethod = "ProxyPostHandler.handleRequest";
+
     ResultStatus resultStatus;
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
@@ -81,10 +84,12 @@ public class ProxyPostHandler implements
         resultStatus = ResultStatus.failure("Error: Bad request format.");
       }
     } catch (final Exception e) {
-      //exception, log error
       metrics.log(new ErrorDescriptor<>(
-          ImmutableMap.of("path", request.getPath(), "body", request.getBody()),
-          "ProxyPostHandler.handleRequest", e));
+          new HashMap<String, Object>(){{
+            put("path", request.getPath());
+            put("body", request.getBody());
+          }},
+          classMethod, e));
       resultStatus = ResultStatus.failure("Error: Exception occurred.");
     }
 

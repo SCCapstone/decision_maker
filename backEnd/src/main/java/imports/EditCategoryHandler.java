@@ -1,7 +1,8 @@
 package imports;
 
-import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
 public class EditCategoryHandler extends ApiRequestHandler {
@@ -83,37 +85,41 @@ public class EditCategoryHandler extends ApiRequestHandler {
         newCategory.setGroups(oldCategory.getGroups());
         newCategory.setOwner(oldCategory.getOwner());
 
+        final List<TransactWriteItem> actions = new ArrayList<>();
+
         // only edit the category definition if something has changed
         if (!newCategory.getVersion().equals(oldCategory.getVersion())) {
-          String updateExpression =
+          final String updateExpression =
               "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, "
                   + Category.NEXT_CHOICE_NO
                   + " = :next, " + Category.VERSION + " = :version";
-          ValueMap valueMap = new ValueMap()
+          final ValueMap valueMap = new ValueMap()
               .withString(":name", newCategory.getCategoryName())
               .withMap(":map", newCategory.getChoices())
               .withInt(":next", newCategory.getNextChoiceNo())
               .withInt(":version", newCategory.getVersion());
 
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          final UpdateItemData updateItemData = new UpdateItemData(categoryId,
+              DbAccessManager.CATEGORIES_TABLE_NAME)
               .withUpdateExpression(updateExpression)
               .withValueMap(valueMap);
 
-          this.dbAccessManager.updateCategory(newCategory.getCategoryId(), updateItemSpec);
+          actions.add(new TransactWriteItem().withUpdate(updateItemData.asUpdate()));
         }
 
-        //TODO maybe try to build a transaction out of this?
-
-        //put the entered ratings in the users table
-        final ResultStatus updatedUsersTableResult =
+        //get the update data to entered the ratings into the users table
+        final ResultStatus<UpdateItemData> updatedUsersTableResult =
             new UpdateUserChoiceRatingsHandler(this.dbAccessManager, this.requestBody, this.metrics)
-            .handle(activeUser, categoryId, userRatings);
+                .handle(activeUser, categoryId, userRatings, false);
 
         if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true,
-              JsonUtils.convertObjectToJson(newCategory.asMap()));
+          actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
+
+          this.dbAccessManager.executeWriteTransaction(actions);
+
+          resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
-          resultStatus.resultMessage = "Error in call to users manager.";
+          resultStatus.resultMessage = "Error in dependency.";
           resultStatus.applyResultStatus(updatedUsersTableResult);
         }
       } else {

@@ -1370,47 +1370,47 @@ public class GroupsManagerTest {
   ////////////////////////////////////endregion
   // removeCategoryFromGroups tests //
   ////////////////////////////////////region
-  @Test
-  public void removeCategoryFromGroups_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
-
-    assertTrue(result.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  public void removeCategoryFromGroups_emptyGroupList_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(Collections.emptySet(), this.goodCategoryId, this.metrics);
-
-    assertTrue(result.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  public void removeCategoryFromGroups_emptyCategoryId_failureResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-    ResultStatus result = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics);
-
-    assertFalse(result.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
-
-  @Test
-  public void removeCategoryFromGroups_noDbConnection_failureResult() {
-    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
-    ResultStatus resultStatus = this.groupsManager
-        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(1)).getTable(any(String.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
+//  @Test
+//  public void removeCategoryFromGroups_validInput_successfulResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    ResultStatus result = this.groupsManager
+//        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
+//
+//    assertTrue(result.success);
+//    verify(this.dynamoDB, times(2)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(true);
+//  }
+//
+//  public void removeCategoryFromGroups_emptyGroupList_successfulResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    ResultStatus result = this.groupsManager
+//        .removeCategoryFromGroups(Collections.emptySet(), this.goodCategoryId, this.metrics);
+//
+//    assertTrue(result.success);
+//    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(true);
+//  }
+//
+//  public void removeCategoryFromGroups_emptyCategoryId_failureResult() {
+//    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
+//    ResultStatus result = this.groupsManager
+//        .removeCategoryFromGroups(this.goodGroupIds, null, this.metrics);
+//
+//    assertFalse(result.success);
+//    verify(this.dynamoDB, times(0)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
+//
+//  @Test
+//  public void removeCategoryFromGroups_noDbConnection_failureResult() {
+//    doReturn(null).when(this.dynamoDB).getTable(any(String.class));
+//    ResultStatus resultStatus = this.groupsManager
+//        .removeCategoryFromGroups(this.goodGroupIds, this.goodCategoryId, this.metrics);
+//
+//    assertFalse(resultStatus.success);
+//    verify(this.dynamoDB, times(1)).getTable(any(String.class));
+//    verify(this.metrics, times(1)).commonClose(false);
+//  }
 
   //////////////////////endregion
   // leaveGroup tests //

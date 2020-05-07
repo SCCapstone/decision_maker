@@ -1,5 +1,9 @@
 package imports;
 
+import com.amazonaws.services.dynamodbv2.model.Put;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
+import exceptions.MissingApiRequestKeyException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +12,13 @@ import java.util.Optional;
 import java.util.UUID;
 import models.Category;
 import models.User;
+import utilities.AttributeValueUtils;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
 public class AddNewCategoryHandler extends ApiRequestHandler {
@@ -26,7 +32,7 @@ public class AddNewCategoryHandler extends ApiRequestHandler {
   }
 
   @Override
-  public ResultStatus handle() {
+  public ResultStatus handle() throws MissingApiRequestKeyException {
     final String classMethod = "AddNewCategoryHandler.handle";
 
     ResultStatus resultStatus = new ResultStatus();
@@ -51,9 +57,7 @@ public class AddNewCategoryHandler extends ApiRequestHandler {
         resultStatus.resultMessage = "Error: Invalid request.";
       }
     } else {
-      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod,
-          "Required request keys not found"));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
+      throw new MissingApiRequestKeyException(requiredKeys);
     }
 
     return resultStatus;
@@ -81,17 +85,22 @@ public class AddNewCategoryHandler extends ApiRequestHandler {
 
       Optional<String> errorMessage = this.newCategoryIsValid(newCategory);
       if (!errorMessage.isPresent()) {
-        this.dbAccessManager.putCategory(newCategory);
-
-        //put the entered ratings in the users table
-        final ResultStatus updatedUsersTableResult = new UpdateUserChoiceRatingsHandler(
+        //get the update data for entering the user ratings into the users table
+        final ResultStatus<UpdateItemData> updatedUsersTableResult = new UpdateUserChoiceRatingsHandler(
             this.dbAccessManager, this.requestBody, this.metrics)
-            .handle(activeUser, newCategory.getCategoryId(), null, true);
+            .handle(activeUser, newCategory.getCategoryId(), userRatings, false, true);
 
-        //TODO wrap this operation into a transaction with the above
         if (updatedUsersTableResult.success) {
-          resultStatus = new ResultStatus(true,
-              JsonUtils.convertObjectToJson(newCategory.asMap()));
+          final List<TransactWriteItem> actions = new ArrayList<>();
+
+          actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
+          actions.add(new TransactWriteItem()
+              .withPut(new Put().withTableName(DbAccessManager.CATEGORIES_TABLE_NAME).withItem(
+                  AttributeValueUtils.convertMapToAttributeValueMap(newCategory.asMap()))));
+
+          this.dbAccessManager.executeWriteTransaction(actions);
+
+          resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
           resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
               + updatedUsersTableResult.resultMessage;
@@ -103,7 +112,7 @@ public class AddNewCategoryHandler extends ApiRequestHandler {
       }
     } catch (Exception e) {
       this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
-      resultStatus.resultMessage = "Error: Unable to parse request.";
+      resultStatus.resultMessage = "Exception in " + classMethod;
     }
 
     this.metrics.commonClose(resultStatus.success);
