@@ -9,8 +9,6 @@ import com.google.common.collect.Maps;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
-import managers.DbAccessManager;
-import modules.PocketPollModule;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonUtils;
@@ -21,17 +19,15 @@ import utilities.ResultStatus;
 public class ProxyPostController implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-  private final Map<String, Class<? extends ApiRequestController>> actionsToHandlers = Maps
+  private static final Map<String, Class<? extends ApiRequestController>> ACTIONS_TO_CONTROLLERS = Maps
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
           .put("addNewCategory", AddNewCategoryController.class)
-//          .put("editCategory", EditCategoryController.class)
-//          .put("getCategories", GetCategoriesController.class)
-//          .put("deleteCategory", DeleteCategoryController.class)
-//          .put("warmingEndpoint", WarmingController.class)
-//          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsController.class)
+          .put("editCategory", EditCategoryController.class)
+          .put("getCategories", GetCategoriesController.class)
+          .put("deleteCategory", DeleteCategoryController.class)
+          .put("warmingEndpoint", WarmingController.class)
+          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsController.class)
           .build());
-
-  private final Class[] defaultConstructor = new Class[]{}; // the default constructor
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
@@ -48,19 +44,18 @@ public class ProxyPostController implements
       if (splitAction.length == 2) {
         action = splitAction[1]; // the action is after the '/'
 
-        if (this.actionsToHandlers.containsKey(action)) {
+        if (ACTIONS_TO_CONTROLLERS.containsKey(action)) {
           final Map<String, Object> jsonMap = JsonUtils.parseInput(request.getBody());
-          metrics.setRequestBody(jsonMap);
+          metrics.setRequestBody(jsonMap); // attach here for logging before handling action
 
           if (!jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
             //get the active user from the authorization header and put it in the request payload
             jsonMap.put(RequestFields.ACTIVE_USER,
                 GetActiveUser.getActiveUserFromRequest(request, context));
 
-            //TODO use DI for this part (inject the db access manager).
-            final Class<? extends ApiRequestController> actionHandlerClass = this.actionsToHandlers
+            final Class<? extends ApiRequestController> actionHandlerClass = ACTIONS_TO_CONTROLLERS
                 .get(action);
-            final Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
+            final Constructor c = actionHandlerClass.getConstructor(); // get the default
             final ApiRequestController apiRequestHandler = (ApiRequestController) c.newInstance();
             resultStatus = apiRequestHandler.processApiRequest(jsonMap, metrics);
           } else {
@@ -69,7 +64,7 @@ public class ProxyPostController implements
           }
         } else {
           //bad action, log warning
-          resultStatus = ResultStatus.failure("Error: Invalid action.");
+          resultStatus = ResultStatus.failure("Error: Unknown action.");
         }
       } else {
         //bad request, log warning

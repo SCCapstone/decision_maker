@@ -13,7 +13,7 @@ import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-public class UpdateUserChoiceRatingsController {
+public class UpdateUserChoiceRatingsController implements ApiRequestController {
 
   @Inject
   public UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
@@ -33,12 +33,6 @@ public class UpdateUserChoiceRatingsController {
         final String categoryId = (String) jsonMap.get(Category.CATEGORY_ID);
         final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
-
-//        final Injector injector = Guice.createInjector(new PocketPollModule());
-//        final UpdateUserChoiceRatingsFactory updateUserChoiceRatingsFactory = injector
-//            .getInstance(UpdateUserChoiceRatingsFactory.class);
-//        resultStatus = updateUserChoiceRatingsFactory.create(metrics)
-//            .handle(activeUser, categoryId, userRatings, true);
 
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.updateUserChoiceRatingsHandler

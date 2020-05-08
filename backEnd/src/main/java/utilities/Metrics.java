@@ -101,7 +101,8 @@ public class Metrics {
 
     if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.countMetrics.get(this.functionNames.peek())
-          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) + 1);
+          .replace(metricName,
+              this.countMetrics.get(this.functionNames.peek()).get(metricName) + 1);
     } else {
       this.addIntegerMetric(metricName, 1); // it's not there -> implies it was 0
     }
@@ -112,7 +113,8 @@ public class Metrics {
 
     if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.countMetrics.get(this.functionNames.peek())
-          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) - 1);
+          .replace(metricName,
+              this.countMetrics.get(this.functionNames.peek()).get(metricName) - 1);
     }
   }
 
@@ -129,7 +131,9 @@ public class Metrics {
 
     if (this.timeMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.timeMetrics.get(this.functionNames.peek())
-          .replace(metricName, System.currentTimeMillis() - this.timeMetrics.get(this.functionNames.peek()).get(metricName));
+          .replace(metricName,
+              System.currentTimeMillis() - this.timeMetrics.get(this.functionNames.peek())
+                  .get(metricName));
     }
   }
 
@@ -142,7 +146,8 @@ public class Metrics {
   }
 
   public void logWithBody(final LoggingDescriptor<Map> descriptor) {
-    this.lambdaLogger.log(descriptor.withInput(this.requestBody).withRequestId(this.requestId).toString());
+    this.lambdaLogger
+        .log(descriptor.withInput(this.requestBody).withRequestId(this.requestId).toString());
   }
 
   public void logMetrics() {

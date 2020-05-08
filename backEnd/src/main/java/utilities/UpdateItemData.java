@@ -4,14 +4,12 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.Delete;
 import com.amazonaws.services.dynamodbv2.model.Update;
-import managers.DbAccessManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
-import models.Category;
-import models.Group;
-import models.User;
+import managers.DbAccessManager;
 
 @Data
 public class UpdateItemData {
@@ -45,7 +43,7 @@ public class UpdateItemData {
 
   public UpdateItemSpec asUpdateItemSpec() throws Exception {
     final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-        .withPrimaryKey(this.getKeyIndex(), this.keyValue)
+        .withPrimaryKey(DbAccessManager.getKeyIndex(this.tableName), this.keyValue)
         .withUpdateExpression(this.updateExpression);
 
     if (this.valueMap != null) {
@@ -80,23 +78,15 @@ public class UpdateItemData {
     return update;
   }
 
+  public Delete asDelete() throws Exception {
+    return new Delete().withTableName(this.tableName).withKey(this.getKeyMap());
+  }
+
   private Map<String, AttributeValue> getKeyMap() throws Exception {
-    final String keyIndex = this.getKeyIndex();
+    final String keyIndex = DbAccessManager.getKeyIndex(this.tableName);
     final String keyValueCopy = this.keyValue;
     return new HashMap<String, AttributeValue>() {{
       put(keyIndex, new AttributeValue().withS(keyValueCopy));
     }};
-  }
-
-  private String getKeyIndex() throws Exception {
-    if (this.tableName.equals(DbAccessManager.CATEGORIES_TABLE_NAME)) {
-      return Category.CATEGORY_ID;
-    } else if (this.tableName.equals(DbAccessManager.USERS_TABLE_NAME)) {
-      return User.USERNAME;
-    } else if (this.tableName.equals(DbAccessManager.GROUPS_TABLE_NAME)) {
-      return Group.GROUP_ID;
-    } else {
-      throw new Exception("Invalid table name: " + this.tableName);
-    }
   }
 }

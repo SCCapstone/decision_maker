@@ -33,13 +33,15 @@ public class DbAccessManager {
   public static final String GROUPS_TABLE_NAME = "groups";
   public static final String CATEGORIES_TABLE_NAME = "categories";
 
+  public static final String CATEGORIES_PRIMARY_KEY = Category.CATEGORY_ID;
+  public static final String GROUPS_PRIMARY_KEY = Group.GROUP_ID;
+  public static final String USERS_PRIMARY_KEY = User.USERNAME;
+
   private final Table groupsTable;
   private final Table usersTable;
   private final Table categoriesTable;
   private final Table pendingEventsTable;
-  private final String groupsPrimaryKeyIndex;
-  private final String usersPrimaryKeyIndex;
-  private final String categoriesPrimaryKeyIndex;
+
   private final String pendingEventsPrimaryKeyIndex;
   private final Regions region;
   private final AmazonDynamoDBClient client;
@@ -56,13 +58,8 @@ public class DbAccessManager {
     this.dynamoDb = new DynamoDB(this.client);
 
     this.groupsTable = this.dynamoDb.getTable(GROUPS_TABLE_NAME);
-    this.groupsPrimaryKeyIndex = Group.GROUP_ID;
-
     this.usersTable = this.dynamoDb.getTable(USERS_TABLE_NAME);
-    this.usersPrimaryKeyIndex = User.USERNAME;
-
     this.categoriesTable = this.dynamoDb.getTable(CATEGORIES_TABLE_NAME);
-    this.categoriesPrimaryKeyIndex = Category.CATEGORY_ID;
 
     this.pendingEventsTable = this.dynamoDb.getTable("pending_events");
     this.pendingEventsPrimaryKeyIndex = "ScannerId";
@@ -75,11 +72,11 @@ public class DbAccessManager {
 
   public User getUser(final String username)
       throws NullPointerException, InvalidAttributeValueException {
-    return new User(this.usersTable.getItem(new PrimaryKey(this.usersPrimaryKeyIndex, username)));
+    return new User(this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username)));
   }
 
   public UpdateItemOutcome updateUser(final String username, final UpdateItemSpec updateItemSpec) {
-    updateItemSpec.withPrimaryKey(this.usersPrimaryKeyIndex, username);
+    updateItemSpec.withPrimaryKey(USERS_PRIMARY_KEY, username);
     return this.usersTable.updateItem(updateItemSpec);
   }
 
@@ -94,7 +91,7 @@ public class DbAccessManager {
 
   public Category getCategory(final String categoryId) throws NullPointerException {
     return new Category(
-        this.categoriesTable.getItem(new PrimaryKey(this.categoriesPrimaryKeyIndex, categoryId)));
+        this.categoriesTable.getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId)));
   }
 
   public Map<String, Object> getCategoryMap(final String categoryId) {
@@ -103,7 +100,7 @@ public class DbAccessManager {
 
   public UpdateItemOutcome updateCategory(final String categoryId,
       final UpdateItemSpec updateItemSpec) {
-    updateItemSpec.withPrimaryKey(this.categoriesPrimaryKeyIndex, categoryId);
+    updateItemSpec.withPrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId);
     return this.categoriesTable.updateItem(updateItemSpec);
   }
 
@@ -113,7 +110,7 @@ public class DbAccessManager {
 
   public DeleteItemOutcome deleteCategory(final String categoryId) {
     return this.categoriesTable
-        .deleteItem(new PrimaryKey(this.categoriesPrimaryKeyIndex, categoryId));
+        .deleteItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
   }
 
   //Groups table methods
@@ -122,12 +119,12 @@ public class DbAccessManager {
   }
 
   public Group getGroup(final String groupId) {
-    return new Group(this.groupsTable.getItem(new PrimaryKey(this.groupsPrimaryKeyIndex, groupId)));
+    return new Group(this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId)));
   }
 
   public UpdateItemOutcome updateGroup(final String groupId,
       final UpdateItemSpec updateItemSpec) {
-    updateItemSpec.withPrimaryKey(this.groupsPrimaryKeyIndex, groupId);
+    updateItemSpec.withPrimaryKey(GROUPS_PRIMARY_KEY, groupId);
     return this.groupsTable.updateItem(updateItemSpec);
   }
 
@@ -136,7 +133,7 @@ public class DbAccessManager {
   }
 
   public DeleteItemOutcome deleteGroup(final String groupId) {
-    return this.groupsTable.deleteItem(new PrimaryKey(this.groupsPrimaryKeyIndex, groupId));
+    return this.groupsTable.deleteItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
   }
 
   //for warming
@@ -158,5 +155,17 @@ public class DbAccessManager {
   public TransactGetItemsResult executeGetTransaction(
       final TransactGetItemsRequest transactGetItemsRequest) {
     return this.client.transactGetItems(transactGetItemsRequest);
+  }
+
+  public static String getKeyIndex(final String tableName) throws Exception {
+    if (tableName.equals(DbAccessManager.CATEGORIES_TABLE_NAME)) {
+      return CATEGORIES_PRIMARY_KEY;
+    } else if (tableName.equals(DbAccessManager.USERS_TABLE_NAME)) {
+      return USERS_PRIMARY_KEY;
+    } else if (tableName.equals(DbAccessManager.GROUPS_TABLE_NAME)) {
+      return GROUPS_PRIMARY_KEY;
+    } else {
+      throw new Exception("Invalid table name: " + tableName);
+    }
   }
 }
