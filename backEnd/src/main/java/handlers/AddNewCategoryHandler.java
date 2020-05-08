@@ -2,14 +2,13 @@ package handlers;
 
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Category;
 import models.User;

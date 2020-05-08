@@ -1,39 +1,34 @@
 package modules;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import dagger.Module;
+import dagger.Provides;
 import handlers.AddNewCategoryHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
+import javax.inject.Singleton;
+import lombok.RequiredArgsConstructor;
 import managers.DbAccessManager;
 import utilities.Metrics;
 
-public class PocketPollModule extends AbstractModule {
+@Module
+@RequiredArgsConstructor
+public class PocketPollModule {
 
-  public static Metrics metrics;
-
-//  protected void configure() {
-//    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, AddNewCategoryHandler.class)
-//        .build(AddNewCategoryFactory.class));
-//
-//    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, UpdateUserChoiceRatingsHandler.class)
-//        .build(UpdateUserChoiceRatingsFactory.class));
-//  }
+  private final Metrics metrics;
 
   @Provides
   @Singleton
-  static DbAccessManager provideDbAccessManager() {
+  public DbAccessManager provideDbAccessManager() {
     return new DbAccessManager();
   }
 
   @Provides
-  static AddNewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager, final
+  public AddNewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager, final
       UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
-    return new AddNewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, metrics);
+    return new AddNewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, this.metrics);
   }
 
   @Provides
-  static UpdateUserChoiceRatingsHandler provideUpdateUserChoiceRatingsHandler(final DbAccessManager dbAccessManager) {
-    return new UpdateUserChoiceRatingsHandler(dbAccessManager, metrics);
+  public UpdateUserChoiceRatingsHandler provideUpdateUserChoiceRatingsHandler(final DbAccessManager dbAccessManager) {
+    return new UpdateUserChoiceRatingsHandler(dbAccessManager, this.metrics);
   }
 }

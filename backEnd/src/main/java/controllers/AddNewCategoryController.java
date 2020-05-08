@@ -1,18 +1,15 @@
 package controllers;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import exceptions.MissingApiRequestKeyException;
-import factories.AddNewCategoryFactory;
-import factories.UpdateUserChoiceRatingsFactory;
 import handlers.AddNewCategoryHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import models.Category;
-import modules.PocketPollModule;
+import modules.Injector;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -20,6 +17,9 @@ import utilities.ResultStatus;
 
 @NoArgsConstructor
 public class AddNewCategoryController implements ApiRequestController {
+
+  @Inject
+  public AddNewCategoryHandler addNewCategoryHandler;
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
@@ -39,8 +39,14 @@ public class AddNewCategoryController implements ApiRequestController {
         final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        final Injector injector = Guice.createInjector(new PocketPollModule());
-        resultStatus = injector.getInstance(AddNewCategoryHandler.class)
+//        PocketPollComponent pocketPollComponent = DaggerPocketPollComponent.builder().build();
+//        pocketPollComponent.provideAddNewCategoryHandler();
+//        final Injector injector = Guice.createInjector(new PocketPollModule());
+//        resultStatus = injector.getInstance(AddNewCategoryHandler.class)
+//            .handle(activeUser, categoryName, choices, userRatings);
+
+        Injector.getInjector(metrics).inject(this);
+        resultStatus = this.addNewCategoryHandler
             .handle(activeUser, categoryName, choices, userRatings);
       } catch (final Exception e) {
         //something couldn't get parsed

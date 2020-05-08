@@ -1,21 +1,22 @@
 package controllers;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import exceptions.MissingApiRequestKeyException;
-import factories.AddNewCategoryFactory;
-import factories.UpdateUserChoiceRatingsFactory;
+import handlers.UpdateUserChoiceRatingsHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import models.Category;
-import modules.PocketPollModule;
+import modules.Injector;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
 public class UpdateUserChoiceRatingsController {
+
+  @Inject
+  public UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
@@ -33,10 +34,14 @@ public class UpdateUserChoiceRatingsController {
         final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        final Injector injector = Guice.createInjector(new PocketPollModule());
-        final UpdateUserChoiceRatingsFactory updateUserChoiceRatingsFactory = injector
-            .getInstance(UpdateUserChoiceRatingsFactory.class);
-        resultStatus = updateUserChoiceRatingsFactory.create(metrics)
+//        final Injector injector = Guice.createInjector(new PocketPollModule());
+//        final UpdateUserChoiceRatingsFactory updateUserChoiceRatingsFactory = injector
+//            .getInstance(UpdateUserChoiceRatingsFactory.class);
+//        resultStatus = updateUserChoiceRatingsFactory.create(metrics)
+//            .handle(activeUser, categoryId, userRatings, true);
+
+        Injector.getInjector(metrics).inject(this);
+        resultStatus = this.updateUserChoiceRatingsHandler
             .handle(activeUser, categoryId, userRatings, true);
       } catch (final Exception e) {
         //something couldn't get parsed

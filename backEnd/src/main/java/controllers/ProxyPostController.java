@@ -41,9 +41,6 @@ public class ProxyPostController implements
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     metrics.commonSetup(classMethod);
 
-    //Setup the static reference for injection. This might not work because I don't think this is thread safe...
-    PocketPollModule.metrics = metrics;
-
     try {
       String action = request.getPath(); // this should be of the form '/action'
       String[] splitAction = action.split("/"); // remove the prefixed slash

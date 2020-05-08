@@ -5,12 +5,11 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.User;
 import utilities.ErrorDescriptor;
