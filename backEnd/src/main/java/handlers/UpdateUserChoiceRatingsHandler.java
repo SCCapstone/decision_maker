@@ -22,16 +22,13 @@ import utilities.WarningDescriptor;
 public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
 
   private final DbAccessManager dbAccessManager;
-  private final Map<String, Object> requestBody;
   private final Metrics metrics;
 
   @Inject
   public UpdateUserChoiceRatingsHandler(
       final DbAccessManager dbAccessManager,
-      @Assisted final Map<String, Object> requestBody,
-      @Assisted final Metrics metrics) {
+      final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
-    this.requestBody = requestBody;
     this.metrics = metrics;
   }
 
@@ -44,18 +41,23 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
    * @param categoryId Standard metrics object for profiling and logging
    * @param ratings    This is the map of choice ids to user rate values
    * @param updateDb   This boolean tells the method whether or not it should update the db. If
-   *                   false, this generally means the update will be part of a transaction.
+   *                   false, this generally means the update data will be part of a transaction.
    * @return Standard result status object giving insight on whether the request was successful
    */
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
       final Map<String, Object> ratings, final boolean updateDb) {
-    return this.handle(activeUser, categoryId, ratings, updateDb, false);
+    return this.handle(activeUser, categoryId, ratings, updateDb, null, false);
+  }
+
+  public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
+      final Map<String, Object> ratings, final boolean updateDb, final String categoryName) {
+    return this.handle(activeUser, categoryId, ratings, updateDb, categoryName, false);
   }
 
   //Same doc as above with the addition of the 'isNewCategory' param. This param tell the function
   //that the category has just been created and therefore the active user is the owner
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings, final boolean updateDb, final boolean isNewCategory) {
+      final Map<String, Object> ratings, final boolean updateDb, final String categoryName, final boolean isNewCategory) {
     final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -85,10 +87,7 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
         NameMap nameMap = new NameMap().with("#categoryId", categoryId);
         ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
 
-        if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId)) && this.requestBody
-            .containsKey(CategoriesManager.CATEGORY_NAME)) {
-          final String categoryName = (String) this.requestBody
-              .get(CategoriesManager.CATEGORY_NAME);
+        if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId)) && categoryName != null) {
           updateExpression += ", " + User.OWNED_CATEGORIES + ".#categoryId = :categoryName";
           valueMap.withString(":categoryName", categoryName);
         }
@@ -106,12 +105,11 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
         resultStatus = new ResultStatus<>(true, updateItemData,
             "User ratings updated successfully!");
       } else {
-        this.metrics
-            .log(new WarningDescriptor<>(this.requestBody, classMethod, errorMessage.get()));
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (final Exception e) {
-      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 

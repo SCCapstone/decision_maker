@@ -10,6 +10,7 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import managers.DbAccessManager;
+import modules.PocketPollModule;
 import utilities.ErrorDescriptor;
 import utilities.GetActiveUser;
 import utilities.JsonUtils;
@@ -30,9 +31,7 @@ public class ProxyPostController implements
 //          .put("updateUserChoiceRatings", UpdateUserChoiceRatingsController.class)
           .build());
 
-  private final Class[] defaultConstructor = new Class[] {}; // the default constructor
-
-  private DbAccessManager dbAccessManager = new DbAccessManager();
+  private final Class[] defaultConstructor = new Class[]{}; // the default constructor
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
@@ -40,6 +39,10 @@ public class ProxyPostController implements
 
     ResultStatus resultStatus;
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
+    metrics.commonSetup(classMethod);
+
+    //Setup the static reference for injection. This might not work because I don't think this is thread safe...
+    PocketPollModule.metrics = metrics;
 
     try {
       String action = request.getPath(); // this should be of the form '/action'
@@ -50,6 +53,7 @@ public class ProxyPostController implements
 
         if (this.actionsToHandlers.containsKey(action)) {
           final Map<String, Object> jsonMap = JsonUtils.parseInput(request.getBody());
+          metrics.setRequestBody(jsonMap);
 
           if (!jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
             //get the active user from the authorization header and put it in the request payload
@@ -57,10 +61,10 @@ public class ProxyPostController implements
                 GetActiveUser.getActiveUserFromRequest(request, context));
 
             //TODO use DI for this part (inject the db access manager).
-            Class<? extends ApiRequestController> actionHandlerClass = this.actionsToHandlers
+            final Class<? extends ApiRequestController> actionHandlerClass = this.actionsToHandlers
                 .get(action);
-            Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
-            ApiRequestController apiRequestHandler = (ApiRequestController) c.newInstance();
+            final Constructor c = actionHandlerClass.getConstructor(this.defaultConstructor);
+            final ApiRequestController apiRequestHandler = (ApiRequestController) c.newInstance();
             resultStatus = apiRequestHandler.processApiRequest(jsonMap, metrics);
           } else {
             //bad request body, log warning
@@ -76,13 +80,16 @@ public class ProxyPostController implements
       }
     } catch (final Exception e) {
       metrics.log(new ErrorDescriptor<>(
-          new HashMap<String, Object>(){{
+          new HashMap<String, Object>() {{
             put("path", request.getPath());
             put("body", request.getBody());
           }},
           classMethod, e));
       resultStatus = ResultStatus.failure("Error: Exception occurred.");
     }
+
+    metrics.commonClose(resultStatus.success);
+    metrics.logMetrics();
 
     return new APIGatewayProxyResponseEvent().withBody(resultStatus.toString());
   }

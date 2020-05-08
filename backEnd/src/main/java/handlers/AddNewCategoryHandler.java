@@ -28,18 +28,15 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
 
   private final DbAccessManager dbAccessManager;
   private final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
-  private final Map<String, Object> requestBody;
   private final Metrics metrics;
 
   @Inject
   public AddNewCategoryHandler(
       final DbAccessManager dbAccessManager,
-      @Assisted final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler,
-      @Assisted final Map<String, Object> requestBody,
-      @Assisted final Metrics metrics) {
+      final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler,
+      final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
     this.updateUserChoiceRatingsHandler = updateUserChoiceRatingsHandler;
-    this.requestBody = requestBody;
     this.metrics = metrics;
   }
 
@@ -67,7 +64,8 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
       if (!errorMessage.isPresent()) {
         //get the update data for entering the user ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult = this.updateUserChoiceRatingsHandler
-            .handle(activeUser, newCategory.getCategoryId(), userRatings, false, true);
+            .handle(activeUser, newCategory.getCategoryId(), userRatings, false, categoryName,
+                true);
 
         if (updatedUsersTableResult.success) {
           final List<TransactWriteItem> actions = new ArrayList<>();
@@ -85,12 +83,11 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
               + updatedUsersTableResult.resultMessage;
         }
       } else {
-        this.metrics
-            .log(new WarningDescriptor<>(this.requestBody, classMethod, errorMessage.get()));
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus.resultMessage = errorMessage.get();
       }
     } catch (Exception e) {
-      this.metrics.log(new ErrorDescriptor<>(this.requestBody, classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus.resultMessage = "Exception in " + classMethod;
     }
 

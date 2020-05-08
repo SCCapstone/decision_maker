@@ -3,27 +3,37 @@ package modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
-import factories.AddNewCategoryFactory;
-import factories.UpdateUserChoiceRatingsFactory;
 import handlers.AddNewCategoryHandler;
-import handlers.ApiRequestHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import managers.DbAccessManager;
+import utilities.Metrics;
 
 public class PocketPollModule extends AbstractModule {
 
-  protected void configure() {
-    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, AddNewCategoryHandler.class)
-        .build(AddNewCategoryFactory.class));
+  public static Metrics metrics;
 
-    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, UpdateUserChoiceRatingsHandler.class)
-        .build(UpdateUserChoiceRatingsFactory.class));
-  }
+//  protected void configure() {
+//    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, AddNewCategoryHandler.class)
+//        .build(AddNewCategoryFactory.class));
+//
+//    install(new FactoryModuleBuilder().implement(ApiRequestHandler.class, UpdateUserChoiceRatingsHandler.class)
+//        .build(UpdateUserChoiceRatingsFactory.class));
+//  }
 
   @Provides
   @Singleton
   static DbAccessManager provideDbAccessManager() {
     return new DbAccessManager();
+  }
+
+  @Provides
+  static AddNewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager, final
+      UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
+    return new AddNewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, metrics);
+  }
+
+  @Provides
+  static UpdateUserChoiceRatingsHandler provideUpdateUserChoiceRatingsHandler(final DbAccessManager dbAccessManager) {
+    return new UpdateUserChoiceRatingsHandler(dbAccessManager, metrics);
   }
 }

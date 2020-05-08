@@ -16,6 +16,13 @@ public class LoggingDescriptor<T> {
     this.exception = exception;
   }
 
+  public LoggingDescriptor(String loggingLevel, String classMethod, Exception exception) {
+    this.loggingLevel = loggingLevel;
+    this.input = null;
+    this.classMethod = classMethod;
+    this.exception = exception;
+  }
+
   public LoggingDescriptor(String loggingLevel, T input, String classMethod,
       String developerMessage) {
     this.loggingLevel = loggingLevel;
@@ -24,8 +31,21 @@ public class LoggingDescriptor<T> {
     this.developerMessage = developerMessage;
   }
 
+  public LoggingDescriptor(String loggingLevel, String classMethod,
+      String developerMessage) {
+    this.loggingLevel = loggingLevel;
+    this.input = null;
+    this.classMethod = classMethod;
+    this.developerMessage = developerMessage;
+  }
+
   public LoggingDescriptor withRequestId(String requestId) {
     this.requestId = requestId;
+    return this;
+  }
+
+  public LoggingDescriptor withInput(T input) {
+    this.input = input;
     return this;
   }
 

@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import exceptions.MissingApiRequestKeyException;
 import factories.AddNewCategoryFactory;
 import factories.UpdateUserChoiceRatingsFactory;
+import handlers.AddNewCategoryHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import java.util.Arrays;
 import java.util.List;
@@ -39,13 +40,7 @@ public class AddNewCategoryController implements ApiRequestController {
             .get(RequestFields.USER_RATINGS);
 
         final Injector injector = Guice.createInjector(new PocketPollModule());
-        final AddNewCategoryFactory addNewCategoryFactory = injector
-            .getInstance(AddNewCategoryFactory.class);
-        final UpdateUserChoiceRatingsFactory updateUserChoiceRatingsFactory = injector
-            .getInstance(UpdateUserChoiceRatingsFactory.class);
-
-        resultStatus = addNewCategoryFactory
-            .create(updateUserChoiceRatingsFactory.create(jsonMap, metrics), jsonMap, metrics)
+        resultStatus = injector.getInstance(AddNewCategoryHandler.class)
             .handle(activeUser, categoryName, choices, userRatings);
       } catch (final Exception e) {
         //something couldn't get parsed

@@ -36,7 +36,7 @@ public class UpdateUserChoiceRatingsController {
         final Injector injector = Guice.createInjector(new PocketPollModule());
         final UpdateUserChoiceRatingsFactory updateUserChoiceRatingsFactory = injector
             .getInstance(UpdateUserChoiceRatingsFactory.class);
-        resultStatus = updateUserChoiceRatingsFactory.create(jsonMap, metrics)
+        resultStatus = updateUserChoiceRatingsFactory.create(metrics)
             .handle(activeUser, categoryId, userRatings, true);
       } catch (final Exception e) {
         //something couldn't get parsed

@@ -21,6 +21,8 @@ public class Metrics {
   private final LambdaLogger lambdaLogger;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
+
+  private Map<String, Object> requestBody;
   private boolean printMetrics;
 
   public Metrics(final String requestId, final LambdaLogger lambdaLogger) {
@@ -35,6 +37,10 @@ public class Metrics {
 
   public void setFunctionName(final String functionName) {
     this.functionNames.push(functionName);
+  }
+
+  public void setRequestBody(final Map<String, Object> requestBody) {
+    this.requestBody = requestBody;
   }
 
   public void removeFunctionName() {
@@ -133,6 +139,10 @@ public class Metrics {
 
   public void log(final LoggingDescriptor descriptor) {
     this.lambdaLogger.log(descriptor.withRequestId(this.requestId).toString());
+  }
+
+  public void logWithBody(final LoggingDescriptor<Map> descriptor) {
+    this.lambdaLogger.log(descriptor.withInput(this.requestBody).withRequestId(this.requestId).toString());
   }
 
   public void logMetrics() {
