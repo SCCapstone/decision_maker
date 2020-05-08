@@ -83,7 +83,7 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
         //get the update data to entered the ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult =
-            this.updateUserChoiceRatingsHandler.handle(activeUser, categoryId, userRatings, false);
+            this.updateUserChoiceRatingsHandler.handle(activeUser, categoryId, userRatings, false, categoryName);
 
         if (updatedUsersTableResult.success) {
           actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
@@ -101,7 +101,7 @@ public class EditCategoryHandler implements ApiRequestHandler {
       }
     } catch (Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Error: Unable to parse request.";
+      resultStatus.resultMessage = "Exception in " + classMethod;
     }
 
     this.metrics.commonClose(resultStatus.success);
