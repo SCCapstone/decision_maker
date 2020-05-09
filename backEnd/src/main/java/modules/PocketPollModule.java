@@ -3,6 +3,7 @@ package modules;
 import dagger.Module;
 import dagger.Provides;
 import handlers.AddNewCategoryHandler;
+import handlers.CreateNewGroupHandler;
 import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
 import handlers.EditCategoryHandler;
@@ -91,5 +92,11 @@ public class PocketPollModule {
   public UpdateUserSettingsHandler provideUpdateUserSettingsHandler(final DbAccessManager dbAccessManager,
       final S3AccessManager s3AccessManager) {
     return new UpdateUserSettingsHandler(dbAccessManager, s3AccessManager, this.metrics);
+  }
+
+  @Provides
+  public CreateNewGroupHandler provideCreateNewGroupHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager) {
+    return new CreateNewGroupHandler(dbAccessManager, s3AccessManager, this.metrics);
   }
 }
