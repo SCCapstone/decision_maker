@@ -1,6 +1,5 @@
 package modules;
 
-import controllers.EditCategoryController;
 import dagger.Module;
 import dagger.Provides;
 import handlers.AddNewCategoryHandler;
@@ -8,7 +7,9 @@ import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
 import handlers.EditCategoryHandler;
 import handlers.GetCategoriesHandler;
+import handlers.GetGroupHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
+import handlers.UpdateUserSettingsHandler;
 import handlers.WarmingHandler;
 import javax.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -79,5 +80,16 @@ public class PocketPollModule {
   public DeleteGroupHandler provideDeleteGroupHandler(final DbAccessManager dbAccessManager,
       final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
     return new DeleteGroupHandler(dbAccessManager, s3AccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GetGroupHandler provideGetGroupHandler(final DbAccessManager dbAccessManager) {
+    return new GetGroupHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public UpdateUserSettingsHandler provideUpdateUserSettingsHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager) {
+    return new UpdateUserSettingsHandler(dbAccessManager, s3AccessManager, this.metrics);
   }
 }

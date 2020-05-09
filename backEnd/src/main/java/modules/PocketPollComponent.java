@@ -5,7 +5,9 @@ import controllers.DeleteCategoryController;
 import controllers.DeleteGroupController;
 import controllers.EditCategoryController;
 import controllers.GetCategoriesController;
+import controllers.GetGroupController;
 import controllers.UpdateUserChoiceRatingsController;
+import controllers.UpdateUserSettingsController;
 import controllers.WarmingController;
 import dagger.Component;
 import javax.inject.Singleton;
@@ -20,4 +22,6 @@ public interface PocketPollComponent {
   void inject(WarmingController warmingController);
   void inject(UpdateUserChoiceRatingsController updateUserChoiceRatingsController);
   void inject(DeleteGroupController deleteGroupController);
+  void inject(GetGroupController getGroupController);
+  void inject(UpdateUserSettingsController updateUserSettingsController);
 }

@@ -83,55 +83,6 @@ public class GroupsManager extends DatabaseAccessManager {
   }
 
   /**
-   * This method gets and returns a group item. It should be noted that returned groups only get a
-   * limited number of events which is why the batch number is needed. This tells which events we
-   * want information on.
-   *
-   * @param jsonMap Common request map from endpoint handler containing api input.
-   * @param metrics Standard metrics object for profiling and logging.
-   * @return Standard result status object giving insight on whether the request was successful.
-   */
-  public ResultStatus getGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "GroupsManager.getGroup";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, GROUP_ID, RequestFields.BATCH_NUMBER);
-
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
-      try {
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String groupId = (String) jsonMap.get(GROUP_ID);
-        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
-
-        final Group group = new Group(this.getMapByPrimaryKey(groupId));
-
-        //the user should not be able to retrieve info from the group if they are not a member
-        if (group.getMembers().containsKey(activeUser)) {
-          final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(group,
-              batchNumber);
-
-          resultStatus = new ResultStatus(true,
-              JsonUtils.convertObjectToJson(groupForApiResponse.asMap()));
-        } else {
-          resultStatus.resultMessage = "Error: user is not a member of the group.";
-        }
-      } catch (final Exception e) {
-        resultStatus.resultMessage = "Error: Unable to parse request.";
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-      }
-    } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  /**
    * This method is imperative for not overloading the front end with data. Since a group can have
    * an unlimited number of events, we need to limit how many we return at any one time. This is why
    * we're batching events. This function sorts all of the events from the first one to the oldest

@@ -37,9 +37,7 @@ public class GroupsPostHandler implements
 
           final String action = (String) jsonMap.get("action");
 
-          if (action.equals("getGroup")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.getGroup(payloadJsonMap, metrics);
-          } else if (action.equals("createNewGroup")) {
+          if (action.equals("createNewGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap, metrics);
           } else if (action.equals("editGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap, metrics);

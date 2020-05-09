@@ -52,15 +52,6 @@ public class UsersManagerTest {
 
   private UsersManager usersManager;
 
-  private final Map<String, Object> updateUserChoiceRatingsGoodInput = new HashMap<>(
-      ImmutableMap.of(
-          RequestFields.ACTIVE_USER, "john_andrews12",
-          CategoriesManager.CATEGORY_ID, "ef8dfc02-a79d-4d55-bb03-654a7a31bb16",
-          //removing 1's mapping and adding mapping for 3
-          RequestFields.USER_RATINGS, ImmutableMap.of("2", 5, "3", 4),
-          CategoriesManager.CATEGORY_NAME, "TestName"
-      ));
-
   private final Map<String, Object> updateUserSettingsGoodInput = new HashMap<>(ImmutableMap.of(
       RequestFields.ACTIVE_USER, "ActiveUser",
       UsersManager.APP_SETTINGS, ImmutableMap.of(
@@ -136,9 +127,6 @@ public class UsersManagerTest {
   private DynamoDB dynamoDB;
 
   @Mock
-  private CategoriesManager categoriesManager;
-
-  @Mock
   private GroupsManager groupsManager;
 
   @Mock
@@ -154,7 +142,6 @@ public class UsersManagerTest {
   private void init() {
     this.usersManager = new UsersManager(this.dynamoDB);
 
-    DatabaseManagers.CATEGORIES_MANAGER = this.categoriesManager;
     DatabaseManagers.USERS_MANAGER = this.usersManager;
     DatabaseManagers.GROUPS_MANAGER = this.groupsManager;
     DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
@@ -784,46 +771,6 @@ public class UsersManagerTest {
 //    verify(this.metrics, times(0)).commonClose(true);
 //    verify(this.metrics, times(1)).commonClose(false);
 //  }
-
-  ////////////////////////////////endregion
-  // removeGroupFromUsers tests //
-  ////////////////////////////////region
-  @Test
-  public void removeGroupFromUsers_validInput_successfulResult() {
-    doReturn(this.table).when(this.dynamoDB).getTable(any(String.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .removeGroupsLeftFromUsers(Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(2)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  @Test
-  public void removeGroupFromUsers_validInputNoMembersLeft_successfulResult() {
-    ResultStatus resultStatus = this.usersManager
-        .removeGroupsLeftFromUsers(Collections.emptySet(), "GroupId1", this.metrics);
-
-    assertTrue(resultStatus.success);
-    verify(this.dynamoDB, times(0)).getTable(any(String.class));
-    verify(this.table, times(0)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(true);
-  }
-
-  @Test
-  public void removeGroupFromUsers_validInputDbDiesDuringUpdate_failureResult() {
-    doReturn(this.table, null).when(this.dynamoDB).getTable(any(String.class));
-
-    ResultStatus resultStatus = this.usersManager
-        .removeGroupsLeftFromUsers(Sets.newHashSet("User3", "User4"), "GroupId1", this.metrics);
-
-    assertFalse(resultStatus.success);
-    verify(this.dynamoDB, times(2)).getTable(any(String.class));
-    verify(this.table, times(1)).updateItem(any(UpdateItemSpec.class));
-    verify(this.metrics, times(1)).commonClose(false);
-  }
 
   ///////////////////////////endregion
   // markEventAsSeen tests //
