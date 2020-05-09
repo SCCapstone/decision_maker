@@ -27,6 +27,7 @@ public class ProxyPostController implements
           .put("deleteCategory", DeleteCategoryController.class)
           .put("warmingEndpoint", WarmingController.class)
           .put("updateUserChoiceRatings", UpdateUserChoiceRatingsController.class)
+          .put("deleteGroup", DeleteGroupController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,

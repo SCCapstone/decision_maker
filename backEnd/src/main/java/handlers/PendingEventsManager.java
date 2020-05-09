@@ -388,61 +388,6 @@ public class PendingEventsManager extends DatabaseAccessManager {
     metrics.commonClose(success);
   }
 
-  /**
-   * This event handles removing all of a groups pending events from any of the pending event table
-   * partitions
-   *
-   * @param groupId  The group that all of the pending events are being deleted for.
-   * @param eventIds A set of all of the pending event ids that need deleting.
-   * @param metrics  Standard metrics object for profiling and logging.
-   * @return Standard result status object giving insight on whether the request was successful.
-   */
-  public ResultStatus deleteAllPendingGroupEvents(final String groupId, final Set<String> eventIds,
-      final Metrics metrics) {
-    if (eventIds.isEmpty()) {
-      return new ResultStatus(true, "No events to delete");
-    }
-
-    final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
-    metrics.commonSetup(classMethod);
-
-    //assume success, we'll set to fail if anything goes wrong
-    ResultStatus resultStatus = ResultStatus.successful("Pending events deleted successfully");
-
-    try {
-      final List<String> eventIdsList = new ArrayList<>(eventIds);
-      final String updateExpression =
-          "remove " + IntStream.range(0, eventIdsList.size()).boxed().map(i -> "#groupEventKey" + i)
-              .collect(Collectors.joining(", "));
-
-      final NameMap nameMap = new NameMap();
-      IntStream.range(0, eventIdsList.size()).boxed()
-          .forEach(i -> nameMap.with("#groupEventKey" + i, groupId + DELIM + eventIdsList.get(i)));
-
-      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpression)
-          .withNameMap(nameMap);
-
-      final int numberOfPartitions = Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY));
-      for (int i = 1; i <= numberOfPartitions; i++) {
-        try {
-          this.updateItem(Integer.valueOf(i).toString(), updateItemSpec);
-        } catch (final Exception e) {
-          metrics.log(new ErrorDescriptor<>(i, classMethod, e));
-          resultStatus = ResultStatus.failure("Exception in " + classMethod);
-        }
-      }
-    } catch (final Exception e) {
-      metrics.log(
-          new ErrorDescriptor<>(String.format("GroupId: %s, EventIds: %s", groupId, eventIds),
-              classMethod, e));
-      resultStatus = ResultStatus.failure("Exception in " + classMethod);
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
   public String getPartitionKey() throws NullPointerException, NumberFormatException {
     //this gives a 'randomized' key based on the system's clock time.
     return Long.toString(

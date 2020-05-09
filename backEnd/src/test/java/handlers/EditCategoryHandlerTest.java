@@ -16,7 +16,6 @@ import com.google.common.collect.Maps;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import managers.DbAccessManager;
@@ -32,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import utilities.JsonUtils;
 import utilities.Metrics;
-import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.UpdateItemData;
 

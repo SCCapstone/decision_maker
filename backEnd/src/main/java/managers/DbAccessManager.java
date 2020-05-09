@@ -32,17 +32,21 @@ public class DbAccessManager {
   public static final String USERS_TABLE_NAME = "users";
   public static final String GROUPS_TABLE_NAME = "groups";
   public static final String CATEGORIES_TABLE_NAME = "categories";
+  public static final String PENDING_EVENTS_TABLE_NAME = "pending_events";
 
   public static final String CATEGORIES_PRIMARY_KEY = Category.CATEGORY_ID;
   public static final String GROUPS_PRIMARY_KEY = Group.GROUP_ID;
   public static final String USERS_PRIMARY_KEY = User.USERNAME;
+  public static final String PENDING_EVENTS_PRIMARY_KEY = "ScannerId";
+
+  public static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
+  public static final String DELIM = ";";
 
   private final Table groupsTable;
   private final Table usersTable;
   private final Table categoriesTable;
   private final Table pendingEventsTable;
 
-  private final String pendingEventsPrimaryKeyIndex;
   private final Regions region;
   private final AmazonDynamoDBClient client;
   private final DynamoDB dynamoDb;
@@ -60,9 +64,7 @@ public class DbAccessManager {
     this.groupsTable = this.dynamoDb.getTable(GROUPS_TABLE_NAME);
     this.usersTable = this.dynamoDb.getTable(USERS_TABLE_NAME);
     this.categoriesTable = this.dynamoDb.getTable(CATEGORIES_TABLE_NAME);
-
-    this.pendingEventsTable = this.dynamoDb.getTable("pending_events");
-    this.pendingEventsPrimaryKeyIndex = "ScannerId";
+    this.pendingEventsTable = this.dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
   }
 
   //Users table methods
@@ -134,6 +136,22 @@ public class DbAccessManager {
 
   public DeleteItemOutcome deleteGroup(final String groupId) {
     return this.groupsTable.deleteItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+  }
+
+  //Pending events table methods
+  public Item getPendingEvents(final String scannerId) {
+    return this.pendingEventsTable.getItem(new PrimaryKey(PENDING_EVENTS_PRIMARY_KEY, scannerId));
+  }
+
+  public UpdateItemOutcome updatePendingEvent(final String scannerId,
+      final UpdateItemSpec updateItemSpec) {
+    updateItemSpec.withPrimaryKey(PENDING_EVENTS_PRIMARY_KEY, scannerId);
+    return this.pendingEventsTable.updateItem(updateItemSpec);
+  }
+
+  public UpdateItemOutcome updatePendingEvent(final UpdateItemData updateItemData)
+      throws Exception {
+    return this.pendingEventsTable.updateItem(updateItemData.asUpdateItemSpec());
   }
 
   //for warming

@@ -5,6 +5,7 @@ import dagger.Module;
 import dagger.Provides;
 import handlers.AddNewCategoryHandler;
 import handlers.DeleteCategoryHandler;
+import handlers.DeleteGroupHandler;
 import handlers.EditCategoryHandler;
 import handlers.GetCategoriesHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
@@ -12,6 +13,8 @@ import handlers.WarmingHandler;
 import javax.inject.Singleton;
 import lombok.RequiredArgsConstructor;
 import managers.DbAccessManager;
+import managers.S3AccessManager;
+import managers.SnsAccessManager;
 import utilities.Metrics;
 
 @Module
@@ -24,6 +27,18 @@ public class PocketPollModule {
   @Singleton
   public DbAccessManager provideDbAccessManager() {
     return new DbAccessManager();
+  }
+
+  @Provides
+  @Singleton
+  public S3AccessManager provideS3AccessManager() {
+    return new S3AccessManager();
+  }
+
+  @Provides
+  @Singleton
+  public SnsAccessManager provideSnsAccessManager() {
+    return new SnsAccessManager();
   }
 
   @Provides
@@ -58,5 +73,11 @@ public class PocketPollModule {
   public UpdateUserChoiceRatingsHandler provideUpdateUserChoiceRatingsHandler(
       final DbAccessManager dbAccessManager) {
     return new UpdateUserChoiceRatingsHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public DeleteGroupHandler provideDeleteGroupHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
+    return new DeleteGroupHandler(dbAccessManager, s3AccessManager, snsAccessManager, this.metrics);
   }
 }

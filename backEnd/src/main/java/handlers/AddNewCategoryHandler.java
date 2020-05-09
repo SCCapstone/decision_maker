@@ -44,7 +44,6 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
     final String classMethod = "AddNewCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    //validate data, log results as there should be some validation already on the front end
     ResultStatus resultStatus = new ResultStatus();
 
     try {

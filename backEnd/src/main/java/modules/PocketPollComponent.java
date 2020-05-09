@@ -2,6 +2,7 @@ package modules;
 
 import controllers.AddNewCategoryController;
 import controllers.DeleteCategoryController;
+import controllers.DeleteGroupController;
 import controllers.EditCategoryController;
 import controllers.GetCategoriesController;
 import controllers.UpdateUserChoiceRatingsController;
@@ -18,4 +19,5 @@ public interface PocketPollComponent {
   void inject(DeleteCategoryController deleteCategoryController);
   void inject(WarmingController warmingController);
   void inject(UpdateUserChoiceRatingsController updateUserChoiceRatingsController);
+  void inject(DeleteGroupController deleteGroupController);
 }

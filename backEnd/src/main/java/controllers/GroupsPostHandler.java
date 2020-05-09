@@ -43,8 +43,6 @@ public class GroupsPostHandler implements
             resultStatus = DatabaseManagers.GROUPS_MANAGER.createNewGroup(payloadJsonMap, metrics);
           } else if (action.equals("editGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap, metrics);
-          } else if (action.equals("deleteGroup")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.deleteGroup(payloadJsonMap, metrics);
           } else if (action.equals("newEvent")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap, metrics);
           } else if (action.equals("optUserInOut")) {

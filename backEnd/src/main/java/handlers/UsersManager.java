@@ -604,43 +604,6 @@ public class UsersManager extends DatabaseAccessManager {
     return resultStatus;
   }
 
-  /**
-   * This method removes a given group from each user that is or was in the group.
-   *
-   * @param membersLeft A set containing all of the members who have left the group.
-   * @param groupId     The GroupId for the group to be removed from the users table.
-   * @param metrics     Standard metrics object for profiling and logging
-   */
-  public ResultStatus removeGroupsLeftFromUsers(final Set<String> membersLeft, final String groupId,
-      final Metrics metrics) {
-    final String classMethod = "UsersManager.removeGroupsLeftFromUsers";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-
-    try {
-      final String updateExpressionGroupsLeft = "remove " + GROUPS_LEFT + ".#groupId";
-      final NameMap nameMap = new NameMap().with("#groupId", groupId);
-
-      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-          .withUpdateExpression(updateExpressionGroupsLeft)
-          .withNameMap(nameMap);
-
-      for (String member : membersLeft) {
-        updateItemSpec.withPrimaryKey(this.getPrimaryKeyIndex(), member);
-        this.updateItem(updateItemSpec);
-      }
-      resultStatus = new ResultStatus(true, "Group successfully removed from users table.");
-    } catch (Exception e) {
-      metrics.log(
-          new ErrorDescriptor<>(groupId, classMethod, e));
-      resultStatus.resultMessage = "Exception inside of: " + classMethod;
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
   public ResultStatus markEventAsSeen(final Map<String, Object> jsonMap, final Metrics metrics) {
     final String classMethod = "UsersManager.markEventAsSeen";
     metrics.commonSetup(classMethod);

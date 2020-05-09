@@ -1,46 +1,41 @@
 package controllers;
 
 import exceptions.MissingApiRequestKeyException;
-import handlers.AddNewCategoryHandler;
+import handlers.DeleteCategoryHandler;
+import handlers.DeleteGroupHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
-import lombok.NoArgsConstructor;
-import models.Category;
+import models.Group;
 import modules.Injector;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-@NoArgsConstructor
-public class AddNewCategoryController implements ApiRequestController {
+public class DeleteGroupController implements ApiRequestController {
 
   @Inject
-  public AddNewCategoryHandler addNewCategoryHandler;
+  public DeleteGroupHandler deleteGroupHandler;
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "AddNewCategoryController.processApiRequest";
+    final String classMethod = "DeleteGroupController.processApiRequest";
+    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_NAME,
-            Category.CHOICES);
+        .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
-        final String activeUser = (String) jsonMap.get((RequestFields.ACTIVE_USER));
-        final String categoryName = (String) jsonMap.get(Category.CATEGORY_NAME);
-        final Map<String, Object> choices = (Map<String, Object>) jsonMap.get(Category.CHOICES);
-        final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
-            .get(RequestFields.USER_RATINGS);
+        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
+        final String groupId = (String) jsonMap.get(Group.GROUP_ID);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.addNewCategoryHandler
-            .handle(activeUser, categoryName, choices, userRatings);
+        resultStatus = this.deleteGroupHandler.handle(activeUser, groupId);
       } catch (final Exception e) {
         //something couldn't get parsed
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
