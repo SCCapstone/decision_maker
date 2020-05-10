@@ -37,10 +37,7 @@ public class UsersPostHandler implements
 
           final String action = (String) jsonMap.get("action");
 
-          if (action.equals("updateSortSetting")) {
-            resultStatus = DatabaseManagers.USERS_MANAGER
-                .updateSortSetting(payloadJsonMap, metrics);
-          } else if (action.equals("getUserData")) {
+          if (action.equals("getUserData")) {
             resultStatus = DatabaseManagers.USERS_MANAGER.getUserData(payloadJsonMap, metrics);
           } else if (action.equals("registerPushEndpoint")) {
             resultStatus = DatabaseManagers.USERS_MANAGER

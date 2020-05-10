@@ -30,6 +30,7 @@ public class ProxyPostController implements
           .put("deleteGroup", DeleteGroupController.class)
           .put("getGroup", GetGroupController.class)
           .put("updateUserSettings", UpdateUserSettingsController.class)
+          .put("updateSortSetting", UpdateSortSettingController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,

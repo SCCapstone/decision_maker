@@ -161,52 +161,7 @@ public class UsersManager extends DatabaseAccessManager {
    * @param metrics Standard metrics object for profiling and logging.
    */
   public ResultStatus updateSortSetting(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "UsersManager.updateSortSetting";
-    metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = null;
-
-    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER);
-
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
-      try {
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final User user = new User(this.getItemByPrimaryKey(activeUser).asMap());
-
-        if (jsonMap.containsKey(APP_SETTINGS_GROUP_SORT)) {
-          user.getAppSettings().setGroupSort((Integer) jsonMap.get(APP_SETTINGS_GROUP_SORT));
-        } else if (jsonMap.containsKey(APP_SETTINGS_CATEGORY_SORT)) {
-          user.getAppSettings().setCategorySort((Integer) jsonMap.get(APP_SETTINGS_CATEGORY_SORT));
-        } else {
-          resultStatus = ResultStatus.failure("Error: settings key not defined.");
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod,
-              "Settings key in request payload not set."));
-        }
-
-        //this will only be set by an error at this point
-        if (resultStatus == null) {
-          final String updateExpression = "set " + APP_SETTINGS + " = :settingsMap";
-          final ValueMap valueMap = new ValueMap()
-              .withMap(":settingsMap", user.getAppSettings().asMap());
-
-          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withUpdateExpression(updateExpression)
-              .withValueMap(valueMap);
-
-          this.updateItem(activeUser, updateItemSpec);
-          resultStatus = ResultStatus.successful("Sort value updated successfully.");
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus = ResultStatus.failure("Exception inside of manager.");
-      }
-    } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found."));
-      resultStatus = ResultStatus.failure("Error: Required request keys not found.");
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
   }
 
 
