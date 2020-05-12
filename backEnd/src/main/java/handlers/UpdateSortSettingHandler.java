@@ -2,6 +2,7 @@ package handlers;
 
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.User;
 import utilities.ErrorDescriptor;

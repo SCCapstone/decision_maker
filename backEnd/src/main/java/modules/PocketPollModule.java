@@ -7,8 +7,11 @@ import handlers.CreateNewGroupHandler;
 import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
 import handlers.EditCategoryHandler;
+import handlers.EditGroupHandler;
 import handlers.GetCategoriesHandler;
 import handlers.GetGroupHandler;
+import handlers.LeaveGroupHandler;
+import handlers.OptUserInOutHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import handlers.UpdateUserSettingsHandler;
 import handlers.WarmingHandler;
@@ -89,14 +92,32 @@ public class PocketPollModule {
   }
 
   @Provides
-  public UpdateUserSettingsHandler provideUpdateUserSettingsHandler(final DbAccessManager dbAccessManager,
+  public UpdateUserSettingsHandler provideUpdateUserSettingsHandler(
+      final DbAccessManager dbAccessManager,
       final S3AccessManager s3AccessManager) {
     return new UpdateUserSettingsHandler(dbAccessManager, s3AccessManager, this.metrics);
   }
 
   @Provides
   public CreateNewGroupHandler provideCreateNewGroupHandler(final DbAccessManager dbAccessManager,
-      final S3AccessManager s3AccessManager) {
-    return new CreateNewGroupHandler(dbAccessManager, s3AccessManager, this.metrics);
+      final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
+    return new CreateNewGroupHandler(dbAccessManager, s3AccessManager, snsAccessManager,
+        this.metrics);
+  }
+
+  @Provides
+  public EditGroupHandler provideEditGroupHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
+    return new EditGroupHandler(dbAccessManager, s3AccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public OptUserInOutHandler provideOptUserInOutHandler(final DbAccessManager dbAccessManager) {
+    return new OptUserInOutHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public LeaveGroupHandler provideLeaveGroupHandler(final DbAccessManager dbAccessManager) {
+    return new LeaveGroupHandler(dbAccessManager, this.metrics);
   }
 }

@@ -5,8 +5,11 @@ import controllers.CreateNewGroupController;
 import controllers.DeleteCategoryController;
 import controllers.DeleteGroupController;
 import controllers.EditCategoryController;
+import controllers.EditGroupController;
 import controllers.GetCategoriesController;
 import controllers.GetGroupController;
+import controllers.LeaveGroupController;
+import controllers.OptUserInOutController;
 import controllers.UpdateSortSettingController;
 import controllers.UpdateUserChoiceRatingsController;
 import controllers.UpdateUserSettingsController;
@@ -28,4 +31,7 @@ public interface PocketPollComponent {
   void inject(UpdateUserSettingsController updateUserSettingsController);
   void inject(CreateNewGroupController createNewGroupController);
   void inject(UpdateSortSettingController updateSortSettingController);
+  void inject(EditGroupController editGroupController);
+  void inject(OptUserInOutController optUserInOutController);
+  void inject(LeaveGroupController leaveGroupController);
 }

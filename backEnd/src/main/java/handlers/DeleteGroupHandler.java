@@ -191,7 +191,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   private ResultStatus removeGroupFromUsersAndSendNotifications(final Group deletedGroup) {
-    final String classMethod = "DeleteGroupHandler.removeUsersFromGroupAndSendNotifications";
+    final String classMethod = "DeleteGroupHandler.removeGroupFromUsersAndSendNotifications";
     metrics.commonSetup(classMethod);
 
     //assume true and set to false on any failures

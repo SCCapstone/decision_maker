@@ -5,6 +5,7 @@ import handlers.UpdateSortSettingHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
 import models.User;
 import modules.Injector;
 import utilities.ErrorDescriptor;

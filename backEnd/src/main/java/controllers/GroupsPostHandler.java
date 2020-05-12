@@ -37,14 +37,8 @@ public class GroupsPostHandler implements
 
           final String action = (String) jsonMap.get("action");
 
-          if (action.equals("editGroup")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.editGroup(payloadJsonMap, metrics);
-          } else if (action.equals("newEvent")) {
+          if (action.equals("newEvent")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap, metrics);
-          } else if (action.equals("optUserInOut")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.optInOutOfEvent(payloadJsonMap, metrics);
-          } else if (action.equals("leaveGroup")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.leaveGroup(payloadJsonMap, metrics);
           } else if (action.equals("rejoinGroup")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.rejoinGroup(payloadJsonMap, metrics);
           } else if (action.equals("voteForChoice")) {

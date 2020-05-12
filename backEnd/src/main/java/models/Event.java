@@ -1,6 +1,5 @@
 package models;
 
-import handlers.CategoriesManager;
 import handlers.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +15,20 @@ import lombok.Setter;
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
 public class Event {
+
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String CATEGORY_NAME = "CategoryName";
+  public static final String EVENT_NAME = "EventName";
+  public static final String EVENT_CREATOR = "EventCreator";
+  public static final String CREATED_DATE_TIME = "CreatedDateTime";
+  public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String UTC_EVENT_START_SECONDS = "UtcEventStartSeconds";
+  public static final String VOTING_DURATION = "VotingDuration";
+  public static final String RSVP_DURATION = "RsvpDuration";
+  public static final String OPTED_IN = "OptedIn";
+  public static final String VOTING_NUMBERS = "VotingNumbers";
+  public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
+  public static final String SELECTED_CHOICE = "SelectedChoice";
 
   private String categoryId;
   private String categoryName;
@@ -38,7 +51,7 @@ public class Event {
   public Event(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(GroupsManager.CATEGORY_ID));
     this.setCategoryName((String) jsonMap.get(GroupsManager.CATEGORY_NAME));
-    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(CategoriesManager.VERSION)));
+    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(Category.VERSION)));
     this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
@@ -59,7 +72,7 @@ public class Event {
     final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(GroupsManager.CATEGORY_ID, this.categoryId);
     modelAsMap.putIfAbsent(GroupsManager.CATEGORY_NAME, this.categoryName);
-    modelAsMap.putIfAbsent(CategoriesManager.VERSION, this.categoryVersion);
+    modelAsMap.putIfAbsent(Category.VERSION, this.categoryVersion);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_NAME, this.eventName);
     modelAsMap.putIfAbsent(GroupsManager.CREATED_DATE_TIME, this.createdDateTime);
     modelAsMap.putIfAbsent(GroupsManager.EVENT_START_DATE_TIME, this.eventStartDateTime);

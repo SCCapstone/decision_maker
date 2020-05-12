@@ -18,6 +18,8 @@ import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
 import exceptions.InvalidAttributeValueException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +52,7 @@ public class DbAccessManager {
   private final Regions region;
   private final AmazonDynamoDBClient client;
   private final DynamoDB dynamoDb;
-  private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter
-      .ofPattern("yyyy-MM-dd HH:mm:ss");
+  private final DateTimeFormatter dateTimeFormatter;
 
   public DbAccessManager() {
     this.region = Regions.US_EAST_2;
@@ -61,10 +62,16 @@ public class DbAccessManager {
         .build();
     this.dynamoDb = new DynamoDB(this.client);
 
+    this.dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     this.groupsTable = this.dynamoDb.getTable(GROUPS_TABLE_NAME);
     this.usersTable = this.dynamoDb.getTable(USERS_TABLE_NAME);
     this.categoriesTable = this.dynamoDb.getTable(CATEGORIES_TABLE_NAME);
     this.pendingEventsTable = this.dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
+  }
+
+  public String now() {
+    return LocalDateTime.now(ZoneId.of("UTC")).format(this.dateTimeFormatter);
   }
 
   //Users table methods
