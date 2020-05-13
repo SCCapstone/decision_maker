@@ -25,7 +25,7 @@ public class GetCategoriesController implements ApiRequestController {
       throws MissingApiRequestKeyException {
     final String classMethod = "AddNewCategoryController.processApiRequest";
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     Injector.getInjector(metrics).inject(this);
 

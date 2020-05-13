@@ -1,7 +1,7 @@
 package controllers;
 
 import exceptions.MissingApiRequestKeyException;
-import handlers.RejoinGroupHandler;
+import handlers.VoteForChoiceHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -13,30 +13,36 @@ import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-public class RejoinGroupController implements ApiRequestController {
+public class VoteForChoiceController implements ApiRequestController {
 
   @Inject
-  public RejoinGroupHandler rejoinGroupHandler;
+  public VoteForChoiceHandler voteForChoiceHandler;
 
   @Override
   public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "RejoinGroupController.processApiRequest";
+    final String classMethod = "VoteForChoiceController.processApiRequest";
 
     ResultStatus resultStatus;
 
-    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER, Group.GROUP_ID);
+    final List<String> requiredKeys = Arrays
+        .asList(Group.GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID,
+            RequestFields.VOTE_VALUE, RequestFields.ACTIVE_USER);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(Group.GROUP_ID);
+        final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
+        final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
+        final Integer voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.rejoinGroupHandler.handle(activeUser, groupId);
+        resultStatus = this.voteForChoiceHandler
+            .handle(activeUser, groupId, eventId, choiceId, voteValue);
       } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus = ResultStatus.failure("Exception in " + classMethod);
+        resultStatus = ResultStatus.failure("Excpetion in " + classMethod);
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

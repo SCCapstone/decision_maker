@@ -10,10 +10,18 @@ import handlers.EditCategoryHandler;
 import handlers.EditGroupHandler;
 import handlers.GetCategoriesHandler;
 import handlers.GetGroupHandler;
+import handlers.GetUserDataHandler;
 import handlers.LeaveGroupHandler;
+import handlers.MarkAllEventsSeenHandler;
+import handlers.MarkEventAsSeenHandler;
 import handlers.OptUserInOutHandler;
+import handlers.RegisterPushEndpointHandler;
+import handlers.RejoinGroupHandler;
+import handlers.SetUserGroupMuteHandler;
+import handlers.UnregisterPushEndpointHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import handlers.UpdateUserSettingsHandler;
+import handlers.VoteForChoiceHandler;
 import handlers.WarmingHandler;
 import javax.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -119,5 +127,50 @@ public class PocketPollModule {
   @Provides
   public LeaveGroupHandler provideLeaveGroupHandler(final DbAccessManager dbAccessManager) {
     return new LeaveGroupHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public RejoinGroupHandler provideRejoinGroupHandler(final DbAccessManager dbAccessManager) {
+    return new RejoinGroupHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public VoteForChoiceHandler provideVoteForChoiceHandler(final DbAccessManager dbAccessManager) {
+    return new VoteForChoiceHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GetUserDataHandler provideGetUserDataHandler(final DbAccessManager dbAccessManager) {
+    return new GetUserDataHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public RegisterPushEndpointHandler provideRegisterPushEndpointHandler(
+      final DbAccessManager dbAccessManager, final SnsAccessManager snsAccessManager) {
+    return new RegisterPushEndpointHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public UnregisterPushEndpointHandler provideUnregisterPushEndpointHandler(
+      final DbAccessManager dbAccessManager, final SnsAccessManager snsAccessManager) {
+    return new UnregisterPushEndpointHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public MarkEventAsSeenHandler provideMarkEventAsSeenHandler(
+      final DbAccessManager dbAccessManager) {
+    return new MarkEventAsSeenHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public SetUserGroupMuteHandler provideSetUserGroupMuteHandler(
+      final DbAccessManager dbAccessManager) {
+    return new SetUserGroupMuteHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public MarkAllEventsSeenHandler provideMarkAllEventsSeenHandler(
+      final DbAccessManager dbAccessManager) {
+    return new MarkAllEventsSeenHandler(dbAccessManager, this.metrics);
   }
 }

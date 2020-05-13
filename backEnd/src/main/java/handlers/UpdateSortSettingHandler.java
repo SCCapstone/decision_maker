@@ -23,9 +23,10 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
   /**
    * This method is used to update the the group sort settings associated with a specific user.
    *
-   * @param
-   * @param
-   * @return
+   * @param activeUser   The user making the api request that has just updated a sort settings.
+   * @param newGroupSort The new sort integer for group sort. This value decodes to a
+   *                     method/direction of sorting on the front end.
+   * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handleGroupSortUpdate(final String activeUser, final Integer newGroupSort) {
     final String classMethod = "UpdateSortSettingHandler.handleGroupSortUpdate";
@@ -59,9 +60,10 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
   /**
    * This method is used to update the the category sort settings associated with a specific user.
    *
-   * @param
-   * @param
-   * @return
+   * @param activeUser      The user making the api request that has just updated a sort settings.
+   * @param newCategorySort The new sort integer for category sort. This value decodes to a
+   *                        method/direction of sorting on the front end.
+   * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handleCategorySortUpdate(final String activeUser,
       final Integer newCategorySort) {

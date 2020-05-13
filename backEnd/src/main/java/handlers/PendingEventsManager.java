@@ -210,9 +210,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       //we need to make sure the event's category choices are setup
       if (event.getCategoryChoices() == null) {
-        final Category category = new Category(
-            DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
-        event.setCategoryChoices(category.getChoices());
+//        final Category category = new Category(
+//            DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
+//        event.setCategoryChoices(category.getChoices());
       }
 
       final List<User> optedInUsers = new ArrayList<>();

@@ -84,6 +84,10 @@ public class DbAccessManager {
     return new User(this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username)));
   }
 
+  public Item getUserItem(final String username) throws NullPointerException {
+    return this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
+  }
+
   public UpdateItemOutcome updateUser(final String username, final UpdateItemSpec updateItemSpec) {
     updateItemSpec.withPrimaryKey(USERS_PRIMARY_KEY, username);
     return this.usersTable.updateItem(updateItemSpec);

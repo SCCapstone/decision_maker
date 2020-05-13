@@ -148,10 +148,6 @@ public class GroupsManager extends DatabaseAccessManager {
     return eventsBatch;
   }
 
-  public ResultStatus createNewGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
-
-  }
-
   /**
    * This method handles creating a new event within a group. It validates the input, updates the
    * table and then updating the denormalized user group maps accordingly. Note: if this event is
@@ -191,9 +187,10 @@ public class GroupsManager extends DatabaseAccessManager {
         final Optional<String> errorMessage = this.newEventInputIsValid(oldGroup, newEvent);
         if (!errorMessage.isPresent()) {
           //get the category and set category fields
-          final Category category = new Category(
-              DatabaseManagers.CATEGORIES_MANAGER.getMapByPrimaryKey(newEvent.getCategoryId()));
-          newEvent.setCategoryFields(category);
+          //TODO
+//          final Category category = new Category(
+//              DatabaseManagers.CATEGORIES_MANAGER.getMapByPrimaryKey(newEvent.getCategoryId()));
+//          newEvent.setCategoryFields(category);
 
           newEvent.setOptedIn(oldGroup.getMembers());
           newEvent.setCreatedDateTime(lastActivity);
@@ -261,147 +258,6 @@ public class GroupsManager extends DatabaseAccessManager {
       metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Required request keys not found"));
       resultStatus.resultMessage = "Error: Required request keys not found.";
     }
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  /**
-   * This method inserts a user back into a group they had previously left.
-   *
-   * @param jsonMap The map containing the json request sent from the front end. Must contain the
-   *                GroupId for the group the user is attempting to rejoin.
-   * @param metrics Standard metrics object for profiling and logging
-   */
-  public ResultStatus rejoinGroup(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "GroupsManager.rejoinGroup";
-    metrics.commonSetup(classMethod);
-    ResultStatus resultStatus = new ResultStatus();
-
-    final List<String> requiredKeys = Arrays.asList(GROUP_ID, RequestFields.ACTIVE_USER);
-
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
-      try {
-        final String groupId = (String) jsonMap.get(GROUP_ID);
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-
-        final Group group = new Group(this.getMapByPrimaryKey(groupId));
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
-
-        final Set<String> groupsLeftIds = user.getGroupsLeft().keySet();
-        final Set<String> membersLeftIds = group.getMembersLeft().keySet();
-        if (groupsLeftIds.contains(groupId) && membersLeftIds.contains(activeUser)) {
-          String updateExpression =
-              "remove " + MEMBERS_LEFT + ".#username set " + MEMBERS + ".#username = :memberMap";
-
-          NameMap nameMap = new NameMap()
-              .with("#username", activeUser);
-          ValueMap valueMap = new ValueMap()
-              .withMap(":memberMap", user.asMember().asMap());
-
-          UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withUpdateExpression(updateExpression)
-              .withNameMap(nameMap)
-              .withValueMap(valueMap);
-
-          this.updateItem(groupId, updateItemSpec);
-
-          // remove this group from the GroupsLeft attribute in active user object
-          // and add it to the Groups attribute
-          updateExpression =
-              "remove " + UsersManager.GROUPS_LEFT + ".#groupId set " + UsersManager.GROUPS
-                  + ".#groupId = :groupMap";
-          nameMap = new NameMap()
-              .with("#groupId", groupId);
-          valueMap = new ValueMap()
-              .withMap(":groupMap", UserGroup.fromNewGroup(group).asMap());
-          updateItemSpec = new UpdateItemSpec()
-              .withUpdateExpression(updateExpression)
-              .withNameMap(nameMap)
-              .withValueMap(valueMap);
-          DatabaseManagers.USERS_MANAGER.updateItem(activeUser, updateItemSpec);
-
-          resultStatus = new ResultStatus(true, "Group rejoined successfully.");
-        } else {
-          metrics.log(
-              new ErrorDescriptor<>(jsonMap, classMethod,
-                  "User did not leave group, cannot rejoin"));
-          resultStatus.resultMessage = "Error: User did not leave this group, cannot rejoin.";
-        }
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus.resultMessage = "Error: Unable to parse request in manager.";
-      }
-    } else {
-      metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Request keys not found"));
-      resultStatus.resultMessage = "Error: Required request keys not found.";
-    }
-
-    metrics.commonClose(resultStatus.success);
-    return resultStatus;
-  }
-
-  /**
-   * This method allows a user to vote for a tentative choice on an event.
-   *
-   * @param jsonMap Common request map from endpoint handler containing api input.
-   * @param metrics Standard metrics object for profiling and logging.
-   * @return Standard result status object giving insight on whether the request was successful.
-   */
-  public ResultStatus voteForChoice(final Map<String, Object> jsonMap, final Metrics metrics) {
-    final String classMethod = "GroupsManager.voteForChoice";
-    metrics.commonSetup(classMethod);
-
-    ResultStatus resultStatus = new ResultStatus();
-    final List<String> requiredKeys = Arrays
-        .asList(GROUP_ID, RequestFields.EVENT_ID, RequestFields.CHOICE_ID, RequestFields.VOTE_VALUE,
-            RequestFields.ACTIVE_USER);
-
-    if (jsonMap.keySet().containsAll(requiredKeys)) {
-      try {
-        final String groupId = (String) jsonMap.get(GROUP_ID);
-        final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
-        final String choiceId = (String) jsonMap.get(RequestFields.CHOICE_ID);
-        final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        Integer voteValue = (Integer) jsonMap.get(RequestFields.VOTE_VALUE);
-
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
-
-        //only allow the user to vote if they are in the group
-        if (user.getGroups().containsKey(groupId)) {
-          if (voteValue != 1) {
-            voteValue = 0;
-          }
-
-          final String updateExpression =
-              "set " + EVENTS + ".#eventId." + VOTING_NUMBERS + ".#choiceId." +
-                  "#activeUser = :voteValue";
-          final ValueMap valueMap = new ValueMap().withInt(":voteValue", voteValue);
-          final NameMap nameMap = new NameMap()
-              .with("#eventId", eventId)
-              .with("#choiceId", choiceId)
-              .with("#activeUser", activeUser);
-
-          final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-              .withUpdateExpression(updateExpression)
-              .withNameMap(nameMap)
-              .withValueMap(valueMap);
-
-          this.updateItem(groupId, updateItemSpec);
-          resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
-        } else {
-          resultStatus.resultMessage = "Error: user not in group.";
-          metrics.log(new WarningDescriptor<>(jsonMap, classMethod, "User not in group."));
-        }
-      } catch (Exception e) {
-        resultStatus.resultMessage = "Error: unable to parse request in manager.";
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-      }
-    } else {
-      resultStatus.resultMessage = "Error: required request keys not found.";
-      metrics.log(
-          new ErrorDescriptor<>(jsonMap, classMethod, "Error: required request keys not found."));
-    }
-
     metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
@@ -814,7 +670,7 @@ public class GroupsManager extends DatabaseAccessManager {
       //we're setting the tentative choices and this isn't a new event so remove duplicated choices
       if (valueMap.containsKey(":tentativeChoices") && !isNewEvent) {
         //we need to remove the duplicated category choices
-        updateExpression += " remove " + EVENTS + ".#eventId." + CategoriesManager.CHOICES;
+        updateExpression += " remove " + EVENTS + ".#eventId." + Category.CHOICES;
       }
 
       if (nameMap.containsKey("#eventId")) {

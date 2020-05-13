@@ -39,10 +39,6 @@ public class GroupsPostHandler implements
 
           if (action.equals("newEvent")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap, metrics);
-          } else if (action.equals("rejoinGroup")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.rejoinGroup(payloadJsonMap, metrics);
-          } else if (action.equals("voteForChoice")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER.voteForChoice(payloadJsonMap, metrics);
           } else if (action.equals("getBatchOfEvents")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER
                 .handleGetBatchOfEvents(payloadJsonMap, metrics);

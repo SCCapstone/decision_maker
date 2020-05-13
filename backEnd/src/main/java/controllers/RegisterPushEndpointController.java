@@ -1,39 +1,39 @@
 package controllers;
 
 import exceptions.MissingApiRequestKeyException;
-import handlers.RejoinGroupHandler;
+import handlers.RegisterPushEndpointHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
-import models.Group;
 import modules.Injector;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-public class RejoinGroupController implements ApiRequestController {
+public class RegisterPushEndpointController implements ApiRequestController {
 
   @Inject
-  public RejoinGroupHandler rejoinGroupHandler;
+  public RegisterPushEndpointHandler registerPushEndpointHandler;
 
   @Override
   public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "RejoinGroupController.processApiRequest";
+    final String classMethod = "RegisterPushEndpointController.processApiRequest";
 
     ResultStatus resultStatus;
 
-    final List<String> requiredKeys = Arrays.asList(RequestFields.ACTIVE_USER, Group.GROUP_ID);
+    final List<String> requiredKeys = Arrays
+        .asList(RequestFields.ACTIVE_USER, RequestFields.DEVICE_TOKEN);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
-        final String groupId = (String) jsonMap.get(Group.GROUP_ID);
+        final String deviceToken = (String) jsonMap.get(RequestFields.DEVICE_TOKEN);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.rejoinGroupHandler.handle(activeUser, groupId);
+        resultStatus = this.registerPushEndpointHandler.handle(activeUser, deviceToken);
       } catch (Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);

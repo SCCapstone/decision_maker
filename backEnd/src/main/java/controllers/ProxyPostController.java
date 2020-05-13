@@ -36,6 +36,13 @@ public class ProxyPostController implements
           .put("optUserInOut", OptUserInOutController.class)
           .put("leaveGroup", LeaveGroupController.class)
           .put("rejoinGroup", RejoinGroupController.class)
+          .put("voteForChoice", VoteForChoiceController.class)
+          .put("getUserData", GetUserDataController.class)
+          .put("registerPushEndpoint", RegisterPushEndpointController.class)
+          .put("unregisterPushEndpoint", UnregisterPushEndpointController.class)
+          .put("markEventAsSeen", MarkEventAsSeenController.class)
+          .put("setUserGroupMute", SetUserGroupMuteController.class)
+          .put("markAllEventsSeen", MarkAllEventsSeenController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
