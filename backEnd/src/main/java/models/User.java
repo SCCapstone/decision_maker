@@ -15,10 +15,6 @@ public class User {
   public static final String DISPLAY_NAME = "DisplayName";
   public static final String ICON = "Icon";
   public static final String APP_SETTINGS = "AppSettings";
-  public static final String APP_SETTINGS_DARK_THEME = "DarkTheme";
-  public static final String APP_SETTINGS_MUTED = "Muted";
-  public static final String APP_SETTINGS_GROUP_SORT = "GroupSort";
-  public static final String APP_SETTINGS_CATEGORY_SORT = "CategorySort";
   public static final String GROUPS = "Groups";
   public static final String GROUPS_LEFT = "GroupsLeft";
   public static final String CATEGORY_RATINGS = "CategoryRatings";

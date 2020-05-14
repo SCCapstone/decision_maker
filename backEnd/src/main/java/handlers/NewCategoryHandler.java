@@ -20,7 +20,7 @@ import utilities.ResultStatus;
 import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
-public class AddNewCategoryHandler implements ApiRequestHandler {
+public class NewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
   public static final Integer DEFAULT_CATEGORY_VERSION = 1;
@@ -30,7 +30,7 @@ public class AddNewCategoryHandler implements ApiRequestHandler {
   private final Metrics metrics;
 
   @Inject
-  public AddNewCategoryHandler(
+  public NewCategoryHandler(
       final DbAccessManager dbAccessManager,
       final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler,
       final Metrics metrics) {

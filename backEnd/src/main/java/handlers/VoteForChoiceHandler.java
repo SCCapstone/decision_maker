@@ -42,7 +42,7 @@ public class VoteForChoiceHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
+      final User user = this.dbAccessManager.getUser(activeUser);
 
       //only allow the user to vote if they are in the group
       if (user.getGroups().containsKey(groupId)) {

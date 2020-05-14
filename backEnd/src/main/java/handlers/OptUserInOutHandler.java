@@ -41,7 +41,7 @@ public class OptUserInOutHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(activeUser));
+      final User user = this.dbAccessManager.getUser(activeUser);
 
       //only allow the user to opt in/out if they're a member of the group
       if (user.getGroups().containsKey(groupId)) {

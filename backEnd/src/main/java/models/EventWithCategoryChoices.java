@@ -3,7 +3,6 @@ package models;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
-import handlers.CategoriesManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,7 +15,7 @@ public class EventWithCategoryChoices extends Event {
 
   public EventWithCategoryChoices(final Map<String, Object> jsonMap) {
     super(jsonMap);
-    this.setCategoryChoicesRawMap((Map<String, Object>) jsonMap.get(CategoriesManager.CHOICES));
+    this.setCategoryChoicesRawMap((Map<String, Object>) jsonMap.get(Category.CHOICES));
   }
 
   public void setCategoryChoicesRawMap(final Map<String, Object> jsonMap) {
@@ -30,7 +29,7 @@ public class EventWithCategoryChoices extends Event {
   @Override
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = super.asMap();
-    modelAsMap.putIfAbsent(CategoriesManager.CHOICES, this.categoryChoices);
+    modelAsMap.putIfAbsent(Category.CHOICES, this.categoryChoices);
     return modelAsMap;
   }
 

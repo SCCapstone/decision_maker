@@ -91,8 +91,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
       //TODO user input which is bad
 
       if (iconData != null) { // if it's there, assume it's new image data
-        final String newIconFileName = DatabaseManagers.S3_ACCESS_MANAGER
-            .uploadImage(iconData, this.metrics)
+        final String newIconFileName = this.s3AccessManager.uploadImage(iconData, this.metrics)
             .orElseThrow(Exception::new);
 
         newGroup.setIcon(newIconFileName);
@@ -119,7 +118,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     final Map<String, Object> membersMap = new HashMap<>();
 
     for (String username : new HashSet<>(members)) {
-      final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+      final User user = this.dbAccessManager.getUser(username);
       membersMap.putIfAbsent(username, user.asMember().asMap());
     }
 
@@ -138,7 +137,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     boolean success = true; // assume true, set to false on any failures
 
     //if this is a new Group we need to create the entire map
-    final String updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
+    final String updateExpression = "set " + User.GROUPS + ".#groupId = :userGroupMap";
     final ValueMap valueMap = new ValueMap()
         .withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
     final NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
@@ -176,7 +175,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
 
     for (String username : newGroup.getMembers().keySet()) {
       try {
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+        final User user = this.dbAccessManager.getUser(username);
 
         //don't send a notification to the creator as they know they just created the group
         if (!username.equals(newGroup.getGroupCreator())) {

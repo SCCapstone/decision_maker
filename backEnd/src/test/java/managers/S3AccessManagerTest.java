@@ -15,7 +15,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
-import managers.S3AccessManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

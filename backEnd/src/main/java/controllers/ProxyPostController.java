@@ -15,13 +15,14 @@ import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class ProxyPostController implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
   private static final Map<String, Class<? extends ApiRequestController>> ACTIONS_TO_CONTROLLERS = Maps
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
-          .put("addNewCategory", AddNewCategoryController.class)
+          .put("newCategory", NewCategoryController.class)
           .put("editCategory", EditCategoryController.class)
           .put("getCategories", GetCategoriesController.class)
           .put("deleteCategory", DeleteCategoryController.class)
@@ -43,6 +44,8 @@ public class ProxyPostController implements
           .put("markEventAsSeen", MarkEventAsSeenController.class)
           .put("setUserGroupMute", SetUserGroupMuteController.class)
           .put("markAllEventsSeen", MarkAllEventsSeenController.class)
+          .put("getBatchOfEvents", GetBatchOfEventsController.class)
+          .put("newEvent", NewEventController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
@@ -79,11 +82,21 @@ public class ProxyPostController implements
             resultStatus = ResultStatus.failure("Error: Bad request body.");
           }
         } else {
-          //bad action, log warning
+          metrics.log(new WarningDescriptor<>(
+              new HashMap<String, Object>() {{
+                put("path", request.getPath());
+                put("body", request.getBody());
+              }},
+              classMethod, "Unknown action."));
           resultStatus = ResultStatus.failure("Error: Unknown action.");
         }
       } else {
-        //bad request, log warning
+        metrics.log(new WarningDescriptor<>(
+            new HashMap<String, Object>() {{
+              put("path", request.getPath());
+              put("body", request.getBody());
+            }},
+            classMethod, "Bad request format."));
         resultStatus = ResultStatus.failure("Error: Bad request format.");
       }
     } catch (final Exception e) {

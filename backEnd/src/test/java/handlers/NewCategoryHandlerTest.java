@@ -37,9 +37,9 @@ import utilities.UpdateItemData;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(JUnitPlatform.class)
-public class AddNewCategoryHandlerTest {
+public class NewCategoryHandlerTest {
 
-  private AddNewCategoryHandler addNewCategoryHandler;
+  private NewCategoryHandler newCategoryHandler;
 
   @Mock
   private DbAccessManager dbAccessManager;
@@ -51,14 +51,14 @@ public class AddNewCategoryHandlerTest {
   private Metrics metrics;
 
   //Notice: Do not change this variable definition unless you want to break and fix tests
-  private final Item newCategoryGoodUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+  private final Item newCategoryGoodUser = new Item().withMap(User.OWNED_CATEGORIES,
       (ImmutableMap.of("catId", "catName", "catId2", "catName2")));
 
-  private final Item newCategoryInvalidUser = new Item().withMap(UsersManager.OWNED_CATEGORIES,
+  private final Item newCategoryInvalidUser = new Item().withMap(User.OWNED_CATEGORIES,
       new HashMap<String, String>() {{
         put("duplicateName", "Category Name"); // duplicate the name in the input
         //insert the max allowed amount -> this will force the addition to try to eclipse this
-        for (int i = 0; i < CategoriesManager.MAX_NUMBER_OF_CATEGORIES; i++) {
+        for (int i = 0; i < NewCategoryHandler.MAX_NUMBER_OF_CATEGORIES; i++) {
           put("catId" + (new Integer(i)).toString(), "catName" + (new Integer(i)).toString());
         }
       }});
@@ -82,7 +82,7 @@ public class AddNewCategoryHandlerTest {
 
   @BeforeEach
   private void init() {
-    this.addNewCategoryHandler = new AddNewCategoryHandler(this.dbAccessManager,
+    this.newCategoryHandler = new NewCategoryHandler(this.dbAccessManager,
         this.updateUserChoiceRatingsHandler, this.metrics);
   }
 
@@ -193,7 +193,7 @@ public class AddNewCategoryHandlerTest {
   private ResultStatus<?> getResult() throws Exception {
     try {
       return (ResultStatus<?>) this
-          .findAndCallMethod(this.addNewCategoryHandler, "handle",
+          .findAndCallMethod(this.newCategoryHandler, "handle",
               this.addNewCategoryInputs, this.inputClasses);
     } catch (final Exception e) {
       throw e;

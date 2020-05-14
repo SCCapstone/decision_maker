@@ -49,7 +49,7 @@ public class UnregisterPushEndpointHandler implements ApiRequestHandler {
         //still safe as there's no reference to the arn in the db anymore
         final DeleteEndpointRequest deleteEndpointRequest = new DeleteEndpointRequest()
             .withEndpointArn(user.getPushEndpointArn());
-        DatabaseManagers.SNS_ACCESS_MANAGER.unregisterPlatformEndpoint(deleteEndpointRequest);
+        this.snsAccessManager.unregisterPlatformEndpoint(deleteEndpointRequest);
 
         resultStatus = ResultStatus.successful("endpoint unregistered");
       } else {

@@ -17,15 +17,12 @@ import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.google.common.collect.ImmutableMap;
-import handlers.DatabaseManagers;
+import handlers.UnregisterPushEndpointHandler;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import models.Metadata;
 import utilities.JsonUtils;
-import utilities.Metrics;
-import utilities.RequestFields;
-import utilities.ResultStatus;
 
 public class SnsAccessManager {
 
@@ -50,63 +47,16 @@ public class SnsAccessManager {
    *
    * @param createPlatformEndpointRequest A request containing the details of the platform endpoint
    *                                      that is to be created.
-   * @param metrics                       Standard metrics object for profiling and logging. In this
-   *                                      method, we just need the metrics object when calling
-   *                                      UsersManager.unregisterPushEndpoint().
    */
   public CreatePlatformEndpointResult registerPlatformEndpoint(
-      final CreatePlatformEndpointRequest createPlatformEndpointRequest, final Metrics metrics)
+      final CreatePlatformEndpointRequest createPlatformEndpointRequest)
       throws AmazonServiceException {
-    CreatePlatformEndpointResult createPlatformEndpointResult = null;
+    return client.createPlatformEndpoint(createPlatformEndpointRequest);
+  }
 
-    //The error handling here is obtained from aws doc: https://docs.aws.amazon.com/sns/latest/dg/mobile-platform-endpoint.html#mobile-platform-endpoint-sdk-examples
-    try {
-      createPlatformEndpointResult = client.createPlatformEndpoint(createPlatformEndpointRequest);
-    } catch (final InvalidParameterException ipe) {
-      final String message = ipe.getErrorMessage();
-      final Pattern p = Pattern
-          .compile(".*Endpoint (arn:aws:sns[^ ]+) already exists with the same [Tt]oken.*");
-      final Matcher m = p.matcher(message);
-      if (m.matches()) {
-        //The platform endpoint already exists for this token
-
-        //We have to get the current user associated with the arn and unsubscribe them
-        //Then we have to subscribe the new user
-        final String endpointArn = m.group(1);
-
-        final GetEndpointAttributesRequest getEndpointAttributesRequest = new GetEndpointAttributesRequest()
-            .withEndpointArn(endpointArn);
-        final GetEndpointAttributesResult getEndpointAttributesResult = this.client
-            .getEndpointAttributes(getEndpointAttributesRequest);
-
-        final String oldUsername = getEndpointAttributesResult.getAttributes()
-            .get(USER_DATA_KEY);
-
-        ResultStatus oldEndpointUnregistered = DatabaseManagers.USERS_MANAGER
-            .unregisterPushEndpoint(
-                ImmutableMap.of(
-                    RequestFields.ACTIVE_USER, oldUsername,
-                    RequestFields.DEVICE_TOKEN, createPlatformEndpointRequest.getToken()
-                ), metrics
-            );
-
-        if (oldEndpointUnregistered.success) {
-          //by the chance the user that owned this had their mapping removed but the endpoint still existed, we do this for sanity
-          this.unregisterPlatformEndpoint(new DeleteEndpointRequest().withEndpointArn(endpointArn));
-
-          createPlatformEndpointResult = this.client
-              .createPlatformEndpoint(createPlatformEndpointRequest);
-        } else {
-          //couldn't unregister the old user...
-          throw ipe;
-        }
-      } else {
-        // Rethrow the exception, the input is actually bad.
-        throw ipe;
-      }
-    }
-
-    return createPlatformEndpointResult;
+  public Map<String, String> getEndpointAttributes(final String endpointArn) {
+    return this.client.getEndpointAttributes(new GetEndpointAttributesRequest()
+        .withEndpointArn(endpointArn)).getAttributes();
   }
 
   /**

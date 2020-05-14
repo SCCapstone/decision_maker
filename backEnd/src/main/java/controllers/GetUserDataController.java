@@ -3,9 +3,9 @@ package controllers;
 import com.google.common.collect.ImmutableList;
 import exceptions.MissingApiRequestKeyException;
 import handlers.GetUserDataHandler;
-import handlers.UsersManager;
 import java.util.Map;
 import javax.inject.Inject;
+import models.User;
 import modules.Injector;
 import utilities.Metrics;
 import utilities.RequestFields;
@@ -25,8 +25,8 @@ public class GetUserDataController implements ApiRequestController {
 
     Injector.getInjector(metrics).inject(this);
 
-    if (jsonMap.containsKey(UsersManager.USERNAME)) {
-      final String username = (String) jsonMap.get(UsersManager.USERNAME);
+    if (jsonMap.containsKey(User.USERNAME)) {
+      final String username = (String) jsonMap.get(User.USERNAME);
       resultStatus = this.getUserDataHandler.handleUsername(username);
     } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
       final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);

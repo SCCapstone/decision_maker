@@ -1,7 +1,6 @@
 package models;
 
 import handlers.GroupsManager;
-import handlers.UsersManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +21,8 @@ public class UserGroup {
     this.setGroupName((String) jsonMap.get(GroupsManager.GROUP_NAME));
     this.setIcon((String) jsonMap.get(GroupsManager.ICON));
     this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
-    this.setMuted(this.getBoolFromObject(jsonMap.get(UsersManager.APP_SETTINGS_MUTED)));
-    this.setEventsUnseenRawMap((Map<String, Object>) jsonMap.get(UsersManager.EVENTS_UNSEEN));
+    this.setMuted(this.getBoolFromObject(jsonMap.get(AppSettings.MUTED)));
+    this.setEventsUnseenRawMap((Map<String, Object>) jsonMap.get(User.EVENTS_UNSEEN));
   }
 
   public static UserGroup fromNewGroup(final Group newGroup) {
@@ -41,8 +40,8 @@ public class UserGroup {
     modelAsMap.putIfAbsent(GroupsManager.GROUP_NAME, this.groupName);
     modelAsMap.putIfAbsent(GroupsManager.ICON, this.icon);
     modelAsMap.putIfAbsent(GroupsManager.LAST_ACTIVITY, this.lastActivity);
-    modelAsMap.putIfAbsent(UsersManager.APP_SETTINGS_MUTED, this.muted);
-    modelAsMap.putIfAbsent(UsersManager.EVENTS_UNSEEN, this.eventsUnseen);
+    modelAsMap.putIfAbsent(AppSettings.MUTED, this.muted);
+    modelAsMap.putIfAbsent(User.EVENTS_UNSEEN, this.eventsUnseen);
     return modelAsMap;
   }
 

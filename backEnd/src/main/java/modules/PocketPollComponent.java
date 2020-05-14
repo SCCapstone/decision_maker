@@ -1,6 +1,7 @@
 package modules;
 
-import controllers.AddNewCategoryController;
+import controllers.GetBatchOfEventsController;
+import controllers.NewCategoryController;
 import controllers.CreateNewGroupController;
 import controllers.DeleteCategoryController;
 import controllers.DeleteGroupController;
@@ -12,6 +13,7 @@ import controllers.GetUserDataController;
 import controllers.LeaveGroupController;
 import controllers.MarkAllEventsSeenController;
 import controllers.MarkEventAsSeenController;
+import controllers.NewEventController;
 import controllers.OptUserInOutController;
 import controllers.RegisterPushEndpointController;
 import controllers.RejoinGroupController;
@@ -28,7 +30,7 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules = PocketPollModule.class)
 public interface PocketPollComponent {
-  void inject(AddNewCategoryController addNewCategoryController);
+  void inject(NewCategoryController newCategoryController);
   void inject(EditCategoryController editCategoryController);
   void inject(GetCategoriesController getCategoriesController);
   void inject(DeleteCategoryController deleteCategoryController);
@@ -50,4 +52,6 @@ public interface PocketPollComponent {
   void inject(MarkEventAsSeenController markEventAsSeenController);
   void inject(SetUserGroupMuteController setUserGroupMuteController);
   void inject(MarkAllEventsSeenController markAllEventsSeenController);
+  void inject(GetBatchOfEventsController getBatchOfEventsController);
+  void inject(NewEventController newEventController);
 }

@@ -39,9 +39,6 @@ public class GroupsPostHandler implements
 
           if (action.equals("newEvent")) {
             resultStatus = DatabaseManagers.GROUPS_MANAGER.newEvent(payloadJsonMap, metrics);
-          } else if (action.equals("getBatchOfEvents")) {
-            resultStatus = DatabaseManagers.GROUPS_MANAGER
-                .handleGetBatchOfEvents(payloadJsonMap, metrics);
           } else {
             resultStatus.resultMessage = "Error: Invalid action entered";
             metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, "Invalid action entered."));

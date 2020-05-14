@@ -9,6 +9,7 @@ import java.util.List;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Group;
+import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
@@ -65,10 +66,8 @@ public class LeaveGroupHandler implements ApiRequestHandler {
 
         // remove group from Groups attribute of the active user item and add to the GroupsLeft
         updateExpression =
-            "remove " + UsersManager.GROUPS + ".#groupId set " + UsersManager.GROUPS_LEFT
-                + ".#groupId = :groupMap";
-        nameMap = new NameMap()
-            .with("#groupId", groupId);
+            "remove " + User.GROUPS + ".#groupId set " + User.GROUPS_LEFT + ".#groupId = :groupMap";
+        nameMap = new NameMap().with("#groupId", groupId);
         valueMap = new ValueMap()
             .withMap(":groupMap", new HashMap<String, Object>() {{
               put(Group.GROUP_NAME, group.getGroupName());

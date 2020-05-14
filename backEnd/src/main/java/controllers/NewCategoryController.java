@@ -1,12 +1,11 @@
 package controllers;
 
 import exceptions.MissingApiRequestKeyException;
-import handlers.AddNewCategoryHandler;
+import handlers.NewCategoryHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
-import lombok.NoArgsConstructor;
 import models.Category;
 import modules.Injector;
 import utilities.ErrorDescriptor;
@@ -14,11 +13,10 @@ import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
 
-@NoArgsConstructor
-public class AddNewCategoryController implements ApiRequestController {
+public class NewCategoryController implements ApiRequestController {
 
   @Inject
-  public AddNewCategoryHandler addNewCategoryHandler;
+  public NewCategoryHandler newCategoryHandler;
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
@@ -39,7 +37,7 @@ public class AddNewCategoryController implements ApiRequestController {
             .get(RequestFields.USER_RATINGS);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.addNewCategoryHandler
+        resultStatus = this.newCategoryHandler
             .handle(activeUser, categoryName, choices, userRatings);
       } catch (final Exception e) {
         //something couldn't get parsed

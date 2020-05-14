@@ -185,11 +185,11 @@ public class EditGroupHandler implements ApiRequestHandler {
     //since this group already exists, we're just updating the mappings that have changed for existing users
     //for simplicity in the code, we'll always update the group name
     updateExpression =
-        "set " + UsersManager.GROUPS + ".#groupId." + Group.GROUP_NAME + " = :groupName";
+        "set " + User.GROUPS + ".#groupId." + Group.GROUP_NAME + " = :groupName";
     valueMap = new ValueMap().withString(":groupName", newGroup.getGroupName());
 
     if (newGroup.iconIsSet() && !newGroup.getIcon().equals(oldGroup.getIcon())) {
-      updateExpression += ", " + UsersManager.GROUPS + ".#groupId." + Group.ICON + " = :groupIcon";
+      updateExpression += ", " + User.GROUPS + ".#groupId." + Group.ICON + " = :groupIcon";
       valueMap.withString(":groupIcon", newGroup.getIcon());
     }
 
@@ -208,7 +208,7 @@ public class EditGroupHandler implements ApiRequestHandler {
     }
 
     //for new users, we need to add the entire group map
-    updateExpression = "set " + UsersManager.GROUPS + ".#groupId = :userGroupMap";
+    updateExpression = "set " + User.GROUPS + ".#groupId = :userGroupMap";
     valueMap = new ValueMap().withMap(":userGroupMap", UserGroup.fromNewGroup(newGroup).asMap());
 
     updateItemSpec = new UpdateItemSpec()
@@ -246,7 +246,7 @@ public class EditGroupHandler implements ApiRequestHandler {
 
     for (String username : addedUsernames) {
       try {
-        final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+        final User user = this.dbAccessManager.getUser(username);
 
         //don't send a notification to the creator as they know they just created the group
         if (!username.equals(newGroup.getGroupCreator())) {
@@ -457,7 +457,7 @@ public class EditGroupHandler implements ApiRequestHandler {
     final Map<String, Object> membersMap = new HashMap<>();
 
     for (String username : new HashSet<>(members)) {
-      final User user = new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username));
+      final User user = this.dbAccessManager.getUser(username);
       membersMap.putIfAbsent(username, user.asMember().asMap());
     }
 

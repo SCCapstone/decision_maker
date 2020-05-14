@@ -2,7 +2,8 @@ package modules;
 
 import dagger.Module;
 import dagger.Provides;
-import handlers.AddNewCategoryHandler;
+import handlers.GetBatchOfEventsHandler;
+import handlers.NewCategoryHandler;
 import handlers.CreateNewGroupHandler;
 import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
@@ -14,11 +15,13 @@ import handlers.GetUserDataHandler;
 import handlers.LeaveGroupHandler;
 import handlers.MarkAllEventsSeenHandler;
 import handlers.MarkEventAsSeenHandler;
+import handlers.NewEventHandler;
 import handlers.OptUserInOutHandler;
 import handlers.RegisterPushEndpointHandler;
 import handlers.RejoinGroupHandler;
 import handlers.SetUserGroupMuteHandler;
 import handlers.UnregisterPushEndpointHandler;
+import handlers.UpdateSortSettingHandler;
 import handlers.UpdateUserChoiceRatingsHandler;
 import handlers.UpdateUserSettingsHandler;
 import handlers.VoteForChoiceHandler;
@@ -55,10 +58,10 @@ public class PocketPollModule {
   }
 
   @Provides
-  public AddNewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager,
+  public NewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager,
       final
       UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
-    return new AddNewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, this.metrics);
+    return new NewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, this.metrics);
   }
 
   @Provides
@@ -107,6 +110,12 @@ public class PocketPollModule {
   }
 
   @Provides
+  public UpdateSortSettingHandler provideUpdateSortSettingHandler(
+      final DbAccessManager dbAccessManager) {
+    return new UpdateSortSettingHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
   public CreateNewGroupHandler provideCreateNewGroupHandler(final DbAccessManager dbAccessManager,
       final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
     return new CreateNewGroupHandler(dbAccessManager, s3AccessManager, snsAccessManager,
@@ -146,8 +155,10 @@ public class PocketPollModule {
 
   @Provides
   public RegisterPushEndpointHandler provideRegisterPushEndpointHandler(
-      final DbAccessManager dbAccessManager, final SnsAccessManager snsAccessManager) {
-    return new RegisterPushEndpointHandler(dbAccessManager, snsAccessManager, this.metrics);
+      final DbAccessManager dbAccessManager, final SnsAccessManager snsAccessManager,
+      final UnregisterPushEndpointHandler unregisterPushEndpointHandler) {
+    return new RegisterPushEndpointHandler(dbAccessManager, snsAccessManager,
+        unregisterPushEndpointHandler, this.metrics);
   }
 
   @Provides
@@ -172,5 +183,16 @@ public class PocketPollModule {
   public MarkAllEventsSeenHandler provideMarkAllEventsSeenHandler(
       final DbAccessManager dbAccessManager) {
     return new MarkAllEventsSeenHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GetBatchOfEventsHandler provideGetBatchOfEventsHandler(
+      final DbAccessManager dbAccessManager) {
+    return new GetBatchOfEventsHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public NewEventHandler provideNewEventHandler(final DbAccessManager dbAccessManager) {
+    return new NewEventHandler(dbAccessManager, this.metrics);
   }
 }

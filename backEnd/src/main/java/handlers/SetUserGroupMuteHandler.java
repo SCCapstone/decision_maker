@@ -4,6 +4,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import managers.DbAccessManager;
+import models.AppSettings;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
@@ -27,7 +28,7 @@ public class SetUserGroupMuteHandler implements ApiRequestHandler {
 
     try {
       final String updateExpression =
-          "set " + User.GROUPS + ".#groupId." + User.APP_SETTINGS_MUTED + " = :mute";
+          "set " + User.GROUPS + ".#groupId." + AppSettings.MUTED + " = :mute";
       final NameMap nameMap = new NameMap().with("#groupId", groupId);
       final ValueMap valueMap = new ValueMap().withBoolean(":mute", isMuted);
 

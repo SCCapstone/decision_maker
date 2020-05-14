@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import models.AppSettings;
 import models.User;
 import modules.Injector;
 import utilities.ErrorDescriptor;
@@ -33,12 +34,12 @@ public class UpdateSortSettingController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        if (jsonMap.containsKey(User.APP_SETTINGS_GROUP_SORT)) {
-          final Integer newGroupSort = (Integer) jsonMap.get(User.APP_SETTINGS_GROUP_SORT);
+        if (jsonMap.containsKey(AppSettings.GROUP_SORT)) {
+          final Integer newGroupSort = (Integer) jsonMap.get(AppSettings.GROUP_SORT);
           resultStatus = this.updateSortSettingHandler
               .handleGroupSortUpdate(activeUser, newGroupSort);
-        } else if (jsonMap.containsKey(User.APP_SETTINGS_CATEGORY_SORT)) {
-          final Integer newCategorySort = (Integer) jsonMap.get(User.APP_SETTINGS_CATEGORY_SORT);
+        } else if (jsonMap.containsKey(AppSettings.CATEGORY_SORT)) {
+          final Integer newCategorySort = (Integer) jsonMap.get(AppSettings.CATEGORY_SORT);
           resultStatus = this.updateSortSettingHandler
               .handleCategorySortUpdate(activeUser, newCategorySort);
         } else {

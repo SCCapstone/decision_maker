@@ -146,8 +146,9 @@ public class PendingEventsManager extends DatabaseAccessManager {
           }
 
           //update the event with whatever got added to it
-          DatabaseManagers.GROUPS_MANAGER
-              .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
+          //TODO
+//          DatabaseManagers.GROUPS_MANAGER
+//              .updateEvent(group, eventId, updatedEvent, isNewEvent, metrics);
 
           if (updatedEvent.getSelectedChoice() == null) {
             //if this event is still pending, add it back into the pending events table
@@ -210,6 +211,7 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       //we need to make sure the event's category choices are setup
       if (event.getCategoryChoices() == null) {
+        //TODO
 //        final Category category = new Category(
 //            DatabaseManagers.CATEGORIES_MANAGER.getItemByPrimaryKey(categoryId).asMap());
 //        event.setCategoryChoices(category.getChoices());
@@ -217,7 +219,8 @@ public class PendingEventsManager extends DatabaseAccessManager {
 
       final List<User> optedInUsers = new ArrayList<>();
       for (String username : event.getOptedIn().keySet()) {
-        optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
+        //TODO
+        //optedInUsers.add(new User(DatabaseManagers.USERS_MANAGER.getMapByPrimaryKey(username)));
       }
 
       final NondeterministicOptimalChoiceSelector nondeterministicOptimalChoiceSelector =
