@@ -18,10 +18,9 @@ import java.util.Map;
 
 public class GetActiveUser {
 
-  public static final String PUBLIC_RSA_KEY_URL = "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_ebbPP76nO/.well-known/jwks.json";
-  public static final List LIVE_FUNCTIONS = ImmutableList
-      .of("UsersPostEndpoint", "GroupsPostEndpoint", "CategoriesPostEndpoint");
-  public static final String EMULATED_ACTIVE_USER_KEY = "EMULATED_ACTIVE_USER";
+  private static final String PUBLIC_RSA_KEY_URL = "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_ebbPP76nO/.well-known/jwks.json";
+  private static final List LIVE_FUNCTIONS = ImmutableList.of("ProxyPostEndpoint");
+  private static final String EMULATED_ACTIVE_USER_KEY = "EMULATED_ACTIVE_USER";
 
   public static String getActiveUserFromRequest(APIGatewayProxyRequestEvent request,
       Context context)
