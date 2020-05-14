@@ -40,9 +40,8 @@ public class NewCategoryController implements ApiRequestController {
         resultStatus = this.newCategoryHandler
             .handle(activeUser, categoryName, choices, userRatings);
       } catch (final Exception e) {
-        //something couldn't get parsed
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus = ResultStatus.failure("Error: Invalid request.");
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

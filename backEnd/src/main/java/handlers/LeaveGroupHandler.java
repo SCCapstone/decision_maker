@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Group;
@@ -17,8 +18,8 @@ import utilities.UpdateItemData;
 
 public class LeaveGroupHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   @Inject
   public LeaveGroupHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
@@ -39,15 +40,13 @@ public class LeaveGroupHandler implements ApiRequestHandler {
     final String classMethod = "LeaveGroupHandler.handle";
     metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       final Group group = this.dbAccessManager.getGroup(groupId);
-      final String groupCreator = group.getGroupCreator();
 
-      if (!groupCreator.equals(activeUser)) {
-        final List<TransactWriteItem> actions = new ArrayList<>();
-
+      Optional<String> errorMessage = this.leaveGroupIsValid(group, activeUser);
+      if (!errorMessage.isPresent()) {
         String updateExpression =
             "remove " + Group.MEMBERS + ".#username set " + Group.MEMBERS_LEFT
                 + ".#username = :memberLeftMap";
@@ -61,8 +60,6 @@ public class LeaveGroupHandler implements ApiRequestHandler {
             .withUpdateExpression(updateExpression)
             .withNameMap(nameMap)
             .withValueMap(valueMap);
-
-        actions.add(new TransactWriteItem().withUpdate(groupUpdate.asUpdate()));
 
         // remove group from Groups attribute of the active user item and add to the GroupsLeft
         updateExpression =
@@ -79,14 +76,15 @@ public class LeaveGroupHandler implements ApiRequestHandler {
             .withNameMap(nameMap)
             .withValueMap(valueMap);
 
+        final List<TransactWriteItem> actions = new ArrayList<>();
+        actions.add(new TransactWriteItem().withUpdate(groupUpdate.asUpdate()));
         actions.add(new TransactWriteItem().withUpdate(userUpdate.asUpdate()));
-
         this.dbAccessManager.executeWriteTransaction(actions);
 
         resultStatus = new ResultStatus(true, "Group left successfully.");
       } else {
-        metrics.logWithBody(new ErrorDescriptor<>(classMethod, "Owner cannot leave group"));
-        resultStatus = ResultStatus.failure("Error: Owner cannot leave group.");
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, errorMessage.get()));
+        resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (Exception e) {
       metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
@@ -95,5 +93,32 @@ public class LeaveGroupHandler implements ApiRequestHandler {
 
     metrics.commonClose(resultStatus.success);
     return resultStatus;
+  }
+
+  private Optional<String> leaveGroupIsValid(final Group group, final String activeUser) {
+    String errorMessage = null;
+
+    if (group.getGroupCreator().equals(activeUser)) {
+      errorMessage = this
+          .getUpdatedErrorMessage(errorMessage, "Error: the group creator cannot leave the group.");
+    }
+
+    if (!group.getMembers().containsKey(activeUser)) {
+      errorMessage = this
+          .getUpdatedErrorMessage(errorMessage, "Error: the user is not in the group.");
+    }
+
+    return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedErrorMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 }

@@ -19,7 +19,7 @@ public class MarkAllEventsSeenController implements ApiRequestController {
   public MarkAllEventsSeenHandler markAllEventsSeenHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "MarkAllEventsSeenController.processApiRequest";
 
@@ -37,7 +37,7 @@ public class MarkAllEventsSeenController implements ApiRequestController {
         resultStatus = this.markAllEventsSeenHandler.handle(activeUser, groupId);
       } catch (final Exception e) {
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

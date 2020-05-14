@@ -30,10 +30,10 @@ public class DeleteCategoryHandler implements ApiRequestHandler {
     final String classMethod = "DeleteCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
-      // Confirm that the username matches with the owner of the category before deleting it
+      // Confirm that the activeUser is the owner of the category before deleting it
       final Category category = this.dbAccessManager.getCategory(categoryId);
       if (activeUser.equals(category.getOwner())) {
         if (this.removeCategoryFromGroups(category.getGroups().keySet(), categoryId).success) {
@@ -54,18 +54,18 @@ public class DeleteCategoryHandler implements ApiRequestHandler {
 
           this.dbAccessManager.executeWriteTransaction(actions);
 
-          resultStatus = new ResultStatus(true, "Category deleted successfully!");
+          resultStatus = ResultStatus.successful("Category deleted successfully!");
         } else {
           resultStatus = ResultStatus.failure("Unable to remove category from groups");
         }
       } else {
         this.metrics.logWithBody(
             new ErrorDescriptor<>(classMethod, "User is not the owner of the category"));
-        resultStatus.resultMessage = "Error: User is not the owner of the category.";
+        resultStatus = ResultStatus.failure("Error: User is not the owner of the category.");
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Error: Unable to parse request.";
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     this.metrics.commonClose(resultStatus.success);
@@ -95,7 +95,7 @@ public class DeleteCategoryHandler implements ApiRequestHandler {
     for (final String groupId : groupIds) {
       try {
         this.dbAccessManager.updateGroup(groupId, updateItemSpec);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Error: Unable to delete category from all groups.");
       }

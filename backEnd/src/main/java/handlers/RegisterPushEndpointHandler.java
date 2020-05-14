@@ -5,12 +5,11 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointRequest;
 import com.amazonaws.services.sns.model.CreatePlatformEndpointResult;
 import com.amazonaws.services.sns.model.DeleteEndpointRequest;
-import com.amazonaws.services.sns.model.GetEndpointAttributesRequest;
-import com.amazonaws.services.sns.model.GetEndpointAttributesResult;
 import com.amazonaws.services.sns.model.InvalidParameterException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.inject.Inject;
 import managers.DbAccessManager;
 import managers.SnsAccessManager;
 import models.User;
@@ -28,6 +27,7 @@ public class RegisterPushEndpointHandler implements ApiRequestHandler {
   private final UnregisterPushEndpointHandler unregisterPushEndpointHandler;
   private final Metrics metrics;
 
+  @Inject
   public RegisterPushEndpointHandler(final DbAccessManager dbAccessManager,
       final SnsAccessManager snsAccessManager,
       final UnregisterPushEndpointHandler unregisterPushEndpointHandler, final Metrics metrics) {

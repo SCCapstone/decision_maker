@@ -18,7 +18,7 @@ public class RegisterPushEndpointController implements ApiRequestController {
   public RegisterPushEndpointHandler registerPushEndpointHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "RegisterPushEndpointController.processApiRequest";
 
@@ -34,8 +34,8 @@ public class RegisterPushEndpointController implements ApiRequestController {
 
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.registerPushEndpointHandler.handle(activeUser, deviceToken);
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      } catch (final Exception e) {
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {

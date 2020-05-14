@@ -30,11 +30,11 @@ public class NewEventHandler implements ApiRequestHandler {
   private static final Integer MAX_DURATION = 10000;
   private static final Integer MAX_EVENT_NAME_LENGTH = 30;
 
-  private DbAccessManager dbAccessManager;
-  private SnsAccessManager snsAccessManager;
-  private AddPendingEventHandler addPendingEventHandler;
-  private ProcessPendingEventHandler processPendingEventHandler;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final SnsAccessManager snsAccessManager;
+  private final AddPendingEventHandler addPendingEventHandler;
+  private final ProcessPendingEventHandler processPendingEventHandler;
+  private final Metrics metrics;
 
   @Inject
   public NewEventHandler(final DbAccessManager dbAccessManager,
@@ -53,14 +53,21 @@ public class NewEventHandler implements ApiRequestHandler {
    * going to skip rsvp, control is passed to the pending events manager is used to handle this
    * flow.
    *
-   * @param activeUser TODO
+   * @param activeUser         The user making the api request.
+   * @param groupId            The id of the group to associate the event within.
+   * @param eventName          The name of the event.
+   * @param categoryId         The id of the category to associate the event to.
+   * @param rsvpDuration       The rsvp duration for the event.
+   * @param votingDuration     The voting duration for the event.
+   * @param eventStartDateTime The textual datetime start date time of the event.
+   * @param utcStartSeconds    The utc seconds of the event.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId, final String eventName,
       final String categoryId, final Integer rsvpDuration, final Integer votingDuration,
       final String eventStartDateTime, final Integer utcStartSeconds) {
     final String classMethod = "NewEventHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -133,10 +140,10 @@ public class NewEventHandler implements ApiRequestHandler {
           this.updateUsersTable(newGroup, eventId);
         }
 
-        resultStatus = new ResultStatus(true,
-            JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+        resultStatus = ResultStatus
+            .successful(JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
       } else {
-        metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (Exception e) {
@@ -194,7 +201,7 @@ public class NewEventHandler implements ApiRequestHandler {
    */
   private void updateUsersTable(final Group newGroup, final String updatedEventId) {
     final String classMethod = "NewEventHandler.updateUsersTable";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
 
@@ -242,12 +249,12 @@ public class NewEventHandler implements ApiRequestHandler {
     //blind send...
     this.sendEventUpdatedNotification(newGroup, updatedEventId);
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 
   private void sendEventUpdatedNotification(final Group group, final String eventId) {
     final String classMethod = "NewEventHandler.sendEventUpdatedNotification";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
 
@@ -300,11 +307,11 @@ public class NewEventHandler implements ApiRequestHandler {
           }
         } catch (Exception e) {
           success = false;
-          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 }

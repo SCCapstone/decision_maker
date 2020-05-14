@@ -20,10 +20,9 @@ public class UpdateSortSettingController implements ApiRequestController {
   public UpdateSortSettingHandler updateSortSettingHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "UpdateSortSettingController.processApiRequest";
-    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -45,7 +44,7 @@ public class UpdateSortSettingController implements ApiRequestController {
         } else {
           resultStatus = ResultStatus.failure("Error: No sort key entered.");
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
@@ -53,7 +52,6 @@ public class UpdateSortSettingController implements ApiRequestController {
       throw new MissingApiRequestKeyException(requiredKeys);
     }
 
-    metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

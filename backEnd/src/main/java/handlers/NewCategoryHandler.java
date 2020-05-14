@@ -44,7 +44,7 @@ public class NewCategoryHandler implements ApiRequestHandler {
     final String classMethod = "AddNewCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       final String nextCategoryIndex = UUID.randomUUID().toString();
@@ -75,18 +75,20 @@ public class NewCategoryHandler implements ApiRequestHandler {
 
           this.dbAccessManager.executeWriteTransaction(actions);
 
-          resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(newCategory.asMap()));
+          resultStatus = ResultStatus
+              .successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
-          resultStatus.resultMessage = "Error: Unable to add this category to the users table. "
-              + updatedUsersTableResult.resultMessage;
+          resultStatus = ResultStatus
+              .failure("Error: Unable to add this category to the users table.");
+          resultStatus.applyResultStatus(updatedUsersTableResult);
         }
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
-        resultStatus.resultMessage = errorMessage.get();
+        resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Exception in " + classMethod;
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     this.metrics.commonClose(resultStatus.success);

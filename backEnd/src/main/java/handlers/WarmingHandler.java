@@ -11,14 +11,15 @@ import utilities.ResultStatus;
 
 public class WarmingHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private S3AccessManager s3AccessManager;
-  private SnsAccessManager snsAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final S3AccessManager s3AccessManager;
+  private final SnsAccessManager snsAccessManager;
+  private final Metrics metrics;
 
   @Inject
-  public WarmingHandler(final DbAccessManager dbAccessManager, final S3AccessManager s3AccessManager, final
-      SnsAccessManager snsAccessManager, final Metrics metrics) {
+  public WarmingHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager,
+      final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
     this.s3AccessManager = s3AccessManager;
     this.snsAccessManager = snsAccessManager;
@@ -32,16 +33,17 @@ public class WarmingHandler implements ApiRequestHandler {
     //squelch metrics on warming -> we only want metrics on user impacting cold starts
     this.metrics.setPrintMetrics(false);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       this.dbAccessManager.describeTables();
       this.s3AccessManager.imageBucketExists();
       this.snsAccessManager.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
 
-      resultStatus = new ResultStatus(true, "Endpoints warmed.");
+      resultStatus = ResultStatus.successful("Endpoints warmed.");
     } catch (Exception e) {
       this.metrics.log(new ErrorDescriptor<>(classMethod, e));
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     this.metrics.commonClose(resultStatus.success);

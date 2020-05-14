@@ -20,9 +20,9 @@ public class DeleteCategoryController implements ApiRequestController {
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "DeleteCategoryHandler.handle";
+    final String classMethod = "DeleteCategoryController.processApiRequest";
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, Category.CATEGORY_ID);
@@ -35,9 +35,8 @@ public class DeleteCategoryController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.deleteCategoryHandler.handle(activeUser, categoryId);
       } catch (final Exception e) {
-        //something couldn't get parsed
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-        resultStatus.resultMessage = "Error: Invalid request.";
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

@@ -1,7 +1,6 @@
 package controllers;
 
 import exceptions.MissingApiRequestKeyException;
-import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
 import java.util.Arrays;
 import java.util.List;
@@ -37,9 +36,8 @@ public class DeleteGroupController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.deleteGroupHandler.handle(activeUser, groupId);
       } catch (final Exception e) {
-        //something couldn't get parsed
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
-        resultStatus = ResultStatus.failure("Error: Invalid request.");
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

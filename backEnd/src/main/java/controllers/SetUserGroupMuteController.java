@@ -21,7 +21,7 @@ public class SetUserGroupMuteController implements ApiRequestController {
   public SetUserGroupMuteHandler setUserGroupMuteHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "SetUserGroupMuteController.processApiRequest";
 

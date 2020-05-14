@@ -39,7 +39,7 @@ public class OptUserInOutController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.optUserInOutHandler.handle(activeUser, groupId, eventId, participating);
       } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {

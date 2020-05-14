@@ -1,5 +1,6 @@
 package handlers;
 
+import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -16,6 +17,7 @@ import models.AppSettings;
 import models.Group;
 import models.User;
 import utilities.ErrorDescriptor;
+import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.ResultStatus;
 import utilities.UpdateItemData;
@@ -52,7 +54,7 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
       final AppSettings newAppSettings, final Set<String> newFavorites,
       final List<Integer> newIconData) {
     final String classMethod = "UpdateUserSettingsHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -138,7 +140,7 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           for (String groupId : oldUser.getGroups().keySet()) {
             try {
               this.dbAccessManager.updateGroup(groupId, updateGroupItemSpec);
-            } catch (Exception e) {
+            } catch (final Exception e) {
               this.metrics.log(new ErrorDescriptor<>(groupId, classMethod, e));
             }
           }
@@ -154,28 +156,28 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           for (String username : oldUser.getFavoriteOf().keySet()) {
             try {
               this.dbAccessManager.updateUser(username, updateFavoritesOfItemSpec);
-            } catch (Exception e) {
-              metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+            } catch (final Exception e) {
+              this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
             }
           }
         }
 
         this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser);
 
-        final User updatedUser = this.dbAccessManager.getUser(activeUser);
+        final Item updatedUser = this.dbAccessManager.getUserItem(activeUser);
+        updatedUser.withBoolean(User.FIRST_LOGIN, false);
         //anytime we return the active user we need to add this
         //updatedUser.withBoolean(FIRST_LOGIN, false);
         //TODO convert the user to a return user similar to how we do groups
 
-        resultStatus = new ResultStatus(true, "TODO");
-        //JsonUtils.convertObjectToJson(updatedUser.asMap()));
+        resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(updatedUser.asMap()));
       } else {
         metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus.resultMessage = errorMessage.get();
       }
     } catch (final Exception e) {
       metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Error: Unable to parse request.";
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     metrics.commonClose(resultStatus.success);
@@ -197,8 +199,8 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
 
   private boolean updateActiveUsersFavorites(final Set<String> newFavorites,
       final Set<String> oldFavorites, final String activeUser) {
-    final String classMethod = "UpdateUserSettingsHanlder.updateActiveUsersFavorites";
-    metrics.commonSetup(classMethod);
+    final String classMethod = "UpdateUserSettingsHandler.updateActiveUsersFavorites";
+    this.metrics.commonSetup(classMethod);
 
     boolean hadError = false;
 
@@ -227,9 +229,9 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           actions.add(new TransactWriteItem().withUpdate(removeFavoritesEntry.asUpdate()));
 
           this.dbAccessManager.executeWriteTransaction(actions);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           hadError = true;
-          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
@@ -263,14 +265,14 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           actions.add(new TransactWriteItem().withUpdate(setFavoritesEntry.asUpdate()));
 
           this.dbAccessManager.executeWriteTransaction(actions);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           hadError = true;
-          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
         }
       }
     }
 
-    metrics.commonClose(!hadError);
+    this.metrics.commonClose(!hadError);
     return (!hadError);
   }
 

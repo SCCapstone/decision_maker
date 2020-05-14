@@ -53,14 +53,14 @@ public class PendingEventResolutionController implements RequestStreamHandler {
           resultStatus = this.processPendingEventHandler.handle(groupId, eventId, scannerId);
         } catch (Exception e) {
           resultStatus = ResultStatus.failure("Exception in " + classMethod);
-          metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+          metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         }
       } else {
         throw new MissingApiRequestKeyException(requiredKeys);
       }
     } catch (Exception e) {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
-      metrics.log(new ErrorDescriptor<>(null, classMethod, e));
+      metrics.log(new ErrorDescriptor<>(classMethod, e));
     }
 
     metrics.commonClose(resultStatus.success);

@@ -19,7 +19,7 @@ public class GetBatchOfEventsController implements ApiRequestController {
   public GetBatchOfEventsHandler getBatchOfEventsHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "GetBatchOfEventsController.processApiRequest";
 

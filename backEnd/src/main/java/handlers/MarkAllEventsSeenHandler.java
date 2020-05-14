@@ -12,17 +12,25 @@ import utilities.ResultStatus;
 
 public class MarkAllEventsSeenHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   public MarkAllEventsSeenHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
     this.metrics = metrics;
   }
 
+  /**
+   * This method marks all events as 'seen' my setting the user group's events unseen to an empty
+   * map.
+   *
+   * @param activeUser The user who made the api request.
+   * @param groupId The group that all of the events are being marked seen in.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final String groupId) {
     final String classMethod = "MarkAllEventsSeenHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -44,10 +52,10 @@ public class MarkAllEventsSeenHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.successful("All events marked seen successfully.");
     } catch (final Exception e) {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

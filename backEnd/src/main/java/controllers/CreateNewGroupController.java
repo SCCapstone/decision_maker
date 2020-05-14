@@ -19,7 +19,7 @@ public class CreateNewGroupController implements ApiRequestController {
   public CreateNewGroupHandler createNewGroupHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "CreateNewGroupController.processApiRequest";
 

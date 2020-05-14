@@ -13,14 +13,22 @@ import utilities.ResultStatus;
 
 public class MarkEventAsSeenHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   public MarkEventAsSeenHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
     this.metrics = metrics;
   }
 
+  /**
+   * This method marks a single event as seen for a user.
+   *
+   * @param activeUser The user making the api request.
+   * @param groupId    The group that the event being marked seen is associated with.
+   * @param eventId    The id of the event being marked seen.
+   * @return
+   */
   public ResultStatus handle(final String activeUser, final String groupId, final String eventId) {
     final String classMethod = "MarkEventAsSeenHandler.handle";
     this.metrics.commonSetup(classMethod);

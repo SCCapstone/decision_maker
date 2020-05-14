@@ -15,8 +15,8 @@ import utilities.WarningDescriptor;
 
 public class OptUserInOutHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   @Inject
   public OptUserInOutHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
@@ -36,7 +36,7 @@ public class OptUserInOutHandler implements ApiRequestHandler {
   public ResultStatus handle(final String activeUser, final String groupId, final String eventId,
       final Boolean participating) {
     final String classMethod = "OptUserInOutHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -71,15 +71,15 @@ public class OptUserInOutHandler implements ApiRequestHandler {
 
         resultStatus = ResultStatus.successful("Opted in/out successfully");
       } else {
-        metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group"));
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group"));
         resultStatus = ResultStatus.failure("Error: User not in group.");
       }
-    } catch (Exception e) {
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+    } catch (final Exception e) {
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

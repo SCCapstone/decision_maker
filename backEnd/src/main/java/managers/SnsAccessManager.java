@@ -10,17 +10,13 @@ import com.amazonaws.services.sns.model.DeleteEndpointRequest;
 import com.amazonaws.services.sns.model.DeleteEndpointResult;
 import com.amazonaws.services.sns.model.EndpointDisabledException;
 import com.amazonaws.services.sns.model.GetEndpointAttributesRequest;
-import com.amazonaws.services.sns.model.GetEndpointAttributesResult;
 import com.amazonaws.services.sns.model.GetPlatformApplicationAttributesRequest;
 import com.amazonaws.services.sns.model.GetPlatformApplicationAttributesResult;
 import com.amazonaws.services.sns.model.InvalidParameterException;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.google.common.collect.ImmutableMap;
-import handlers.UnregisterPushEndpointHandler;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import models.Metadata;
 import utilities.JsonUtils;
 

@@ -47,12 +47,11 @@ public class DeleteGroupHandler implements ApiRequestHandler {
     final String classMethod = "DeleteGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       final Group group = this.dbAccessManager.getGroup(groupId);
       if (activeUser.equals(group.getGroupCreator())) {
-        Set<String> categoryIds = group.getCategories().keySet();
 
         // Remove the group from the users and categories tables
         final ResultStatus removeGroupFromUsers = this
@@ -62,7 +61,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
         if (removeGroupFromUsers.success && removeFromCategoriesResult.success) {
           this.dbAccessManager.deleteGroup(groupId);
 
-          resultStatus = new ResultStatus(true, "Group deleted successfully!");
+          resultStatus = ResultStatus.successful("Group deleted successfully!");
 
           //blind attempt to delete the group's icon and pending events
           //if either fail, we'll get a notification and we can manually delete if necessary
@@ -73,14 +72,13 @@ public class DeleteGroupHandler implements ApiRequestHandler {
           resultStatus = removeGroupFromUsers.applyResultStatus(removeFromCategoriesResult);
           this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, resultStatus.resultMessage));
         }
-
       } else {
         this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, "User is not owner of group"));
-        resultStatus.resultMessage = "Error: User is not owner of group.";
+        resultStatus = ResultStatus.failure("Error: User is not owner of group.");
       }
     } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Exception in " + classMethod;
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     this.metrics.commonClose(resultStatus.success);
@@ -104,7 +102,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
       return new ResultStatus(true, "No events to delete");
     }
 
-    final String classMethod = "PendingEventsManager.deleteAllPendingGroupEvents";
+    final String classMethod = "DeleteGroupHandler.deleteAllPendingGroupEvents";
     metrics.commonSetup(classMethod);
 
     //assume success, we'll set to fail if anything goes wrong

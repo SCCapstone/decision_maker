@@ -19,9 +19,9 @@ public class ScanPendingEventsHandler {
 
   private static final String DELIM = ";";
 
-  private DbAccessManager dbAccessManager;
-  private StepFunctionManager stepFunctionManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final StepFunctionManager stepFunctionManager;
+  private final Metrics metrics;
 
   @Inject
   public ScanPendingEventsHandler(final DbAccessManager dbAccessManager,
@@ -37,6 +37,7 @@ public class ScanPendingEventsHandler {
    * off a step function process to handle that event's resolution.
    *
    * @param scannerId The partition of the table that this function should scan for ready events.
+   * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String scannerId) {
     final String classMethod = "ScanPendingEventsHandler.handle";
@@ -89,7 +90,7 @@ public class ScanPendingEventsHandler {
 
   private boolean startStepMachineExecution(final String groupId, final String eventId,
       final String scannerId) {
-    final String classMethod = "PendingEventsManager.startStepMachineExecution";
+    final String classMethod = "ScanPendingEventsHandler.startStepMachineExecution";
     this.metrics.commonSetup(classMethod);
 
     boolean success = true;
@@ -100,7 +101,7 @@ public class ScanPendingEventsHandler {
 
     try {
       this.stepFunctionManager.startStepMachine(input);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       success = false;
       this.metrics.log(new ErrorDescriptor<>(input, classMethod, e));
     }

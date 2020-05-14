@@ -8,11 +8,12 @@ import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class GetGroupHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   @Inject
   public GetGroupHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
@@ -35,7 +36,7 @@ public class GetGroupHandler implements ApiRequestHandler {
     final String classMethod = "GetGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       final Group group = this.dbAccessManager.getGroup(groupId);
@@ -48,10 +49,11 @@ public class GetGroupHandler implements ApiRequestHandler {
         resultStatus = new ResultStatus(true,
             JsonUtils.convertObjectToJson(groupForApiResponse.asMap()));
       } else {
-        resultStatus.resultMessage = "Error: user is not a member of the group.";
+        resultStatus = ResultStatus.failure("Error: user is not a member of the group.");
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group"));
       }
     } catch (final Exception e) {
-      resultStatus.resultMessage = "Error: Unable to parse request.";
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 

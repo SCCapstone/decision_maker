@@ -16,6 +16,7 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.RequestFields;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class UpdateUserSettingsController implements ApiRequestController {
 
@@ -23,7 +24,7 @@ public class UpdateUserSettingsController implements ApiRequestController {
   public UpdateUserSettingsHandler updateUserSettingsHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "UpdateUserSettingsController.processApiRequest";
 
@@ -46,11 +47,11 @@ public class UpdateUserSettingsController implements ApiRequestController {
         resultStatus = this.updateUserSettingsHandler
             .handle(activeUser, newDisplayName, newAppSettings, newFavorites, newIconData);
       } catch (final InvalidAttributeValueException iae) {
-        metrics.logWithBody(new ErrorDescriptor<>(classMethod, iae));
+        metrics.logWithBody(new WarningDescriptor<>(classMethod, iae));
         resultStatus = ResultStatus.failure(iae.getMessage());
       } catch (final Exception e) {
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-        resultStatus = ResultStatus.failure("Error: Unable to parse request.");
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

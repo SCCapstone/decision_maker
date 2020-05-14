@@ -38,8 +38,7 @@ public class UpdateUserChoiceRatingsController implements ApiRequestController {
         resultStatus = this.updateUserChoiceRatingsHandler
             .handle(activeUser, categoryId, userRatings, true);
       } catch (final Exception e) {
-        //something couldn't get parsed
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {

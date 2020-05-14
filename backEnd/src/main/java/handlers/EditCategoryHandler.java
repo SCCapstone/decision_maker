@@ -39,10 +39,9 @@ public class EditCategoryHandler implements ApiRequestHandler {
     final String classMethod = "EditCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
-
       final Category newCategory = new Category();
       newCategory.setCategoryId(categoryId);
       newCategory.setCategoryName(categoryName);
@@ -83,25 +82,26 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
         //get the update data to entered the ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult =
-            this.updateUserChoiceRatingsHandler.handle(activeUser, categoryId, userRatings, false, categoryName);
+            this.updateUserChoiceRatingsHandler
+                .handle(activeUser, categoryId, userRatings, false, categoryName);
 
         if (updatedUsersTableResult.success) {
           actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
 
           this.dbAccessManager.executeWriteTransaction(actions);
 
-          resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(newCategory.asMap()));
+          resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
-          resultStatus.resultMessage = "Error in dependency.";
+          resultStatus = ResultStatus.failure("Error in dependency.");
           resultStatus.applyResultStatus(updatedUsersTableResult);
         }
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
-        resultStatus.resultMessage = errorMessage.get();
+        resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-      resultStatus.resultMessage = "Exception in " + classMethod;
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
     this.metrics.commonClose(resultStatus.success);

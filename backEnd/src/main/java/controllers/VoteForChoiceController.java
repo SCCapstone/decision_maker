@@ -19,7 +19,7 @@ public class VoteForChoiceController implements ApiRequestController {
   public VoteForChoiceHandler voteForChoiceHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "VoteForChoiceController.processApiRequest";
 
@@ -40,8 +40,8 @@ public class VoteForChoiceController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.voteForChoiceHandler
             .handle(activeUser, groupId, eventId, choiceId, voteValue);
-      } catch (Exception e) {
-        resultStatus = ResultStatus.failure("Excpetion in " + classMethod);
+      } catch (final Exception e) {
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       }
     } else {

@@ -26,8 +26,8 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
 
   public static final Integer EVENTS_BATCH_SIZE = 25;
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   public GetBatchOfEventsHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;

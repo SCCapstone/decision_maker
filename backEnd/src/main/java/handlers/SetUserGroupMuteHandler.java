@@ -12,8 +12,8 @@ import utilities.ResultStatus;
 
 public class SetUserGroupMuteHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   public SetUserGroupMuteHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
@@ -22,7 +22,7 @@ public class SetUserGroupMuteHandler implements ApiRequestHandler {
 
   public ResultStatus handle(final String activeUser, final String groupId, final Boolean isMuted) {
     final String classMethod = "SetUserGroupMuteHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -42,10 +42,10 @@ public class SetUserGroupMuteHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.successful("User group mute set successfully.");
     } catch (final Exception e) {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

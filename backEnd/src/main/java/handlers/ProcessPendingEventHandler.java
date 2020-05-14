@@ -52,14 +52,15 @@ public class ProcessPendingEventHandler {
    * This function handles toking a pending event and figuring out what needs to be done to it so
    * that it can process to the next level.
    *
-   * @param groupId
-   * @param eventId
-   * @param scannerId TODO
+   * @param groupId   The group id of the event that needs to be processed.
+   * @param eventId   The id of the event that needs to be processed.
+   * @param scannerId The partition that the pending event exists within. If this is null then this
+   *                  processing is being done for a brand new event.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String groupId, final String eventId, String scannerId) {
-    final String classMethod = "PendingEventsManager.processPendingEvent";
-    metrics.commonSetup(classMethod);
+    final String classMethod = "ProcessPendingEventHandler.handle";
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -77,10 +78,10 @@ public class ProcessPendingEventHandler {
           //we need to set the tentative choices
           final Map<String, String> tentativeChoices;
           if (event.getVotingDuration() > 0) {
-            tentativeChoices = this.getTentativeAlgorithmChoices(event, 3, metrics);
+            tentativeChoices = this.getTentativeAlgorithmChoices(event, 3);
           } else {
             //skipping voting, we also need to set the selected choice
-            tentativeChoices = this.getTentativeAlgorithmChoices(event, 1, metrics);
+            tentativeChoices = this.getTentativeAlgorithmChoices(event, 1);
             updatedEvent.setSelectedChoice(tentativeChoices.values().toArray()[0].toString());
           }
 
@@ -134,13 +135,12 @@ public class ProcessPendingEventHandler {
    *
    * @param event           This is the event that tentative choices are being gotten for.
    * @param numberOfChoices This is the number of tentative choices we want to set.
-   * @param metrics         Standard metrics object for profiling and logging.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   private Map<String, String> getTentativeAlgorithmChoices(final EventWithCategoryChoices event,
-      final Integer numberOfChoices, final Metrics metrics) {
-    final String classMethod = "PendingEventsManager.getTentativeAlgorithmChoices";
-    metrics.commonSetup(classMethod);
+      final Integer numberOfChoices) {
+    final String classMethod = "ProcessPendingEventHandler.getTentativeAlgorithmChoices";
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
     Map<String, String> returnValue = new HashMap<>();
@@ -166,10 +166,10 @@ public class ProcessPendingEventHandler {
     } catch (Exception e) {
       returnValue.putIfAbsent("1", "Error");
       success = false;
-      metrics.log(new ErrorDescriptor<>(event, classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>(event, classMethod, e));
     }
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
     return returnValue;
   }
 
@@ -232,7 +232,7 @@ public class ProcessPendingEventHandler {
   private ResultStatus updateEvent(final Group oldGroup, final String eventId,
       final Event updatedEvent, final Boolean isNewEvent) {
     final String classMethod = "ProcessPendingEventHandler.updateEvent";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();
 
@@ -294,11 +294,11 @@ public class ProcessPendingEventHandler {
         throw new Exception("Nothing to update");
       }
     } catch (final Exception e) {
-      metrics.log(new ErrorDescriptor<>(oldGroup.asMap(), classMethod, e));
+      this.metrics.log(new ErrorDescriptor<>(oldGroup.asMap(), classMethod, e));
       resultStatus.resultMessage = "Exception in " + classMethod;
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -308,6 +308,7 @@ public class ProcessPendingEventHandler {
    * @param newGroup       The new group definition after the update.
    * @param updatedEventId This is the event id of an event that just changed states. Null means
    *                       this isn't being called from an event update.
+   * @param isNewEvent     Boolean on whether or not this is a brand new event being processed.
    */
   private void updateUsersTable(final Group newGroup, final String updatedEventId,
       final Boolean isNewEvent) {

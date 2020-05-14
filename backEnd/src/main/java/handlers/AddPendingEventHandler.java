@@ -40,10 +40,10 @@ public class AddPendingEventHandler implements ApiRequestHandler {
       return new ResultStatus(true, "No insert needed");
     }
 
-    final String classMethod = "PendingEventsManager.addPendingEvent";
+    final String classMethod = "AddPendingEventHandler.handle";
     metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       final String partitionKey = this.getPartitionKey();
@@ -58,13 +58,13 @@ public class AddPendingEventHandler implements ApiRequestHandler {
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)
           .withNameMap(nameMap)
-          .withValueMap(valueMap); // only modifying my row
+          .withValueMap(valueMap);
 
       this.dbAccessManager.updatePendingEvent(partitionKey, updateItemSpec);
 
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
-      resultStatus.resultMessage = "Error adding pending event.";
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
       metrics.log(new ErrorDescriptor<>(String
           .format("Group: %s, Event: %s, duration: %s", groupId, eventId, pollDuration.toString()),
           classMethod, e));
@@ -75,7 +75,7 @@ public class AddPendingEventHandler implements ApiRequestHandler {
   }
 
   public String getPartitionKey() throws NullPointerException, NumberFormatException {
-    //this gives a 'randomized' key based on the system's clock time.
+    //this gives a 'randomized' partition key based on the system's clock time.
     return Long.toString(
         (System.currentTimeMillis() % Integer.parseInt(System.getenv(NUMBER_OF_PARTITIONS_ENV_KEY)))
             + 1);

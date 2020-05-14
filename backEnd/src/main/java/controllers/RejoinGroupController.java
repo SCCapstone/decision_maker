@@ -19,7 +19,7 @@ public class RejoinGroupController implements ApiRequestController {
   public RejoinGroupHandler rejoinGroupHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "RejoinGroupController.processApiRequest";
 
@@ -34,8 +34,8 @@ public class RejoinGroupController implements ApiRequestController {
 
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.rejoinGroupHandler.handle(activeUser, groupId);
-      } catch (Exception e) {
-        metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
+      } catch (final Exception e) {
+        metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {

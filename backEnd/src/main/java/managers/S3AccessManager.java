@@ -76,7 +76,7 @@ public class S3AccessManager {
 
   public ResultStatus deleteImage(final String fileName, final Metrics metrics) {
     if (fileName == null) {
-      return new ResultStatus(true, "No image to delete");
+      return ResultStatus.successful("No image to delete");
     }
 
     final String classMethod = "S3AccessManager.deleteImage";

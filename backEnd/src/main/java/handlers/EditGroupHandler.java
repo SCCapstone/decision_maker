@@ -55,7 +55,7 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param groupId               The id of the group attempting to be edited.
    * @param name                  The updated name of the group.
    * @param membersList           The updated list of usernames associated with the group.
-   * @param categoriesMap         The updated map of categories associated with the group. // TODO
+   * @param categoriesMap         The updated map of categories associated with the group. TODO
    *                              update to just be ids
    * @param defaultVotingDuration The updated default voting duration for events in this group.
    * @param defaultRsvpDuration   The update default consider duration for events in this group.
@@ -280,7 +280,7 @@ public class EditGroupHandler implements ApiRequestHandler {
   private ResultStatus removeGroupFromUsersAndSendNotifications(final Set<String> removedUsernames,
       final Group group) {
     final String classMethod = "EditGroupHandler.removeGroupFromUsersAndSendNotifications";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     //assume true and set to false on any failures
     ResultStatus resultStatus = new ResultStatus(true,
@@ -315,7 +315,7 @@ public class EditGroupHandler implements ApiRequestHandler {
         }
       } catch (Exception e) {
         resultStatus = new ResultStatus(false, "Exception removing group from user");
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
@@ -331,8 +331,8 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param newGroup The group definition after changes have been made.
    */
   private void updateCategoriesTable(final Group oldGroup, final Group newGroup) {
-    final String classMethod = "CreateNewGroupHandler.updateCategoriesTable";
-    metrics.commonSetup(classMethod);
+    final String classMethod = "EditGroupHandler.updateCategoriesTable";
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
 
@@ -368,7 +368,7 @@ public class EditGroupHandler implements ApiRequestHandler {
           this.dbAccessManager.updateCategory(categoryId, updateItemSpec);
         } catch (final Exception e) {
           success = false;
-          metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
         }
       }
     }
@@ -383,11 +383,11 @@ public class EditGroupHandler implements ApiRequestHandler {
         this.dbAccessManager.updateCategory(categoryId, updateItemSpec);
       } catch (final Exception e) {
         success = false;
-        metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
       }
     }
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 
   /**

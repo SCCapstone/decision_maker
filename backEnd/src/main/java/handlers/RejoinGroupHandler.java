@@ -43,8 +43,6 @@ public class RejoinGroupHandler implements ApiRequestHandler {
 
       if (user.getGroupsLeft().containsKey(groupId) && group.getMembersLeft()
           .containsKey(activeUser)) {
-        final List<TransactWriteItem> actions = new ArrayList<>();
-
         //remove the user from the members left and add back to the members
         final UpdateItemData groupUpdate = new UpdateItemData(groupId,
             DbAccessManager.GROUPS_TABLE_NAME)
@@ -62,6 +60,7 @@ public class RejoinGroupHandler implements ApiRequestHandler {
             .withValueMap(
                 new ValueMap().withMap(":groupMap", UserGroup.fromNewGroup(group).asMap()));
 
+        final List<TransactWriteItem> actions = new ArrayList<>();
         actions.add(new TransactWriteItem().withUpdate(groupUpdate.asUpdate()));
         actions.add(new TransactWriteItem().withUpdate(userUpdate.asUpdate()));
 
@@ -73,7 +72,7 @@ public class RejoinGroupHandler implements ApiRequestHandler {
             new ErrorDescriptor<>(classMethod, "User did not leave group, cannot rejoin"));
         resultStatus = ResultStatus.failure("Error: User did not leave this group, cannot rejoin.");
       }
-    } catch (Exception e) {
+    } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }

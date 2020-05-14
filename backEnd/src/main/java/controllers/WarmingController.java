@@ -14,11 +14,11 @@ public class WarmingController implements ApiRequestController {
   @Inject
   public WarmingHandler warmingHandler;
 
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "WarmingController.processApiRequest";
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
       Injector.getInjector(metrics).inject(this);

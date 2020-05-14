@@ -15,8 +15,8 @@ import utilities.WarningDescriptor;
 
 public class VoteForChoiceHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final Metrics metrics;
 
   @Inject
   public VoteForChoiceHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
@@ -37,7 +37,7 @@ public class VoteForChoiceHandler implements ApiRequestHandler {
   public ResultStatus handle(final String activeUser, final String groupId, final String eventId,
       final String choiceId, Integer voteValue) {
     final String classMethod = "VoteForChoiceHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -68,14 +68,14 @@ public class VoteForChoiceHandler implements ApiRequestHandler {
         resultStatus = new ResultStatus(true, "Voted yes/no successfully!");
       } else {
         resultStatus = ResultStatus.failure("Error: user not in group.");
-        metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group."));
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group."));
       }
     } catch (Exception e) {
-      resultStatus = ResultStatus.failure("Error: unable to parse request in manager.");
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      resultStatus = ResultStatus.failure("Exception in " + classMethod);
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

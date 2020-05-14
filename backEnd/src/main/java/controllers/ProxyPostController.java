@@ -52,9 +52,10 @@ public class ProxyPostController implements
       Context context) {
     final String classMethod = "ProxyPostHandler.handleRequest";
 
-    ResultStatus resultStatus;
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     metrics.commonSetup(classMethod);
+
+    ResultStatus resultStatus;
 
     try {
       String action = request.getPath(); // this should be of the form '/action'

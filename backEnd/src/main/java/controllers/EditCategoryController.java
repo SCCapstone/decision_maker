@@ -20,9 +20,9 @@ public class EditCategoryController implements ApiRequestController {
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "EditCategoryHandler.handle";
+    final String classMethod = "EditCategoryController.processApiRequest";
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, RequestFields.USER_RATINGS, Category.CATEGORY_ID,
@@ -37,14 +37,12 @@ public class EditCategoryController implements ApiRequestController {
         final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
-        //resultStatus = this.handle(activeUser, categoryId, categoryName, choices, userRatings);
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.editCategoryHandler
             .handle(activeUser, categoryId, categoryName, choices, userRatings);
       } catch (final Exception e) {
-        //something couldn't get parsed
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
-        resultStatus.resultMessage = "Error: Invalid request.";
+        resultStatus = ResultStatus.failure("Exception in " + classMethod);
       }
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);

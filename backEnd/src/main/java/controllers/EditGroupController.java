@@ -19,10 +19,9 @@ public class EditGroupController implements ApiRequestController {
   public EditGroupHandler editGroupHandler;
 
   @Override
-  public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
+  public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "EditGroupController.processApiRequest";
-    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -58,7 +57,7 @@ public class EditGroupController implements ApiRequestController {
     } else {
       throw new MissingApiRequestKeyException(requiredKeys);
     }
-    metrics.commonClose(resultStatus.success);
+
     return resultStatus;
   }
 }

@@ -11,9 +11,9 @@ import utilities.ResultStatus;
 
 public class UnregisterPushEndpointHandler implements ApiRequestHandler {
 
-  private DbAccessManager dbAccessManager;
-  private SnsAccessManager snsAccessManager;
-  private Metrics metrics;
+  private final DbAccessManager dbAccessManager;
+  private final SnsAccessManager snsAccessManager;
+  private final Metrics metrics;
 
   public UnregisterPushEndpointHandler(final DbAccessManager dbAccessManager,
       final SnsAccessManager snsAccessManager, final Metrics metrics) {
@@ -31,7 +31,7 @@ public class UnregisterPushEndpointHandler implements ApiRequestHandler {
    */
   public ResultStatus handle(final String activeUser) {
     final String classMethod = "UnregisterPushEndpointHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -56,11 +56,11 @@ public class UnregisterPushEndpointHandler implements ApiRequestHandler {
         resultStatus = ResultStatus.successful("no endpoint to unregister");
       }
     } catch (Exception e) {
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

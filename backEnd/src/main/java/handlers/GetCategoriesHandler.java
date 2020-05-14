@@ -69,7 +69,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     try {
       final Group group = this.dbAccessManager.getGroup(groupId);
 
-      if (group.getMembers().keySet().contains(activeUser)) {
+      if (group.getMembers().containsKey(activeUser)) {
         final List<Map> categories = this.getCategories(group.getCategories().keySet());
         resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categories));
       } else {
@@ -86,12 +86,12 @@ public class GetCategoriesHandler implements ApiRequestHandler {
   private List<Map> getCategories(final Set<String> categoryIds) {
     final String classMethod = "GetCategoriesHandler.getCategories";
 
-    List<Map> categories = new ArrayList<>();
+    final List<Map> categories = new ArrayList<>();
     for (String id : categoryIds) {
       try {
         categories.add(this.dbAccessManager.getCategoryMap(id));
       } catch (Exception e) {
-        this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(id, classMethod, e));
       }
     }
 

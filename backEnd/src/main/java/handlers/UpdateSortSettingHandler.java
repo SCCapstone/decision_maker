@@ -30,7 +30,7 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
    */
   public ResultStatus handleGroupSortUpdate(final String activeUser, final Integer newGroupSort) {
     final String classMethod = "UpdateSortSettingHandler.handleGroupSortUpdate";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -49,11 +49,11 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
       this.dbAccessManager.updateUser(activeUser, updateItemSpec);
       resultStatus = ResultStatus.successful("Sort value updated successfully.");
     } catch (Exception e) {
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -68,7 +68,7 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
   public ResultStatus handleCategorySortUpdate(final String activeUser,
       final Integer newCategorySort) {
     final String classMethod = "UpdateSortSettingHandler.handleCategorySortUpdate";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -87,11 +87,11 @@ public class UpdateSortSettingHandler implements ApiRequestHandler {
       this.dbAccessManager.updateUser(activeUser, updateItemSpec);
       resultStatus = ResultStatus.successful("Sort value updated successfully.");
     } catch (Exception e) {
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

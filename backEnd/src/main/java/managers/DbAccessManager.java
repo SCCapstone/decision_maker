@@ -49,25 +49,23 @@ public class DbAccessManager {
   private final Table categoriesTable;
   private final Table pendingEventsTable;
 
-  private final Regions region;
   private final AmazonDynamoDBClient client;
-  private final DynamoDB dynamoDb;
   private final DateTimeFormatter dateTimeFormatter;
 
   public DbAccessManager() {
-    this.region = Regions.US_EAST_2;
+    final Regions region = Regions.US_EAST_2;
     this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder()
-        .withRegion(this.region)
+        .withRegion(region)
         .withCredentials(new EnvironmentVariableCredentialsProvider())
         .build();
-    this.dynamoDb = new DynamoDB(this.client);
+    final DynamoDB dynamoDb = new DynamoDB(this.client);
 
     this.dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    this.groupsTable = this.dynamoDb.getTable(GROUPS_TABLE_NAME);
-    this.usersTable = this.dynamoDb.getTable(USERS_TABLE_NAME);
-    this.categoriesTable = this.dynamoDb.getTable(CATEGORIES_TABLE_NAME);
-    this.pendingEventsTable = this.dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
+    this.groupsTable = dynamoDb.getTable(GROUPS_TABLE_NAME);
+    this.usersTable = dynamoDb.getTable(USERS_TABLE_NAME);
+    this.categoriesTable = dynamoDb.getTable(CATEGORIES_TABLE_NAME);
+    this.pendingEventsTable = dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
   }
 
   public String now() {
