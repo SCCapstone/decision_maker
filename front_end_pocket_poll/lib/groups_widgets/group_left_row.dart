@@ -84,7 +84,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
             title: Text("Rejoin Group?"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("group_left_row:confirm_rejoin:${widget.index}"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -92,7 +92,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },

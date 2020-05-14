@@ -125,6 +125,22 @@ String validChoiceName(String input) {
   return retVal;
 }
 
+String validChoiceRating(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    int num = int.parse(input);
+    if (num < 0) {
+      retVal = "(0-5)";
+    } else if (num > 5) {
+      retVal = "(0-5)";
+    }
+  } catch (e) {
+    retVal = "Invalid";
+  }
+  return retVal;
+}
+
 String validCategoryName(String input, {String categoryId}) {
   input = input.trim(); // sanity check trim
   String retVal;

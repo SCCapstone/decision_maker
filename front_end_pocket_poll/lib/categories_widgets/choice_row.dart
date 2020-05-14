@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
@@ -26,6 +29,31 @@ class ChoiceRow extends StatefulWidget {
 }
 
 class _ChoiceRowState extends State<ChoiceRow> {
+  FocusNode ratingsFocus;
+  int rating;
+
+  @override
+  void initState() {
+    this.rating = int.parse(widget.rateController.text);
+    this.ratingsFocus = new FocusNode();
+    this.ratingsFocus.addListener(() {
+      // highlight the rating any time the rating field gains focus
+      widget.rateController.value = widget.rateController.value.copyWith(
+        selection: TextSelection(baseOffset: 0, extentOffset: 1),
+        composing: TextRange.empty,
+      );
+    });
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool visible) {
+        if (!visible) {
+          // lose the focus of any textfield whenever the user closes the keyboard
+          hideKeyboard(context);
+        }
+      },
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -42,18 +70,49 @@ class _ChoiceRowState extends State<ChoiceRow> {
             textCapitalization: TextCapitalization.sentences,
             focusNode: widget.focusNode,
             controller: widget.labelController,
-            decoration: InputDecoration(labelText: "Choice", counterText: ""),
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+                labelText: "Choice", counterText: "", helperText: " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
+            onFieldSubmitted: (val) {
+              FocusScope.of(context).requestFocus(this.ratingsFocus);
+            },
           ),
         ),
-        RaisedButton.icon(
-          icon: Icon(Icons.edit),
-          label: Text("Rating: " + widget.rateController.text),
-          key: Key("choice_row:ratings_button:${widget.choiceNumber}"),
-          onPressed: () {
-            displayRateSelector();
-          },
+        Container(
+          width: MediaQuery.of(context).size.width * .23,
+          child: TextFormField(
+            onChanged: (val) {
+              if (val.isEmpty) {
+                // if the user puts in an invalid number, it will be empty, so just use the last rating saved
+                widget.rateController.text = this.rating.toString();
+                hideKeyboard(context);
+              } else {
+                this.rating = int.parse(val);
+                hideKeyboard(context);
+                widget.checkForChange();
+              }
+            },
+            validator: validChoiceRating,
+            focusNode: this.ratingsFocus,
+            controller: widget.rateController,
+            maxLength: 1,
+            maxLines: 1,
+            inputFormatters: [WhitelistingTextInputFormatter(RegExp("[0-5]"))],
+            enableInteractiveSelection: false,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+                labelText: "Rating (0-5)", counterText: "", helperText: " "),
+          ),
         ),
+//        RaisedButton.icon(
+//          icon: Icon(Icons.edit),
+//          label: Text("Rating: " + widget.rateController.text),
+//          key: Key("choice_row:ratings_button:${widget.choiceNumber}"),
+//          onPressed: () {
+//            displayRateSelector();
+//          },
+//        ),
         Visibility(
           // if user is not the category owner, they cannot delete choices
           visible: widget.isOwner,

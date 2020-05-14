@@ -82,11 +82,13 @@ class _CreateCategoryState extends State<CreateCategory> {
                 overflow: TextOverflow.ellipsis,
               ),
               actions: <Widget>[
-                RaisedButton.icon(
-                  icon: Icon(Icons.save),
-                  label: Text("Save"),
-                  key: Key("categories_create:save_button"),
-                  color: Colors.blue,
+                FlatButton(
+                  child: Text(
+                    "SAVE",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  key: Key("categories_edit:save_button"),
+                  textColor: Colors.black,
                   onPressed: saveCategory,
                 ),
               ],
@@ -214,7 +216,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("categories_create:confirm_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
@@ -222,7 +224,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 key: Key("categories_create:denial_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');

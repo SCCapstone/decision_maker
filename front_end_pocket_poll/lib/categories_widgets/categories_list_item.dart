@@ -79,7 +79,7 @@ class CategoriesListItem extends StatelessWidget {
             title: Text("Delete"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key(
                     "categories_list_item:category_delete_button_confirm:${this.index}"),
                 onPressed: () {
@@ -88,7 +88,7 @@ class CategoriesListItem extends StatelessWidget {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 key: Key(
                     "categories_list_item:category_delete_button_denial:${this.index}"),
                 onPressed: () {

@@ -68,12 +68,15 @@ class _UserSettingsState extends State<UserSettings> {
             actions: <Widget>[
               Visibility(
                 visible: this.editing,
-                child: RaisedButton.icon(
-                    color: Colors.blue,
-                    onPressed: saveSettings,
-                    key: Key("user_settings:save_button"),
-                    icon: Icon(Icons.save),
-                    label: Text("Save")),
+                child: FlatButton(
+                  child: Text(
+                    "SAVE",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  key: Key("categories_edit:save_button"),
+                  textColor: Colors.black,
+                  onPressed: saveSettings,
+                ),
               )
             ],
           ),

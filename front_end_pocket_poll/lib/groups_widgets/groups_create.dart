@@ -68,7 +68,7 @@ class _CreateGroupState extends State<CreateGroup> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Add New Group"),
+          title: Text("Create New Group"),
         ),
         key: Key("groups_create:scaffold"),
         body: Form(

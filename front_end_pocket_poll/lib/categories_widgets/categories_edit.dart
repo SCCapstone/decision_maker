@@ -116,11 +116,14 @@ class _EditCategoryState extends State<EditCategory> {
                 actions: <Widget>[
                   Visibility(
                     visible: this.categoryChanged,
-                    child: RaisedButton.icon(
-                      icon: Icon(Icons.save),
-                      label: Text("Save"),
+                    child: FlatButton(
+                      child: Text(
+                        "SAVE",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                       key: Key("categories_edit:save_button"),
-                      color: Colors.blue,
+                      textColor: Colors.black,
                       onPressed: saveCategory,
                     ),
                   ),
@@ -353,14 +356,14 @@ class _EditCategoryState extends State<EditCategory> {
             title: Text("Copy \"${this.category.categoryName}\""),
             actions: <Widget>[
               FlatButton(
-                child: Text("Cancel"),
+                child: Text("CANCEL"),
                 key: Key("categories_edit:copy_popup_cancel"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },
               ),
               FlatButton(
-                child: Text("Save as New"),
+                child: Text("SAVE AS NEW"),
                 key: Key("categories_edit:copy_popup_save"),
                 onPressed: () {
                   final form = copyForm.currentState;
@@ -408,7 +411,7 @@ class _EditCategoryState extends State<EditCategory> {
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("categories_edit:confirm_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
@@ -416,7 +419,7 @@ class _EditCategoryState extends State<EditCategory> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 key: Key("categories_edit:denial_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');

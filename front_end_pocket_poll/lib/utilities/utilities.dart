@@ -122,7 +122,7 @@ void showErrorMessage(
           key: Key("utilities:error_message_popup"),
           actions: <Widget>[
             FlatButton(
-              child: Text("Ok"),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -143,7 +143,7 @@ void showHelpMessage(String helpTitle, String helpMsg, BuildContext context) {
           key: Key("utilities:help_message_popup"),
           actions: <Widget>[
             FlatButton(
-              child: Text("Ok"),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -190,7 +190,7 @@ void showUserImage(ImageProvider image, BuildContext buildContext) {
           content: Image(image: image),
           actions: <Widget>[
             FlatButton(
-              child: Text("Return"),
+              child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -209,7 +209,7 @@ void showGroupImage(ImageProvider image, BuildContext buildContext) {
           content: Image(image: image),
           actions: <Widget>[
             FlatButton(
-              child: Text("Return"),
+              child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
               },

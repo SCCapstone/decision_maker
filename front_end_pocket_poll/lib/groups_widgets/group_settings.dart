@@ -128,16 +128,19 @@ class _GroupSettingsState extends State<GroupSettings> {
             actions: <Widget>[
               Visibility(
                 visible: this.editing && this.canEdit,
-                child: RaisedButton.icon(
-                    color: Colors.blue,
-                    onPressed: () {
-                      if (this.canEdit) {
-                        attemptSave();
-                      }
-                    },
-                    key: Key("group_settings:save_button"),
-                    icon: Icon(Icons.save),
-                    label: Text("Save")),
+                child: FlatButton(
+                  child: Text(
+                    "SAVE",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  key: Key("categories_edit:save_button"),
+                  textColor: Colors.black,
+                  onPressed: () {
+                    if (this.canEdit) {
+                      attemptSave();
+                    }
+                  },
+                ),
               ),
               Visibility(
                   visible: !this.canEdit,
@@ -584,14 +587,14 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   Navigator.of(context).pop();
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
@@ -613,7 +616,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Leave group?"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("group_settings:leave_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -621,7 +624,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
@@ -642,7 +645,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Delete"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("group_settings:delete_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -650,7 +653,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
