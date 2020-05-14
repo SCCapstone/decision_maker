@@ -3,7 +3,6 @@ package models;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
-import imports.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,8 +15,7 @@ public class GroupWithCategoryChoices extends Group {
 
   public GroupWithCategoryChoices(final Map<String, Object> jsonMap) {
     super(jsonMap);
-    this.setEventsWithCategoryChoicesRawMap(
-        (Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
+    this.setEventsWithCategoryChoicesRawMap((Map<String, Object>) jsonMap.get(Group.EVENTS));
   }
 
   private void setEventsWithCategoryChoicesRawMap(final Map<String, Object> jsonMap) {

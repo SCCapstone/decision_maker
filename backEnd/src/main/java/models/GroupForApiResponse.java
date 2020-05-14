@@ -1,6 +1,6 @@
 package models;
 
-import imports.DatabaseManagers;
+import handlers.GetBatchOfEventsHandler;
 import java.util.Map;
 import lombok.Data;
 
@@ -13,13 +13,13 @@ public class GroupForApiResponse extends Group {
   public GroupForApiResponse(final Group group, final Integer batchNumber) {
     super(group.asMap());
     this.totalNumberOfEvents = group.getEvents().size();
-    this.setEvents(DatabaseManagers.GROUPS_MANAGER.getBatchOfEvents(this, batchNumber));
+    this.setEvents(GetBatchOfEventsHandler.handle(this, batchNumber));
   }
 
   public GroupForApiResponse(final Group group) {
     super(group.asMap());
     this.totalNumberOfEvents = group.getEvents().size();
-    this.setEvents(DatabaseManagers.GROUPS_MANAGER.getBatchOfEvents(this, 0));
+    this.setEvents(GetBatchOfEventsHandler.handle(this, 0));
   }
 
   @Override

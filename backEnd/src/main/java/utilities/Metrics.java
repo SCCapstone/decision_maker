@@ -21,6 +21,8 @@ public class Metrics {
   private final LambdaLogger lambdaLogger;
   private final Map<String, Map<String, Integer>> countMetrics;
   private final Map<String, Map<String, Long>> timeMetrics;
+
+  private Map<String, Object> requestBody;
   private boolean printMetrics;
 
   public Metrics(final String requestId, final LambdaLogger lambdaLogger) {
@@ -35,6 +37,10 @@ public class Metrics {
 
   public void setFunctionName(final String functionName) {
     this.functionNames.push(functionName);
+  }
+
+  public void setRequestBody(final Map<String, Object> requestBody) {
+    this.requestBody = requestBody;
   }
 
   public void removeFunctionName() {
@@ -95,7 +101,8 @@ public class Metrics {
 
     if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.countMetrics.get(this.functionNames.peek())
-          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) + 1);
+          .replace(metricName,
+              this.countMetrics.get(this.functionNames.peek()).get(metricName) + 1);
     } else {
       this.addIntegerMetric(metricName, 1); // it's not there -> implies it was 0
     }
@@ -106,7 +113,8 @@ public class Metrics {
 
     if (this.countMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.countMetrics.get(this.functionNames.peek())
-          .replace(metricName, this.countMetrics.get(this.functionNames.peek()).get(metricName) - 1);
+          .replace(metricName,
+              this.countMetrics.get(this.functionNames.peek()).get(metricName) - 1);
     }
   }
 
@@ -123,7 +131,9 @@ public class Metrics {
 
     if (this.timeMetrics.get(this.functionNames.peek()).containsKey(metricName)) {
       this.timeMetrics.get(this.functionNames.peek())
-          .replace(metricName, System.currentTimeMillis() - this.timeMetrics.get(this.functionNames.peek()).get(metricName));
+          .replace(metricName,
+              System.currentTimeMillis() - this.timeMetrics.get(this.functionNames.peek())
+                  .get(metricName));
     }
   }
 
@@ -133,6 +143,11 @@ public class Metrics {
 
   public void log(final LoggingDescriptor descriptor) {
     this.lambdaLogger.log(descriptor.withRequestId(this.requestId).toString());
+  }
+
+  public void logWithBody(final LoggingDescriptor<Map> descriptor) {
+    this.lambdaLogger
+        .log(descriptor.withInput(this.requestBody).withRequestId(this.requestId).toString());
   }
 
   public void logMetrics() {

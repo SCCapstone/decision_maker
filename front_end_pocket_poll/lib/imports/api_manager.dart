@@ -25,9 +25,11 @@ Future<ResultStatus<String>> makeApiRequest(
 
     try {
       http.Response response = await http.post(
-          Config.apiRootUrl + Config.apiDeployment + apiEndpoint,
+          Config.apiRootUrl +
+              Config.apiDeployment +
+              requestContent[RequestFields.ACTION],
           headers: headers,
-          body: json.encode(requestContent));
+          body: json.encode(requestContent[RequestFields.PAYLOAD]));
       if (response.statusCode == 200) {
         retVal.success = true;
         retVal.data = response.body;

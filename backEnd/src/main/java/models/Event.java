@@ -1,7 +1,5 @@
 package models;
 
-import imports.CategoriesManager;
-import imports.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -16,6 +14,20 @@ import lombok.Setter;
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
 public class Event {
+
+  public static final String CATEGORY_ID = "CategoryId";
+  public static final String CATEGORY_NAME = "CategoryName";
+  public static final String EVENT_NAME = "EventName";
+  public static final String EVENT_CREATOR = "EventCreator";
+  public static final String CREATED_DATE_TIME = "CreatedDateTime";
+  public static final String EVENT_START_DATE_TIME = "EventStartDateTime";
+  public static final String UTC_EVENT_START_SECONDS = "UtcEventStartSeconds";
+  public static final String VOTING_DURATION = "VotingDuration";
+  public static final String RSVP_DURATION = "RsvpDuration";
+  public static final String OPTED_IN = "OptedIn";
+  public static final String VOTING_NUMBERS = "VotingNumbers";
+  public static final String TENTATIVE_CHOICES = "TentativeAlgorithmChoices";
+  public static final String SELECTED_CHOICE = "SelectedChoice";
 
   private String categoryId;
   private String categoryName;
@@ -36,41 +48,41 @@ public class Event {
   private Map<String, Member> eventCreator;
 
   public Event(final Map<String, Object> jsonMap) {
-    this.setCategoryId((String) jsonMap.get(GroupsManager.CATEGORY_ID));
-    this.setCategoryName((String) jsonMap.get(GroupsManager.CATEGORY_NAME));
-    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(CategoriesManager.VERSION)));
-    this.setEventName((String) jsonMap.get(GroupsManager.EVENT_NAME));
-    this.setCreatedDateTime((String) jsonMap.get(GroupsManager.CREATED_DATE_TIME));
-    this.setEventStartDateTime((String) jsonMap.get(GroupsManager.EVENT_START_DATE_TIME));
+    this.setCategoryId((String) jsonMap.get(CATEGORY_ID));
+    this.setCategoryName((String) jsonMap.get(CATEGORY_NAME));
+    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(Category.VERSION)));
+    this.setEventName((String) jsonMap.get(EVENT_NAME));
+    this.setCreatedDateTime((String) jsonMap.get(CREATED_DATE_TIME));
+    this.setEventStartDateTime((String) jsonMap.get(EVENT_START_DATE_TIME));
     this.setUtcEventStartSeconds(
-        this.getIntFromObject(jsonMap.get(GroupsManager.UTC_EVENT_START_SECONDS)));
-    this.setRsvpDuration(this.getIntFromObject(jsonMap.get(GroupsManager.RSVP_DURATION)));
-    this.setVotingDuration(this.getIntFromObject(jsonMap.get(GroupsManager.VOTING_DURATION)));
-    this.setSelectedChoice((String) jsonMap.get(GroupsManager.SELECTED_CHOICE));
+        this.getIntFromObject(jsonMap.get(UTC_EVENT_START_SECONDS)));
+    this.setRsvpDuration(this.getIntFromObject(jsonMap.get(RSVP_DURATION)));
+    this.setVotingDuration(this.getIntFromObject(jsonMap.get(VOTING_DURATION)));
+    this.setSelectedChoice((String) jsonMap.get(SELECTED_CHOICE));
 
-    this.setOptedInRawMap((Map<String, Object>) jsonMap.get(GroupsManager.OPTED_IN));
+    this.setOptedInRawMap((Map<String, Object>) jsonMap.get(OPTED_IN));
     this.setTentativeAlgorithmChoicesRawMap(
-        (Map<String, Object>) jsonMap.get(GroupsManager.TENTATIVE_CHOICES));
-    this.setVotingNumbers((Map<String, Object>) jsonMap.get(GroupsManager.VOTING_NUMBERS));
-    this.setEventCreatorRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENT_CREATOR));
+        (Map<String, Object>) jsonMap.get(TENTATIVE_CHOICES));
+    this.setVotingNumbers((Map<String, Object>) jsonMap.get(VOTING_NUMBERS));
+    this.setEventCreatorRawMap((Map<String, Object>) jsonMap.get(EVENT_CREATOR));
   }
 
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(GroupsManager.CATEGORY_ID, this.categoryId);
-    modelAsMap.putIfAbsent(GroupsManager.CATEGORY_NAME, this.categoryName);
-    modelAsMap.putIfAbsent(CategoriesManager.VERSION, this.categoryVersion);
-    modelAsMap.putIfAbsent(GroupsManager.EVENT_NAME, this.eventName);
-    modelAsMap.putIfAbsent(GroupsManager.CREATED_DATE_TIME, this.createdDateTime);
-    modelAsMap.putIfAbsent(GroupsManager.EVENT_START_DATE_TIME, this.eventStartDateTime);
-    modelAsMap.putIfAbsent(GroupsManager.UTC_EVENT_START_SECONDS, this.utcEventStartSeconds);
-    modelAsMap.putIfAbsent(GroupsManager.RSVP_DURATION, this.rsvpDuration);
-    modelAsMap.putIfAbsent(GroupsManager.VOTING_DURATION, this.votingDuration);
-    modelAsMap.putIfAbsent(GroupsManager.SELECTED_CHOICE, this.selectedChoice);
-    modelAsMap.putIfAbsent(GroupsManager.OPTED_IN, this.getOptedInMap());
-    modelAsMap.putIfAbsent(GroupsManager.TENTATIVE_CHOICES, this.tentativeAlgorithmChoices);
-    modelAsMap.putIfAbsent(GroupsManager.VOTING_NUMBERS, this.votingNumbers);
-    modelAsMap.putIfAbsent(GroupsManager.EVENT_CREATOR, this.getEventCreatorMap());
+    modelAsMap.putIfAbsent(CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(Category.VERSION, this.categoryVersion);
+    modelAsMap.putIfAbsent(EVENT_NAME, this.eventName);
+    modelAsMap.putIfAbsent(CREATED_DATE_TIME, this.createdDateTime);
+    modelAsMap.putIfAbsent(EVENT_START_DATE_TIME, this.eventStartDateTime);
+    modelAsMap.putIfAbsent(UTC_EVENT_START_SECONDS, this.utcEventStartSeconds);
+    modelAsMap.putIfAbsent(RSVP_DURATION, this.rsvpDuration);
+    modelAsMap.putIfAbsent(VOTING_DURATION, this.votingDuration);
+    modelAsMap.putIfAbsent(SELECTED_CHOICE, this.selectedChoice);
+    modelAsMap.putIfAbsent(OPTED_IN, this.getOptedInMap());
+    modelAsMap.putIfAbsent(TENTATIVE_CHOICES, this.tentativeAlgorithmChoices);
+    modelAsMap.putIfAbsent(VOTING_NUMBERS, this.votingNumbers);
+    modelAsMap.putIfAbsent(EVENT_CREATOR, this.getEventCreatorMap());
     return modelAsMap;
   }
 
