@@ -109,7 +109,7 @@ class _MembersPageState extends State<MembersPage> {
                                   },
                                   key: Key("members_page:member_input"),
                                   decoration: InputDecoration(
-                                      labelText: "Enter a username to add",
+                                      labelText: "Enter username to add",
                                       counterText: "")),
                             ),
                           ),

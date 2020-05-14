@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:front_end_pocket_poll/imports/globals.dart';
@@ -232,15 +233,25 @@ class _UserSettingsState extends State<UserSettings> {
   // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 75,
-        maxWidth: 600,
-        maxHeight: 600);
+        source: ImageSource.gallery, imageQuality: 75);
 
     if (newIconFile != null) {
-      this._icon = newIconFile;
-      this.newIcon = true;
-      showSaveButton();
+      // user successfully picked an image, so now allow them to crop it
+      File croppedImage = await ImageCropper.cropImage(
+          sourcePath: newIconFile.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          compressQuality: 100,
+          maxHeight: 600,
+          maxWidth: 600,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Globals.pocketPollGreen,
+              toolbarTitle: "Crop Image"));
+      if (croppedImage != null) {
+        this._icon = croppedImage;
+        this.newIcon = true;
+        showSaveButton();
+      }
     }
   }
 

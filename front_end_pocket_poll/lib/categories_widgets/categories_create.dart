@@ -53,6 +53,7 @@ class _CreateCategoryState extends State<CreateCategory> {
 
     ChoiceRow choice = new ChoiceRow(
         "1", true, initLabelController, initRatingController,
+        focusNode: new FocusNode(),
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -116,6 +117,12 @@ class _CreateCategoryState extends State<CreateCategory> {
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),
+                          onFieldSubmitted: (val) {
+                            // on enter, move focus to the first choice row
+                            if (this.choiceRows.isNotEmpty) {
+                              this.choiceRows[0].requestFocus(context);
+                            }
+                          },
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Category Name",

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
-import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
   final String choiceNumber;
@@ -92,18 +91,11 @@ class _ChoiceRowState extends State<ChoiceRow> {
             inputFormatters: [WhitelistingTextInputFormatter(RegExp("[0-5]"))],
             enableInteractiveSelection: false,
             keyboardType: TextInputType.number,
+            key: Key("choice_row:rating_input:${widget.choiceNumber}"),
             decoration: InputDecoration(
                 labelText: "Rating (0-5)", counterText: "", helperText: " "),
           ),
         ),
-//        RaisedButton.icon(
-//          icon: Icon(Icons.edit),
-//          label: Text("Rating: " + widget.rateController.text),
-//          key: Key("choice_row:ratings_button:${widget.choiceNumber}"),
-//          onPressed: () {
-//            displayRateSelector();
-//          },
-//        ),
         Visibility(
           // if user is not the category owner, they cannot delete choices
           visible: widget.isOwner,
@@ -118,24 +110,5 @@ class _ChoiceRowState extends State<ChoiceRow> {
         )
       ],
     );
-  }
-
-  // displays a popup for allowing the users to pick a rating for the given choice
-  void displayRateSelector() {
-    showDialog<int>(
-        context: this.context,
-        builder: (BuildContext context) {
-          return NumberPickerDialog.integer(
-            minValue: 0,
-            maxValue: 5,
-            title: Text("Rate this choice:"),
-            initialIntegerValue: int.parse(widget.rateController.text),
-          );
-        }).then((int value) {
-      if (value != null) {
-        setState(() => widget.rateController.text = value.toString());
-        widget.checkForChange();
-      }
-    });
   }
 }
