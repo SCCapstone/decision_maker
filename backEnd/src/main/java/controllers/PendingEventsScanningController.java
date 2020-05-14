@@ -20,7 +20,7 @@ public class PendingEventsScanningController implements RequestStreamHandler {
   public ScanPendingEventsHandler scanPendingEventsHandler;
 
   public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) {
-    final String classMethod = "PendingEventsScanningHandler.handleRequest";
+    final String classMethod = "PendingEventsScanningController.handleRequest";
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
 
     metrics.commonSetup(classMethod);
