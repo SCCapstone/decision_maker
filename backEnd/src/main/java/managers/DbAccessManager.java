@@ -181,6 +181,7 @@ public class DbAccessManager {
     descriptions.add(this.groupsTable.describe());
     descriptions.add(this.usersTable.describe());
     descriptions.add(this.categoriesTable.describe());
+    descriptions.add(this.pendingEventsTable.describe());
     return descriptions;
   }
 
