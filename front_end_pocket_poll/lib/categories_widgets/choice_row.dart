@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
@@ -43,14 +42,6 @@ class _ChoiceRowState extends State<ChoiceRow> {
         composing: TextRange.empty,
       );
     });
-    KeyboardVisibilityNotification().addNewListener(
-      onChange: (bool visible) {
-        if (!visible) {
-          // lose the focus of any textfield whenever the user closes the keyboard
-          hideKeyboard(context);
-        }
-      },
-    );
     super.initState();
   }
 
