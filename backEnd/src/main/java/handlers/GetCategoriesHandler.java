@@ -1,5 +1,6 @@
 package handlers;
 
+import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import managers.DbAccessManager;
+import models.CategoryRatingTuple;
 import models.Group;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -25,15 +27,16 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
-  public ResultStatus handle(final List<String> categoryIds) {
+  public ResultStatus handle(final String activeUser, final List<String> categoryIds) {
     final String classMethod = "GetCategoriesHandler.handle";
     this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
     try {
-      final List<Map> categories = this.getCategories(new HashSet<>(categoryIds));
-      resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categories));
+      final List<Map<String, Object>> categoryRatingTuples = this
+          .getCategoryRatingTuples(new HashSet<>(categoryIds), activeUser);
+      resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categoryRatingTuples));
     } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
@@ -50,8 +53,9 @@ public class GetCategoriesHandler implements ApiRequestHandler {
 
     try {
       final User user = this.dbAccessManager.getUser(activeUser);
-      final List<Map> categories = this.getCategories(user.getOwnedCategories().keySet());
-      resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categories));
+      final List<Map<String, Object>> categoryRatingTuples = this
+          .getCategoryRatingTuples(user.getOwnedCategories().keySet(), activeUser);
+      resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categoryRatingTuples));
     } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
@@ -70,8 +74,9 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       final Group group = this.dbAccessManager.getGroup(groupId);
 
       if (group.getMembers().containsKey(activeUser)) {
-        final List<Map> categories = this.getCategories(group.getCategories().keySet());
-        resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categories));
+        final List<Map<String, Object>> categoryRatingTuples = this
+            .getCategoryRatingTuples(group.getCategories().keySet(), activeUser);
+        resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(categoryRatingTuples));
       } else {
         resultStatus = ResultStatus.failure("Error: User not in group");
       }
@@ -83,18 +88,23 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     return resultStatus;
   }
 
-  private List<Map> getCategories(final Set<String> categoryIds) {
+  private List<Map<String, Object>> getCategoryRatingTuples(final Set<String> categoryIds,
+      final String activeUser) throws InvalidAttributeValueException {
     final String classMethod = "GetCategoriesHandler.getCategories";
 
-    final List<Map> categories = new ArrayList<>();
+    final User user = this.dbAccessManager.getUser(activeUser);
+
+    final List<Map<String, Object>> categoryRatingTuples = new ArrayList<>();
     for (String id : categoryIds) {
       try {
-        categories.add(this.dbAccessManager.getCategoryMap(id));
+        categoryRatingTuples.add(
+            new CategoryRatingTuple(this.dbAccessManager.getCategory(id),
+                user.getCategoryRatings().get(id)).asMap());
       } catch (Exception e) {
         this.metrics.log(new ErrorDescriptor<>(id, classMethod, e));
       }
     }
 
-    return categories;
+    return categoryRatingTuples;
   }
 }
