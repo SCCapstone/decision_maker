@@ -21,7 +21,7 @@ public class OptUserInOutController implements ApiRequestController {
   @Override
   public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "GroupsManager.optInOutOfEvent";
+    final String classMethod = "OptUserInOutController.processApiRequest";
 
     ResultStatus resultStatus;
 

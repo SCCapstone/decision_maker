@@ -8,12 +8,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import javax.inject.Inject;
 import managers.DbAccessManager;
+import managers.SnsAccessManager;
 import models.Category;
 import models.Event;
 import models.EventWithCategoryChoices;
 import models.Group;
 import models.GroupForApiResponse;
+import models.Metadata;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
@@ -28,10 +31,19 @@ public class NewEventHandler implements ApiRequestHandler {
   private static final Integer MAX_EVENT_NAME_LENGTH = 30;
 
   private DbAccessManager dbAccessManager;
+  private SnsAccessManager snsAccessManager;
+  private AddPendingEventHandler addPendingEventHandler;
+  private ProcessPendingEventHandler processPendingEventHandler;
   private Metrics metrics;
 
-  public NewEventHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
+  @Inject
+  public NewEventHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager, final AddPendingEventHandler addPendingEventHandler,
+      final ProcessPendingEventHandler processPendingEventHandler, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
+    this.snsAccessManager = snsAccessManager;
+    this.addPendingEventHandler = addPendingEventHandler;
+    this.processPendingEventHandler = processPendingEventHandler;
     this.metrics = metrics;
   }
 
@@ -54,14 +66,18 @@ public class NewEventHandler implements ApiRequestHandler {
 
     try {
       final Group oldGroup = this.dbAccessManager.getGroup(groupId);
-
       final String eventId = UUID.randomUUID().toString();
-      final User eventCreator = this.dbAccessManager.getUser(activeUser);
 
       //we use the 'WithCategoryChoices' variant so that if we need to save the snapshot of the
       //category, then we'll have the data present for that.
       final EventWithCategoryChoices newEvent = new EventWithCategoryChoices();
       newEvent.setEventName(eventName);
+      newEvent.setRsvpDuration(rsvpDuration);
+      newEvent.setVotingDuration(votingDuration);
+      newEvent.setEventStartDateTime(eventStartDateTime);
+      newEvent.setUtcEventStartSeconds(utcStartSeconds);
+
+      final User eventCreator = this.dbAccessManager.getUser(activeUser);
       newEvent.setEventCreator(ImmutableMap.of(activeUser, eventCreator.asMember()));
 
       final Optional<String> errorMessage = this.newEventInputIsValid(oldGroup, newEvent);
@@ -77,10 +93,10 @@ public class NewEventHandler implements ApiRequestHandler {
         newEvent.setTentativeAlgorithmChoices(Collections.emptyMap());
         newEvent.setVotingNumbers(Collections.emptyMap());
 
-        String updateExpression =
+        final String updateExpression =
             "set " + Group.EVENTS + ".#eventId = :map, " + Group.LAST_ACTIVITY + " = :lastActivity";
-        NameMap nameMap = new NameMap().with("#eventId", eventId);
-        ValueMap valueMap = new ValueMap().withString(":lastActivity", lastActivity);
+        final NameMap nameMap = new NameMap().with("#eventId", eventId);
+        final ValueMap valueMap = new ValueMap().withString(":lastActivity", lastActivity);
 
         //if skipping rsvp -> only need to store the event map (don't need category choices)
         if (newEvent.getRsvpDuration() > 0) {
@@ -98,28 +114,23 @@ public class NewEventHandler implements ApiRequestHandler {
 
         //Hope it works, we aren't using transactions yet (that's why nothing done with result).
         if (newEvent.getRsvpDuration() > 0) {
-          final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .addPendingEvent(groupId, eventId, newEvent.getRsvpDuration(), metrics);
+          final ResultStatus pendingEventAdded = this.addPendingEventHandler
+              .handle(groupId, eventId, newEvent.getRsvpDuration());
         } else {
           //this will set potential algo choices and create the entry for voting duration timeout
-          final Map<String, Object> processPendingEventInput = ImmutableMap.of(
-              Group.GROUP_ID, groupId,
-              RequestFields.EVENT_ID, eventId,
-              PendingEventsManager.SCANNER_ID,
-              DatabaseManagers.PENDING_EVENTS_MANAGER.getPartitionKey(),
-              RequestFields.NEW_EVENT, true
-          );
-          final ResultStatus pendingEventAdded = DatabaseManagers.PENDING_EVENTS_MANAGER
-              .processPendingEvent(processPendingEventInput, metrics);
+          final ResultStatus pendingEventAdded = this.processPendingEventHandler
+              .handle(groupId, eventId, null);
         }
 
-        final Group newGroup = oldGroup.clone();
-        newGroup.getEvents().put(eventId, newEvent);
-        newGroup.setLastActivity(lastActivity);
+        //since the event could have been updated by skipping consider, we need to pull to get the most up to date event
+        final Group newGroup = this.dbAccessManager.getGroupNoCache(groupId);
+//        final Group newGroup = oldGroup.clone();
+//        newGroup.getEvents().put(eventId, newEvent);
+//        newGroup.setLastActivity(lastActivity);
 
         //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
         if (newEvent.getRsvpDuration() > 0) {
-          this.updateUsersTable(oldGroup, newGroup, eventId, true, metrics);
+          this.updateUsersTable(newGroup, eventId);
         }
 
         resultStatus = new ResultStatus(true,
@@ -172,5 +183,128 @@ public class NewEventHandler implements ApiRequestHandler {
     }
 
     return invalidString;
+  }
+
+  /**
+   * This method updates user items based on the changed definition of a group
+   *
+   * @param newGroup       The new group definition after the event has been added.
+   * @param updatedEventId This is the event id of an event that just changed states. Null means
+   *                       this isn't being called from an event update.
+   */
+  private void updateUsersTable(final Group newGroup, final String updatedEventId) {
+    final String classMethod = "NewEventHandler.updateUsersTable";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
+    final String newEventCreator = newGroup.getEvents().get(updatedEventId)
+        .getEventCreatorUsername();
+
+    final String updateExpression = "set " + User.GROUPS + ".#groupId." + User.EVENTS_UNSEEN
+        + ".#eventId = :true, " + User.GROUPS + ".#groupId." + Group.LAST_ACTIVITY
+        + " = :lastActivity";
+    final NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId())
+        .with("#eventId", updatedEventId);
+    final ValueMap valueMap = new ValueMap().withBoolean(":true", true)
+        .withString(":lastActivity", newGroup.getLastActivity());
+
+    final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+        .withUpdateExpression(updateExpression)
+        .withValueMap(valueMap)
+        .withNameMap(nameMap);
+
+    for (final String username : newGroup.getMembers().keySet()) {
+      try {
+        if (!username.equals(newEventCreator)) {
+          this.dbAccessManager.updateUser(username, updateItemSpec);
+        } else {
+          // the username is the event creator -> we should only update the last activity
+          final String updateExpressionEventCreator =
+              "set " + User.GROUPS + ".#groupId." + Group.LAST_ACTIVITY + " = :lastActivity";
+          final ValueMap valueMapEventCreator = new ValueMap()
+              .withString(":lastActivity", newGroup.getLastActivity());
+          final NameMap nameMapEventCreator = new NameMap()
+              .with("#groupId", newGroup.getGroupId());
+          final UpdateItemSpec updateItemSpecEventCreator = new UpdateItemSpec()
+              .withUpdateExpression(updateExpressionEventCreator)
+              .withValueMap(valueMapEventCreator)
+              .withNameMap(nameMapEventCreator);
+
+          this.dbAccessManager.updateUser(username, updateItemSpecEventCreator);
+        }
+      } catch (final Exception e) {
+        success = false;
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+      }
+    }
+
+    //blind send...
+    this.sendEventUpdatedNotification(newGroup, updatedEventId);
+
+    metrics.commonClose(success);
+  }
+
+  private void sendEventUpdatedNotification(final Group group, final String eventId) {
+    final String classMethod = "NewEventHandler.sendEventUpdatedNotification";
+    metrics.commonSetup(classMethod);
+
+    boolean success = true;
+
+    final Event updatedEvent = group.getEvents().get(eventId);
+    final String updatedEventCreator = updatedEvent.getEventCreatorUsername();
+
+    final Map<String, Object> payload = updatedEvent.asMap();
+    payload.putIfAbsent(Group.GROUP_ID, group.getGroupId());
+    payload.putIfAbsent(Group.GROUP_NAME, group.getGroupName());
+    payload.putIfAbsent(Group.LAST_ACTIVITY, group.getLastActivity());
+    payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
+
+    String action = "eventCreated";
+
+    String eventChangeTitle = "Event in " + group.getGroupName();
+
+    //assume the event just got created with no skips
+    String eventChangeBody =
+        "'" + updatedEvent.getEventName() + "' created by: " + updatedEvent
+            .getEventCreatorDisplayName();
+
+    if (updatedEvent.getSelectedChoice() != null) {
+      //we just transitioned to a having a selected choice -> stage: occurring
+      action = "eventChosen";
+      eventChangeBody =
+          updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
+    } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
+      //we just transitioned to getting tentative choices -> stage: voting
+      action = "eventVoting";
+      eventChangeBody = "Vote for " + updatedEvent.getEventName();
+    } // else the event was indeed just created without skips
+
+    final Metadata metadata = new Metadata(action, payload);
+
+    for (String username : group.getMembers().keySet()) {
+      //for new events the creator doesn't need to be alerted that an event was created.
+      if (!username.equals(updatedEventCreator)) {
+        try {
+          final User user = this.dbAccessManager.getUser(username);
+
+          if (user.pushEndpointArnIsSet()) {
+            if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())
+                .isMuted()) {
+              this.snsAccessManager.sendMutedMessage(user.getPushEndpointArn(), metadata);
+            } else {
+              this.snsAccessManager
+                  .sendMessage(user.getPushEndpointArn(), eventChangeTitle, eventChangeBody,
+                      eventId, metadata);
+            }
+          }
+        } catch (Exception e) {
+          success = false;
+          metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        }
+      }
+    }
+
+    metrics.commonClose(success);
   }
 }

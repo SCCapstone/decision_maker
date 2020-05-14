@@ -40,10 +40,8 @@ public class WarmingHandlerTest {
 
   @BeforeEach
   private void init() {
-    this.warmingHandler = new WarmingHandler(this.dbAccessManager, this.metrics);
-
-    DatabaseManagers.S3_ACCESS_MANAGER = this.s3AccessManager;
-    DatabaseManagers.SNS_ACCESS_MANAGER = this.snsAccessManager;
+    this.warmingHandler = new WarmingHandler(this.dbAccessManager, this.s3AccessManager,
+        this.snsAccessManager, this.metrics);
   }
 
   ////////////////////////

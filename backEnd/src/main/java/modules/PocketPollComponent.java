@@ -15,6 +15,8 @@ import controllers.MarkAllEventsSeenController;
 import controllers.MarkEventAsSeenController;
 import controllers.NewEventController;
 import controllers.OptUserInOutController;
+import controllers.PendingEventResolutionController;
+import controllers.PendingEventsScanningController;
 import controllers.RegisterPushEndpointController;
 import controllers.RejoinGroupController;
 import controllers.SetUserGroupMuteController;
@@ -54,4 +56,6 @@ public interface PocketPollComponent {
   void inject(MarkAllEventsSeenController markAllEventsSeenController);
   void inject(GetBatchOfEventsController getBatchOfEventsController);
   void inject(NewEventController newEventController);
+  void inject(PendingEventsScanningController pendingEventsScanningController);
+  void inject(PendingEventResolutionController pendingEventResolutionController);
 }

@@ -21,7 +21,7 @@ public class EditGroupController implements ApiRequestController {
   @Override
   public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "GroupsManager.editGroup";
+    final String classMethod = "EditGroupController.processApiRequest";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;

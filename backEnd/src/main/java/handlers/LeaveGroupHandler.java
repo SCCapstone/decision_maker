@@ -36,7 +36,7 @@ public class LeaveGroupHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId) {
-    final String classMethod = "GroupsManager.leaveGroup";
+    final String classMethod = "LeaveGroupHandler.handle";
     metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = new ResultStatus();

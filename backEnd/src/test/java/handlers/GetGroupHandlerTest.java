@@ -3,6 +3,7 @@ package handlers;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
+import models.Group;
 import utilities.RequestFields;
 
 public class GetGroupHandlerTest {
@@ -10,7 +11,7 @@ public class GetGroupHandlerTest {
 
   private final Map<String, Object> getGroupGoodInput = new HashMap<>(ImmutableMap.of(
       RequestFields.ACTIVE_USER, "john_andrews12",
-      GroupsManager.GROUP_ID, "groupId",
+      Group.GROUP_ID, "groupId",
       RequestFields.BATCH_NUMBER, 1
   ));
 

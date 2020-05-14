@@ -2,6 +2,8 @@ package handlers;
 
 import javax.inject.Inject;
 import managers.DbAccessManager;
+import managers.S3AccessManager;
+import managers.SnsAccessManager;
 import utilities.Config;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
@@ -10,11 +12,16 @@ import utilities.ResultStatus;
 public class WarmingHandler implements ApiRequestHandler {
 
   private DbAccessManager dbAccessManager;
+  private S3AccessManager s3AccessManager;
+  private SnsAccessManager snsAccessManager;
   private Metrics metrics;
 
   @Inject
-  public WarmingHandler(final DbAccessManager dbAccessManager, final Metrics metrics) {
+  public WarmingHandler(final DbAccessManager dbAccessManager, final S3AccessManager s3AccessManager, final
+      SnsAccessManager snsAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
+    this.s3AccessManager = s3AccessManager;
+    this.snsAccessManager = snsAccessManager;
     this.metrics = metrics;
   }
 
@@ -29,8 +36,8 @@ public class WarmingHandler implements ApiRequestHandler {
 
     try {
       this.dbAccessManager.describeTables();
-      DatabaseManagers.S3_ACCESS_MANAGER.imageBucketExists();
-      DatabaseManagers.SNS_ACCESS_MANAGER.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
+      this.s3AccessManager.imageBucketExists();
+      this.snsAccessManager.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
 
       resultStatus = new ResultStatus(true, "Endpoints warmed.");
     } catch (Exception e) {

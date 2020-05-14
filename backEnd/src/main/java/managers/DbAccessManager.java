@@ -74,6 +74,10 @@ public class DbAccessManager {
     return LocalDateTime.now(ZoneId.of("UTC")).format(this.dateTimeFormatter);
   }
 
+  public DateTimeFormatter getDateTimeFormatter() {
+    return this.dateTimeFormatter;
+  }
+
   //Users table methods
   public PutItemOutcome putUser(final Item user) {
     return this.usersTable.putItem(user);
@@ -133,6 +137,14 @@ public class DbAccessManager {
 
   public Group getGroup(final String groupId) {
     return new Group(this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId)));
+  }
+
+  public Group getGroupNoCache(final String groupId) {
+    return new Group(this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId)));
+  }
+
+  public Item getGroupItem(final String groupId) {
+    return this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
   }
 
   public UpdateItemOutcome updateGroup(final String groupId,

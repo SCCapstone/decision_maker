@@ -13,8 +13,8 @@ import javax.inject.Inject;
 import managers.DbAccessManager;
 import managers.S3AccessManager;
 import models.AppSettings;
+import models.Group;
 import models.User;
-import org.jetbrains.annotations.NotNull;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
@@ -89,7 +89,7 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           userValueMap.withString(":name", newDisplayName);
 
           updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username." + User.DISPLAY_NAME, ":displayName");
+              Group.MEMBERS + ".#username." + User.DISPLAY_NAME, ":displayName");
           groupsValueMap.withString(":displayName", newDisplayName);
           groupsNameMap.with("#username", activeUser);
 
@@ -111,7 +111,7 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
           userValueMap.withString(":icon", newIconFileName);
 
           updateGroupsExpression = this.getUpdateString(updateGroupsExpression,
-              GroupsManager.MEMBERS + ".#username2." + User.ICON, ":icon");
+              Group.MEMBERS + ".#username2." + User.ICON, ":icon");
           groupsValueMap.withString(":icon", newIconFileName);
           groupsNameMap.with("#username2", activeUser);
 

@@ -2,6 +2,7 @@ package modules;
 
 import dagger.Module;
 import dagger.Provides;
+import handlers.AddPendingEventHandler;
 import handlers.GetBatchOfEventsHandler;
 import handlers.NewCategoryHandler;
 import handlers.CreateNewGroupHandler;
@@ -17,8 +18,10 @@ import handlers.MarkAllEventsSeenHandler;
 import handlers.MarkEventAsSeenHandler;
 import handlers.NewEventHandler;
 import handlers.OptUserInOutHandler;
+import handlers.ProcessPendingEventHandler;
 import handlers.RegisterPushEndpointHandler;
 import handlers.RejoinGroupHandler;
+import handlers.ScanPendingEventsHandler;
 import handlers.SetUserGroupMuteHandler;
 import handlers.UnregisterPushEndpointHandler;
 import handlers.UpdateSortSettingHandler;
@@ -31,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import managers.DbAccessManager;
 import managers.S3AccessManager;
 import managers.SnsAccessManager;
+import managers.StepFunctionManager;
 import utilities.Metrics;
 
 @Module
@@ -58,6 +62,12 @@ public class PocketPollModule {
   }
 
   @Provides
+  @Singleton
+  public StepFunctionManager provideStepFunctionManager() {
+    return new StepFunctionManager();
+  }
+
+  @Provides
   public NewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager,
       final
       UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
@@ -81,8 +91,9 @@ public class PocketPollModule {
   }
 
   @Provides
-  public WarmingHandler provideWarmingHandler(final DbAccessManager dbAccessManager) {
-    return new WarmingHandler(dbAccessManager, this.metrics);
+  public WarmingHandler provideWarmingHandler(final DbAccessManager dbAccessManager,
+      final S3AccessManager s3AccessManager, final SnsAccessManager snsAccessManager) {
+    return new WarmingHandler(dbAccessManager, s3AccessManager, snsAccessManager, this.metrics);
   }
 
   @Provides
@@ -192,7 +203,31 @@ public class PocketPollModule {
   }
 
   @Provides
-  public NewEventHandler provideNewEventHandler(final DbAccessManager dbAccessManager) {
-    return new NewEventHandler(dbAccessManager, this.metrics);
+  public NewEventHandler provideNewEventHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager,
+      final AddPendingEventHandler addPendingEventHandler,
+      final ProcessPendingEventHandler processPendingEventHandler) {
+    return new NewEventHandler(dbAccessManager, snsAccessManager, addPendingEventHandler,
+        processPendingEventHandler, this.metrics);
+  }
+
+  @Provides
+  public ScanPendingEventsHandler provideScanPendingEventsHandler(
+      final DbAccessManager dbAccessManager, final StepFunctionManager stepFunctionManager) {
+    return new ScanPendingEventsHandler(dbAccessManager, stepFunctionManager, this.metrics);
+  }
+
+  @Provides
+  public AddPendingEventHandler provideAddPendingEventHandler(
+      final DbAccessManager dbAccessManager) {
+    return new AddPendingEventHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public ProcessPendingEventHandler provideProcessPendingEventHandler(
+      final DbAccessManager dbAccessManager, final SnsAccessManager snsAccessManager,
+      final AddPendingEventHandler addPendingEventHandler) {
+    return new ProcessPendingEventHandler(dbAccessManager, snsAccessManager, addPendingEventHandler,
+        this.metrics);
   }
 }
