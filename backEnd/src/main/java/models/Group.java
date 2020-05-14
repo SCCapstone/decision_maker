@@ -1,7 +1,6 @@
 package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
-import imports.GroupsManager;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -16,6 +15,19 @@ import lombok.Setter;
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
 public class Group implements Model {
+
+  public static final String GROUP_ID = "GroupId";
+  public static final String GROUP_NAME = "GroupName";
+  public static final String ICON = "Icon";
+  public static final String GROUP_CREATOR = "GroupCreator";
+  public static final String MEMBERS = "Members";
+  public static final String MEMBERS_LEFT = "MembersLeft";
+  public static final String CATEGORIES = "Categories";
+  public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
+  public static final String EVENTS = "Events";
+  public static final String LAST_ACTIVITY = "LastActivity";
+  public static final String IS_OPEN = "IsOpen";
 
   private String groupId;
   private String groupName;
@@ -34,48 +46,52 @@ public class Group implements Model {
   @Setter(AccessLevel.NONE)
   private Map<String, String> categories;
 
-  public Group(final Map<String, Object> jsonMap) {
-    this.setGroupId((String) jsonMap.get(GroupsManager.GROUP_ID));
-    this.setGroupName((String) jsonMap.get(GroupsManager.GROUP_NAME));
-    this.setIcon((String) jsonMap.get(GroupsManager.ICON));
-    this.setGroupCreator((String) jsonMap.get(GroupsManager.GROUP_CREATOR));
-    this.setDefaultRsvpDuration(
-        this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_RSVP_DURATION)));
-    this.setDefaultVotingDuration(
-        this.getIntFromObject(jsonMap.get(GroupsManager.DEFAULT_VOTING_DURATION)));
-    this.setLastActivity((String) jsonMap.get(GroupsManager.LAST_ACTIVITY));
-    this.setOpen(this.getBoolFromObject(jsonMap.get(GroupsManager.IS_OPEN)));
+  public Group(final Item groupItem) {
+    this(groupItem.asMap());
+  }
 
-    this.setMembers((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS));
-    this.setMembersLeft((Map<String, Object>) jsonMap.get(GroupsManager.MEMBERS_LEFT));
-    this.setCategories((Map<String, Object>) jsonMap.get(GroupsManager.CATEGORIES));
-    this.setEventsRawMap((Map<String, Object>) jsonMap.get(GroupsManager.EVENTS));
+  public Group(final Map<String, Object> jsonMap) {
+    this.setGroupId((String) jsonMap.get(GROUP_ID));
+    this.setGroupName((String) jsonMap.get(GROUP_NAME));
+    this.setIcon((String) jsonMap.get(ICON));
+    this.setGroupCreator((String) jsonMap.get(GROUP_CREATOR));
+    this.setDefaultRsvpDuration(
+        this.getIntFromObject(jsonMap.get(DEFAULT_RSVP_DURATION)));
+    this.setDefaultVotingDuration(
+        this.getIntFromObject(jsonMap.get(DEFAULT_VOTING_DURATION)));
+    this.setLastActivity((String) jsonMap.get(LAST_ACTIVITY));
+    this.setOpen(this.getBoolFromObject(jsonMap.get(IS_OPEN)));
+
+    this.setMembers((Map<String, Object>) jsonMap.get(MEMBERS));
+    this.setMembersLeft((Map<String, Object>) jsonMap.get(MEMBERS_LEFT));
+    this.setCategories((Map<String, Object>) jsonMap.get(CATEGORIES));
+    this.setEventsRawMap((Map<String, Object>) jsonMap.get(EVENTS));
   }
 
   public Item asItem() {
     Item modelAsItem = Item.fromMap(this.asMap());
 
     //change the group id to be the primary key
-    modelAsItem.removeAttribute(GroupsManager.GROUP_ID);
-    modelAsItem.withPrimaryKey(GroupsManager.GROUP_ID, this.groupId);
+    modelAsItem.removeAttribute(GROUP_ID);
+    modelAsItem.withPrimaryKey(GROUP_ID, this.groupId);
 
     return modelAsItem;
   }
 
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(GroupsManager.GROUP_ID, this.groupId);
-    modelAsMap.putIfAbsent(GroupsManager.GROUP_NAME, this.groupName);
-    modelAsMap.putIfAbsent(GroupsManager.ICON, this.icon);
-    modelAsMap.putIfAbsent(GroupsManager.GROUP_CREATOR, this.groupCreator);
-    modelAsMap.putIfAbsent(GroupsManager.DEFAULT_RSVP_DURATION, this.defaultRsvpDuration);
-    modelAsMap.putIfAbsent(GroupsManager.DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
-    modelAsMap.putIfAbsent(GroupsManager.LAST_ACTIVITY, this.lastActivity);
-    modelAsMap.putIfAbsent(GroupsManager.IS_OPEN, this.isOpen);
-    modelAsMap.putIfAbsent(GroupsManager.MEMBERS, this.getMembersMap());
-    modelAsMap.putIfAbsent(GroupsManager.MEMBERS_LEFT, this.membersLeft);
-    modelAsMap.putIfAbsent(GroupsManager.CATEGORIES, this.categories);
-    modelAsMap.putIfAbsent(GroupsManager.EVENTS, this.getEventsMap());
+    modelAsMap.putIfAbsent(GROUP_ID, this.groupId);
+    modelAsMap.putIfAbsent(GROUP_NAME, this.groupName);
+    modelAsMap.putIfAbsent(ICON, this.icon);
+    modelAsMap.putIfAbsent(GROUP_CREATOR, this.groupCreator);
+    modelAsMap.putIfAbsent(DEFAULT_RSVP_DURATION, this.defaultRsvpDuration);
+    modelAsMap.putIfAbsent(DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
+    modelAsMap.putIfAbsent(LAST_ACTIVITY, this.lastActivity);
+    modelAsMap.putIfAbsent(IS_OPEN, this.isOpen);
+    modelAsMap.putIfAbsent(MEMBERS, this.getMembersMap());
+    modelAsMap.putIfAbsent(MEMBERS_LEFT, this.membersLeft);
+    modelAsMap.putIfAbsent(CATEGORIES, this.categories);
+    modelAsMap.putIfAbsent(EVENTS, this.getEventsMap());
     return modelAsMap;
   }
 

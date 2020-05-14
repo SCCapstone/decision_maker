@@ -1,12 +1,17 @@
 package utilities;
 
-public class ResultStatus {
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
+public class ResultStatus<T> {
 
   public boolean success;
+  public T data;
   public String resultMessage;
 
   public ResultStatus() {
     this.success = false;
+    this.data = null;
     this.resultMessage = "Error.";
   }
 
