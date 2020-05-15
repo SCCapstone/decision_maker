@@ -109,7 +109,10 @@ public class GetCategoriesHandler implements ApiRequestHandler {
         final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
 
         if (event.getCategoryChoices() != null) {
-          final Category category = new Category(event.asMap());
+          final Category category = this.dbAccessManager.getCategory(event.getCategoryId());
+          category.setChoices(event.getCategoryChoices());
+          category.setVersion(event.getCategoryVersion());
+          category.setCategoryName(event.getCategoryName());
 
           final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
               user.getCategoryRatings().get(category.getCategoryId())
