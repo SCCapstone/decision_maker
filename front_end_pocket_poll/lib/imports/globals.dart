@@ -58,6 +58,9 @@ class Globals {
   static final int minVotingTime = 0;
   static final int maxVotingTime = 9999;
   static final int maxVotingDigits = maxVotingTime.toString().length;
+  static final int maxChoiceRating = 5;
+  static final int minChoiceRating = 0;
+  static final int maxChoiceRatingDigits = maxChoiceRating.toString().length;
 
   static String resetPasswordUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://pocket-poll-documents.s3.us-east-2.amazonaws.com/login_redirect.html";

@@ -130,9 +130,9 @@ String validChoiceRating(String input) {
   String retVal;
   try {
     int num = int.parse(input);
-    if (num < 0) {
+    if (num < Globals.minChoiceRating) {
       retVal = "(0-5)";
-    } else if (num > 5) {
+    } else if (num > Globals.maxChoiceRating) {
       retVal = "(0-5)";
     }
   } catch (e) {

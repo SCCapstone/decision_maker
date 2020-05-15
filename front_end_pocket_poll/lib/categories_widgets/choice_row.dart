@@ -62,7 +62,10 @@ class _ChoiceRowState extends State<ChoiceRow> {
             controller: widget.labelController,
             textInputAction: TextInputAction.next,
             decoration: InputDecoration(
-                labelText: "Choice", counterText: "", helperText: " "),
+                labelStyle: TextStyle(fontSize: 15),
+                labelText: "Choice",
+                counterText: "",
+                helperText: " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(this.ratingsFocus);
@@ -86,14 +89,17 @@ class _ChoiceRowState extends State<ChoiceRow> {
             validator: validChoiceRating,
             focusNode: this.ratingsFocus,
             controller: widget.rateController,
-            maxLength: 1,
+            maxLength: Globals.maxChoiceRatingDigits,
             maxLines: 1,
             inputFormatters: [WhitelistingTextInputFormatter(RegExp("[0-5]"))],
             enableInteractiveSelection: false,
             keyboardType: TextInputType.number,
             key: Key("choice_row:rating_input:${widget.choiceNumber}"),
             decoration: InputDecoration(
-                labelText: "Rating (0-5)", counterText: "", helperText: " "),
+                labelStyle: TextStyle(fontSize: 15),
+                labelText: "Rating (0-5)",
+                counterText: "",
+                helperText: " "),
           ),
         ),
         Visibility(
