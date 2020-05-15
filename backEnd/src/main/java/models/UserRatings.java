@@ -35,17 +35,21 @@ public class UserRatings {
   }
 
   private void setVersionToRatingMapsRaw(final Map<String, Object> versionToRatingMapsRaw) {
-    for (final Map.Entry<String, Object> versionIdToChoiceRatings : versionToRatingMapsRaw
-        .entrySet()) {
-      final Map<String, Object> choiceRatingsRaw = (Map<String, Object>) versionIdToChoiceRatings
-          .getValue();
-      final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
-      for (final String choiceId : choiceRatingsRaw.keySet()) {
-        choiceRatingsConverted
-            .putIfAbsent(choiceId, getIntFromObject(choiceRatingsRaw.get(choiceId)));
-      }
+    this.versionsToRatingMaps = null;
+    if (this.versionsToRatingMaps != null) {
+      this.versionsToRatingMaps = new HashMap<>();
+      for (final Map.Entry<String, Object> versionIdToChoiceRatings : versionToRatingMapsRaw
+          .entrySet()) {
+        final Map<String, Object> choiceRatingsRaw = (Map<String, Object>) versionIdToChoiceRatings
+            .getValue();
+        final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
+        for (final String choiceId : choiceRatingsRaw.keySet()) {
+          choiceRatingsConverted
+              .putIfAbsent(choiceId, getIntFromObject(choiceRatingsRaw.get(choiceId)));
+        }
 
-      this.versionsToRatingMaps.put(versionIdToChoiceRatings.getKey(), choiceRatingsConverted);
+        this.versionsToRatingMaps.put(versionIdToChoiceRatings.getKey(), choiceRatingsConverted);
+      }
     }
   }
 

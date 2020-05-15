@@ -78,8 +78,8 @@ public class EditCategoryHandlerTest {
   public void editCategory_validInputCategoryNameChange_successfulResult() {
     try {
       doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-          .handle(any(String.class), any(String.class), any(Map.class), eq(false),
-              any(String.class));
+          .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class),
+              eq(false), any(String.class));
       doReturn(new Category(JsonUtils.getItemFromFile("categoryLunchOptions.json")))
           .when(this.dbAccessManager).getCategory(any(String.class));
       doReturn(new User(JsonUtils.getItemFromFile("johnplaysgolf.json"))).when(this.dbAccessManager)

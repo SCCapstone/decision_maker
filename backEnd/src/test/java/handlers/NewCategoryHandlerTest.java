@@ -89,8 +89,8 @@ public class NewCategoryHandlerTest {
   @Test
   public void addNewCategory_validInput_successfulResult() throws Exception {
     doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Map.class), eq(false), any(String.class),
-            eq(true));
+        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+            any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
 
@@ -107,8 +107,8 @@ public class NewCategoryHandlerTest {
   public void addNewCategory_validInputBadUserRatingsUpdate_failureResult() throws Exception {
     doReturn(new ResultStatus(false, "usersManagerBroken"))
         .when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Map.class), eq(false), any(String.class),
-            eq(true));
+        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+            any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
 
@@ -175,8 +175,8 @@ public class NewCategoryHandlerTest {
     doThrow(NullPointerException.class).when(this.dbAccessManager)
         .executeWriteTransaction(any(List.class));
     doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Map.class), eq(false), any(String.class),
-            eq(true));
+        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+            any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
 
