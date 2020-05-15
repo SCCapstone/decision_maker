@@ -83,14 +83,16 @@ public class EditCategoryHandler implements ApiRequestHandler {
         //get the update data to entered the ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult =
             this.updateUserChoiceRatingsHandler
-                .handle(activeUser, categoryId, userRatings, false, categoryName);
+                .handle(activeUser, categoryId, newCategory.getVersion(), userRatings, false,
+                    categoryName);
 
         if (updatedUsersTableResult.success) {
           actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
 
           this.dbAccessManager.executeWriteTransaction(actions);
 
-          resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
+          resultStatus = ResultStatus
+              .successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
           resultStatus = ResultStatus.failure("Error in dependency.");
           resultStatus.applyResultStatus(updatedUsersTableResult);
