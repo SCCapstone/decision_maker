@@ -32,6 +32,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
     for (Category category in Globals.user.ownedCategories) {
       if (category.categoryId == widget.category.categoryId) {
         this.activeUserOwnsCategory = true;
+        break;
       }
     }
     if (!this.activeUserOwnsCategory) {

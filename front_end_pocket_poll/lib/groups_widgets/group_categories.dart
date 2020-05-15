@@ -36,7 +36,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     this.sortVal = Globals.user.appSettings.categorySort;
     this.ownedCategoryRows = new List<CategoryRowGroup>();
     this.groupCategoryRows = new List<CategoryRowGroup>();
-    getCategories();
+    getCategoriesAndBuildRows();
     super.initState();
   }
 
@@ -179,7 +179,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                           setState(() {
                             this.loading = true;
                           });
-                          this.getCategories();
+                          this.getCategoriesAndBuildRows();
                         });
                       },
                     )
@@ -279,7 +279,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 Center(child: Text(errorMsg, style: TextStyle(fontSize: 30))),
               ],
             ),
-            onRefresh: getCategories,
+            onRefresh: getCategoriesAndBuildRows,
           ),
         ),
         key: Key("group_categories:scaffold_error"));
@@ -324,14 +324,14 @@ class _GroupCategoriesState extends State<GroupCategories> {
       widget.selectedCategories
           .putIfAbsent(category.categoryId, () => category.categoryName);
     }
-    this.getCategories();
+    this.getCategoriesAndBuildRows();
   }
 
   /*
-    Loads all the categories the group has attached to it. Categories that are owned by the active user
-    are set to checked if they are in the group.
+    Loads all the categories the group has attached to it. Categories that are
+    owned by the active user are set to checked if they are in the group.
    */
-  void getCategories() async {
+  void getCategoriesAndBuildRows() async {
     //only query the group categories one time per build of this widget
     if (this.groupCategories == null) {
       ResultStatus<List<Category>> resultStatus =
@@ -363,7 +363,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           this.ownedCategoryRows.add(new CategoryRowGroup(
               category,
               widget.selectedCategories.keys.contains(category.categoryId),
-              getCategories,
+              getCategoriesAndBuildRows,
               widget.canEdit,
               onSelect: () => selectCategory(category),
               index: index));
@@ -378,7 +378,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           this.groupCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
-                getCategories,
+                getCategoriesAndBuildRows,
                 widget.canEdit,
                 onSelect: () => selectCategory(category),
                 index: index,
