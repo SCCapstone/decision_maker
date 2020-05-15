@@ -107,7 +107,7 @@ class _EditCategoryState extends State<EditCategory> {
           child: Scaffold(
               appBar: AppBar(
                 title: AutoSizeText(
-                  "Edit Category",
+                  (this.isCategoryOwner) ? "Edit Category" : "Update Ratings",
                   maxLines: 1,
                   style: TextStyle(fontSize: 25),
                   minFontSize: 12,

@@ -99,7 +99,7 @@ class _GroupLeftRowState extends State<GroupLeftRow> {
               ),
             ],
             content:
-                Text("Would you like to rejoin ${widget.group.groupName}?"),
+                Text("Would you like to rejoin \"${widget.group.groupName}\"?"),
           );
         });
   }

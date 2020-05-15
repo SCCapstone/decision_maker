@@ -74,7 +74,7 @@ class _UserSettingsState extends State<UserSettings> {
                     "SAVE",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  key: Key("categories_edit:save_button"),
+                  key: Key("user_settings:save_button"),
                   textColor: Colors.black,
                   onPressed: saveSettings,
                 ),
@@ -116,7 +116,7 @@ class _UserSettingsState extends State<UserSettings> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            showUserImage(
+                            showActiveUserImage(
                                 this._icon == null
                                     ? getUserIconImage(Globals.user.icon)
                                     : FileImage(this._icon),

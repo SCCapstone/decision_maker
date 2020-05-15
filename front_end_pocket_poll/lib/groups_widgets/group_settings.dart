@@ -134,7 +134,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                     "SAVE",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  key: Key("categories_edit:save_button"),
+                  key: Key("group_settings:save_button"),
                   textColor: Colors.black,
                   onPressed: () {
                     if (this.canEdit) {
@@ -641,7 +641,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               )
             ],
             content:
-                Text("Are you sure you wish to leave the group: $groupName?"),
+                Text("Are you sure you wish to leave the group \"$groupName\"?"),
           );
         });
   }

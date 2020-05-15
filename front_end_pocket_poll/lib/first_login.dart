@@ -97,7 +97,7 @@ class _FirstLoginState extends State<FirstLogin> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          showUserImage(
+                          showActiveUserImage(
                               this._icon == null
                                   ? getUserIconImage(Globals.user.icon)
                                   : FileImage(this._icon),
@@ -272,6 +272,7 @@ class _FirstLoginState extends State<FirstLogin> {
 
   // attempts to save the user settings if the input is valid
   void saveSettings() async {
+    hideKeyboard(context);
     final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -296,7 +297,6 @@ class _FirstLoginState extends State<FirstLogin> {
           MaterialPageRoute(builder: (context) => GroupsHome()),
         );
       } else {
-        hideKeyboard(context);
         showErrorMessage("Error", resultStatus.errorMessage, this.context);
       }
     } else {

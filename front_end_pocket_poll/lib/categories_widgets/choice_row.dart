@@ -29,6 +29,8 @@ class ChoiceRow extends StatefulWidget {
 class _ChoiceRowState extends State<ChoiceRow> {
   FocusNode ratingsFocus;
   int rating;
+  final String ratingRegex =
+      "[${Globals.minChoiceRating}-${Globals.maxChoiceRating}]";
 
   @override
   void initState() {
@@ -91,13 +93,16 @@ class _ChoiceRowState extends State<ChoiceRow> {
             controller: widget.rateController,
             maxLength: Globals.maxChoiceRatingDigits,
             maxLines: 1,
-            inputFormatters: [WhitelistingTextInputFormatter(RegExp("[0-5]"))],
+            inputFormatters: [
+              WhitelistingTextInputFormatter(RegExp(ratingRegex))
+            ],
             enableInteractiveSelection: false,
             keyboardType: TextInputType.number,
             key: Key("choice_row:rating_input:${widget.choiceNumber}"),
             decoration: InputDecoration(
                 labelStyle: TextStyle(fontSize: 15),
-                labelText: "Rating (0-5)",
+                labelText:
+                    "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
                 counterText: "",
                 helperText: " "),
           ),
