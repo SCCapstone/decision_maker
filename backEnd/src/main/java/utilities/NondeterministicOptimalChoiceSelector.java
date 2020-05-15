@@ -39,6 +39,7 @@ public class NondeterministicOptimalChoiceSelector {
     for (String username : this.event.getOptedIn().keySet()) {
       allCategoryChoiceRatings.add(
           this.allUsers.get(username).getCategoryRatings().get(this.event.getCategoryId())
+              .getRatings(this.event.getCategoryVersion())
       );
     }
 
