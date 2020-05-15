@@ -8,14 +8,13 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 class CategoryRowGroup extends StatefulWidget {
   final Category category;
   final VoidCallback onSelect;
-  final bool groupCategory;
   final bool selected;
   final Function updateOwnedCategories;
   final bool canSelect;
   final int index; // used for integration tests
 
-  CategoryRowGroup(this.category, this.selected, this.groupCategory,
-      this.updateOwnedCategories, this.canSelect,
+  CategoryRowGroup(
+      this.category, this.selected, this.updateOwnedCategories, this.canSelect,
       {this.onSelect, this.index});
 
   @override
@@ -24,13 +23,18 @@ class CategoryRowGroup extends StatefulWidget {
 
 class _CategoryRowGroupState extends State<CategoryRowGroup> {
   int groupNum;
-  bool selectVal;
+  bool activeUserOwnsCategory;
 
   @override
   void initState() {
     this.groupNum = 0;
-    this.selectVal = widget.selected;
-    if (widget.groupCategory) {
+    this.activeUserOwnsCategory = false;
+    for (Category category in Globals.user.ownedCategories) {
+      if (category.categoryId == widget.category.categoryId) {
+        this.activeUserOwnsCategory = true;
+      }
+    }
+    if (!this.activeUserOwnsCategory) {
       // find the num of other groups this category is in if its not active user's category
       for (String groupId in Globals.user.groups.keys) {
         if (widget.category.groups.containsKey(groupId) &&
@@ -45,6 +49,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: Key("category_row_group:container:${widget.category.categoryId}"),
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,9 +57,9 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
           Visibility(
             visible: widget.canSelect,
             child: Checkbox(
-              value: this.selectVal,
+              value: widget.selected,
               key: Key(
-                  "category_row_group:checkbox:${widget.groupCategory}:${widget.index}"),
+                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.index}"),
               onChanged: (bool value) {
                 selectCategory(value);
               },
@@ -70,7 +75,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
               child: GestureDetector(
                   onTap: () {
                     if (widget.canSelect) {
-                      selectCategory(!this.selectVal);
+                      selectCategory(!widget.selected);
                     }
                   },
                   child: AutoSizeText(
@@ -88,7 +93,9 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             color: Colors.lightBlue,
             icon: Icon(Icons.edit),
             iconSize: MediaQuery.of(context).size.width * .075,
-            tooltip: (widget.groupCategory) ? "Edit Ratings" : "Edit Category",
+            tooltip: (this.activeUserOwnsCategory)
+                ? "Edit Category"
+                : "Edit Ratings",
             onPressed: () {
               Navigator.push(
                   context,
@@ -113,8 +120,5 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
 
   void selectCategory(bool value) {
     this.widget.onSelect();
-    setState(() {
-      this.selectVal = value;
-    });
   }
 }

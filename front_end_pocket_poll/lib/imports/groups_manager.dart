@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/group_interface.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
@@ -423,5 +425,78 @@ class GroupsManager {
         .getGroupName()
         .toUpperCase()
         .compareTo(a.getGroupName().toUpperCase()));
+  }
+
+  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+      final String groupId) async {
+    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.data);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
+          retVal.data =
+              responseJson.map((m) => new Category.fromJson(m)).toList();
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to load categories.";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Unable to load categories.";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+          "Network error. Unable to load categories. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to load categories.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus<Category>> getEventCategory(
+      final String groupId, final String eventId) async {
+    ResultStatus<Category> retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
+    jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
+
+    ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.data);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          List<dynamic> responseJson = json.decode(responseItem.resultMessage);
+          retVal.data = new Category.fromJson(responseJson[0]);
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to load categories.";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Unable to load categories.";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+          "Network error. Unable to load categories. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to load categories.";
+    }
+    return retVal;
   }
 }

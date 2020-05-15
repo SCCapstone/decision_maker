@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
 import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
@@ -26,6 +27,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget errorWidget;
   List<CategoryRowGroup> ownedCategoryRows;
   List<CategoryRowGroup> groupCategoryRows;
+  List<Category> groupCategories;
 
   @override
   void initState() {
@@ -283,28 +285,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
         key: Key("group_categories:scaffold_error"));
   }
 
-  // update the list of owned categories with categories found in local user object
-  void updateOwnedCategories() {
-    this.ownedCategoryRows.clear();
-    int index = 0; // used for integration tests
-    for (Category category in Globals.user.ownedCategories) {
-      if (widget.canEdit ||
-          Globals.currentGroup.categories.containsKey(category.categoryId)) {
-        this.ownedCategoryRows.add(new CategoryRowGroup(
-            category,
-            widget.selectedCategories.keys.contains(category.categoryId),
-            false,
-            updateOwnedCategories,
-            widget.canEdit,
-            onSelect: () => selectCategory(category),
-            index: index));
-        index++;
-      }
-    }
-    sortOwnedCategoryRows();
-    setState(() {});
-  }
-
   void sortGroupCategoryRows() {
     if (this.sortVal == Globals.alphabeticalSort) {
       this.groupCategoryRows.sort((a, b) => a.category.categoryName
@@ -338,14 +318,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
   // adds this category to the list of selected (i.e. adds it to the group)
   void selectCategory(Category category) {
-    setState(() {
-      if (widget.selectedCategories.keys.contains(category.categoryId)) {
-        widget.selectedCategories.remove(category.categoryId);
-      } else {
-        widget.selectedCategories
-            .putIfAbsent(category.categoryId, () => category.categoryName);
-      }
-    });
+    if (widget.selectedCategories.keys.contains(category.categoryId)) {
+      widget.selectedCategories.remove(category.categoryId);
+    } else {
+      widget.selectedCategories
+          .putIfAbsent(category.categoryId, () => category.categoryName);
+    }
+    this.getCategories();
   }
 
   /*
@@ -353,56 +332,64 @@ class _GroupCategoriesState extends State<GroupCategories> {
     are set to checked if they are in the group.
    */
   void getCategories() async {
-    ResultStatus<List<Category>> resultStatus =
-        await CategoriesManager.getAllCategoriesList();
-    this.loading = false;
-    if (resultStatus.success) {
-      this.errorLoading = false;
-      List<Category> selectedCats = resultStatus.data;
+    //only query the group categories one time per build of this widget
+    if (this.groupCategories == null) {
+      ResultStatus<List<Category>> resultStatus =
+          await GroupsManager.getAllCategoriesList(
+              Globals.currentGroup.groupId);
+      this.loading = false;
+
+      if (resultStatus.success) {
+        this.groupCategories = resultStatus.data;
+        this.errorLoading = false;
+      } else {
+        setState(() {
+          this.errorWidget = categoriesError(resultStatus.errorMessage);
+          this.errorLoading = true;
+        });
+      }
+    }
+
+    if (!this.errorLoading) {
+      this.ownedCategoryRows.clear();
+      this.groupCategoryRows.clear();
+
       int index = 0; // used for integration tests
-      for (Category category in selectedCats) {
-        if (!Globals.user.ownedCategories.contains(category) &&
-            category.groups.containsKey(Globals.currentGroup.groupId)) {
+
+      //build the users's categories
+      for (Category category in Globals.user.ownedCategories) {
+        if (widget.canEdit ||
+            Globals.currentGroup.categories.containsKey(category.categoryId)) {
+          this.ownedCategoryRows.add(new CategoryRowGroup(
+              category,
+              widget.selectedCategories.keys.contains(category.categoryId),
+              getCategories,
+              widget.canEdit,
+              onSelect: () => selectCategory(category),
+              index: index));
+          index++;
+        }
+      }
+
+      //build the group categories
+      for (Category category in this.groupCategories) {
+        if (!Globals.user.ownedCategories.contains(category)) {
           // separate the categories of the group that the user doesn't own
           this.groupCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
-                true,
-                updateOwnedCategories,
+                getCategories,
                 widget.canEdit,
                 onSelect: () => selectCategory(category),
                 index: index,
               ));
           index++;
-        } else if (Globals.user.ownedCategories.contains(category)) {
-          /*
-            Separate the categories the user owns. Add every category if the user
-            currently has permission to edit group settings, otherwise only add
-            categories that the user had already added to the group
-           */
-          if (widget.canEdit ||
-              Globals.currentGroup.categories
-                  .containsKey(category.categoryId)) {
-            this.ownedCategoryRows.add(new CategoryRowGroup(
-                category,
-                widget.selectedCategories.keys.contains(category.categoryId),
-                false,
-                updateOwnedCategories,
-                widget.canEdit,
-                onSelect: () => selectCategory(category),
-                index: index));
-            index++;
-          }
         }
       }
+
       sortGroupCategoryRows();
       sortOwnedCategoryRows();
       setState(() {});
-    } else {
-      setState(() {
-        this.errorWidget = categoriesError(resultStatus.errorMessage);
-        this.errorLoading = true;
-      });
     }
   }
 }
