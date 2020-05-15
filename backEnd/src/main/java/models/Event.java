@@ -15,8 +15,6 @@ import lombok.Setter;
 @Builder(toBuilder = true)
 public class Event {
 
-  public static final String CATEGORY_ID = "CategoryId";
-  public static final String CATEGORY_NAME = "CategoryName";
   public static final String EVENT_NAME = "EventName";
   public static final String EVENT_CREATOR = "EventCreator";
   public static final String CREATED_DATE_TIME = "CreatedDateTime";
@@ -48,8 +46,8 @@ public class Event {
   private Map<String, Member> eventCreator;
 
   public Event(final Map<String, Object> jsonMap) {
-    this.setCategoryId((String) jsonMap.get(CATEGORY_ID));
-    this.setCategoryName((String) jsonMap.get(CATEGORY_NAME));
+    this.setCategoryId((String) jsonMap.get(Category.CATEGORY_ID));
+    this.setCategoryName((String) jsonMap.get(Category.CATEGORY_NAME));
     this.setCategoryVersion(this.getIntFromObject(jsonMap.get(Category.VERSION)));
     this.setEventName((String) jsonMap.get(EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(CREATED_DATE_TIME));
@@ -69,8 +67,8 @@ public class Event {
 
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.putIfAbsent(CATEGORY_ID, this.categoryId);
-    modelAsMap.putIfAbsent(CATEGORY_NAME, this.categoryName);
+    modelAsMap.putIfAbsent(Category.CATEGORY_ID, this.categoryId);
+    modelAsMap.putIfAbsent(Category.CATEGORY_NAME, this.categoryName);
     modelAsMap.putIfAbsent(Category.VERSION, this.categoryVersion);
     modelAsMap.putIfAbsent(EVENT_NAME, this.eventName);
     modelAsMap.putIfAbsent(CREATED_DATE_TIME, this.createdDateTime);
