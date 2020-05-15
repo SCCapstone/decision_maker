@@ -112,7 +112,8 @@ public class GetCategoriesHandler implements ApiRequestHandler {
           final Category category = new Category(event.asMap());
 
           final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
-              user.getCategoryRatings().get(category.getCategoryId()));
+              user.getCategoryRatings().get(category.getCategoryId())
+                  .getRatings(category.getVersion()));
 
           resultStatus = ResultStatus.successful(
               JsonUtils.convertObjectToJson(Collections.singletonList(categoryRatingTuple)));
@@ -141,9 +142,10 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     final List<Map<String, Object>> categoryRatingTuples = new ArrayList<>();
     for (String id : categoryIds) {
       try {
-        categoryRatingTuples.add(
-            new CategoryRatingTuple(this.dbAccessManager.getCategory(id),
-                user.getCategoryRatings().get(id)).asMap());
+        final Category category = this.dbAccessManager.getCategory(id);
+        final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
+            user.getCategoryRatings().get(id).getRatings(category.getVersion()));
+        categoryRatingTuples.add(categoryRatingTuple.asMap());
       } catch (Exception e) {
         this.metrics.log(new ErrorDescriptor<>(id, classMethod, e));
       }

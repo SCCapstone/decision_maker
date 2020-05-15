@@ -36,7 +36,7 @@ public class User {
   @Setter(AccessLevel.NONE)
   private Map<String, Group> groupsLeft;
   @Setter(AccessLevel.NONE)
-  private Map<String, Map<String, Integer>> categoryRatings;
+  private Map<String, UserRatings> categoryRatings;
   @Setter(AccessLevel.NONE)
   private Map<String, String> ownedCategories;
   @Setter(AccessLevel.NONE)
@@ -92,13 +92,8 @@ public class User {
     if (jsonMap != null) {
       this.categoryRatings = new HashMap<>();
       for (String categoryId : jsonMap.keySet()) {
-        final Map<String, Object> choiceRatings = (Map<String, Object>) jsonMap.get(categoryId);
-        final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
-        for (String choiceId : choiceRatings.keySet()) {
-          choiceRatingsConverted
-              .putIfAbsent(choiceId, getIntFromObject(choiceRatings.get(choiceId)));
-        }
-        this.categoryRatings.putIfAbsent(categoryId, choiceRatingsConverted);
+        this.categoryRatings.putIfAbsent(categoryId,
+            new UserRatings((Map<String, Object>) jsonMap.get(categoryId)));
       }
     }
   }

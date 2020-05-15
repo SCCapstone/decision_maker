@@ -25,18 +25,20 @@ public class UpdateUserChoiceRatingsController implements ApiRequestController {
     ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, Category.CATEGORY_ID, RequestFields.USER_RATINGS);
+        .asList(RequestFields.ACTIVE_USER, Category.CATEGORY_ID, Category.VERSION,
+            RequestFields.USER_RATINGS);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get((RequestFields.ACTIVE_USER));
         final String categoryId = (String) jsonMap.get(Category.CATEGORY_ID);
+        final Integer categoryVersion = (Integer) jsonMap.get(Category.VERSION);
         final Map<String, Object> userRatings = (Map<String, Object>) jsonMap
             .get(RequestFields.USER_RATINGS);
 
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.updateUserChoiceRatingsHandler
-            .handle(activeUser, categoryId, userRatings, true);
+            .handle(activeUser, categoryId, categoryVersion, userRatings, true);
       } catch (final Exception e) {
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
