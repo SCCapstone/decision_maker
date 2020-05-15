@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.AppSettings;
 import models.User;
+import models.UserForApiResponse;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -40,7 +41,8 @@ public class GetUserDataHandler implements ApiRequestHandler {
     try {
       final Item user = this.dbAccessManager.getUserItem(username);
       if (user != null) {
-        resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(user.asMap()));
+        resultStatus = ResultStatus
+            .successful(JsonUtils.convertObjectToJson(new UserForApiResponse(user).asMap()));
       } else {
         resultStatus = ResultStatus.successful("User not found.");
       }
@@ -67,6 +69,7 @@ public class GetUserDataHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
+      UserForApiResponse userForApiResponse;
       Item user = this.dbAccessManager.getUserItem(activeUser);
 
       if (user == null) {
@@ -84,13 +87,13 @@ public class GetUserDataHandler implements ApiRequestHandler {
 
         this.dbAccessManager.putUser(user);
 
-        //note: this needs to come after the put item as we don't need to store this info in the db
-        user.withBoolean(User.FIRST_LOGIN, true);
+        userForApiResponse = new UserForApiResponse(user, true);
       } else {
-        user.withBoolean(User.FIRST_LOGIN, false);
+        userForApiResponse = new UserForApiResponse(user);
       }
 
-      resultStatus = new ResultStatus(true, JsonUtils.convertObjectToJson(user.asMap()));
+      resultStatus = ResultStatus
+          .successful(JsonUtils.convertObjectToJson(userForApiResponse.asMap()));
     } catch (Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);

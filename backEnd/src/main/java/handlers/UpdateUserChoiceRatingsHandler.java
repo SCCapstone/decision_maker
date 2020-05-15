@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import javax.inject.Inject;
 import managers.DbAccessManager;
-import models.Category;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;

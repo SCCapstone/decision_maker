@@ -2,13 +2,24 @@ package models;
 
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Data;
 
+@Data
 public class UserRatings {
 
   private Map<String, Map<String, Integer>> versionsToRatingMaps;
 
   public UserRatings(final Map<String, Object> versionsToRatingMaps) {
     this.setVersionToRatingMapsRaw(versionsToRatingMaps);
+  }
+
+  public Map<String, Object> asMap() {
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    for (final Map.Entry<String, Map<String, Integer>> versionRatingsEntry : this.versionsToRatingMaps
+        .entrySet()) {
+      modelAsMap.putIfAbsent(versionRatingsEntry.getKey(), versionRatingsEntry.getValue());
+    }
+    return modelAsMap;
   }
 
   public Map<String, Integer> getRatings(final String version) {
