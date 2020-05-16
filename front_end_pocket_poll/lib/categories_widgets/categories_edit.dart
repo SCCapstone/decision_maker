@@ -32,14 +32,12 @@ class _EditCategoryState extends State<EditCategory> {
   // preserve the original labels for copying purposes and detecting if changes were made
   Map<String, String> originalLabels;
   Map<String, String> originalRatings;
-  FocusNode focusNode;
   bool autoValidate;
   bool isCategoryOwner;
   bool loading;
   bool errorLoading;
   bool categoryChanged;
   int nextChoiceNum;
-  ChoiceRow currentChoice;
   Widget errorWidget;
   Category category;
 
@@ -87,11 +85,6 @@ class _EditCategoryState extends State<EditCategory> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.currentChoice != null) {
-      // this allows for the keyboard to be displayed when clicking new choice button
-      this.currentChoice.requestFocus(context);
-      this.currentChoice = null;
-    }
     if (this.loading) {
       return categoriesLoading();
     } else if (this.errorLoading) {
@@ -245,35 +238,28 @@ class _EditCategoryState extends State<EditCategory> {
                   onPressed: () {
                     if (this.isCategoryOwner) {
                       // only owners of the category can currently add new choices
-                      setState(() {
-                        this.focusNode = new FocusNode();
-                        TextEditingController labelController =
-                            new TextEditingController();
-                        TextEditingController rateController =
-                            new TextEditingController();
-                        rateController.text = this.defaultRate.toString();
+                      FocusNode focusNode = new FocusNode();
+                      TextEditingController labelController =
+                          new TextEditingController();
+                      TextEditingController rateController =
+                          new TextEditingController();
+                      rateController.text = this.defaultRate.toString();
 
-                        ChoiceRow choice = new ChoiceRow(
-                            this.nextChoiceNum.toString(),
-                            this.isCategoryOwner,
-                            labelController,
-                            rateController,
-                            deleteChoice: (choice) => deleteChoice(choice),
-                            focusNode: this.focusNode,
-                            checkForChange: checkForChanges);
-                        this.currentChoice = choice;
+                      ChoiceRow choice = new ChoiceRow(
+                          this.nextChoiceNum.toString(),
+                          this.isCategoryOwner,
+                          labelController,
+                          rateController,
+                          deleteChoice: (choice) => deleteChoice(choice),
+                          focusNode: focusNode,
+                          checkForChange: checkForChanges);
+                      setState(() {
                         this.choiceRows.add(choice);
                         this.nextChoiceNum++;
-                        // allow the list to automatically scroll down as it grows
-                        SchedulerBinding.instance.addPostFrameCallback((_) {
-                          this.scrollController.animateTo(
-                                this.scrollController.position.maxScrollExtent,
-                                duration: const Duration(microseconds: 100),
-                                curve: Curves.easeOut,
-                              );
-                        });
                         checkForChanges();
                       });
+                      SchedulerBinding.instance
+                          .addPostFrameCallback((_) => scrollToBottom(choice));
                     }
                   },
                 ),
@@ -281,6 +267,21 @@ class _EditCategoryState extends State<EditCategory> {
         ),
       );
     }
+  }
+
+  // scrolls to the bottom of the listview of all the choices
+  void scrollToBottom(ChoiceRow choiceRow) async {
+    await this
+        .scrollController
+        .animateTo(
+          this.scrollController.position.maxScrollExtent,
+          duration: const Duration(microseconds: 100),
+          curve: Curves.easeOut,
+        )
+        .then((_) {
+      // at the bottom of the list now, so request the focus of the choice row
+      choiceRow.requestFocus(context);
+    });
   }
 
   Widget categoriesLoading() {

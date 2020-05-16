@@ -27,8 +27,6 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   int nextChoiceValue;
   bool autoValidate;
-  FocusNode focusNode;
-  ChoiceRow currentChoice;
 
   @override
   void dispose() {
@@ -61,11 +59,6 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.currentChoice != null) {
-      // this allows for the keyboard to be displayed when clicking new choice button
-      this.currentChoice.requestFocus(context);
-      this.currentChoice = null;
-    }
     return WillPopScope(
       onWillPop: handleBackPress,
       child: GestureDetector(
@@ -162,38 +155,46 @@ class _CreateCategoryState extends State<CreateCategory> {
               child: Icon(Icons.add),
               key: Key("categories_create:add_choice_button"),
               onPressed: () {
-                setState(() {
-                  this.focusNode = new FocusNode();
-                  TextEditingController labelController =
-                      new TextEditingController();
-                  TextEditingController rateController =
-                      new TextEditingController();
-                  rateController.text = this.defaultRate.toString();
+                FocusNode focusNode = new FocusNode();
+                TextEditingController labelController =
+                    new TextEditingController();
+                TextEditingController rateController =
+                    new TextEditingController();
+                rateController.text = this.defaultRate.toString();
 
-                  ChoiceRow choice = new ChoiceRow(
-                    this.nextChoiceValue.toString(),
-                    true,
-                    labelController,
-                    rateController,
-                    deleteChoice: (choice) => deleteChoice(choice),
-                    focusNode: this.focusNode,
-                  );
-                  this.currentChoice = choice;
+                ChoiceRow choice = new ChoiceRow(
+                  this.nextChoiceValue.toString(),
+                  true,
+                  labelController,
+                  rateController,
+                  deleteChoice: (choice) => deleteChoice(choice),
+                  focusNode: focusNode,
+                );
+                setState(() {
                   this.choiceRows.add(choice);
                   this.nextChoiceValue++;
-                  // allow the list to automatically scroll down as it grows
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    this.scrollController.animateTo(
-                          this.scrollController.position.maxScrollExtent,
-                          duration: const Duration(microseconds: 100),
-                          curve: Curves.easeOut,
-                        );
-                  });
                 });
+                SchedulerBinding.instance
+                    .addPostFrameCallback((_) => scrollToBottom(choice));
               },
             )),
       ),
     );
+  }
+
+  // scrolls to the bottom of the listview of all the choices
+  void scrollToBottom(ChoiceRow choiceRow) async {
+    await this
+        .scrollController
+        .animateTo(
+          this.scrollController.position.maxScrollExtent,
+          duration: const Duration(microseconds: 100),
+          curve: Curves.easeOut,
+        )
+        .then((_) {
+      // at the bottom of the list now, so request the focus of the choice row
+      choiceRow.requestFocus(context);
+    });
   }
 
   /*
