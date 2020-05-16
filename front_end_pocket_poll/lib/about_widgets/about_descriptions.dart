@@ -39,7 +39,7 @@ class AboutDescriptions {
       <p>When you first open the app and are signed in there will be a list of all the groups you are a part of as well as groups you have left. To access a specific group, click on the row to be taken to that group’s page.</p>
       <h2>Overview</h2>
       <p>Groups are composed of members and categories. If the creator of the group makes it private, then changes to the group are only allowed by the creator. Otherwise, any member can add their categories or other members to the group. To utilize your favorites, click the contacts icon next to the “Add User” button when adding a member.</p>
-      <p>To edit a group, navigate to the group settings page by clicking the settings icon in the top right corner of the group page. After making your changes to the group, make sure to hit the save button. Note changes made to the group categories and members are saved automatically when you exit each respective page.</p>
+      <p>To edit a group, navigate to the group settings page by clicking the settings icon in the top right corner of the group page. After making your changes to the group, make sure to hit the save button. Note that changes made to the group categories and members are saved automatically when you exit each respective page.</p>
       <p>If you no longer wish to be in a group and are not the group’s creator you can leave at any time from the group settings page. In addition, only you will be able to add yourself back to the group. You can rejoin the group from the “Groups Left” tab on the app’s homepage.</p>
       <p>To toggle muting a group, click the blue mute icon next to the group row in the app’s homepage. You can still see the number of unseen events denoted by the number underneath this blue icon.</p>
     """);
@@ -55,7 +55,7 @@ class AboutDescriptions {
         <li>Voting stage: The algorithm has produced a handful of choices for all members to vote on (note that if you said “No” to being considered you can still vote). You simply vote no using the thumbs down button and yes with the thumbs up button.</li>
         <li>Ready stage: The highest voted choice is chosen and is displayed along with the start time of the event.</li>
       </ol>
-      <p>If you have notifications enabled, you will receive a notification whenever a event goes to a different stage.</p>
+      <p>If you have notifications enabled, you will receive a notification whenever an event goes to a different stage.</p>
       <p>When creating an event, the consider and voting stages can be skipped by either hitting the skip buttons next to the input fields or by putting the number 0 in for the time.</p>
       <p>The default consider and voting durations are set in the group settings page.</p>
       <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the calendar icon button in the top right corner of the page.</P>
