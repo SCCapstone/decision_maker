@@ -94,7 +94,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             maxLength: Globals.maxChoiceRatingDigits,
             maxLines: 1,
             inputFormatters: [
-              WhitelistingTextInputFormatter(RegExp(ratingRegex))
+              WhitelistingTextInputFormatter(RegExp(this.ratingRegex))
             ],
             enableInteractiveSelection: false,
             keyboardType: TextInputType.number,

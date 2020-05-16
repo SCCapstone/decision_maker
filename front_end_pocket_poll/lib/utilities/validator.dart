@@ -131,9 +131,9 @@ String validChoiceRating(String input) {
   try {
     int num = int.parse(input);
     if (num < Globals.minChoiceRating) {
-      retVal = "(0-5)";
+      retVal = "(${Globals.minChoiceRating}-${Globals.maxChoiceRating})";
     } else if (num > Globals.maxChoiceRating) {
-      retVal = "(0-5)";
+      retVal = "(${Globals.minChoiceRating}-${Globals.maxChoiceRating})";
     }
   } catch (e) {
     retVal = "Invalid";
