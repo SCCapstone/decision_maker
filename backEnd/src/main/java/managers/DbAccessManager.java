@@ -131,7 +131,8 @@ public class DbAccessManager {
     if (this.cache.containsKey(categoryId)) {
       categoryItem = this.cache.get(categoryId);
     } else {
-      categoryItem = this.usersTable.getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
+      categoryItem = this.categoriesTable
+          .getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
       this.cache.put(categoryId, categoryItem);
     }
 
@@ -143,7 +144,8 @@ public class DbAccessManager {
     if (this.cache.containsKey(categoryId)) {
       categoryItem = this.cache.get(categoryId);
     } else {
-      categoryItem = this.usersTable.getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
+      categoryItem = this.categoriesTable
+          .getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
       this.cache.put(categoryId, categoryItem);
     }
 

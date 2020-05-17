@@ -1,7 +1,7 @@
-package DbMaintenance.controllers;
+package dbMaintenance.controllers;
 
-import DbMaintenance.handlers.KeyUserRatingsByVersionHandler;
-import DbMaintenance.modules.MaintenanceInjector;
+import dbMaintenance.handlers.KeyUserRatingsByVersionHandler;
+import dbMaintenance.modules.MaintenanceInjector;
 import controllers.ApiRequestController;
 import exceptions.MissingApiRequestKeyException;
 import java.util.Map;

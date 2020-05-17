@@ -1,4 +1,4 @@
-package DbMaintenance.controllers;
+package dbMaintenance.controllers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -7,30 +7,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import controllers.ApiRequestController;
-import controllers.CreateNewGroupController;
-import controllers.DeleteCategoryController;
-import controllers.DeleteGroupController;
-import controllers.EditCategoryController;
-import controllers.EditGroupController;
-import controllers.GetBatchOfEventsController;
-import controllers.GetCategoriesController;
-import controllers.GetGroupController;
-import controllers.GetUserDataController;
-import controllers.LeaveGroupController;
-import controllers.MarkAllEventsSeenController;
-import controllers.MarkEventAsSeenController;
-import controllers.NewCategoryController;
-import controllers.NewEventController;
-import controllers.OptUserInOutController;
-import controllers.RegisterPushEndpointController;
-import controllers.RejoinGroupController;
-import controllers.SetUserGroupMuteController;
-import controllers.UnregisterPushEndpointController;
-import controllers.UpdateSortSettingController;
-import controllers.UpdateUserChoiceRatingsController;
-import controllers.UpdateUserSettingsController;
-import controllers.VoteForChoiceController;
-import controllers.WarmingController;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +27,7 @@ public class DbMaintenanceController implements
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
-    final String classMethod = "ProxyPostHandler.handleRequest";
+    final String classMethod = "DbMaintenanceController.handleRequest";
 
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     metrics.commonSetup(classMethod);

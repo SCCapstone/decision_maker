@@ -1,7 +1,7 @@
-package DbMaintenance.modules;
+package dbMaintenance.modules;
 
-import DbMaintenance.Managers.MaintenanceDbAccessManager;
-import DbMaintenance.handlers.KeyUserRatingsByVersionHandler;
+import dbMaintenance.managers.MaintenanceDbAccessManager;
+import dbMaintenance.handlers.KeyUserRatingsByVersionHandler;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;

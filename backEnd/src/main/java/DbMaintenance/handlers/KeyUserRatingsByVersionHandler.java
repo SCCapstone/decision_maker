@@ -1,12 +1,13 @@
-package DbMaintenance.handlers;
+package dbMaintenance.handlers;
 
-import DbMaintenance.Managers.MaintenanceDbAccessManager;
+import dbMaintenance.managers.MaintenanceDbAccessManager;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.google.common.collect.ImmutableMap;
 import handlers.ApiRequestHandler;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import javax.inject.Inject;
@@ -43,6 +44,11 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
 
         try {
           final String username = userItem.getString(User.USERNAME);
+
+          if (username.equals("johnplaysgolf")) {
+            continue; // I tested on this user, so no need to reprocess
+          }
+
           final Map<String, Object> oldUserRatings = userItem.getMap(User.CATEGORY_RATINGS);
 
           for (final String categoryId : oldUserRatings.keySet()) {
@@ -60,7 +66,7 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
                     .get(categoryId);
 
                 final Map versionToRatingsMap = ImmutableMap
-                    .of(category.getVersion(), choiceToRatings);
+                    .of(category.getVersion().toString(), choiceToRatings);
 
                 final String updateExpression =
                     "Set " + User.CATEGORY_RATINGS + ".#categoryId = :versionMap";
@@ -87,6 +93,7 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
               }
             } catch (final Exception e) {
               this.metrics.log(new ErrorDescriptor<>(username + " " + categoryId, classMethod, e));
+              resultStatus = ResultStatus.failure("Exception in " + classMethod);
             }
           }
         } catch (final Exception e) {

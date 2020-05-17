@@ -114,14 +114,6 @@
 
     <!-- Build settings -->
     <build>
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>src/main/java/DbMaintenance</directory>-->
-<!--                <excludes>-->
-<!--                    <exclude>**/*</exclude>-->
-<!--                </excludes>-->
-<!--            </resource>-->
-<!--        </resources>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -156,7 +148,7 @@
                     <source>8</source>
                     <target>8</target>
                     <excludes>
-                        <exclude>src/main/java/DbMaintenance/**</exclude>
+                        <exclude>src/main/java/dbMaintenance/**</exclude>
                     </excludes>
                     <annotationProcessorPaths>
                         <path>

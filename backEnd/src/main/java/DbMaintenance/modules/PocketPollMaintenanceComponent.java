@@ -1,6 +1,6 @@
-package DbMaintenance.modules;
+package dbMaintenance.modules;
 
-import DbMaintenance.controllers.KeyUserRatingsByVersionController;
+import dbMaintenance.controllers.KeyUserRatingsByVersionController;
 import dagger.Component;
 import javax.inject.Singleton;
 

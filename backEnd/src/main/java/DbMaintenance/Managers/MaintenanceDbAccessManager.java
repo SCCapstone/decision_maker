@@ -1,4 +1,4 @@
-package DbMaintenance.Managers;
+package dbMaintenance.managers;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package DbMaintenance.modules;
+package dbMaintenance.modules;
 
 import utilities.Metrics;
 
