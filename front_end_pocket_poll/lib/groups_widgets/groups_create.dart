@@ -14,6 +14,7 @@ import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/widgets/category_pick.dart';
 import 'package:front_end_pocket_poll/widgets/members_page.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreateGroup extends StatefulWidget {
@@ -68,7 +69,7 @@ class _CreateGroupState extends State<CreateGroup> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Add New Group"),
+          title: Text("Create New Group"),
         ),
         key: Key("groups_create:scaffold"),
         body: Form(
@@ -95,7 +96,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     },
                     key: Key("groups_create:group_name_input"),
                     decoration: InputDecoration(
-                        labelText: "Enter a group name", counterText: ""),
+                        labelText: "Enter group name", counterText: ""),
                   ),
                   Padding(
                     padding: EdgeInsets.all(
@@ -142,7 +143,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     },
                     key: Key("groups_create:consider_input"),
                     decoration: InputDecoration(
-                        labelText: "Enter a default consider duration (mins)",
+                        labelText: "Enter default consider duration (mins)",
                         counterText: ""),
                   ),
                   TextFormField(
@@ -163,7 +164,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     },
                     key: Key("groups_create:vote_input"),
                     decoration: InputDecoration(
-                        labelText: "Enter a default voting duration (mins)",
+                        labelText: "Enter default voting duration (mins)",
                         counterText: ""),
                   ),
                   Row(
@@ -278,14 +279,26 @@ class _CreateGroupState extends State<CreateGroup> {
   // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIcon = await ImagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 75,
-        maxWidth: 600,
-        maxHeight: 600);
+        source: ImageSource.gallery, imageQuality: 75);
 
-    setState(() {
-      this.groupIcon = newIcon;
-    });
+    if (newIcon != null) {
+      // user successfully picked an image, so now allow them to crop it
+      File croppedImage = await ImageCropper.cropImage(
+          sourcePath: newIcon.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          compressQuality: 100,
+          maxHeight: 600,
+          maxWidth: 600,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Globals.pocketPollGreen,
+              toolbarTitle: "Crop Image"));
+      if (croppedImage != null) {
+        setState(() {
+          this.groupIcon = croppedImage;
+        });
+      }
+    }
   }
 
   /*

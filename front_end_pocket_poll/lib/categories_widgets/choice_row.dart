@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
-import 'package:numberpicker/numberpicker.dart';
 
 class ChoiceRow extends StatefulWidget {
   final String choiceNumber;
@@ -26,6 +27,25 @@ class ChoiceRow extends StatefulWidget {
 }
 
 class _ChoiceRowState extends State<ChoiceRow> {
+  FocusNode ratingsFocus;
+  int rating;
+  final String ratingRegex =
+      "[${Globals.minChoiceRating}-${Globals.maxChoiceRating}]";
+
+  @override
+  void initState() {
+    this.rating = int.parse(widget.rateController.text);
+    this.ratingsFocus = new FocusNode();
+    this.ratingsFocus.addListener(() {
+      // highlight the rating any time the rating field gains focus
+      widget.rateController.value = widget.rateController.value.copyWith(
+        selection: TextSelection(baseOffset: 0, extentOffset: 1),
+        composing: TextRange.empty,
+      );
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -42,17 +62,50 @@ class _ChoiceRowState extends State<ChoiceRow> {
             textCapitalization: TextCapitalization.sentences,
             focusNode: widget.focusNode,
             controller: widget.labelController,
-            decoration: InputDecoration(labelText: "Choice", counterText: ""),
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+                labelStyle: TextStyle(fontSize: 15),
+                labelText: "Choice",
+                counterText: "",
+                helperText: " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
+            onFieldSubmitted: (val) {
+              FocusScope.of(context).requestFocus(this.ratingsFocus);
+            },
           ),
         ),
-        RaisedButton.icon(
-          icon: Icon(Icons.edit),
-          label: Text("Rating: " + widget.rateController.text),
-          key: Key("choice_row:ratings_button:${widget.choiceNumber}"),
-          onPressed: () {
-            displayRateSelector();
-          },
+        Container(
+          width: MediaQuery.of(context).size.width * .23,
+          child: TextFormField(
+            onChanged: (val) {
+              if (val.isEmpty) {
+                // if the user puts in an invalid number, it will be empty, so just use the last rating saved
+                widget.rateController.text = this.rating.toString();
+                hideKeyboard(context);
+              } else {
+                this.rating = int.parse(val);
+                hideKeyboard(context);
+                widget.checkForChange();
+              }
+            },
+            validator: validChoiceRating,
+            focusNode: this.ratingsFocus,
+            controller: widget.rateController,
+            maxLength: Globals.maxChoiceRatingDigits,
+            maxLines: 1,
+            inputFormatters: [
+              WhitelistingTextInputFormatter(RegExp(this.ratingRegex))
+            ],
+            enableInteractiveSelection: false,
+            keyboardType: TextInputType.number,
+            key: Key("choice_row:rating_input:${widget.choiceNumber}"),
+            decoration: InputDecoration(
+                labelStyle: TextStyle(fontSize: 15),
+                labelText:
+                    "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
+                counterText: "",
+                helperText: " "),
+          ),
         ),
         Visibility(
           // if user is not the category owner, they cannot delete choices
@@ -68,24 +121,5 @@ class _ChoiceRowState extends State<ChoiceRow> {
         )
       ],
     );
-  }
-
-  // displays a popup for allowing the users to pick a rating for the given choice
-  void displayRateSelector() {
-    showDialog<int>(
-        context: this.context,
-        builder: (BuildContext context) {
-          return NumberPickerDialog.integer(
-            minValue: 0,
-            maxValue: 5,
-            title: Text("Rate this choice:"),
-            initialIntegerValue: int.parse(widget.rateController.text),
-          );
-        }).then((int value) {
-      if (value != null) {
-        setState(() => widget.rateController.text = value.toString());
-        widget.checkForChange();
-      }
-    });
   }
 }

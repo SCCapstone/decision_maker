@@ -51,7 +51,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             },
                             key: Key("favorites_page:username_input"),
                             decoration: InputDecoration(
-                              labelText: "Enter a username to add",
+                              labelText: "Enter username to add",
                               counterText: "",
                             )),
                       ),

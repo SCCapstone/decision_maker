@@ -12,6 +12,7 @@ import 'package:front_end_pocket_poll/models/member.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/widgets/members_page.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 class GroupSettings extends StatefulWidget {
@@ -128,16 +129,19 @@ class _GroupSettingsState extends State<GroupSettings> {
             actions: <Widget>[
               Visibility(
                 visible: this.editing && this.canEdit,
-                child: RaisedButton.icon(
-                    color: Colors.blue,
-                    onPressed: () {
-                      if (this.canEdit) {
-                        attemptSave();
-                      }
-                    },
-                    key: Key("group_settings:save_button"),
-                    icon: Icon(Icons.save),
-                    label: Text("Save")),
+                child: FlatButton(
+                  child: Text(
+                    "SAVE",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  key: Key("group_settings:save_button"),
+                  textColor: Colors.black,
+                  onPressed: () {
+                    if (this.canEdit) {
+                      attemptSave();
+                    }
+                  },
+                ),
               ),
               Visibility(
                   visible: !this.canEdit,
@@ -561,16 +565,25 @@ class _GroupSettingsState extends State<GroupSettings> {
   // uses the OS of the device to pick an image, we compress it before sending it
   Future getImage() async {
     File newIconFile = await ImagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 75,
-        maxWidth: 600,
-        maxHeight: 600);
+        source: ImageSource.gallery, imageQuality: 75);
 
     if (newIconFile != null) {
-      // only save if the user actually picked a picture
-      this.newIcon = true;
-      this.icon = newIconFile;
-      showSaveButton();
+      // user successfully picked an image, so now allow them to crop it
+      File croppedImage = await ImageCropper.cropImage(
+          sourcePath: newIconFile.path,
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+          compressQuality: 100,
+          maxHeight: 600,
+          maxWidth: 600,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Globals.pocketPollGreen,
+              toolbarTitle: "Crop Image"));
+      if (croppedImage != null) {
+        this.icon = croppedImage;
+        this.newIcon = true;
+        showSaveButton();
+      }
     }
   }
 
@@ -584,14 +597,14 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                   Navigator.of(context).pop();
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
@@ -613,7 +626,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Leave group?"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("group_settings:leave_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -621,14 +634,14 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },
               )
             ],
             content:
-                Text("Are you sure you wish to leave the group: $groupName?"),
+                Text("Are you sure you wish to leave the group \"$groupName\"?"),
           );
         });
   }
@@ -642,7 +655,7 @@ class _GroupSettingsState extends State<GroupSettings> {
             title: Text("Delete"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("group_settings:delete_confirm"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
@@ -650,7 +663,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop('dialog');
                 },

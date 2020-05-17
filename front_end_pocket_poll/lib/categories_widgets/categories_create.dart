@@ -27,8 +27,6 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   int nextChoiceValue;
   bool autoValidate;
-  FocusNode focusNode;
-  ChoiceRow currentChoice;
 
   @override
   void dispose() {
@@ -53,6 +51,7 @@ class _CreateCategoryState extends State<CreateCategory> {
 
     ChoiceRow choice = new ChoiceRow(
         "1", true, initLabelController, initRatingController,
+        focusNode: new FocusNode(),
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -60,11 +59,6 @@ class _CreateCategoryState extends State<CreateCategory> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.currentChoice != null) {
-      // this allows for the keyboard to be displayed when clicking new choice button
-      this.currentChoice.requestFocus(context);
-      this.currentChoice = null;
-    }
     return WillPopScope(
       onWillPop: handleBackPress,
       child: GestureDetector(
@@ -82,11 +76,13 @@ class _CreateCategoryState extends State<CreateCategory> {
                 overflow: TextOverflow.ellipsis,
               ),
               actions: <Widget>[
-                RaisedButton.icon(
-                  icon: Icon(Icons.save),
-                  label: Text("Save"),
+                FlatButton(
+                  child: Text(
+                    "SAVE",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   key: Key("categories_create:save_button"),
-                  color: Colors.blue,
+                  textColor: Colors.black,
                   onPressed: saveCategory,
                 ),
               ],
@@ -114,6 +110,12 @@ class _CreateCategoryState extends State<CreateCategory> {
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),
+                          onFieldSubmitted: (val) {
+                            // on enter, move focus to the first choice row
+                            if (this.choiceRows.isNotEmpty) {
+                              this.choiceRows[0].requestFocus(context);
+                            }
+                          },
                           decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: "Category Name",
@@ -153,38 +155,46 @@ class _CreateCategoryState extends State<CreateCategory> {
               child: Icon(Icons.add),
               key: Key("categories_create:add_choice_button"),
               onPressed: () {
-                setState(() {
-                  this.focusNode = new FocusNode();
-                  TextEditingController labelController =
-                      new TextEditingController();
-                  TextEditingController rateController =
-                      new TextEditingController();
-                  rateController.text = this.defaultRate.toString();
+                FocusNode focusNode = new FocusNode();
+                TextEditingController labelController =
+                    new TextEditingController();
+                TextEditingController rateController =
+                    new TextEditingController();
+                rateController.text = this.defaultRate.toString();
 
-                  ChoiceRow choice = new ChoiceRow(
-                    this.nextChoiceValue.toString(),
-                    true,
-                    labelController,
-                    rateController,
-                    deleteChoice: (choice) => deleteChoice(choice),
-                    focusNode: this.focusNode,
-                  );
-                  this.currentChoice = choice;
+                ChoiceRow choice = new ChoiceRow(
+                  this.nextChoiceValue.toString(),
+                  true,
+                  labelController,
+                  rateController,
+                  deleteChoice: (choice) => deleteChoice(choice),
+                  focusNode: focusNode,
+                );
+                setState(() {
                   this.choiceRows.add(choice);
                   this.nextChoiceValue++;
-                  // allow the list to automatically scroll down as it grows
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    this.scrollController.animateTo(
-                          this.scrollController.position.maxScrollExtent,
-                          duration: const Duration(microseconds: 100),
-                          curve: Curves.easeOut,
-                        );
-                  });
                 });
+                SchedulerBinding.instance
+                    .addPostFrameCallback((_) => scrollToBottom(choice));
               },
             )),
       ),
     );
+  }
+
+  // scrolls to the bottom of the listview of all the choices
+  void scrollToBottom(ChoiceRow choiceRow) async {
+    await this
+        .scrollController
+        .animateTo(
+          this.scrollController.position.maxScrollExtent,
+          duration: const Duration(microseconds: 100),
+          curve: Curves.easeOut,
+        )
+        .then((_) {
+      // at the bottom of the list now, so request the focus of the choice row
+      choiceRow.requestFocus(context);
+    });
   }
 
   /*
@@ -214,7 +224,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             title: Text("Unsaved changes"),
             actions: <Widget>[
               FlatButton(
-                child: Text("Yes"),
+                child: Text("YES"),
                 key: Key("categories_create:confirm_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
@@ -222,7 +232,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                 },
               ),
               FlatButton(
-                child: Text("No"),
+                child: Text("NO"),
                 key: Key("categories_create:denial_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');

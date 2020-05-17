@@ -125,6 +125,22 @@ String validChoiceName(String input) {
   return retVal;
 }
 
+String validChoiceRating(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  try {
+    int num = int.parse(input);
+    if (num < Globals.minChoiceRating) {
+      retVal = "(${Globals.minChoiceRating}-${Globals.maxChoiceRating})";
+    } else if (num > Globals.maxChoiceRating) {
+      retVal = "(${Globals.minChoiceRating}-${Globals.maxChoiceRating})";
+    }
+  } catch (e) {
+    retVal = "Invalid";
+  }
+  return retVal;
+}
+
 String validCategoryName(String input, {String categoryId}) {
   input = input.trim(); // sanity check trim
   String retVal;

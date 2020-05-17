@@ -144,7 +144,7 @@ class _CreateEventState extends State<CreateEvent> {
                       },
                       key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
-                          labelText: "Enter an event name", counterText: ""),
+                          labelText: "Enter event name", counterText: ""),
                     ),
                     Row(
                       children: <Widget>[

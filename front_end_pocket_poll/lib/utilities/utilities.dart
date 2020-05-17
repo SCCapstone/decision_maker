@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
+import 'package:front_end_pocket_poll/models/favorite.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 
@@ -122,7 +123,7 @@ void showErrorMessage(
           key: Key("utilities:error_message_popup"),
           actions: <Widget>[
             FlatButton(
-              child: Text("Ok"),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -143,7 +144,7 @@ void showHelpMessage(String helpTitle, String helpMsg, BuildContext context) {
           key: Key("utilities:help_message_popup"),
           actions: <Widget>[
             FlatButton(
-              child: Text("Ok"),
+              child: Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -181,8 +182,48 @@ void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
       });
 }
 
-// shows a blown up image of a user icon
-void showUserImage(ImageProvider image, BuildContext buildContext) {
+// shows a blown up image of another user. Allows for adding said user to favorites
+void showUserImage(Favorite user, BuildContext buildContext) {
+  bool showFavoriteButton = user.username != Globals.username;
+  if (showFavoriteButton) {
+    for (Favorite favorite in Globals.user.favorites) {
+      if (favorite.username == user.username) {
+        showFavoriteButton = false;
+        break;
+      }
+    }
+  }
+
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          content: Image(image: getUserIconImage(user.icon)),
+          title: Text("${user.displayName} (@${user.username})"),
+          actions: <Widget>[
+            Visibility(
+              visible: showFavoriteButton,
+              child: FlatButton(
+                child: Text("ADD TO FAVORITES"),
+                onPressed: () {
+                  // TODO add to favorites as a blind send
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+            FlatButton(
+              child: Text("RETURN"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      });
+}
+
+// shows a blown up image of active user. Static image for now
+void showActiveUserImage(ImageProvider image, BuildContext buildContext) {
   showDialog(
       context: buildContext,
       builder: (context) {
@@ -190,7 +231,7 @@ void showUserImage(ImageProvider image, BuildContext buildContext) {
           content: Image(image: image),
           actions: <Widget>[
             FlatButton(
-              child: Text("Return"),
+              child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -209,7 +250,7 @@ void showGroupImage(ImageProvider image, BuildContext buildContext) {
           content: Image(image: image),
           actions: <Widget>[
             FlatButton(
-              child: Text("Return"),
+              child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -219,6 +260,7 @@ void showGroupImage(ImageProvider image, BuildContext buildContext) {
       });
 }
 
+// hides the user input keyboard if it is already open
 void hideKeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(new FocusNode());
 }

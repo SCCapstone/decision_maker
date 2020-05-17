@@ -21,7 +21,6 @@ dependencies:
     sdk: flutter
   http: ^0.12.0+2
   shared_preferences: ^0.5.4
-  numberpicker: 1.1.0
   intl: 0.16.0
   smooth_page_indicator: ^0.1.3
   amazon_cognito_identity_dart: ^0.0.22
@@ -37,6 +36,7 @@ dependencies:
   fluttertoast: ^4.0.0
   flutter_launcher_icons: ^0.7.4
   add_2_calendar: ^1.4.0
+  image_cropper: ^1.2.2
 
 flutter_icons:
   image_path_android: "assets/icon/calendarAlphaBoarder.png"

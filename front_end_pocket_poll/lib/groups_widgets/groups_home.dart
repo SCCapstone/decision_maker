@@ -761,10 +761,56 @@ class _GroupsHomeState extends State<GroupsHome>
 
   /*
     This is called when the user clicks on a notification when the app is in the background.
-    
-    Currently not implemented because it is very involved to make processes run correctly in the background
    */
-  Future<void> _onResume(Map<String, dynamic> message) async {
+  Future<void> _onResume(Map<String, dynamic> notificationRaw) async {
+    try {
+      final Message notification = Message.fromJSON(notificationRaw);
+
+      if (notification.title != null && notification.body != null) {
+        Fluttertoast.showToast(
+            msg: "${notification.title}\n${notification.body}",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER);
+      }
+
+      if (notification.action == Globals.removedFromGroupAction) {
+        String groupId = notification.payload[GroupsManager.GROUP_ID];
+        if (Globals.currentGroup == null) {
+          // this avoids the current page flashing for a second, don't need to pop if already here
+          refreshList();
+        } else if (Globals.currentGroup.groupId == groupId) {
+          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+          Globals.user.groups.remove(Globals.currentGroup.groupId);
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      } else if (notification.action == Globals.addedToGroupAction) {
+        if (ModalRoute.of(context).isCurrent) {
+          // only refresh if this widget is visible
+          refreshList();
+        }
+      } else {
+        // event updates
+        String groupId = notification.payload[GroupsManager.GROUP_ID];
+        String eventId = notification.payload[EventsManager.EVENT_ID];
+        String date = notification.payload[GroupsManager.LAST_ACTIVITY];
+        if (Globals.user.groups[groupId] != null) {
+          Globals.user.groups[groupId].eventsUnseen
+              .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].lastActivity = date;
+        }
+        if (Globals.refreshGroupPage != null) {
+          // the refresh callback has been properly set, so refresh the current global group
+          Globals.refreshGroupPage();
+        }
+        if (ModalRoute.of(context).isCurrent) {
+          // only update groups home if it actually visible
+          loadGroups();
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      //do nothing
+    }
     return;
   }
 // endregion

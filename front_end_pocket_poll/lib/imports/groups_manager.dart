@@ -153,7 +153,7 @@ class GroupsManager {
       } catch (e) {
         retVal.errorMessage = "Unable to create group.";
       }
-    } else if (retVal.networkError) {
+    } else if (response.networkError) {
       retVal.errorMessage =
           "Network error. Unable to create group. Check internet connection.";
     } else {

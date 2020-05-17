@@ -38,7 +38,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
       title: Text("Select Category"),
       actions: <Widget>[
         FlatButton(
-          child: Text("Done"),
+          child: Text("DONE"),
           key: Key("category_popup_single:done_button"),
           onPressed: () {
             Navigator.of(context, rootNavigator: true)
