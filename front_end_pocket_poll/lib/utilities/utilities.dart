@@ -185,9 +185,12 @@ void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
 // shows a blown up image of another user. Allows for adding said user to favorites
 void showUserImage(Favorite user, BuildContext buildContext) {
   bool showFavoriteButton = user.username != Globals.username;
-  for (Favorite favorite in Globals.user.favorites) {
-    if (favorite.username == user.username) {
-      showFavoriteButton = false;
+  if (showFavoriteButton) {
+    for (Favorite favorite in Globals.user.favorites) {
+      if (favorite.username == user.username) {
+        showFavoriteButton = false;
+        break;
+      }
     }
   }
 
