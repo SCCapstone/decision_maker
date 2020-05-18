@@ -83,14 +83,16 @@ public class EditCategoryHandler implements ApiRequestHandler {
         //get the update data to entered the ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult =
             this.updateUserChoiceRatingsHandler
-                .handle(activeUser, categoryId, userRatings, false, categoryName);
+                .handle(activeUser, categoryId, newCategory.getVersion(), userRatings, false,
+                    categoryName);
 
         if (updatedUsersTableResult.success) {
           actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
 
           this.dbAccessManager.executeWriteTransaction(actions);
 
-          resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
+          resultStatus = ResultStatus
+              .successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
         } else {
           resultStatus = ResultStatus.failure("Error in dependency.");
           resultStatus.applyResultStatus(updatedUsersTableResult);
@@ -136,7 +138,7 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
   private Optional<String> editCategoryIsValid(final Category editCategory,
       final Category oldCategory, final String activeUser) {
-    final String classMethod = "CategoryManager.editCategoryIsValid";
+    final String classMethod = "EditCategoryHandler.editCategoryIsValid";
     this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;

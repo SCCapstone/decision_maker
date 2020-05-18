@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import models.Category;
@@ -44,13 +45,16 @@ public class DbAccessManager {
   public static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
   public static final String DELIM = ";";
 
+  //making protected for extended classes
   private final Table groupsTable;
-  private final Table usersTable;
+  protected final Table usersTable;
   private final Table categoriesTable;
   private final Table pendingEventsTable;
 
   private final AmazonDynamoDBClient client;
   private final DateTimeFormatter dateTimeFormatter;
+
+  private final HashMap<String, Item> cache;
 
   public DbAccessManager() {
     final Regions region = Regions.US_EAST_2;
@@ -66,6 +70,8 @@ public class DbAccessManager {
     this.usersTable = dynamoDb.getTable(USERS_TABLE_NAME);
     this.categoriesTable = dynamoDb.getTable(CATEGORIES_TABLE_NAME);
     this.pendingEventsTable = dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
+
+    this.cache = new HashMap<>();
   }
 
   public String now() {
@@ -83,11 +89,27 @@ public class DbAccessManager {
 
   public User getUser(final String username)
       throws NullPointerException, InvalidAttributeValueException {
-    return new User(this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username)));
+    Item userItem;
+    if (this.cache.containsKey(username)) {
+      userItem = this.cache.get(username);
+    } else {
+      userItem = this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
+      this.cache.put(username, userItem);
+    }
+
+    return new User(userItem);
   }
 
   public Item getUserItem(final String username) throws NullPointerException {
-    return this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
+    Item userItem;
+    if (this.cache.containsKey(username)) {
+      userItem = this.cache.get(username);
+    } else {
+      userItem = this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
+      this.cache.put(username, userItem);
+    }
+
+    return userItem;
   }
 
   public UpdateItemOutcome updateUser(final String username, final UpdateItemSpec updateItemSpec) {
@@ -105,12 +127,29 @@ public class DbAccessManager {
   }
 
   public Category getCategory(final String categoryId) throws NullPointerException {
-    return new Category(
-        this.categoriesTable.getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId)));
+    Item categoryItem;
+    if (this.cache.containsKey(categoryId)) {
+      categoryItem = this.cache.get(categoryId);
+    } else {
+      categoryItem = this.categoriesTable
+          .getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
+      this.cache.put(categoryId, categoryItem);
+    }
+
+    return new Category(categoryItem);
   }
 
-  public Map<String, Object> getCategoryMap(final String categoryId) {
-    return this.getCategory(categoryId).asMap();
+  public Item getCategoryItem(final String categoryId) throws NullPointerException {
+    Item categoryItem;
+    if (this.cache.containsKey(categoryId)) {
+      categoryItem = this.cache.get(categoryId);
+    } else {
+      categoryItem = this.categoriesTable
+          .getItem(new PrimaryKey(CATEGORIES_PRIMARY_KEY, categoryId));
+      this.cache.put(categoryId, categoryItem);
+    }
+
+    return categoryItem;
   }
 
   public UpdateItemOutcome updateCategory(final String categoryId,
@@ -181,6 +220,7 @@ public class DbAccessManager {
     descriptions.add(this.groupsTable.describe());
     descriptions.add(this.usersTable.describe());
     descriptions.add(this.categoriesTable.describe());
+    descriptions.add(this.pendingEventsTable.describe());
     return descriptions;
   }
 

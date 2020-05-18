@@ -47,10 +47,10 @@ public class NewCategoryHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final String nextCategoryIndex = UUID.randomUUID().toString();
+      final String categoryId = UUID.randomUUID().toString();
 
       final Category newCategory = new Category();
-      newCategory.setCategoryId(nextCategoryIndex);
+      newCategory.setCategoryId(categoryId);
       newCategory.setCategoryName(categoryName);
       newCategory.setVersion(DEFAULT_CATEGORY_VERSION);
       newCategory.setOwner(activeUser);
@@ -62,8 +62,8 @@ public class NewCategoryHandler implements ApiRequestHandler {
       if (!errorMessage.isPresent()) {
         //get the update data for entering the user ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult = this.updateUserChoiceRatingsHandler
-            .handle(activeUser, newCategory.getCategoryId(), userRatings, false, categoryName,
-                true);
+            .handle(activeUser, categoryId, DEFAULT_CATEGORY_VERSION, userRatings, false,
+                categoryName, true);
 
         if (updatedUsersTableResult.success) {
           final List<TransactWriteItem> actions = new ArrayList<>();
@@ -96,7 +96,7 @@ public class NewCategoryHandler implements ApiRequestHandler {
   }
 
   private Optional<String> newCategoryIsValid(final Category newCategory) {
-    final String classMethod = "CategoryManager.newCategoryIsValid";
+    final String classMethod = "NewCategoryHandler.newCategoryIsValid";
     this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;

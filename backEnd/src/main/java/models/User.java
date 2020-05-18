@@ -1,9 +1,13 @@
 package models;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
@@ -23,7 +27,6 @@ public class User {
   public static final String FAVORITE_OF = "FavoriteOf";
   public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
   public static final String EVENTS_UNSEEN = "EventsUnseen";
-  public static final String FIRST_LOGIN = "FirstLogin";
 
   private String username;
   private String displayName;
@@ -36,7 +39,7 @@ public class User {
   @Setter(AccessLevel.NONE)
   private Map<String, Group> groupsLeft;
   @Setter(AccessLevel.NONE)
-  private Map<String, Map<String, Integer>> categoryRatings;
+  private Map<String, UserRatings> categoryRatings;
   @Setter(AccessLevel.NONE)
   private Map<String, String> ownedCategories;
   @Setter(AccessLevel.NONE)
@@ -61,6 +64,66 @@ public class User {
     this.setOwnedCategories((Map<String, Object>) jsonMap.get(OWNED_CATEGORIES));
     this.setFavoriteOf((Map<String, Object>) jsonMap.get(FAVORITE_OF));
     this.setFavorites((Map<String, Object>) jsonMap.get(FAVORITES));
+  }
+
+  public Map<String, Object> asMap() {
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(USERNAME, this.username);
+    modelAsMap.putIfAbsent(DISPLAY_NAME, this.displayName);
+    modelAsMap.putIfAbsent(ICON, this.icon);
+    modelAsMap.putIfAbsent(PUSH_ENDPOINT_ARN, this.pushEndpointArn);
+    modelAsMap.putIfAbsent(APP_SETTINGS, this.appSettings.asMap());
+    modelAsMap.putIfAbsent(GROUPS, this.getGroupsMap());
+    modelAsMap.putIfAbsent(GROUPS_LEFT, this.getGroupsLeftMap());
+    modelAsMap.putIfAbsent(CATEGORY_RATINGS, this.getCategoryRatingsMap());
+    modelAsMap.putIfAbsent(OWNED_CATEGORIES, this.ownedCategories);
+    modelAsMap.putIfAbsent(FAVORITE_OF, this.favoriteOf);
+    modelAsMap.putIfAbsent(FAVORITES, this.getFavoritesMap());
+    return modelAsMap;
+  }
+
+  public Map<String, Map<String, Object>> getGroupsMap() {
+    if (this.groups == null) {
+      return null;
+    }
+
+    return this.groups.entrySet().stream().collect(
+        collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry<String, UserGroup> e) -> e.getValue().asMap()),
+            HashMap::new));
+  }
+
+  public Map<String, Map<String, Object>> getGroupsLeftMap() {
+    if (this.groupsLeft == null) {
+      return null;
+    }
+
+    return this.groupsLeft.entrySet().stream().collect(
+        collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry<String, Group> e) -> e.getValue().asMap()),
+            HashMap::new));
+  }
+
+  public Map<String, Map<String, Object>> getFavoritesMap() {
+    if (this.favorites == null) {
+      return null;
+    }
+
+    return this.favorites.entrySet().stream().collect(
+        collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry<String, Favorite> e) -> e.getValue().asMap()),
+            HashMap::new));
+  }
+
+  public Map<String, Map<String, Object>> getCategoryRatingsMap() {
+    if (this.categoryRatings == null) {
+      return null;
+    }
+
+    return this.categoryRatings.entrySet().stream().collect(
+        collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry<String, UserRatings> e) -> e.getValue().asMap()),
+            HashMap::new));
   }
 
   public Member asMember() {
@@ -92,13 +155,8 @@ public class User {
     if (jsonMap != null) {
       this.categoryRatings = new HashMap<>();
       for (String categoryId : jsonMap.keySet()) {
-        final Map<String, Object> choiceRatings = (Map<String, Object>) jsonMap.get(categoryId);
-        final Map<String, Integer> choiceRatingsConverted = new HashMap<>();
-        for (String choiceId : choiceRatings.keySet()) {
-          choiceRatingsConverted
-              .putIfAbsent(choiceId, getIntFromObject(choiceRatings.get(choiceId)));
-        }
-        this.categoryRatings.putIfAbsent(categoryId, choiceRatingsConverted);
+        this.categoryRatings.putIfAbsent(categoryId,
+            new UserRatings((Map<String, Object>) jsonMap.get(categoryId)));
       }
     }
   }
@@ -132,13 +190,6 @@ public class User {
             .putIfAbsent(username, new Favorite((Map<String, Object>) jsonMap.get(username)));
       }
     }
-  }
-
-  private Integer getIntFromObject(final Object input) {
-    if (input != null) {
-      return Integer.parseInt(input.toString());
-    }
-    return null;
   }
 
   public boolean pushEndpointArnIsSet() {

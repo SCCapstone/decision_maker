@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import models.EventWithCategoryChoices;
 import models.User;
+import models.UserRatings;
 
 public class NondeterministicOptimalChoiceSelector {
 
@@ -38,7 +39,9 @@ public class NondeterministicOptimalChoiceSelector {
     List<Map<String, Integer>> allCategoryChoiceRatings = new ArrayList<>();
     for (String username : this.event.getOptedIn().keySet()) {
       allCategoryChoiceRatings.add(
-          this.allUsers.get(username).getCategoryRatings().get(this.event.getCategoryId())
+          this.allUsers.get(username).getCategoryRatings()
+              .getOrDefault(this.event.getCategoryId(), new UserRatings())
+              .getRatings(this.event.getCategoryVersion())
       );
     }
 

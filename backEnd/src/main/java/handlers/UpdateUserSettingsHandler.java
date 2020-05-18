@@ -16,6 +16,7 @@ import managers.S3AccessManager;
 import models.AppSettings;
 import models.Group;
 import models.User;
+import models.UserForApiResponse;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -164,12 +165,8 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
 
         this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser);
 
-        final Item updatedUser = this.dbAccessManager.getUserItem(activeUser);
-        updatedUser.withBoolean(User.FIRST_LOGIN, false);
-        //anytime we return the active user we need to add this
-        //updatedUser.withBoolean(FIRST_LOGIN, false);
-        //TODO convert the user to a return user similar to how we do groups
-
+        final UserForApiResponse updatedUser = new UserForApiResponse(
+            this.dbAccessManager.getUserItem(activeUser));
         resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(updatedUser.asMap()));
       } else {
         metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));

@@ -27,16 +27,22 @@ public class GetCategoriesController implements ApiRequestController {
     try {
       Injector.getInjector(metrics).inject(this);
 
-      if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
-        resultStatus = this.getCategoriesHandler
-            .handle((List<String>) jsonMap.get(RequestFields.CATEGORY_IDS));
-      } else if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
+      if (jsonMap.containsKey(RequestFields.ACTIVE_USER)) {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
 
-        if (jsonMap.containsKey(Group.GROUP_ID)) {
+        if (jsonMap.containsKey(RequestFields.CATEGORY_IDS)) {
+          resultStatus = this.getCategoriesHandler
+              .handle(activeUser, (List<String>) jsonMap.get(RequestFields.CATEGORY_IDS));
+        } else if (jsonMap.containsKey(Group.GROUP_ID)) {
           final String groupId = (String) jsonMap.get(Group.GROUP_ID);
 
-          resultStatus = this.getCategoriesHandler.handle(activeUser, groupId);
+          if (jsonMap.containsKey(RequestFields.EVENT_ID)) {
+            final String eventId = (String) jsonMap.get(RequestFields.EVENT_ID);
+
+            resultStatus = this.getCategoriesHandler.handle(activeUser, groupId, eventId);
+          } else {
+            resultStatus = this.getCategoriesHandler.handle(activeUser, groupId);
+          }
         } else {
           resultStatus = this.getCategoriesHandler.handle(activeUser);
         }

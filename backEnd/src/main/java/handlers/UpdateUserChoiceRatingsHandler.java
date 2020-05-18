@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,19 +45,23 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful
    */
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings, final boolean updateDb) {
-    return this.handle(activeUser, categoryId, ratings, updateDb, null, false);
+      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb) {
+    return this.handle(activeUser, categoryId, categoryVersion, ratings, updateDb, null, false);
   }
 
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings, final boolean updateDb, final String categoryName) {
-    return this.handle(activeUser, categoryId, ratings, updateDb, categoryName, false);
+      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb,
+      final String categoryName) {
+    return this
+        .handle(activeUser, categoryId, categoryVersion, ratings, updateDb, categoryName, false);
   }
 
   //Same doc as above with the addition of the 'isNewCategory' param. This param tell the function
   //that the category has just been created and therefore the active user is the owner
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Map<String, Object> ratings, final boolean updateDb, final String categoryName, final boolean isNewCategory) {
+      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb,
+      final String categoryName,
+      final boolean isNewCategory) {
     final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -70,23 +75,29 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
                 toMap(Entry::getKey, (Map.Entry e) -> Integer.parseInt(e.getValue().toString())),
                 HashMap::new));
 
+        String updateExpression;
+        NameMap nameMap;
+        ValueMap valueMap;
+
         final User user = this.dbAccessManager.getUser(activeUser);
         if (user.getCategoryRatings().containsKey(categoryId)) {
-          //we need to apply the existing ratings to the updated ratings
-          final Map<String, Integer> categoryRatings = user.getCategoryRatings().get(categoryId);
-          for (final String choiceId : categoryRatings.keySet()) {
-            if (!ratingsMapConverted.containsKey(choiceId)) {
-              //we only put it if it ins't there; if it is there, they're overwriting it
-              ratingsMapConverted.put(choiceId, categoryRatings.get(choiceId));
-            }
-          }
+          //we just need to insert the new version to ratings map
+          updateExpression =
+              "set " + User.CATEGORY_RATINGS + ".#categoryId.#version" + " = :map";
+          nameMap = new NameMap()
+              .with("#categoryId", categoryId)
+              .with("#version", categoryVersion.toString());
+          valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
+        } else {
+          //this is the first version being saved -> the entire category to ratings map needs insert
+          updateExpression = "set " + User.CATEGORY_RATINGS + ".#categoryId = :map";
+          nameMap = new NameMap().with("#categoryId", categoryId);
+          valueMap = new ValueMap().withMap(":map", ImmutableMap
+              .of(categoryVersion.toString(), ratingsMapConverted));
         }
 
-        String updateExpression = "set " + User.CATEGORY_RATINGS + ".#categoryId = :map";
-        NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-        ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
-
-        if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId)) && categoryName != null) {
+        if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId))
+            && categoryName != null) {
           updateExpression += ", " + User.OWNED_CATEGORIES + ".#categoryId = :categoryName";
           valueMap.withString(":categoryName", categoryName);
         }
