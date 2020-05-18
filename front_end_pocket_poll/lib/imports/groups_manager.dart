@@ -483,7 +483,7 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          retVal.data = new Category.fromJson(responseJson[0]);
+          retVal.data = new Category.fromJson(responseJson.first());
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";

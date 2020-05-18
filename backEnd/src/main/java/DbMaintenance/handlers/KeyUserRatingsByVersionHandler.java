@@ -29,6 +29,12 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
+  /**
+   * This method loops over all of the users in the users table and updates their category ratings
+   * map by keying their current ratings mapping by the current version of the associated category.
+   *
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle() {
     final String classMethod = "KeyUserRatingsByVersionHandler.handle";
     this.metrics.commonSetup(classMethod);

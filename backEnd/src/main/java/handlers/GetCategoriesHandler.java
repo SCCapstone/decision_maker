@@ -33,6 +33,14 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
+  /**
+   * This method is used to handle the situation where a user needs to get all of the categories for
+   * a specific set of category ids.
+   *
+   * @param activeUser  The user making the api request.
+   * @param categoryIds The list of category ids to get.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final List<String> categoryIds) {
     final String classMethod = "GetCategoriesHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -51,6 +59,13 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     return resultStatus;
   }
 
+  /**
+   * This method is used to handle the situation where a user needs to get all of the categories
+   * that they own.
+   *
+   * @param activeUser The user making the api request.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser) {
     final String classMethod = "GetCategoriesHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -70,6 +85,14 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     return resultStatus;
   }
 
+  /**
+   * This method is used to handle the situation where a user needs to get all of the categories
+   * associated with a group.
+   *
+   * @param activeUser The user making the api request.
+   * @param groupId    The id of the group to get the categories of.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final String groupId) {
     final String classMethod = "GetCategoriesHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -95,6 +118,16 @@ public class GetCategoriesHandler implements ApiRequestHandler {
     return resultStatus;
   }
 
+  /**
+   * This method is used to handle the situation where a user needs to get the category of pending
+   * event. Here, the pending event contains the choices, version, and name of the category in a
+   * snapshot.
+   *
+   * @param activeUser The user making the api request.
+   * @param groupId    The id of the group that the pending event belongs to.
+   * @param eventId    The id of the event to get the associated category for.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final String groupId, final String eventId) {
     final String classMethod = "GetCategoriesHandler.handle";
     this.metrics.commonSetup(classMethod);

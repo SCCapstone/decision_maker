@@ -36,7 +36,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     this.sortVal = Globals.user.appSettings.categorySort;
     this.ownedCategoryRows = new List<CategoryRowGroup>();
     this.groupCategoryRows = new List<CategoryRowGroup>();
-    getCategoriesAndBuildRows();
+    this.getCategoriesAndBuildRows();
     super.initState();
   }
 
@@ -179,7 +179,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                           setState(() {
                             this.loading = true;
                           });
-                          this.getCategoriesAndBuildRows();
+                          this.buildCategoryRows();
                         });
                       },
                     )
@@ -324,32 +324,34 @@ class _GroupCategoriesState extends State<GroupCategories> {
       widget.selectedCategories
           .putIfAbsent(category.categoryId, () => category.categoryName);
     }
-    this.getCategoriesAndBuildRows();
+    this.buildCategoryRows();
   }
 
   /*
     Loads all the categories the group has attached to it. Categories that are
     owned by the active user are set to checked if they are in the group.
    */
-  void getCategoriesAndBuildRows() async {
-    //only query the group categories one time per build of this widget
-    if (this.groupCategories == null) {
-      ResultStatus<List<Category>> resultStatus =
-          await GroupsManager.getAllCategoriesList(
-              Globals.currentGroup.groupId);
-      this.loading = false;
+  Future<void> getCategories() async {
+    ResultStatus<List<Category>> resultStatus =
+        await GroupsManager.getAllCategoriesList(Globals.currentGroup.groupId);
+    this.loading = false;
 
-      if (resultStatus.success) {
+    if (resultStatus.success) {
+      setState(() {
         this.groupCategories = resultStatus.data;
         this.errorLoading = false;
-      } else {
-        setState(() {
-          this.errorWidget = categoriesError(resultStatus.errorMessage);
-          this.errorLoading = true;
-        });
-      }
+      });
+    } else {
+      setState(() {
+        this.errorWidget = categoriesError(resultStatus.errorMessage);
+        this.errorLoading = true;
+      });
     }
+  }
 
+  //this method simply loops over the user's categories and the group's
+  // categories and builds the appropriate category rows
+  void buildCategoryRows() {
     if (!this.errorLoading) {
       this.ownedCategoryRows.clear();
       this.groupCategoryRows.clear();
@@ -363,7 +365,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           this.ownedCategoryRows.add(new CategoryRowGroup(
               category,
               widget.selectedCategories.keys.contains(category.categoryId),
-              getCategoriesAndBuildRows,
+              this.buildCategoryRows,
               widget.canEdit,
               onSelect: () => selectCategory(category),
               index: index));
@@ -378,7 +380,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           this.groupCategoryRows.add(new CategoryRowGroup(
                 category,
                 widget.selectedCategories.keys.contains(category.categoryId),
-                getCategoriesAndBuildRows,
+                this.buildCategoryRows,
                 widget.canEdit,
                 onSelect: () => selectCategory(category),
                 index: index,
@@ -387,9 +389,14 @@ class _GroupCategoriesState extends State<GroupCategories> {
         }
       }
 
-      sortGroupCategoryRows();
-      sortOwnedCategoryRows();
+      this.sortGroupCategoryRows();
+      this.sortOwnedCategoryRows();
       setState(() {});
     }
+  }
+
+  void getCategoriesAndBuildRows() async {
+    await this.getCategories();
+    this.buildCategoryRows();
   }
 }
