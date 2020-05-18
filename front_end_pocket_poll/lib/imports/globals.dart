@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +15,7 @@ class Globals {
   static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
   static DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
   static Group currentGroup;
-  static List<Category> activeUserCategories = new List<Category>();
+  static List<CategoryRatingTuple> cachedCategories = new List<CategoryRatingTuple>();
   static SharedPreferences sharedPrefs;
   static int dateNewestSort = 0;
   static int alphabeticalSort = 1;

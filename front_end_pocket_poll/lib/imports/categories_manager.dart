@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
 
 import 'api_manager.dart';
@@ -78,9 +79,9 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+  static Future<ResultStatus<List<CategoryRatingTuple>>> getCategoriesList(
       {String categoryId}) async {
-    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
@@ -96,12 +97,13 @@ class CategoriesManager {
     if (response.success) {
       try {
         Map<String, dynamic> body = jsonDecode(response.data);
+//        print(body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.data =
-              responseJson.map((m) => new Category.fromJson(m)).toList();
+              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";
