@@ -78,6 +78,13 @@ public class Group implements Model {
     return modelAsItem;
   }
 
+  public Map<String, Object> asGroupLeftMap() {
+    final Map<String, Object> modelAsMap = new HashMap<>();
+    modelAsMap.putIfAbsent(GROUP_NAME, this.groupName);
+    modelAsMap.putIfAbsent(ICON, this.icon);
+    return modelAsMap;
+  }
+
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(GROUP_ID, this.groupId);

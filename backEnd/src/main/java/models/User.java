@@ -100,7 +100,7 @@ public class User {
 
     return this.groupsLeft.entrySet().stream().collect(
         collectingAndThen(
-            toMap(Entry::getKey, (Map.Entry<String, Group> e) -> e.getValue().asMap()),
+            toMap(Entry::getKey, (Map.Entry<String, Group> e) -> e.getValue().asGroupLeftMap()),
             HashMap::new));
   }
 
