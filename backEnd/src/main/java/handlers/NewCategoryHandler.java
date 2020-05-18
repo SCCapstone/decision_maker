@@ -96,7 +96,7 @@ public class NewCategoryHandler implements ApiRequestHandler {
   }
 
   private Optional<String> newCategoryIsValid(final Category newCategory) {
-    final String classMethod = "CategoryManager.newCategoryIsValid";
+    final String classMethod = "NewCategoryHandler.newCategoryIsValid";
     this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;

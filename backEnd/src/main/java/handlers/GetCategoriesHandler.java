@@ -15,6 +15,7 @@ import models.EventWithCategoryChoices;
 import models.Group;
 import models.GroupWithCategoryChoices;
 import models.User;
+import models.UserRatings;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -115,11 +116,12 @@ public class GetCategoriesHandler implements ApiRequestHandler {
           category.setCategoryName(event.getCategoryName());
 
           final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
-              user.getCategoryRatings().get(category.getCategoryId())
+              user.getCategoryRatings().getOrDefault(category.getCategoryId(), new UserRatings())
                   .getRatings(category.getVersion()));
 
           resultStatus = ResultStatus.successful(
-              JsonUtils.convertObjectToJson(Collections.singletonList(categoryRatingTuple)));
+              JsonUtils
+                  .convertObjectToJson(Collections.singletonList(categoryRatingTuple.asMap())));
         } else {
           this.metrics.logWithBody(new WarningDescriptor<>(classMethod, "No choices on event."));
           resultStatus = ResultStatus.failure("Error: No choices on event.");
@@ -147,9 +149,13 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       try {
         final Category category = this.dbAccessManager.getCategory(id);
         final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
-            user.getCategoryRatings().get(id).getRatings(category.getVersion()));
+            user.getCategoryRatings().getOrDefault(id, new UserRatings())
+                .getRatings(category.getVersion()));
         categoryRatingTuples.add(categoryRatingTuple.asMap());
-      } catch (Exception e) {
+      } catch (final NullPointerException npe) {
+        //log warning assuming it's just a bad category id
+        this.metrics.log(new WarningDescriptor<>(id, classMethod, npe));
+      } catch (final Exception e) {
         this.metrics.log(new ErrorDescriptor<>(id, classMethod, e));
       }
     }

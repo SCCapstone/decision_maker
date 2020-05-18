@@ -138,7 +138,7 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
   private Optional<String> editCategoryIsValid(final Category editCategory,
       final Category oldCategory, final String activeUser) {
-    final String classMethod = "CategoryManager.editCategoryIsValid";
+    final String classMethod = "EditCategoryHandler.editCategoryIsValid";
     this.metrics.commonSetup(classMethod);
 
     String errorMessage = null;

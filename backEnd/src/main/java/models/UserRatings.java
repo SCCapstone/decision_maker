@@ -9,6 +9,10 @@ public class UserRatings {
 
   private Map<String, Map<String, Integer>> versionsToRatingMaps;
 
+  public UserRatings() {
+    this.versionsToRatingMaps = new HashMap<>();
+  }
+
   public UserRatings(final Map<String, Object> versionsToRatingMaps) {
     this.setVersionToRatingMapsRaw(versionsToRatingMaps);
   }
@@ -36,7 +40,7 @@ public class UserRatings {
 
   private void setVersionToRatingMapsRaw(final Map<String, Object> versionToRatingMapsRaw) {
     this.versionsToRatingMaps = null;
-    if (this.versionsToRatingMaps != null) {
+    if (versionToRatingMapsRaw != null) {
       this.versionsToRatingMaps = new HashMap<>();
       for (final Map.Entry<String, Object> versionIdToChoiceRatings : versionToRatingMapsRaw
           .entrySet()) {
