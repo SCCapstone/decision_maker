@@ -116,7 +116,7 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 1. cd into the front_end_pocket_poll directory.
 2. From the front_end_pocket_poll directory, to run the tests, run this command: `flutter drive --target=test_driver/app.dart`
 * Note that running this test will disable the keyboard from being able to be used in subsequent launches of the app. After running tests you should uninstall the app and re-install it normally to use it.
-* If any tests fail it is suggested that the tester go in and manually delete any categories/groups that weren't deleted. The tests always delete the first item in the list, so old failed items won't be deleted unless done manually.
+* If any tests fail it is required that the tester go in and manually delete any categories/groups that weren't deleted. The tests always delete the first item in the list, so old failed items won't be deleted unless done manually.
 
 ##### 5.1.3 Location of These Tests
 * Our front end behavioral tests are located at front_end_pocket_poll/test_driver/app_test.dart

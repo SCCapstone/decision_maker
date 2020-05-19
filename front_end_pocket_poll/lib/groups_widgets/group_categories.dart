@@ -7,6 +7,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/widgets/category_row_group.dart';
 
 class GroupCategories extends StatefulWidget {
@@ -27,7 +28,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget errorWidget;
   List<CategoryRowGroup> ownedCategoryRows;
   List<CategoryRowGroup> groupCategoryRows;
-  List<Category> groupCategories;
+  List<CategoryRatingTuple> groupCategories;
 
   @override
   void initState() {
@@ -112,6 +113,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
           ],
         ),
+        resizeToAvoidBottomPadding: false,
         key: Key("group_categories:scaffold"),
         body: Column(
           children: <Widget>[
@@ -287,13 +289,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
   void sortGroupCategoryRows() {
     if (this.sortVal == Globals.alphabeticalSort) {
-      this.groupCategoryRows.sort((a, b) => a.category.categoryName
-          .toLowerCase()
-          .compareTo(b.category.categoryName.toLowerCase()));
+      this.groupCategoryRows.sort((a, b) =>
+          a.category.categoryName.toLowerCase().compareTo(
+              b.category.categoryName.toLowerCase()));
     } else if (this.sortVal == Globals.alphabeticalReverseSort) {
-      this.groupCategoryRows.sort((a, b) => b.category.categoryName
-          .toLowerCase()
-          .compareTo(a.category.categoryName.toLowerCase()));
+      this.groupCategoryRows.sort((a, b) =>
+          b.category.categoryName.toLowerCase().compareTo(
+              a.category.categoryName.toLowerCase()));
     }
   }
 
@@ -332,7 +334,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     owned by the active user are set to checked if they are in the group.
    */
   Future<void> getCategories() async {
-    ResultStatus<List<Category>> resultStatus =
+    ResultStatus<List<CategoryRatingTuple>> resultStatus =
         await GroupsManager.getAllCategoriesList(Globals.currentGroup.groupId);
     this.loading = false;
 
@@ -363,6 +365,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         if (widget.canEdit ||
             Globals.currentGroup.categories.containsKey(category.categoryId)) {
           this.ownedCategoryRows.add(new CategoryRowGroup(
+              null,
               category,
               widget.selectedCategories.keys.contains(category.categoryId),
               this.buildCategoryRows,
@@ -374,15 +377,18 @@ class _GroupCategoriesState extends State<GroupCategories> {
       }
 
       //build the group categories
-      for (Category category in this.groupCategories) {
-        if (!Globals.user.ownedCategories.contains(category)) {
+      for (CategoryRatingTuple categoryRatingTuple in this.groupCategories) {
+        if (!Globals.user.ownedCategories
+            .contains(categoryRatingTuple.category)) {
           // separate the categories of the group that the user doesn't own
           this.groupCategoryRows.add(new CategoryRowGroup(
-                category,
-                widget.selectedCategories.keys.contains(category.categoryId),
+                categoryRatingTuple,
+                categoryRatingTuple.category,
+                widget.selectedCategories.keys
+                    .contains(categoryRatingTuple.category.categoryId),
                 this.buildCategoryRows,
                 widget.canEdit,
-                onSelect: () => selectCategory(category),
+                onSelect: () => selectCategory(categoryRatingTuple.category),
                 index: index,
               ));
           index++;
@@ -395,7 +401,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
     }
   }
 
-  void getCategoriesAndBuildRows() async {
+  Future<void> getCategoriesAndBuildRows() async {
     await this.getCategories();
     this.buildCategoryRows();
   }

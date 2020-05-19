@@ -7,6 +7,7 @@ import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
@@ -294,17 +295,13 @@ class _CreateCategoryState extends State<CreateCategory> {
               owner: Globals.username,
               categoryId: newCategory.categoryId,
               categoryName: newCategory.categoryName));
-          Globals.activeUserCategories.add(newCategory);
-          if (Globals.activeUserCategories.length >
-              Globals.maxCategoryCacheSize) {
+          // attempt to cache the category
+          Globals.cachedCategories.add(new CategoryRatingTuple(
+              category: newCategory, ratings: ratesToSave));
+          if (Globals.cachedCategories.length > Globals.maxCategoryCacheSize) {
             // we only let the user cache so many categories
-            Globals.activeUserCategories
-                .removeAt(Globals.maxCategoryCacheSize - 1);
+            Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
           }
-          // update local ratings
-          Globals.user.categoryRatings.update(
-              newCategory.categoryId, (existing) => ratesToSave,
-              ifAbsent: () => ratesToSave);
           Navigator.of(this.context).pop();
         } else {
           showErrorMessage("Error", resultStatus.errorMessage, this.context);

@@ -22,7 +22,7 @@ Future<bool> internetCheck() async {
 // log out the user and clear all local variables they might have stored
 void logOutUser(BuildContext context) async {
   UsersManager.unregisterPushEndpoint();
-  Globals.activeUserCategories.clear();
+  Globals.cachedCategories.clear();
   await clearSharedPrefs();
 }
 

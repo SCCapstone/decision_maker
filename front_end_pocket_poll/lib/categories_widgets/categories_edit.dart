@@ -9,13 +9,16 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
 class EditCategory extends StatefulWidget {
   final Category category;
+  final CategoryRatingTuple categoryRatingTuple;
 
-  EditCategory({Key key, this.category}) : super(key: key);
+  EditCategory({Key key, this.category, this.categoryRatingTuple})
+      : super(key: key);
 
   @override
   _EditCategoryState createState() => _EditCategoryState();
@@ -61,24 +64,38 @@ class _EditCategoryState extends State<EditCategory> {
     this.loading = true;
     this.errorLoading = false;
 
-    for (Category cat in Globals.activeUserCategories) {
-      // if category is cached get it and don't bother querying DB
-      if (cat.categoryId == widget.category.categoryId) {
-        this.category = cat;
-        this.loading = false;
+    if (widget.categoryRatingTuple != null) {
+      // means we are editing from the group category page
+      this.category = widget.categoryRatingTuple.category;
+      this.originalRatings = widget.categoryRatingTuple.ratings;
+      this.loading = false;
+    } else if (widget.category != null) {
+      // means the active user owns the category and is not editing from the group category page
+      for (CategoryRatingTuple cat in Globals.cachedCategories) {
+        // if category is cached get it and don't bother querying DB
+        if (cat.category.categoryId == widget.category.categoryId) {
+          this.category = cat.category;
+          this.originalRatings = cat.ratings;
+          this.loading = false;
+          // put the recently accessed category back to top of list of cached categories
+          Globals.cachedCategories.removeWhere(
+              (cat) => cat.category.categoryId == widget.category.categoryId);
+          Globals.cachedCategories.insert(
+              0,
+              new CategoryRatingTuple(
+                  category: this.category, ratings: this.originalRatings));
+          if (Globals.cachedCategories.length > Globals.maxCategoryCacheSize) {
+            Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
+          }
+        }
       }
     }
+
     if (this.loading) {
       // category not cached so fetch from DB
       getCategory();
     } else {
-      // put the recently accessed category back to top of list of cached categories
-      Globals.activeUserCategories.remove(this.category);
-      Globals.activeUserCategories.insert(0, this.category);
-      if (Globals.activeUserCategories.length > Globals.maxCategoryCacheSize) {
-        Globals.activeUserCategories.removeAt(Globals.maxCategoryCacheSize - 1);
-      }
-      getRatings();
+      buildChoiceRows();
     }
     super.initState();
   }
@@ -458,22 +475,24 @@ class _EditCategoryState extends State<EditCategory> {
 
   // fetches category from DB
   Future<Null> getCategory() async {
-    ResultStatus<List<Category>> resultStatus =
-        await CategoriesManager.getAllCategoriesList(
+    ResultStatus<List<CategoryRatingTuple>> resultStatus =
+        await CategoriesManager.getCategoriesList(
             categoryId: widget.category.categoryId);
     if (resultStatus.success) {
       this.errorLoading = false;
-      this.category = resultStatus.data.first;
+      this.category = resultStatus.data.first.category;
+      this.originalRatings = resultStatus.data.first.ratings;
       if (this.category.owner == Globals.username) {
         // cache groups that the user owns
-        Globals.activeUserCategories.insert(0, this.category);
-        if (Globals.activeUserCategories.length >
-            Globals.maxCategoryCacheSize) {
-          Globals.activeUserCategories
-              .removeAt(Globals.maxCategoryCacheSize - 1);
+        Globals.cachedCategories.insert(
+            0,
+            new CategoryRatingTuple(
+                category: this.category, ratings: this.originalRatings));
+        if (Globals.cachedCategories.length > Globals.maxCategoryCacheSize) {
+          Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
         }
       }
-      getRatings();
+      buildChoiceRows();
     } else {
       this.errorLoading = true;
       this.errorWidget = categoriesError(resultStatus.errorMessage);
@@ -483,8 +502,8 @@ class _EditCategoryState extends State<EditCategory> {
     });
   }
 
-  // load ratings from the local user object
-  void getRatings() {
+  // build choice rows and populate them with ratings if they exist for the category
+  void buildChoiceRows() {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
     this.nextChoiceNum = this.category.nextChoiceNum;
@@ -507,13 +526,11 @@ class _EditCategoryState extends State<EditCategory> {
       this.choiceRows.add(choice);
     }
     // populate the choices with the ratings if they exist in the user object
-    Map<String, String> categoryRatings =
-        Globals.user.categoryRatings[widget.category.categoryId];
-    if (categoryRatings != null) {
+    if (this.originalRatings != null) {
       for (ChoiceRow choiceRow in this.choiceRows) {
-        if (categoryRatings.containsKey(choiceRow.choiceNumber)) {
+        if (originalRatings.containsKey(choiceRow.choiceNumber)) {
           choiceRow.rateController.text =
-              categoryRatings[choiceRow.choiceNumber];
+              originalRatings[choiceRow.choiceNumber];
         }
       }
     }
@@ -559,11 +576,13 @@ class _EditCategoryState extends State<EditCategory> {
       Globals.user.ownedCategories.add(new Category(
           categoryId: resultStatus.data.categoryId,
           categoryName: categoryName));
-      Globals.activeUserCategories.add(resultStatus.data);
-      // update local ratings in user object locally
-      Globals.user.categoryRatings.update(
-          widget.category.categoryId, (existing) => ratesToSave,
-          ifAbsent: () => ratesToSave);
+      // cache the new category
+      Globals.cachedCategories.add(new CategoryRatingTuple(
+          category: resultStatus.data, ratings: ratesToSave));
+      if (Globals.cachedCategories.length > Globals.maxCategoryCacheSize) {
+        // we only let the user cache so many categories
+        Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
+      }
       // close the original alert dialog
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
       Fluttertoast.showToast(
@@ -606,14 +625,10 @@ class _EditCategoryState extends State<EditCategory> {
       // not the owner so only save these new ratings
       showLoadingDialog(this.context, "Saving changes...", true);
       ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
-          this.category.categoryId, ratesToSave);
+          this.category.categoryId, this.category.categoryVersion, ratesToSave);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        // update local ratings
-        Globals.user.categoryRatings.update(
-            widget.category.categoryId, (existing) => ratesToSave,
-            ifAbsent: () => ratesToSave);
         setState(() {
           setOriginalValues();
           this.categoryChanged = false;
@@ -646,13 +661,11 @@ class _EditCategoryState extends State<EditCategory> {
           Globals.user.ownedCategories.add(new Category(
               categoryId: widget.category.categoryId,
               categoryName: this.category.categoryName));
-          Globals.activeUserCategories.remove(this.category);
-          Globals.activeUserCategories.add(this.category);
-          // update local ratings in user object locally
-          Globals.user.categoryRatings.update(
-              widget.category.categoryId, (existing) => ratesToSave,
-              ifAbsent: () => ratesToSave);
-
+          // re-cache the category
+          Globals.cachedCategories.removeWhere(
+              (cat) => cat.category.categoryId == this.category.categoryId);
+          Globals.cachedCategories.add(new CategoryRatingTuple(
+              category: this.category, ratings: ratesToSave));
           setState(() {
             setOriginalValues();
             this.categoryChanged = false;
