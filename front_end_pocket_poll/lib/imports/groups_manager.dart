@@ -6,7 +6,7 @@ import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
-import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/group_interface.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';

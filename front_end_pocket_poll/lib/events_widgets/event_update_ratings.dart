@@ -7,7 +7,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
-import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
 class EventUpdateRatings extends StatefulWidget {

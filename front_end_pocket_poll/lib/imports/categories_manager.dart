@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
-import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
 
 import 'api_manager.dart';

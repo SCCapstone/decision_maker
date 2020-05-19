@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:intl/intl.dart';
