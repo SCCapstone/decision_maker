@@ -50,7 +50,7 @@ public class ProxyPostController implements
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
-    final String classMethod = "ProxyPostHandler.handleRequest";
+    final String classMethod = "ProxyPostController.handleRequest";
 
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     metrics.commonSetup(classMethod);
