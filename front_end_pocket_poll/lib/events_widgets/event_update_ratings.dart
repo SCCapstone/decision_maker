@@ -26,7 +26,6 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
       new TextEditingController();
   final int defaultRate = 3;
 
-  // preserve the original labels for copying purposes and detecting if changes were made
   Map<String, String> originalRatings;
   bool isCategoryOwner;
   bool loading;
@@ -120,10 +119,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                             width: MediaQuery.of(context).size.width * .7,
                             child: TextFormField(
                               enabled: false,
-                              onChanged: (val) => checkForChanges(),
-                              maxLength: Globals.maxCategoryNameLength,
                               controller: this.categoryNameController,
-                              textCapitalization: TextCapitalization.sentences,
                               style: TextStyle(fontSize: 20),
                               decoration: InputDecoration(
                                   border: OutlineInputBorder(),

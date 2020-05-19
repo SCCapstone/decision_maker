@@ -290,12 +290,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
   void sortGroupCategoryRows() {
     if (this.sortVal == Globals.alphabeticalSort) {
       this.groupCategoryRows.sort((a, b) =>
-          a.categoryRatingTuple.category.categoryName.toLowerCase().compareTo(
-              b.categoryRatingTuple.category.categoryName.toLowerCase()));
+          a.category.categoryName.toLowerCase().compareTo(
+              b.category.categoryName.toLowerCase()));
     } else if (this.sortVal == Globals.alphabeticalReverseSort) {
       this.groupCategoryRows.sort((a, b) =>
-          b.categoryRatingTuple.category.categoryName.toLowerCase().compareTo(
-              a.categoryRatingTuple.category.categoryName.toLowerCase()));
+          b.category.categoryName.toLowerCase().compareTo(
+              a.category.categoryName.toLowerCase()));
     }
   }
 
