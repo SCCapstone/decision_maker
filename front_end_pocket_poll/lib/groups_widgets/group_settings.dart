@@ -7,6 +7,7 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
@@ -38,8 +39,10 @@ class _GroupSettingsState extends State<GroupSettings> {
   List<Member> originalMembers;
   List<Member> displayedMembers;
   List<String> membersLeft; // list of usernames
-  Map<String, String> selectedCategories; // map of categoryIds -> categoryName
-  Map<String, String> originalCategories; // map of categoryIds -> categoryName
+  Map<String, GroupCategory>
+      selectedCategories; // map of categoryIds -> GroupCategory
+  Map<String, GroupCategory>
+      originalCategories; // map of categoryIds -> GroupCategory
 
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
@@ -65,8 +68,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     this.originalMembers = new List<Member>();
     this.displayedMembers = new List<Member>();
     this.membersLeft = new List<String>();
-    this.originalCategories = new Map<String, String>();
-    this.selectedCategories = new Map<String, String>();
+    this.originalCategories = new Map<String, GroupCategory>();
+    this.selectedCategories = new Map<String, GroupCategory>();
 
     if (Globals.username == Globals.currentGroup.groupCreator) {
       // to display the delete group button, check if user owns this group
@@ -640,8 +643,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                 },
               )
             ],
-            content:
-                Text("Are you sure you wish to leave the group \"$groupName\"?"),
+            content: Text(
+                "Are you sure you wish to leave the group \"$groupName\"?"),
           );
         });
   }

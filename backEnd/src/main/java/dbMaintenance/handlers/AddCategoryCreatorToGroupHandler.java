@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
 import handlers.ApiRequestHandler;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import models.Group;
@@ -41,7 +42,7 @@ public class AddCategoryCreatorToGroupHandler implements ApiRequestHandler {
         try {
           final String groupId = groupItem.getString(Group.GROUP_ID);
 
-          if (groupId.equals("testing group id")) {
+          if (groupId.equals("1372b335-1d44-4d68-9d55-ccf7a954909d")) {
             continue; // I tested on this group, so no need to reprocess
           }
 

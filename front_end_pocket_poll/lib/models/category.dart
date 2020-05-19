@@ -1,5 +1,7 @@
 import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 
+import 'group_category.dart';
+
 class Category {
   final String categoryName;
   final String categoryId;
@@ -47,6 +49,11 @@ class Category {
   factory Category.fromJsonUser(Map<String, dynamic> json) {
     return Category(
         categoryId: json['CategoryId'], categoryName: json['CategoryName']);
+  }
+
+  GroupCategory asGroupCategory() {
+    return new GroupCategory(
+        categoryName: this.categoryName, owner: this.owner);
   }
 
   @override

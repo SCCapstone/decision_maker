@@ -6,6 +6,7 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
@@ -39,8 +40,8 @@ class _CreateGroupState extends State<CreateGroup> {
   FocusNode considerFocus;
   FocusNode votingFocus;
 
-  // map of categoryIds -> categoryName
-  Map<String, String> groupCategories = new Map<String, String>();
+  // map of categoryIds -> GroupCategory
+  Map<String, GroupCategory> groupCategories = new Map<String, GroupCategory>();
 
   @override
   void initState() {
