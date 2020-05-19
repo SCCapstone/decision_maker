@@ -1,5 +1,7 @@
 package handlers;
 
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Category;
+import models.Group;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
@@ -93,6 +96,9 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
           resultStatus = ResultStatus
               .successful(JsonUtils.convertObjectToJson(newCategory.asMap()));
+
+          //blind send to try an update the associated groups
+          this.updateGroupsTable(oldCategory, newCategory);
         } else {
           resultStatus = ResultStatus.failure("Error in dependency.");
           resultStatus.applyResultStatus(updatedUsersTableResult);
@@ -198,5 +204,35 @@ public class EditCategoryHandler implements ApiRequestHandler {
     }
 
     return invalidString;
+  }
+
+  private void updateGroupsTable(final Category oldCategory, final Category newCategory) {
+    if (!oldCategory.getCategoryName().equals(newCategory.getCategoryName())) {
+      //The name is a denormalized field to the group item. It has changed so we need to update all
+      // of the associated groups
+
+      final String classMethod = "EditCategoryHandler.updateGroupsTable";
+
+      final String updateExpression =
+          "set " + Group.CATEGORIES + ".#categoryId." + Category.CATEGORY_NAME + " = :categoryName";
+      final NameMap nameMap = new NameMap().with("#categoryId", oldCategory.getCategoryId());
+      final ValueMap valueMap = new ValueMap()
+          .withString(":categoryName", newCategory.getCategoryName());
+
+      final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+          .withUpdateExpression(updateExpression)
+          .withNameMap(nameMap)
+          .withValueMap(valueMap);
+
+      for (final String groupId : oldCategory.getGroups().keySet()) {
+        try {
+          this.dbAccessManager.updateGroup(groupId, updateItemSpec);
+        } catch (final Exception e) {
+          this.metrics.log(new ErrorDescriptor<>(
+              "groupId: " + groupId + " categoryId: " + oldCategory.getCategoryId(), classMethod,
+              e));
+        }
+      }
+    }
   }
 }

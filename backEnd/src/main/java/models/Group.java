@@ -38,13 +38,12 @@ public class Group implements Model {
   private String lastActivity;
   private Map<String, Event> events;
   private boolean isOpen;
+  private Map<String, GroupCategory> categories;
 
   @Setter(AccessLevel.NONE)
   private Map<String, Member> members;
   @Setter(AccessLevel.NONE)
   private Map<String, Boolean> membersLeft;
-  @Setter(AccessLevel.NONE)
-  private Map<String, String> categories;
 
   public Group(final Item groupItem) {
     this(groupItem.asMap());
@@ -64,7 +63,7 @@ public class Group implements Model {
 
     this.setMembers((Map<String, Object>) jsonMap.get(MEMBERS));
     this.setMembersLeft((Map<String, Object>) jsonMap.get(MEMBERS_LEFT));
-    this.setCategories((Map<String, Object>) jsonMap.get(CATEGORIES));
+    this.setCategoriesRawMap((Map<String, Object>) jsonMap.get(CATEGORIES));
     this.setEventsRawMap((Map<String, Object>) jsonMap.get(EVENTS));
   }
 
@@ -97,7 +96,7 @@ public class Group implements Model {
     modelAsMap.putIfAbsent(IS_OPEN, this.isOpen);
     modelAsMap.putIfAbsent(MEMBERS, this.getMembersMap());
     modelAsMap.putIfAbsent(MEMBERS_LEFT, this.membersLeft);
-    modelAsMap.putIfAbsent(CATEGORIES, this.categories);
+    modelAsMap.putIfAbsent(CATEGORIES, this.getCategoriesMap());
     modelAsMap.putIfAbsent(EVENTS, this.getEventsMap());
     return modelAsMap;
   }
@@ -124,18 +123,27 @@ public class Group implements Model {
 
   public Map<String, Map<String, String>> getMembersMap() {
     final Map<String, Map<String, String>> membersMapped = new HashMap<>();
-    for (String username : this.members.keySet()) {
+    for (final String username : this.members.keySet()) {
       membersMapped.putIfAbsent(username, this.members.get(username).asMap());
     }
     return membersMapped;
   }
 
-  public void setCategories(final Map<String, Object> jsonMap) {
+  public Map<String, Map<String, Object>> getCategoriesMap() {
+    final Map<String, Map<String, Object>> categoriesMapped = new HashMap<>();
+    for (final String categoryId : this.categories.keySet()) {
+      categoriesMapped.putIfAbsent(categoryId, this.categories.get(categoryId).asMap());
+    }
+    return categoriesMapped;
+  }
+
+  public void setCategoriesRawMap(final Map<String, Object> jsonMap) {
     this.categories = null;
     if (jsonMap != null) {
       this.categories = new HashMap<>();
       for (String categoryId : jsonMap.keySet()) {
-        this.categories.putIfAbsent(categoryId, (String) jsonMap.get(categoryId));
+        this.categories.putIfAbsent(categoryId,
+            new GroupCategory((Map<String, Object>) jsonMap.get(categoryId)));
       }
     }
   }
@@ -158,16 +166,8 @@ public class Group implements Model {
     return eventsMapped;
   }
 
-  public boolean groupNameIsSet() {
-    return this.groupName != null;
-  }
-
   public boolean iconIsSet() {
     return this.icon != null;
-  }
-
-  public boolean lastActivityIsSet() {
-    return this.lastActivity != null;
   }
 
   public Group clone() {

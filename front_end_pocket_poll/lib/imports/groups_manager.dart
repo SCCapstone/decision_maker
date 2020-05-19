@@ -137,6 +137,8 @@ class GroupsManager {
     }
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
+    jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
+        group.categories.keys.toList();
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -181,6 +183,8 @@ class GroupsManager {
 
     jsonRequestBody[RequestFields.PAYLOAD][MEMBERS] =
         group.members.keys.toList();
+    jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
+        group.categories.keys.toList();
 
     if (batchNumber == null) {
       // batchNumber is used to get a discrete number of events from the DB

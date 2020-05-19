@@ -34,7 +34,7 @@ public class CreateNewGroupController implements ApiRequestController {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupName = (String) jsonMap.get(Group.GROUP_NAME);
         final List<String> members = (List<String>) jsonMap.get(Group.MEMBERS);
-        final Map<String, Object> categories = (Map<String, Object>) jsonMap.get(Group.CATEGORIES); // TODO update to a list of catIds
+        final List<String> categories = (List<String>) jsonMap.get(Group.CATEGORIES);
         final Integer defaultVotingDuration = (Integer) jsonMap.get(Group.DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(Group.DEFAULT_RSVP_DURATION);
         final Boolean isOpen = (Boolean) jsonMap.get(Group.IS_OPEN);

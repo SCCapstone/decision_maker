@@ -17,6 +17,7 @@ import managers.S3AccessManager;
 import managers.SnsAccessManager;
 import models.Category;
 import models.Group;
+import models.GroupCategory;
 import models.GroupForApiResponse;
 import models.Metadata;
 import models.User;
@@ -55,8 +56,7 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param groupId               The id of the group attempting to be edited.
    * @param name                  The updated name of the group.
    * @param membersList           The updated list of usernames associated with the group.
-   * @param categoriesMap         The updated map of categories associated with the group. TODO
-   *                              update to just be ids
+   * @param categoriesList        The updated list of category ids associated with the group.
    * @param defaultVotingDuration The updated default voting duration for events in this group.
    * @param defaultRsvpDuration   The update default consider duration for events in this group.
    * @param isOpen                The update is open value for this group.
@@ -67,7 +67,7 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId, final String name,
-      final List<String> membersList, final Map<String, Object> categoriesMap,
+      final List<String> membersList, final List<String> categoriesList,
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
       final Integer batchNumber, final List<Integer> iconData) {
     final String classMethod = "EditGroupHandler.handle";
@@ -90,6 +90,8 @@ public class EditGroupHandler implements ApiRequestHandler {
         //all validation is successful, build transaction actions
         membersList.add(activeUser); // sanity check, active user is in members list
         final Map<String, Object> membersMapped = this.getMembersMapForInsertion(membersList);
+        final Map<String, Object> categoriesMapped = this
+            .getCategoriesMapForInsertion(categoriesList);
 
         String updateExpression =
             "set " + Group.GROUP_NAME + " = :name, " + Group.MEMBERS + " = :members, "
@@ -99,7 +101,7 @@ public class EditGroupHandler implements ApiRequestHandler {
         ValueMap valueMap = new ValueMap()
             .withString(":name", name)
             .withMap(":members", membersMapped)
-            .withMap(":categories", categoriesMap)
+            .withMap(":categories", categoriesMapped)
             .withInt(":defaultVotingDuration", defaultVotingDuration)
             .withInt(":defaultRsvpDuration", defaultRsvpDuration)
             .withBoolean(":isOpen", isOpen);
@@ -124,7 +126,7 @@ public class EditGroupHandler implements ApiRequestHandler {
         final Group newGroup = oldGroup.clone();
         newGroup.setGroupName(name);
         newGroup.setMembers(membersMapped);
-        newGroup.setCategories(categoriesMap);
+        newGroup.setCategoriesRawMap(categoriesMapped);
         newGroup.setDefaultVotingDuration(defaultVotingDuration);
         newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
         newGroup.setOpen(isOpen);
@@ -456,11 +458,22 @@ public class EditGroupHandler implements ApiRequestHandler {
       throws InvalidAttributeValueException {
     final Map<String, Object> membersMap = new HashMap<>();
 
-    for (String username : new HashSet<>(members)) {
+    for (final String username : new HashSet<>(members)) {
       final User user = this.dbAccessManager.getUser(username);
       membersMap.putIfAbsent(username, user.asMember().asMap());
     }
 
     return membersMap;
+  }
+
+  private Map<String, Object> getCategoriesMapForInsertion(final List<String> categoryIds) {
+    final Map<String, Object> categoriesMap = new HashMap<>();
+
+    for (final String categoryId : new HashSet<>(categoryIds)) {
+      final Category category = this.dbAccessManager.getCategory(categoryId);
+      categoriesMap.putIfAbsent(categoryId, new GroupCategory(category.asMap()).asMap());
+    }
+
+    return categoriesMap;
   }
 }

@@ -46,7 +46,7 @@ public class DbAccessManager {
   public static final String DELIM = ";";
 
   //making protected for extended classes
-  private final Table groupsTable;
+  protected final Table groupsTable;
   protected final Table usersTable;
   private final Table categoriesTable;
   private final Table pendingEventsTable;

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 
 import 'category_row.dart';
 
 class CategoryPick extends StatefulWidget {
-  final Map<String, String>
-      selectedCategories; // map of categoryIds -> categoryName
+  final Map<String, GroupCategory>
+      selectedCategories; // map of categoryIds -> GroupCategory
 
   CategoryPick(this.selectedCategories);
 
@@ -95,13 +96,13 @@ class _CategoryPickState extends State<CategoryPick> {
   }
 
   // select a category to be added or, if it already selected, remove it from the selection
-  void selectCategory(Category category) {
+  void selectCategory(final Category category) {
     setState(() {
       if (widget.selectedCategories.keys.contains(category.categoryId)) {
         widget.selectedCategories.remove(category.categoryId);
       } else {
         widget.selectedCategories
-            .putIfAbsent(category.categoryId, () => category.categoryName);
+            .putIfAbsent(category.categoryId, () => category.asGroupCategory());
       }
 
       this.loadCategoryRows();

@@ -1,18 +1,18 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
-import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 import 'package:front_end_pocket_poll/widgets/category_row_group.dart';
 
 class GroupCategories extends StatefulWidget {
-  final Map<String, String>
-      selectedCategories; // map of categoryIds -> categoryName
+  final Map<String, GroupCategory>
+      selectedCategories; // map of categoryIds -> GroupCategory
   final bool canEdit;
 
   GroupCategories({this.selectedCategories, this.canEdit});
@@ -319,12 +319,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
   }
 
   // adds this category to the list of selected (i.e. adds it to the group)
-  void selectCategory(Category category) {
+  void selectCategory(final Category category) {
     if (widget.selectedCategories.keys.contains(category.categoryId)) {
       widget.selectedCategories.remove(category.categoryId);
     } else {
       widget.selectedCategories
-          .putIfAbsent(category.categoryId, () => category.categoryName);
+          .putIfAbsent(category.categoryId, () => category.asGroupCategory());
     }
     this.buildCategoryRows();
   }

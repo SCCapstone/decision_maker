@@ -13,4 +13,8 @@ public class MaintenanceDbAccessManager extends DbAccessManager {
   public Iterator<Item> scanUsersTable() {
     return this.usersTable.scan().iterator();
   }
+
+  public Iterator<Item> scanGroupsTable() {
+    return this.groupsTable.scan().iterator();
+  }
 }

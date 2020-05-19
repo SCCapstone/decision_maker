@@ -4,6 +4,8 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
 
+import 'group_category.dart';
+
 class Group {
   final String groupId;
   final String groupName;
@@ -12,7 +14,7 @@ class Group {
   final String lastActivity;
   final Map<String, Member> members;
   final Map<String, bool> membersLeft;
-  final Map<String, String> categories;
+  final Map<String, GroupCategory> categories;
   final Map<String, Event> events;
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
@@ -65,7 +67,7 @@ class Group {
         key: (k) => k, value: (k) => events[k]);
     events = sortedMap.cast();
 
-    // map of username -> member
+    // map of username -> Member
     Map<String, Member> memberMap = new Map<String, Member>();
     for (String username in json[GroupsManager.MEMBERS].keys) {
       Member member =
@@ -73,17 +75,18 @@ class Group {
       memberMap.putIfAbsent(username, () => member);
     }
 
+    // map of categoryId -> GroupCategory
+    Map<String, GroupCategory> categoriesMap = new Map<String, GroupCategory>();
+    for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
+      GroupCategory groupCategory = new GroupCategory.fromJson(
+          json[GroupsManager.CATEGORIES][categoryId]);
+      categoriesMap.putIfAbsent(categoryId, () => groupCategory);
+    }
+
     Map<String, bool> membersLeftMap = new Map<String, bool>();
     for (String username in json[GroupsManager.MEMBERS_LEFT].keys) {
       membersLeftMap.putIfAbsent(
           username, () => json[GroupsManager.MEMBERS_LEFT][username]);
-    }
-
-    // map of category id to category category name
-    Map<String, String> categoriesMap = new Map<String, String>();
-    for (String categoryId in json[GroupsManager.CATEGORIES].keys) {
-      categoriesMap.putIfAbsent(categoryId,
-          () => json[GroupsManager.CATEGORIES][categoryId].toString());
     }
 
     return Group(
