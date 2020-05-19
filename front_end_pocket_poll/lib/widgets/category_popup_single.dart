@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 
 import 'category_row.dart';
 
@@ -91,21 +92,20 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
     );
   }
 
-  // builds choice rows using the current group group categories
+  // builds choice rows using the current group categories
   void buildChoiceRows() {
     int index = 0; // used for integration testing
-    for (String catId in Globals.currentGroup.categories.keys) {
+    for (MapEntry<String, GroupCategory> catEntry
+        in Globals.currentGroup.categories.entries) {
       this.categoryRows.add(CategoryRow(
             new Category(
-                categoryName:
-                    Globals.currentGroup.categories[catId].categoryName,
-                owner: Globals.currentGroup.categories[catId].owner),
+                categoryName: catEntry.value.categoryName,
+                owner: catEntry.value.owner),
             this.selectedCategory != null &&
-                this.selectedCategory.categoryId == catId,
+                this.selectedCategory.categoryId == catEntry.key,
             onSelect: () => selectCategory(new Category(
-                categoryId: catId,
-                categoryName:
-                    Globals.currentGroup.categories[catId].categoryName)),
+                categoryId: catEntry.key,
+                categoryName: catEntry.value.categoryName)),
             index: index,
           ));
       index++;
