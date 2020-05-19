@@ -12,7 +12,6 @@ class User {
   String icon;
   final AppSettings appSettings;
   final Map<String, UserGroup> groups;
-  final Map<String, Map<String, String>> categoryRatings;
   final Map<String, GroupLeft> groupsLeft;
   final List<Category> ownedCategories;
   List<Favorite> favorites;
@@ -23,7 +22,6 @@ class User {
       this.displayName,
       this.appSettings,
       this.groups,
-      this.categoryRatings,
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
@@ -35,7 +33,6 @@ class User {
       this.displayName,
       this.appSettings,
       this.groups,
-      this.categoryRatings,
       this.groupsLeft,
       this.ownedCategories,
       this.favorites,
@@ -73,19 +70,6 @@ class User {
           owner: json[UsersManager.USERNAME]));
     }
 
-    Map<String, Map<String, String>> categoryRatingsMap =
-        new Map<String, Map<String, String>>();
-    Map<String, dynamic> categoryRatingsRaw = json[UsersManager.CATEGORY_RATINGS];
-    if (categoryRatingsRaw != null) {
-      for (String categoryId in categoryRatingsRaw.keys) {
-        Map<String, String> categoryRatings = new Map<String, String>();
-        for (String choiceId in categoryRatingsRaw[categoryId].keys) {
-          categoryRatings.putIfAbsent(
-              choiceId, () => categoryRatingsRaw[categoryId][choiceId].toString());
-        }
-        categoryRatingsMap.putIfAbsent(categoryId, () => categoryRatings);
-      }
-    }
     bool firstLogin = false;
     if (json.containsKey(UsersManager.FIRST_LOGIN)) {
       firstLogin = json[UsersManager.FIRST_LOGIN];
@@ -95,7 +79,6 @@ class User {
         displayName: json[UsersManager.DISPLAY_NAME],
         appSettings: AppSettings.fromJson(json[UsersManager.APP_SETTINGS]),
         groups: groupsMap,
-        categoryRatings: categoryRatingsMap,
         groupsLeft: groupsLeftMap,
         ownedCategories: categoryList,
         favorites: favoriteList,
@@ -121,7 +104,6 @@ class User {
       UsersManager.APP_SETTINGS: appSettings.asMap(),
       UsersManager.GROUPS: groupsMap,
       UsersManager.GROUPS_LEFT: groupsLeftMap,
-      UsersManager.CATEGORY_RATINGS: categoryRatings,
       UsersManager.OWNED_CATEGORIES: ownedCategories,
       UsersManager.FAVORITES: favorites,
       UsersManager.ICON: icon
@@ -131,7 +113,7 @@ class User {
   @override
   String toString() {
     return "Username: $username DisplayName: $displayName AppSettings: $appSettings Groups: $groups "
-        " GroupsLeft: $groupsLeft CategoryRatings: $categoryRatings OwnedCategories: $ownedCategories "
+        " GroupsLeft: $groupsLeft OwnedCategories: $ownedCategories "
         "Favorites: $favorites Icon: $icon FirstLogin: $firstLogin";
   }
 }

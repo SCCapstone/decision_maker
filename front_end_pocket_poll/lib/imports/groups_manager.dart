@@ -6,6 +6,7 @@ import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/group_interface.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
@@ -431,9 +432,10 @@ class GroupsManager {
         .compareTo(a.getGroupName().toUpperCase()));
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+  static Future<ResultStatus<List<CategoryRatingTuple>>> getAllCategoriesList(
       final String groupId) async {
-    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal =
+        new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
@@ -449,8 +451,9 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          retVal.data =
-              responseJson.map((m) => new Category.fromJson(m)).toList();
+          retVal.data = responseJson
+              .map((m) => new CategoryRatingTuple.fromJson(m))
+              .toList();
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";
@@ -467,9 +470,9 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Category>> getEventCategory(
+  static Future<ResultStatus<CategoryRatingTuple>> getEventCategory(
       final String groupId, final String eventId) async {
-    ResultStatus<Category> retVal = new ResultStatus(success: false);
+    ResultStatus<CategoryRatingTuple> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
@@ -487,7 +490,7 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          retVal.data = new Category.fromJson(responseJson.first());
+          retVal.data = new CategoryRatingTuple.fromJson(responseJson.first);
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";

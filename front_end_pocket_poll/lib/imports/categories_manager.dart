@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
 
 import 'api_manager.dart';
@@ -78,9 +79,9 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesList(
+  static Future<ResultStatus<List<CategoryRatingTuple>>> getCategoriesList(
       {String categoryId}) async {
-    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
@@ -101,7 +102,7 @@ class CategoriesManager {
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.data =
-              responseJson.map((m) => new Category.fromJson(m)).toList();
+              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";
@@ -118,9 +119,9 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesFromGroup(
+  static Future<ResultStatus<List<CategoryRatingTuple>>> getAllCategoriesFromGroup(
       String groupId) async {
-    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
@@ -139,7 +140,7 @@ class CategoriesManager {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.success = true;
           retVal.data =
-              responseJson.map((m) => new Category.fromJson(m)).toList();
+              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
         } else {
           // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
           retVal.errorMessage = "Unable to load group categories.";

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/categories_edit.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
 class CategoryRowGroup extends StatefulWidget {
+  final CategoryRatingTuple categoryRatingTuple;
   final Category category;
   final VoidCallback onSelect;
   final bool selected;
@@ -13,8 +15,8 @@ class CategoryRowGroup extends StatefulWidget {
   final bool canSelect;
   final int index; // used for integration tests
 
-  CategoryRowGroup(
-      this.category, this.selected, this.updateOwnedCategories, this.canSelect,
+  CategoryRowGroup(this.categoryRatingTuple, this.category, this.selected,
+      this.updateOwnedCategories, this.canSelect,
       {this.onSelect, this.index});
 
   @override
@@ -29,16 +31,17 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
   void initState() {
     this.groupNum = 0;
     this.activeUserOwnsCategory = false;
-    for (Category category in Globals.user.ownedCategories) {
-      if (category.categoryId == widget.category.categoryId) {
-        this.activeUserOwnsCategory = true;
-        break;
-      }
+    if (widget.category == null && widget.categoryRatingTuple != null) {
+      // means a tuple was passed in so the user doesn't own the category
+      this.activeUserOwnsCategory = false;
+    } else if (widget.categoryRatingTuple == null && widget.category != null) {
+      this.activeUserOwnsCategory = true;
     }
+
     if (!this.activeUserOwnsCategory) {
       // find the num of other groups this category is in if its not active user's category
       for (String groupId in Globals.user.groups.keys) {
-        if (widget.category.groups.containsKey(groupId) &&
+        if (widget.categoryRatingTuple.category.groups.containsKey(groupId) &&
             groupId != Globals.currentGroup.groupId) {
           this.groupNum++;
         }
@@ -60,9 +63,9 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             child: Checkbox(
               value: widget.selected,
               key: Key(
-                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.index}"),
+                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.selected}:${widget.index}"),
               onChanged: (bool value) {
-                selectCategory(value);
+                selectCategory();
               },
             ),
           ),
@@ -76,7 +79,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
               child: GestureDetector(
                   onTap: () {
                     if (widget.canSelect) {
-                      selectCategory(!widget.selected);
+                      selectCategory();
                     }
                   },
                   child: AutoSizeText(
@@ -102,6 +105,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => EditCategory(
+                            categoryRatingTuple: widget.categoryRatingTuple,
                             category: widget.category,
                           ))).then((_) {
                 // in case user copied a category, refresh the owned categories on back press
@@ -119,7 +123,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
     );
   }
 
-  void selectCategory(bool value) {
+  void selectCategory() {
     this.widget.onSelect();
   }
 }
