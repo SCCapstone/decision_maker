@@ -78,11 +78,11 @@ void main() {
       var categoryCreateButton =
           find.byValueKey("categories_home:add_category_button");
       driver.tap(categoryCreateButton);
-      await driver.waitFor(find.byValueKey("categories_create:scaffold"));
+      await driver.waitFor(find.byValueKey("category_create:scaffold"));
 
       // enter the category name
       var categoryNameField =
-          find.byValueKey("categories_create:category_name_input");
+          find.byValueKey("category_create:category_name_input");
       await driver.tap(categoryNameField);
       await driver.enterText(getRandomCategoryName());
 
@@ -92,7 +92,7 @@ void main() {
       await driver.enterText(getRandomChoiceName());
 
       // save the category
-      var categorySaveButton = find.byValueKey("categories_create:save_button");
+      var categorySaveButton = find.byValueKey("category_create:save_button");
       await driver.tap(categorySaveButton);
       await driver.waitFor(find.byValueKey("categories_home:scaffold"));
     });
@@ -102,11 +102,11 @@ void main() {
       var categoryEditButton =
           find.byValueKey("categories_list_item:category_edit_button:0");
       driver.tap(categoryEditButton);
-      await driver.waitFor(find.byValueKey("categories_edit:scaffold"));
+      await driver.waitFor(find.byValueKey("category_edit:scaffold"));
 
       // edit the category name
       var categoryNameField =
-          find.byValueKey("categories_edit:category_name_input");
+          find.byValueKey("category_edit:category_name_input");
       await driver.tap(categoryNameField);
       await driver.enterText(getRandomCategoryName());
 
@@ -116,7 +116,7 @@ void main() {
       await driver.enterText(getRandomChoiceName());
 
       // save the category
-      var categorySaveButton = find.byValueKey("categories_edit:save_button");
+      var categorySaveButton = find.byValueKey("category_edit:save_button");
       await driver.tap(categorySaveButton);
       await driver.tap(find.pageBack());
       await driver.waitFor(find.byValueKey("categories_home:scaffold"));
@@ -185,38 +185,39 @@ void main() {
     test('create_group', () async {
       var createGroupButton = find.byValueKey("groups_home:new_group_button");
       await driver.tap(createGroupButton);
-      await driver.waitFor(find.byValueKey("groups_create:scaffold"));
+      await driver.waitFor(find.byValueKey("group_create:scaffold"));
 
       // enter a group name
-      var groupNameInput = find.byValueKey("groups_create:group_name_input");
+      var groupNameInput = find.byValueKey("group_create:group_name_input");
       await driver.tap(groupNameInput);
       await driver.enterText("Test Group");
 
       // enter a default consider duration
-      var considerInput = find.byValueKey("groups_create:consider_input");
+      var considerInput = find.byValueKey("group_create:consider_input");
       await driver.tap(considerInput);
       await driver.enterText("1");
 
       // enter a default voting duration
-      var voteInput = find.byValueKey("groups_create:vote_input");
+      var voteInput = find.byValueKey("group_create:vote_input");
       await driver.tap(voteInput);
       await driver.enterText("1");
 
       // add a category
       var addCategoryButton =
-          find.byValueKey("groups_create:add_categories_button");
+          find.byValueKey("group_create:add_categories_button");
       await driver.tap(addCategoryButton);
-      await driver.waitFor(find.byValueKey("category_pick:scaffold"));
+      await driver
+          .waitFor(find.byValueKey("group_create_pick_categories:scaffold"));
 
       //always select the first category for the group
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
       await driver.tap(find.pageBack());
-      await driver.waitFor(find.byValueKey("groups_create:scaffold"));
+      await driver.waitFor(find.byValueKey("group_create:scaffold"));
 
       // enter the members page
       var membersPageButton =
-          find.byValueKey("groups_create:add_members_button");
+          find.byValueKey("group_create:add_members_button");
       await driver.tap(membersPageButton);
       await driver.waitFor(find.byValueKey("members_page:scaffold"));
 
@@ -237,10 +238,10 @@ void main() {
       await driver.tap(addMemberButton);
       await driver.waitFor(find.byValueKey("user_row:$otherUser:delete"));
       await driver.tap(find.pageBack());
-      await driver.waitFor(find.byValueKey("groups_create:scaffold"));
+      await driver.waitFor(find.byValueKey("group_create:scaffold"));
 
       // now save the group
-      var saveButton = find.byValueKey("groups_create:save_button");
+      var saveButton = find.byValueKey("group_create:save_button");
       await driver.tap(saveButton);
       await driver.waitFor(find.byValueKey("groups_home:scaffold"));
     });
@@ -268,12 +269,12 @@ void main() {
 
       // wait for categories to load
       await driver
-          .waitFor(find.byValueKey("category_popup_single:category_container"));
+          .waitFor(find.byValueKey("event_pick_category:category_container"));
 
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("category_popup_single:done_button");
+      var doneButton = find.byValueKey("event_pick_category:done_button");
       await driver.tap(doneButton);
       await driver.waitFor(find.byValueKey("event_create:scaffold"));
 
@@ -325,12 +326,12 @@ void main() {
 
       // wait for categories to load
       await driver
-          .waitFor(find.byValueKey("category_popup_single:category_container"));
+          .waitFor(find.byValueKey("event_pick_category:category_container"));
 
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("category_popup_single:done_button");
+      var doneButton = find.byValueKey("event_pick_category:done_button");
       await driver.tap(doneButton);
       await driver.waitFor(find.byValueKey("event_create:scaffold"));
 
@@ -382,12 +383,12 @@ void main() {
 
       // wait for categories to load
       await driver
-          .waitFor(find.byValueKey("category_popup_single:category_container"));
+          .waitFor(find.byValueKey("event_pick_category:category_container"));
 
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("category_popup_single:done_button");
+      var doneButton = find.byValueKey("event_pick_category:done_button");
       await driver.tap(doneButton);
       await driver.waitFor(find.byValueKey("event_create:scaffold"));
 
@@ -438,12 +439,12 @@ void main() {
 
       // wait for categories to load
       await driver
-          .waitFor(find.byValueKey("category_popup_single:category_container"));
+          .waitFor(find.byValueKey("event_pick_category:category_container"));
 
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("category_popup_single:done_button");
+      var doneButton = find.byValueKey("event_pick_category:done_button");
       await driver.tap(doneButton);
       await driver.waitFor(find.byValueKey("event_create:scaffold"));
 
@@ -504,7 +505,7 @@ void main() {
 
       // pick the first category that is not a group category (i.e is owned by testing user)
       var categoryCheckbox =
-          find.byValueKey("category_row_group:checkbox:true:true:0");
+          find.byValueKey("group_category_row:checkbox:true:true:0");
       await driver.tap(categoryCheckbox);
       await driver.tap(find.pageBack());
 
@@ -513,7 +514,8 @@ void main() {
       await driver.waitFor(find.byValueKey("group_categories:scaffold"));
 
       // pick the first category that is not a group category (i.e is owned by testing user)
-      categoryCheckbox = find.byValueKey("category_row_group:checkbox:true:false:0");
+      categoryCheckbox =
+          find.byValueKey("group_category_row:checkbox:true:false:0");
       await driver.tap(categoryCheckbox);
       await driver.tap(find.pageBack());
 

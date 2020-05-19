@@ -3,18 +3,18 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
 
-import 'category_row.dart';
+import 'package:front_end_pocket_poll/widgets/category_row.dart';
 
-class CategoryPopupSingle extends StatefulWidget {
+class EventPickCategory extends StatefulWidget {
   final Category initialSelectedCategory;
 
-  CategoryPopupSingle(this.initialSelectedCategory);
+  EventPickCategory(this.initialSelectedCategory);
 
   @override
-  _CategoryPopupSingleState createState() => _CategoryPopupSingleState();
+  _EventPickCategoryState createState() => _EventPickCategoryState();
 }
 
-class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
+class _EventPickCategoryState extends State<EventPickCategory> {
   List<CategoryRow> categoryRows;
   Category selectedCategory;
 
@@ -37,7 +37,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
       actions: <Widget>[
         FlatButton(
           child: Text("DONE"),
-          key: Key("category_popup_single:done_button"),
+          key: Key("event_pick_category:done_button"),
           onPressed: () {
             Navigator.of(context, rootNavigator: true)
                 .pop(this.selectedCategory);
@@ -55,7 +55,7 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                   child: (this.categoryRows.isNotEmpty)
                       ? Container(
                           height: MediaQuery.of(context).size.height * .25,
-                          key: Key("category_popup_single:category_container"),
+                          key: Key("event_pick_category:category_container"),
                           child: ListView.builder(
                             shrinkWrap: true,
                             itemCount: this.categoryRows.length,

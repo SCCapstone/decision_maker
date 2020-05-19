@@ -13,7 +13,7 @@ import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
-import 'package:front_end_pocket_poll/widgets/user_row_events.dart';
+import 'event_user_row.dart';
 
 class EventDetailsConsider extends StatefulWidget {
   final String groupId;
@@ -29,13 +29,13 @@ class EventDetailsConsider extends StatefulWidget {
 
 class _EventDetailsConsiderState extends State<EventDetailsConsider> {
   String eventCreator;
-  Map<String, UserRowEvents> userRows; // username -> widget
+  Map<String, EventUserRow> userRows; // username -> widget
   Event event;
 
   @override
   void initState() {
     this.eventCreator = "";
-    this.userRows = new Map<String, UserRowEvents>();
+    this.userRows = new Map<String, EventUserRow>();
     // clicking on the details page marks the event unseen
     if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
         true) {
@@ -280,7 +280,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
           Globals.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.username,
-          () => UserRowEvents(
+          () => EventUserRow(
               Globals.user.displayName, Globals.username, Globals.user.icon));
     } else {
       Globals.currentGroup.events[widget.eventId].optedIn
@@ -298,7 +298,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
             Globals.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
             Globals.username,
-            () => UserRowEvents(
+            () => EventUserRow(
                 Globals.user.displayName, Globals.username, Globals.user.icon));
       } else {
         Globals.currentGroup.events[widget.eventId].optedIn
@@ -317,8 +317,8 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     for (String username in this.event.optedIn.keys) {
       this.userRows.putIfAbsent(
           username,
-          () => UserRowEvents(this.event.optedIn[username].displayName,
-              username, this.event.optedIn[username].icon));
+          () => EventUserRow(this.event.optedIn[username].displayName, username,
+              this.event.optedIn[username].icon));
     }
     // sorting by alphabetical by displayname for now
     List<String> sortedKeys = this.userRows.keys.toList(growable: false)
