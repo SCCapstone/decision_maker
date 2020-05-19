@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
-class UserRowEvents extends StatelessWidget {
+class EventUserRow extends StatelessWidget {
   final String displayName;
   final String username;
   final String icon;
 
-  UserRowEvents(this.displayName, this.username, this.icon);
+  EventUserRow(this.displayName, this.username, this.icon);
 
   @override
   Widget build(BuildContext context) {

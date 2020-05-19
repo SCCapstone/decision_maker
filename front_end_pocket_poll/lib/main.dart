@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:front_end_pocket_poll/first_login.dart';
+import 'package:front_end_pocket_poll/widgets/first_login.dart';
 import 'package:front_end_pocket_poll/groups_widgets/groups_home.dart';
-import 'package:front_end_pocket_poll/login_page.dart';
+import 'package:front_end_pocket_poll/widgets/login_page.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/widgets/internet_loss.dart';
 import 'package:provider/provider.dart';
@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
                   //If and only if the tokens are not valid or don't exist, open the login page.
                   if (!snapshot.data) {
                     return MaterialApp(
-                      home: SignInPage(),
+                      home: LoginPage(),
                       theme: themeNotifier.getTheme(),
                       title: "Pocket Poll",
                     );

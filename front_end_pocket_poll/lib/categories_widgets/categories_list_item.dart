@@ -1,6 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/categories_widgets/categories_edit.dart';
+import 'package:front_end_pocket_poll/categories_widgets/category_edit.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
@@ -41,7 +41,7 @@ class CategoriesListItem extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => EditCategory(
+                        builder: (context) => CategoryEdit(
                               category: this.category,
                             )),
                   ).then((_) => this.refreshCategoryList());

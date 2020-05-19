@@ -11,14 +11,14 @@ import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
-class CreateCategory extends StatefulWidget {
-  CreateCategory({Key key}) : super(key: key);
+class CategoryCreate extends StatefulWidget {
+  CategoryCreate({Key key}) : super(key: key);
 
   @override
-  _CreateCategoryState createState() => _CreateCategoryState();
+  _CategoryCreateState createState() => _CategoryCreateState();
 }
 
-class _CreateCategoryState extends State<CreateCategory> {
+class _CategoryCreateState extends State<CategoryCreate> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
@@ -82,13 +82,13 @@ class _CreateCategoryState extends State<CreateCategory> {
                     "SAVE",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  key: Key("categories_create:save_button"),
+                  key: Key("category_create:save_button"),
                   textColor: Colors.black,
                   onPressed: saveCategory,
                 ),
               ],
             ),
-            key: Key("categories_create:scaffold"),
+            key: Key("category_create:scaffold"),
             body: Center(
               child: Form(
                 key: this.formKey,
@@ -107,7 +107,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                         child: TextFormField(
                           maxLength: Globals.maxCategoryNameLength,
                           validator: validCategoryName,
-                          key: Key("categories_create:category_name_input"),
+                          key: Key("category_create:category_name_input"),
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),
@@ -138,7 +138,7 @@ class _CreateCategoryState extends State<CreateCategory> {
                                       (context, index) =>
                                           this.choiceRows[index],
                                       childCount: this.choiceRows.length),
-                                  key: Key("categories_create:choice_list"))
+                                  key: Key("category_create:choice_list"))
                             ],
                           ),
                         ),
@@ -154,7 +154,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             ),
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.add),
-              key: Key("categories_create:add_choice_button"),
+              key: Key("category_create:add_choice_button"),
               onPressed: () {
                 FocusNode focusNode = new FocusNode();
                 TextEditingController labelController =
@@ -226,7 +226,7 @@ class _CreateCategoryState extends State<CreateCategory> {
             actions: <Widget>[
               FlatButton(
                 child: Text("YES"),
-                key: Key("categories_create:confirm_leave_page_button"),
+                key: Key("category_create:confirm_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                   Navigator.of(this.context).pop();
@@ -234,7 +234,7 @@ class _CreateCategoryState extends State<CreateCategory> {
               ),
               FlatButton(
                 child: Text("NO"),
-                key: Key("categories_create:denial_leave_page_button"),
+                key: Key("category_create:denial_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },

@@ -147,7 +147,7 @@ class _GroupPageState extends State<GroupPage> {
           key: Key("group_page:create_event_button"),
           onPressed: () {
             Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CreateEvent()))
+                    MaterialPageRoute(builder: (context) => EventCreate()))
                 .then((val) {
               if (val != null) {
                 // this means that an event was created, so don't make an API call to refresh

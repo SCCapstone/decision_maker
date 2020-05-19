@@ -1,12 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/categories_widgets/categories_edit.dart';
+import 'package:front_end_pocket_poll/categories_widgets/category_edit.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
-class CategoryRowGroup extends StatefulWidget {
+class GroupCategoryRow extends StatefulWidget {
   final CategoryRatingTuple categoryRatingTuple;
   final Category category;
   final VoidCallback onSelect;
@@ -15,15 +15,15 @@ class CategoryRowGroup extends StatefulWidget {
   final bool canSelect;
   final int index; // used for integration tests
 
-  CategoryRowGroup(this.categoryRatingTuple, this.category, this.selected,
+  GroupCategoryRow(this.categoryRatingTuple, this.category, this.selected,
       this.updateOwnedCategories, this.canSelect,
       {this.onSelect, this.index});
 
   @override
-  _CategoryRowGroupState createState() => new _CategoryRowGroupState();
+  _GroupCategoryRowState createState() => new _GroupCategoryRowState();
 }
 
-class _CategoryRowGroupState extends State<CategoryRowGroup> {
+class _GroupCategoryRowState extends State<GroupCategoryRow> {
   int groupNum;
   bool activeUserOwnsCategory;
 
@@ -53,7 +53,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: Key("category_row_group:container:${widget.category.categoryId}"),
+      key: Key("group_category_row:container:${widget.category.categoryId}"),
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -63,7 +63,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             child: Checkbox(
               value: widget.selected,
               key: Key(
-                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.selected}:${widget.index}"),
+                  "group_category_row:checkbox:${this.activeUserOwnsCategory}:${widget.selected}:${widget.index}"),
               onChanged: (bool value) {
                 selectCategory();
               },
@@ -104,7 +104,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => EditCategory(
+                      builder: (context) => CategoryEdit(
                             categoryRatingTuple: widget.categoryRatingTuple,
                             category: widget.category,
                           ))).then((_) {

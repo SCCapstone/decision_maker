@@ -8,7 +8,7 @@ import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
-import 'package:front_end_pocket_poll/widgets/category_row_group.dart';
+import 'group_category_row.dart';
 
 class GroupCategories extends StatefulWidget {
   final Map<String, GroupCategory>
@@ -26,8 +26,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
   bool errorLoading;
   int sortVal;
   Widget errorWidget;
-  List<CategoryRowGroup> ownedCategoryRows;
-  List<CategoryRowGroup> groupCategoryRows;
+  List<GroupCategoryRow> ownedCategoryRows;
+  List<GroupCategoryRow> groupCategoryRows;
   List<CategoryRatingTuple> groupCategories;
 
   @override
@@ -35,8 +35,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
     this.loading = true;
     this.errorLoading = false;
     this.sortVal = Globals.user.appSettings.categorySort;
-    this.ownedCategoryRows = new List<CategoryRowGroup>();
-    this.groupCategoryRows = new List<CategoryRowGroup>();
+    this.ownedCategoryRows = new List<GroupCategoryRow>();
+    this.groupCategoryRows = new List<GroupCategoryRow>();
     this.getCategoriesAndBuildRows();
     super.initState();
   }
@@ -289,13 +289,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
   void sortGroupCategoryRows() {
     if (this.sortVal == Globals.alphabeticalSort) {
-      this.groupCategoryRows.sort((a, b) =>
-          a.category.categoryName.toLowerCase().compareTo(
-              b.category.categoryName.toLowerCase()));
+      this.groupCategoryRows.sort((a, b) => a.category.categoryName
+          .toLowerCase()
+          .compareTo(b.category.categoryName.toLowerCase()));
     } else if (this.sortVal == Globals.alphabeticalReverseSort) {
-      this.groupCategoryRows.sort((a, b) =>
-          b.category.categoryName.toLowerCase().compareTo(
-              a.category.categoryName.toLowerCase()));
+      this.groupCategoryRows.sort((a, b) => b.category.categoryName
+          .toLowerCase()
+          .compareTo(a.category.categoryName.toLowerCase()));
     }
   }
 
@@ -364,7 +364,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
       for (Category category in Globals.user.ownedCategories) {
         if (widget.canEdit ||
             Globals.currentGroup.categories.containsKey(category.categoryId)) {
-          this.ownedCategoryRows.add(new CategoryRowGroup(
+          this.ownedCategoryRows.add(new GroupCategoryRow(
               null,
               category,
               widget.selectedCategories.keys.contains(category.categoryId),
@@ -381,7 +381,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         if (!Globals.user.ownedCategories
             .contains(categoryRatingTuple.category)) {
           // separate the categories of the group that the user doesn't own
-          this.groupCategoryRows.add(new CategoryRowGroup(
+          this.groupCategoryRows.add(new GroupCategoryRow(
                 categoryRatingTuple,
                 categoryRatingTuple.category,
                 widget.selectedCategories.keys
