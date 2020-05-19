@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -92,10 +93,12 @@ public class EditCategoryHandlerTest {
       verify(this.dbAccessManager).executeWriteTransaction(argument.capture());
       assertEquals(2, argument.getValue().size());
 
-      assertEquals(3, mockingDetails(this.dbAccessManager).getInvocations().size());
+      assertEquals(6, mockingDetails(this.dbAccessManager).getInvocations().size());
       verify(this.dbAccessManager, times(1)).executeWriteTransaction(any(List.class));
       verify(this.dbAccessManager, times(1)).getCategory(any(String.class));
       verify(this.dbAccessManager, times(1)).getUser(any(String.class));
+      verify(this.dbAccessManager, times(3))
+          .updateGroup(any(String.class), any(UpdateItemSpec.class));
       verify(this.metrics, times(2)).commonClose(true);
     } catch (final Exception e) {
       System.out.println(e);

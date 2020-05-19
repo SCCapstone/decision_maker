@@ -1,5 +1,6 @@
 package dbMaintenance.modules;
 
+import dbMaintenance.handlers.AddCategoryCreatorToGroupHandler;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
 import dbMaintenance.handlers.KeyUserRatingsByVersionHandler;
 import dagger.Module;
@@ -24,5 +25,11 @@ public class PocketPollMaintenanceModule {
   public KeyUserRatingsByVersionHandler provideKeyUserRatingsByVersionHandler(
       final MaintenanceDbAccessManager maintenanceDbAccessManager) {
     return new KeyUserRatingsByVersionHandler(maintenanceDbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public AddCategoryCreatorToGroupHandler provideAddCategoryCreatorToGroupHandler(
+      final MaintenanceDbAccessManager maintenanceDbAccessManager) {
+    return new AddCategoryCreatorToGroupHandler(maintenanceDbAccessManager, this.metrics);
   }
 }

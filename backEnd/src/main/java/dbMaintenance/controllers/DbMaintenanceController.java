@@ -23,6 +23,7 @@ public class DbMaintenanceController implements
   private static final Map<String, Class<? extends ApiRequestController>> ACTIONS_TO_CONTROLLERS = Maps
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
           .put("keyUserRatingsByVersion", KeyUserRatingsByVersionController.class)
+          .put("addCategoryCreatorToGroup", AddCategoryCreatorToGroupController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,

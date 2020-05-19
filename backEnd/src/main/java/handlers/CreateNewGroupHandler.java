@@ -14,7 +14,9 @@ import javax.inject.Inject;
 import managers.DbAccessManager;
 import managers.S3AccessManager;
 import managers.SnsAccessManager;
+import models.Category;
 import models.Group;
+import models.GroupCategory;
 import models.GroupForApiResponse;
 import models.Metadata;
 import models.User;
@@ -49,7 +51,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * @param activeUser            The user making the create new group api request.
    * @param name                  The name of the group.
    * @param membersList           The list of usernames to be associated with the group.
-   * @param categoriesMap         The map of category ids to names associated with the group.
+   * @param categoriesList        The list of category ids to be associated with the group.
    * @param defaultVotingDuration The default voting duration for creating events in this group.
    * @param defaultRsvpDuration   The default consider duration for creating events in this gorup.
    * @param isOpen                Whether or not this group is editable by its members or just its
@@ -58,7 +60,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String name,
-      final List<String> membersList, final Map<String, Object> categoriesMap,
+      final List<String> membersList, final List<String> categoriesList,
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
       final List<Integer> iconData) {
     final String classMethod = "CreateNewGroupHandler.handle";
@@ -72,7 +74,6 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
 
       final Group newGroup = new Group();
       newGroup.setGroupName(name);
-      newGroup.setCategories(categoriesMap);
       newGroup.setDefaultVotingDuration(defaultVotingDuration);
       newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
       newGroup.setOpen(isOpen);
@@ -86,9 +87,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
       membersList.add(activeUser);
       newGroup.setMembers(this.getMembersMapForInsertion(membersList));
 
-      //TODO update the categories passed in to be a list of ids, then create categories map
-      //TODO similar to what we're doing with the members above (currently we're just relying on
-      //TODO user input which is bad
+      newGroup.setCategoriesRawMap(this.getCategoriesMapForInsertion(categoriesList));
 
       if (iconData != null) { // if it's there, assume it's new image data
         final String newIconFileName = this.s3AccessManager.uploadImage(iconData, this.metrics)
@@ -117,12 +116,23 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
       throws InvalidAttributeValueException {
     final Map<String, Object> membersMap = new HashMap<>();
 
-    for (String username : new HashSet<>(members)) {
+    for (final String username : new HashSet<>(members)) {
       final User user = this.dbAccessManager.getUser(username);
       membersMap.putIfAbsent(username, user.asMember().asMap());
     }
 
     return membersMap;
+  }
+
+  private Map<String, Object> getCategoriesMapForInsertion(final List<String> categoryIds) {
+    final Map<String, Object> categoriesMap = new HashMap<>();
+
+    for (final String categoryId : new HashSet<>(categoryIds)) {
+      final Category category = this.dbAccessManager.getCategory(categoryId);
+      categoriesMap.putIfAbsent(categoryId, new GroupCategory(category.asMap()).asMap());
+    }
+
+    return categoriesMap;
   }
 
   /**
