@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
-import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
-import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
+import 'package:front_end_pocket_poll/models/group_category.dart';
 
 import 'category_row.dart';
 
@@ -17,9 +15,9 @@ class CategoryPopupSingle extends StatefulWidget {
 }
 
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
-  List<Widget> categoryRows;
+  List<CategoryRow> categoryRows;
   Category selectedCategory;
-  Future<ResultStatus<List<CategoryRatingTuple>>> resultFuture;
+
   bool loading;
   bool errorLoading;
   Widget errorWidget;
@@ -27,9 +25,8 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   @override
   void initState() {
     this.selectedCategory = widget.initialSelectedCategory;
-    this.categoryRows = new List<Widget>();
-    this.resultFuture = CategoriesManager.getAllCategoriesFromGroup(
-        Globals.currentGroup.groupId);
+    this.categoryRows = new List<CategoryRow>();
+    buildChoiceRows();
     super.initState();
   }
 
@@ -55,82 +52,39 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Scrollbar(
-                child: FutureBuilder(
-                    future: this.resultFuture,
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        ResultStatus<List<CategoryRatingTuple>> resultStatus =
-                            snapshot.data;
-                        if (resultStatus.success) {
-                          List<CategoryRatingTuple> categories =
-                              resultStatus.data;
-
-                          if (categories.length > 0) {
-//                            CategoriesManager.sortByAlphaAscending(categories);
-                            int index = 0; // used for integration testing
-                            for (CategoryRatingTuple categoryRatingTuple
-                                in categories) {
-                              this.categoryRows.add(CategoryRow(
-                                    categoryRatingTuple.category,
-                                    this.selectedCategory != null &&
-                                        this.selectedCategory.categoryId ==
-                                            categoryRatingTuple
-                                                .category.categoryId,
-                                    onSelect: () => selectCategory(
-                                        categoryRatingTuple.category),
-                                    index: index,
-                                  ));
-                              index++;
-                            }
-
-                            return Container(
-                              height: MediaQuery.of(context).size.height * .25,
-                              key: Key(
-                                  "category_popup_single:category_container"),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: this.categoryRows.length,
-                                itemBuilder: (context, index) {
-                                  return this.categoryRows[index];
-                                },
-                              ),
-                            );
-                          } else {
-                            return Container(
-                                height:
-                                    MediaQuery.of(context).size.height * .25,
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: TextStyle(
-                                        color:
-                                            (Globals.user.appSettings.darkTheme)
-                                                ? Colors.white
-                                                : Colors.black),
-                                    children: [
-                                      TextSpan(
-                                          text:
-                                              "No categories found in this group. Click on this icon:  "),
-                                      WidgetSpan(
-                                        child: Icon(Icons.settings),
-                                      ),
-                                      TextSpan(
-                                          text:
-                                              " found in the top right corner of the group's page to add some."),
-                                    ],
-                                  ),
-                                ));
-                          }
-                        } else {
-                          return Text(resultStatus.errorMessage);
-                        }
-                      } else if (snapshot.hasError) {
-                        // this shouldn't ever be reached, but put it here to be safe
-                        return Text("Error: ${snapshot.error}");
-                      } else {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                    }),
-              ),
+                  child: (this.categoryRows.isNotEmpty)
+                      ? Container(
+                          height: MediaQuery.of(context).size.height * .25,
+                          key: Key("category_popup_single:category_container"),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: this.categoryRows.length,
+                            itemBuilder: (context, index) {
+                              return this.categoryRows[index];
+                            },
+                          ),
+                        )
+                      : Container(
+                          height: MediaQuery.of(context).size.height * .25,
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                  color: (Globals.user.appSettings.darkTheme)
+                                      ? Colors.white
+                                      : Colors.black),
+                              children: [
+                                TextSpan(
+                                    text:
+                                        "No categories found in this group. Click on this icon:  "),
+                                WidgetSpan(
+                                  child: Icon(Icons.settings),
+                                ),
+                                TextSpan(
+                                    text:
+                                        " found in the top right corner of the group's page to add some."),
+                              ],
+                            ),
+                          ))),
             ],
           ),
         ),
@@ -138,11 +92,38 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
     );
   }
 
+  // builds choice rows using the current group categories
+  void buildChoiceRows() {
+    int index = 0; // used for integration testing
+    for (MapEntry<String, GroupCategory> catEntry
+        in Globals.currentGroup.categories.entries) {
+      this.categoryRows.add(CategoryRow(
+            new Category(
+                categoryName: catEntry.value.categoryName,
+                owner: catEntry.value.owner),
+            this.selectedCategory != null &&
+                this.selectedCategory.categoryId == catEntry.key,
+            onSelect: () => selectCategory(new Category(
+                categoryId: catEntry.key,
+                categoryName: catEntry.value.categoryName)),
+            index: index,
+          ));
+      index++;
+    }
+    // sorting alphabetically
+    this.categoryRows.sort((a, b) {
+      return a.category.categoryName
+          .toLowerCase()
+          .compareTo(b.category.categoryName.toLowerCase());
+    });
+  }
+
   // selects a category for an event. Note only one category can be selected
   void selectCategory(Category category) {
     setState(() {
-      this.categoryRows.clear();
       this.selectedCategory = category;
+      this.categoryRows.clear();
+      buildChoiceRows();
     });
   }
 }
