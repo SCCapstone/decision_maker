@@ -504,7 +504,7 @@ void main() {
 
       // pick the first category that is not a group category (i.e is owned by testing user)
       var categoryCheckbox =
-          find.byValueKey("category_row_group:checkbox:false:0");
+          find.byValueKey("category_row_group:checkbox:true:true:0");
       await driver.tap(categoryCheckbox);
       await driver.tap(find.pageBack());
 
@@ -513,7 +513,7 @@ void main() {
       await driver.waitFor(find.byValueKey("group_categories:scaffold"));
 
       // pick the first category that is not a group category (i.e is owned by testing user)
-      categoryCheckbox = find.byValueKey("category_row_group:checkbox:false:0");
+      categoryCheckbox = find.byValueKey("category_row_group:checkbox:true:false:0");
       await driver.tap(categoryCheckbox);
       await driver.tap(find.pageBack());
 

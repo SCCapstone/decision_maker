@@ -3,6 +3,7 @@ import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/categoryRatingTuple.dart';
 
 import 'category_row.dart';
 
@@ -18,7 +19,7 @@ class CategoryPopupSingle extends StatefulWidget {
 class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
   List<Widget> categoryRows;
   Category selectedCategory;
-  Future<ResultStatus<List<Category>>> resultFuture;
+  Future<ResultStatus<List<CategoryRatingTuple>>> resultFuture;
   bool loading;
   bool errorLoading;
   Widget errorWidget;
@@ -58,21 +59,25 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                     future: this.resultFuture,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
-                        ResultStatus<List<Category>> resultStatus =
+                        ResultStatus<List<CategoryRatingTuple>> resultStatus =
                             snapshot.data;
                         if (resultStatus.success) {
-                          List<Category> categories = resultStatus.data;
+                          List<CategoryRatingTuple> categories =
+                              resultStatus.data;
 
                           if (categories.length > 0) {
-                            CategoriesManager.sortByAlphaAscending(categories);
+//                            CategoriesManager.sortByAlphaAscending(categories);
                             int index = 0; // used for integration testing
-                            for (Category category in categories) {
+                            for (CategoryRatingTuple categoryRatingTuple
+                                in categories) {
                               this.categoryRows.add(CategoryRow(
-                                    category,
+                                    categoryRatingTuple.category,
                                     this.selectedCategory != null &&
                                         this.selectedCategory.categoryId ==
-                                            category.categoryId,
-                                    onSelect: () => selectCategory(category),
+                                            categoryRatingTuple
+                                                .category.categoryId,
+                                    onSelect: () => selectCategory(
+                                        categoryRatingTuple.category),
                                     index: index,
                                   ));
                               index++;
@@ -109,7 +114,8 @@ class _CategoryPopupSingleState extends State<CategoryPopupSingle> {
                                         child: Icon(Icons.settings),
                                       ),
                                       TextSpan(
-                                          text: " found in the top right corner of the group's page to add some."),
+                                          text:
+                                              " found in the top right corner of the group's page to add some."),
                                     ],
                                   ),
                                 ));

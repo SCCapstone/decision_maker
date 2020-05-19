@@ -466,9 +466,9 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Category>> getEventCategory(
+  static Future<ResultStatus<CategoryRatingTuple>> getEventCategory(
       final String groupId, final String eventId) async {
-    ResultStatus<Category> retVal = new ResultStatus(success: false);
+    ResultStatus<CategoryRatingTuple> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
@@ -486,7 +486,7 @@ class GroupsManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          retVal.data = new Category.fromJson(responseJson.first());
+          retVal.data = new CategoryRatingTuple.fromJson(responseJson.first);
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";

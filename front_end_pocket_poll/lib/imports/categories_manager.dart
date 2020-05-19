@@ -97,7 +97,6 @@ class CategoriesManager {
     if (response.success) {
       try {
         Map<String, dynamic> body = jsonDecode(response.data);
-//        print(body);
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
@@ -120,9 +119,9 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<Category>>> getAllCategoriesFromGroup(
+  static Future<ResultStatus<List<CategoryRatingTuple>>> getAllCategoriesFromGroup(
       String groupId) async {
-    ResultStatus<List<Category>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
@@ -141,7 +140,7 @@ class CategoriesManager {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.success = true;
           retVal.data =
-              responseJson.map((m) => new Category.fromJson(m)).toList();
+              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
         } else {
           // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
           retVal.errorMessage = "Unable to load group categories.";

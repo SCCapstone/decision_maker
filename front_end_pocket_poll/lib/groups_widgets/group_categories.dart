@@ -113,6 +113,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
             ),
           ],
         ),
+        resizeToAvoidBottomPadding: false,
         key: Key("group_categories:scaffold"),
         body: Column(
           children: <Widget>[
@@ -300,13 +301,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
   void sortOwnedCategoryRows() {
     if (this.sortVal == Globals.alphabeticalSort) {
-      this.ownedCategoryRows.sort((a, b) =>
-          a.categoryRatingTuple.category.categoryName.toLowerCase().compareTo(
-              b.categoryRatingTuple.category.categoryName.toLowerCase()));
+      this.ownedCategoryRows.sort((a, b) => a.category.categoryName
+          .toLowerCase()
+          .compareTo(b.category.categoryName.toLowerCase()));
     } else if (this.sortVal == Globals.alphabeticalReverseSort) {
-      this.ownedCategoryRows.sort((a, b) =>
-          b.categoryRatingTuple.category.categoryName.toLowerCase().compareTo(
-              a.categoryRatingTuple.category.categoryName.toLowerCase()));
+      this.ownedCategoryRows.sort((a, b) => b.category.categoryName
+          .toLowerCase()
+          .compareTo(a.category.categoryName.toLowerCase()));
     }
   }
 
@@ -377,11 +378,12 @@ class _GroupCategoriesState extends State<GroupCategories> {
 
       //build the group categories
       for (CategoryRatingTuple categoryRatingTuple in this.groupCategories) {
-        if (!Globals.user.ownedCategories.contains(categoryRatingTuple)) {
+        if (!Globals.user.ownedCategories
+            .contains(categoryRatingTuple.category)) {
           // separate the categories of the group that the user doesn't own
           this.groupCategoryRows.add(new CategoryRowGroup(
                 categoryRatingTuple,
-                null,
+                categoryRatingTuple.category,
                 widget.selectedCategories.keys
                     .contains(categoryRatingTuple.category.categoryId),
                 this.buildCategoryRows,

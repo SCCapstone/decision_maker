@@ -26,7 +26,6 @@ class CategoryRowGroup extends StatefulWidget {
 class _CategoryRowGroupState extends State<CategoryRowGroup> {
   int groupNum;
   bool activeUserOwnsCategory;
-  Category category;
 
   @override
   void initState() {
@@ -35,22 +34,14 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
     if (widget.category == null && widget.categoryRatingTuple != null) {
       // means a tuple was passed in so the user doesn't own the category
       this.activeUserOwnsCategory = false;
-      this.category = widget.categoryRatingTuple.category;
     } else if (widget.categoryRatingTuple == null && widget.category != null) {
       this.activeUserOwnsCategory = true;
-      this.category = widget.category;
     }
-//    for (Category category in Globals.user.ownedCategories) {
-//      if (category.categoryId ==
-//          widget.categoryRatingTuple.category.categoryId) {
-//        this.activeUserOwnsCategory = true;
-//        break;
-//      }
-//    }
+
     if (!this.activeUserOwnsCategory) {
       // find the num of other groups this category is in if its not active user's category
       for (String groupId in Globals.user.groups.keys) {
-        if (this.category.groups.containsKey(groupId) &&
+        if (widget.categoryRatingTuple.category.groups.containsKey(groupId) &&
             groupId != Globals.currentGroup.groupId) {
           this.groupNum++;
         }
@@ -62,7 +53,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: Key("category_row_group:container:${this.category.categoryId}"),
+      key: Key("category_row_group:container:${widget.category.categoryId}"),
       height: MediaQuery.of(context).size.height * .07,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -72,9 +63,9 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
             child: Checkbox(
               value: widget.selected,
               key: Key(
-                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.index}"),
+                  "category_row_group:checkbox:${this.activeUserOwnsCategory}:${widget.selected}:${widget.index}"),
               onChanged: (bool value) {
-                selectCategory(value);
+                selectCategory();
               },
             ),
           ),
@@ -88,13 +79,13 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
               child: GestureDetector(
                   onTap: () {
                     if (widget.canSelect) {
-                      selectCategory(!widget.selected);
+                      selectCategory();
                     }
                   },
                   child: AutoSizeText(
                       (this.groupNum != 0)
-                          ? "${widget.categoryRatingTuple.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
-                          : widget.categoryRatingTuple.category.categoryName,
+                          ? "${widget.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
+                          : widget.category.categoryName,
                       maxLines: 2,
                       style: TextStyle(fontSize: 20),
                       minFontSize: 12,
@@ -115,9 +106,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
                   MaterialPageRoute(
                       builder: (context) => EditCategory(
                             categoryRatingTuple: widget.categoryRatingTuple,
-                            category: (widget.categoryRatingTuple != null)
-                                ? widget.categoryRatingTuple.category
-                                : widget.category,
+                            category: widget.category,
                           ))).then((_) {
                 // in case user copied a category, refresh the owned categories on back press
                 widget.updateOwnedCategories();
@@ -134,7 +123,7 @@ class _CategoryRowGroupState extends State<CategoryRowGroup> {
     );
   }
 
-  void selectCategory(bool value) {
+  void selectCategory() {
     this.widget.onSelect();
   }
 }

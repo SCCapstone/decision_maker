@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:add_2_calendar/add_2_calendar.dart' as calendar;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_update_ratings.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
@@ -152,9 +153,25 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 16),
                   ),
+                  RaisedButton(
+                    child: Text("Update Ratings"),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EventUpdateRatings(
+                                  groupId: widget.groupId,
+                                  eventId: widget.eventId))).then((_) {
+                        refreshEvent();
+                      });
+                    },
+                  ),
                   Padding(
                     padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * .01),
+                        MediaQuery.of(context).size.height * .008),
                   ),
                   AutoSizeText("Event created by: ${this.eventCreator}",
                       minFontSize: 12,
@@ -243,7 +260,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                                 : Theme.of(context).scaffoldBackgroundColor,
                           )),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ],

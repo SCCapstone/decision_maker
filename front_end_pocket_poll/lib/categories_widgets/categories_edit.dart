@@ -70,6 +70,7 @@ class _EditCategoryState extends State<EditCategory> {
       this.originalRatings = widget.categoryRatingTuple.ratings;
       this.loading = false;
     } else if (widget.category != null) {
+      // means the active user owns the category and is not editing from the group category page
       for (CategoryRatingTuple cat in Globals.cachedCategories) {
         // if category is cached get it and don't bother querying DB
         if (cat.category.categoryId == widget.category.categoryId) {
