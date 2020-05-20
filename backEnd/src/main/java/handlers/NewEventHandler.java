@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.MAX_DURATION;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -27,7 +29,6 @@ import utilities.WarningDescriptor;
 
 public class NewEventHandler implements ApiRequestHandler {
 
-  private static final Integer MAX_DURATION = 10000;
   private static final Integer MAX_EVENT_NAME_LENGTH = 30;
 
   private final DbAccessManager dbAccessManager;

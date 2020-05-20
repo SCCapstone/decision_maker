@@ -1,5 +1,8 @@
 package handlers;
 
+import static utilities.Config.MAX_DURATION;
+import static utilities.Config.MAX_GROUP_MEMBERS;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -29,8 +32,6 @@ import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
 public class EditGroupHandler implements ApiRequestHandler {
-
-  public static final Integer MAX_DURATION = 10000;
 
   private DbAccessManager dbAccessManager;
   private S3AccessManager s3AccessManager;
@@ -417,6 +418,13 @@ public class EditGroupHandler implements ApiRequestHandler {
     if (!members.contains(oldGroup.getGroupCreator())) {
       errorMessage = this.getUpdatedErrorMessage(errorMessage,
           "Error: Group creator cannot be removed from group.");
+    }
+
+    //NOTE this could potentially be a bad error since not all usernames are guaranteed to exist.
+    // That being said, it should be assumed all names are valid from front end validation. This
+    // also saves potentially unnecessary db hits.
+    if (new HashSet<>(members).size() > MAX_GROUP_MEMBERS) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Too many members.");
     }
 
     //make a copy so we don't actually update the member map on the old group

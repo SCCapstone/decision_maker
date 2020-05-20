@@ -1,5 +1,8 @@
 package handlers;
 
+import static utilities.Config.MAX_DURATION;
+import static utilities.Config.MAX_GROUP_MEMBERS;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -29,8 +32,6 @@ import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
 public class CreateNewGroupHandler implements ApiRequestHandler {
-
-  public static final Integer MAX_DURATION = 10000;
 
   private DbAccessManager dbAccessManager;
   private S3AccessManager s3AccessManager;
@@ -74,7 +75,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
 
     try {
       final Optional<String> errorMessage = this
-          .newGroupInputIsValid(defaultVotingDuration, defaultRsvpDuration);
+          .newGroupInputIsValid(membersList, defaultVotingDuration, defaultRsvpDuration);
       if (!errorMessage.isPresent()) {
         final String newGroupId = UUID.randomUUID().toString();
         final String lastActivity = this.dbAccessManager.now();
@@ -154,8 +155,8 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * @param defaultRsvpDuration   the new rsvp duration
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
-  private Optional<String> newGroupInputIsValid(final Integer defaultVotingDuration,
-      final Integer defaultRsvpDuration) {
+  private Optional<String> newGroupInputIsValid(final List<String> membersList,
+      final Integer defaultVotingDuration, final Integer defaultRsvpDuration) {
 
     String errorMessage = null;
 
@@ -165,6 +166,13 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
 
     if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
       errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
+    }
+
+    //NOTE this could potentially be a bad error since not all usernames are guaranteed to exist.
+    // That being said, it should be assumed all names are valid from front end validation. This
+    // also saves potentially unnecessary db hits.
+    if (new HashSet<>(membersList).size() > MAX_GROUP_MEMBERS) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Too many members.");
     }
 
     return Optional.ofNullable(errorMessage);
