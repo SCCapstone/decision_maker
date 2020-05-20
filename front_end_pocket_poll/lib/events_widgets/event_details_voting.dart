@@ -10,10 +10,11 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
+import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
-import 'event_user_row.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+import 'event_user_row.dart';
 
 class EventDetailsVoting extends StatefulWidget {
   final String groupId;
@@ -39,10 +40,10 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     this.eventCreator = "";
     this.userRows = new Map<String, EventUserRow>();
     this.choices = new Map<String, String>();
-    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
-        true) {
+    if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
     getEvent();
@@ -231,7 +232,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   }
 
   void getEvent() {
-    this.event = Globals.currentGroup.events[widget.eventId];
+    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -250,11 +251,11 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
   }
 
   Future<Null> refreshEvent() async {
-    ResultStatus<Group> resultStatus = await GroupsManager.getGroup(
+    ResultStatus<GetGroupResponse> resultStatus = await GroupsManager.getGroup(
         widget.groupId,
-        batchNumber: Globals.currentGroup.currentBatchNum);
+        batchNumber: Globals.currentGroupResponse.group.currentBatchNum);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data;
+      Globals.currentGroupResponse = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page

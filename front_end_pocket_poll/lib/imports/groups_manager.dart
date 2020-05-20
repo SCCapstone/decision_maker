@@ -8,6 +8,7 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
+import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/models/group_interface.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
@@ -46,9 +47,9 @@ class GroupsManager {
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
-  static Future<ResultStatus<Group>> getGroup(String groupId,
+  static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId,
       {int batchNumber}) async {
-    ResultStatus<Group> retVal = new ResultStatus(success: false);
+    ResultStatus<GetGroupResponse> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getGroupAction;
@@ -71,8 +72,8 @@ class GroupsManager {
         ResponseItem responseItem = new ResponseItem.fromJson(body);
 
         if (responseItem.success) {
-          retVal.data =
-              new Group.fromJson(json.decode(responseItem.resultMessage));
+          retVal.data = new GetGroupResponse.fromJson(
+              json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load group.";

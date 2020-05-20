@@ -6,9 +6,9 @@ import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
 import handlers.ApiRequestHandler;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import javax.inject.Inject;
 import models.Group;
 import models.GroupCategory;
 import utilities.ErrorDescriptor;
@@ -20,6 +20,7 @@ public class AddCategoryCreatorToGroupHandler implements ApiRequestHandler {
   private final MaintenanceDbAccessManager maintenanceDbAccessManager;
   private final Metrics metrics;
 
+  @Inject
   public AddCategoryCreatorToGroupHandler(
       final MaintenanceDbAccessManager maintenanceDbAccessManager, final Metrics metrics) {
     this.maintenanceDbAccessManager = maintenanceDbAccessManager;
@@ -34,7 +35,7 @@ public class AddCategoryCreatorToGroupHandler implements ApiRequestHandler {
         .successful("Category Creators added to groups successfully.");
 
     try {
-      final Iterator<Item> tableItems = this.maintenanceDbAccessManager.scanUsersTable();
+      final Iterator<Item> tableItems = this.maintenanceDbAccessManager.scanGroupsTable();
 
       while (tableItems.hasNext()) {
         final Item groupItem = tableItems.next();

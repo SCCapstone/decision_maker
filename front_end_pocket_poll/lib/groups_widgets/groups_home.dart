@@ -689,12 +689,13 @@ class _GroupsHomeState extends State<GroupsHome>
 
       if (notification.action == Globals.removedFromGroupAction) {
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        if (Globals.currentGroup == null) {
+        if (Globals.currentGroupResponse.group == null) {
           // this avoids the current page flashing for a second, don't need to pop if already here
           refreshList();
-        } else if (Globals.currentGroup.groupId == groupId) {
+        } else if (Globals.currentGroupResponse.group.groupId == groupId) {
           // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-          Globals.user.groups.remove(Globals.currentGroup.groupId);
+          Globals.user.groups
+              .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
       } else if (notification.action == Globals.addedToGroupAction) {
@@ -705,11 +706,10 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        String eventId = notification.payload[EventsManager.EVENT_ID];
+        // String eventId = notification.payload[EventsManager.EVENT_ID];
         String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen
-              .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].eventsUnseen++;
           Globals.user.groups[groupId].lastActivity = date;
         }
         if (Globals.refreshGroupPage != null) {
@@ -775,12 +775,13 @@ class _GroupsHomeState extends State<GroupsHome>
 
       if (notification.action == Globals.removedFromGroupAction) {
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        if (Globals.currentGroup == null) {
+        if (Globals.currentGroupResponse.group == null) {
           // this avoids the current page flashing for a second, don't need to pop if already here
           refreshList();
-        } else if (Globals.currentGroup.groupId == groupId) {
+        } else if (Globals.currentGroupResponse.group.groupId == groupId) {
           // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-          Globals.user.groups.remove(Globals.currentGroup.groupId);
+          Globals.user.groups
+              .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
       } else if (notification.action == Globals.addedToGroupAction) {
@@ -791,11 +792,10 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        String eventId = notification.payload[EventsManager.EVENT_ID];
+        // String eventId = notification.payload[EventsManager.EVENT_ID];
         String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen
-              .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].eventsUnseen++;
           Globals.user.groups[groupId].lastActivity = date;
         }
         if (Globals.refreshGroupPage != null) {

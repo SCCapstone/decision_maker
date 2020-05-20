@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
-
 import 'package:front_end_pocket_poll/widgets/category_row.dart';
 
 class EventPickCategory extends StatefulWidget {
@@ -96,7 +95,7 @@ class _EventPickCategoryState extends State<EventPickCategory> {
   void buildChoiceRows() {
     int index = 0; // used for integration testing
     for (MapEntry<String, GroupCategory> catEntry
-        in Globals.currentGroup.categories.entries) {
+        in Globals.currentGroupResponse.group.categories.entries) {
       this.categoryRows.add(CategoryRow(
             new Category(
                 categoryName: catEntry.value.categoryName,

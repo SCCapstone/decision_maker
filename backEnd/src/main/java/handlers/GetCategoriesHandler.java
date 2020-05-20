@@ -56,6 +56,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -82,6 +83,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -115,6 +117,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -168,6 +171,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

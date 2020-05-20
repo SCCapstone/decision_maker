@@ -1,7 +1,7 @@
 package models;
 
-import com.amazonaws.services.dynamodbv2.document.Item;
+import java.util.Map;
 
 public interface Model {
-  public Item asItem();
+  public Map<String, Object> asMap();
 }

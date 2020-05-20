@@ -2,6 +2,7 @@ package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
 import exceptions.InvalidAttributeValueException;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.Data;
 
@@ -41,7 +42,23 @@ public class UserForApiResponse extends User {
     //remove the ratings maps all together
     modelAsMap.remove(User.CATEGORY_RATINGS);
 
-    //TODO remove the events unseen from the user map and add summary (https://github.com/SCCapstone/decision_maker/issues/538)
+    //overwrite the user groups with summaries of said groups
+    modelAsMap.put(User.GROUPS, this.getSummarizedGroups());
     return modelAsMap;
+  }
+
+  private Map<String, Object> getSummarizedGroups() {
+    final Map<String, Object> summarizedGroups = new HashMap<>();
+    Map<String, Object> userGroupSummary;
+    for (final Map.Entry<String, UserGroup> userGroupEntry : this.getGroups().entrySet()) {
+      userGroupSummary = userGroupEntry.getValue().asMap();
+
+      // overwrite the mapping to just be the count
+      userGroupSummary.put(User.EVENTS_UNSEEN, userGroupEntry.getValue().getEventsUnseen().size());
+
+      summarizedGroups.put(userGroupEntry.getKey(), userGroupSummary);
+    }
+
+    return summarizedGroups;
   }
 }

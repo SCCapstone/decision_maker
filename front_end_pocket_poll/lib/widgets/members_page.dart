@@ -45,10 +45,10 @@ class _MembersPageState extends State<MembersPage> {
       bool displayOwner = false;
       if (!widget.isCreating) {
         // can't delete yourself or the group creator
-        displayDelete = user.username != Globals.currentGroup.groupCreator &&
+        displayDelete = user.username != Globals.currentGroupResponse.group.groupCreator &&
             user.username != Globals.username &&
             widget.canEdit;
-        displayOwner = user.username == Globals.currentGroup.groupCreator;
+        displayOwner = user.username == Globals.currentGroupResponse.group.groupCreator;
       }
       UserRow userRow = new UserRow(user.displayName, user.username, user.icon,
           displayDelete, false, displayOwner, deleteUser: () {

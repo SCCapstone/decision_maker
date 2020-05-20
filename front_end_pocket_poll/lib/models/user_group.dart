@@ -6,7 +6,7 @@ class UserGroup implements GroupInterface {
   final String groupName;
   final String icon;
   String lastActivity;
-  final Map<String, bool> eventsUnseen;
+  int eventsUnseen;
 
   bool muted;
 
@@ -22,18 +22,13 @@ class UserGroup implements GroupInterface {
       this.muted, this.eventsUnseen);
 
   factory UserGroup.fromJson(Map<String, dynamic> json, String groupId) {
-    Map<String, bool> eventsUnseenMap = new Map<String, bool>();
-    for (String eventId in json[GroupsManager.EVENTS_UNSEEN].keys) {
-      eventsUnseenMap.putIfAbsent(
-          eventId, () => json[GroupsManager.EVENTS_UNSEEN][eventId]);
-    }
     return UserGroup(
         groupId: groupId,
         groupName: json[GroupsManager.GROUP_NAME],
         icon: json[GroupsManager.ICON],
         lastActivity: json[GroupsManager.LAST_ACTIVITY],
         muted: json[GroupsManager.MUTED],
-        eventsUnseen: eventsUnseenMap);
+        eventsUnseen: json[GroupsManager.EVENTS_UNSEEN]);
   }
 
   Map asMap() {

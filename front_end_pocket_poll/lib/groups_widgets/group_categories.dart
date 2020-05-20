@@ -127,7 +127,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   !widget.canEdit,
               child: AutoSizeText(
                 "There are no categories currently associated with this group. "
-                "Ask the creator of the group (@${Globals.currentGroup.groupCreator}) to add some!",
+                "Ask the creator of the group (@${Globals.currentGroupResponse.group.groupCreator}) to add some!",
                 minFontSize: 15,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -335,7 +335,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
    */
   Future<void> getCategories() async {
     ResultStatus<List<CategoryRatingTuple>> resultStatus =
-        await GroupsManager.getAllCategoriesList(Globals.currentGroup.groupId);
+        await GroupsManager.getAllCategoriesList(
+            Globals.currentGroupResponse.group.groupId);
     this.loading = false;
 
     if (resultStatus.success) {
@@ -363,7 +364,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
       //build the users's categories
       for (Category category in Globals.user.ownedCategories) {
         if (widget.canEdit ||
-            Globals.currentGroup.categories.containsKey(category.categoryId)) {
+            Globals.currentGroupResponse.group.categories
+                .containsKey(category.categoryId)) {
           this.ownedCategoryRows.add(new GroupCategoryRow(
               null,
               category,

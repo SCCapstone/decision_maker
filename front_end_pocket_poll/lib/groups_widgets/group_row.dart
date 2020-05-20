@@ -98,9 +98,7 @@ class _GroupRowState extends State<GroupRow> {
                   width: MediaQuery.of(context).size.width * .15,
                   child: Center(
                     child: Wrap(
-                        spacing: (this.widget.group.eventsUnseen.length > 0)
-                            ? -25
-                            : 0,
+                        spacing: (this.widget.group.eventsUnseen > 0) ? -25 : 0,
                         direction: Axis.vertical,
                         children: <Widget>[
                           IconButton(
@@ -123,8 +121,7 @@ class _GroupRowState extends State<GroupRow> {
                             },
                           ),
                           Visibility(
-                            visible:
-                                (this.widget.group.eventsUnseen.length > 0),
+                            visible: (this.widget.group.eventsUnseen > 0),
                             child: GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -141,13 +138,11 @@ class _GroupRowState extends State<GroupRow> {
                                       padding: EdgeInsets.all(
                                           MediaQuery.of(context).size.height *
                                               .02)),
-                                  Text((this.widget.group.eventsUnseen.length <
-                                          100)
+                                  Text((this.widget.group.eventsUnseen < 100)
                                       ? this
                                           .widget
                                           .group
                                           .eventsUnseen
-                                          .length
                                           .toString()
                                       : "99+")
                                 ],
