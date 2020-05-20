@@ -13,18 +13,18 @@ import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
-class EditCategory extends StatefulWidget {
+class CategoryEdit extends StatefulWidget {
   final Category category;
   final CategoryRatingTuple categoryRatingTuple;
 
-  EditCategory({Key key, this.category, this.categoryRatingTuple})
+  CategoryEdit({Key key, this.category, this.categoryRatingTuple})
       : super(key: key);
 
   @override
-  _EditCategoryState createState() => _EditCategoryState();
+  _CategoryEditState createState() => _CategoryEditState();
 }
 
-class _EditCategoryState extends State<EditCategory> {
+class _CategoryEditState extends State<CategoryEdit> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
@@ -132,14 +132,14 @@ class _EditCategoryState extends State<EditCategory> {
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      key: Key("categories_edit:save_button"),
+                      key: Key("category_edit:save_button"),
                       textColor: Colors.black,
                       onPressed: saveCategory,
                     ),
                   ),
                 ],
               ),
-              key: Key("categories_edit:scaffold"),
+              key: Key("category_edit:scaffold"),
               body: Center(
                 child: Form(
                   key: this.formKey,
@@ -153,7 +153,7 @@ class _EditCategoryState extends State<EditCategory> {
                           alignment: Alignment.topRight,
                           child: Text(
                             "Version: ${this.category.categoryVersion}",
-                            key: Key("categories_edit:version_text"),
+                            key: Key("category_edit:version_text"),
                           ),
                         ),
                         Padding(
@@ -175,8 +175,7 @@ class _EditCategoryState extends State<EditCategory> {
                                     return validCategoryName(value.trim(),
                                         categoryId: widget.category.categoryId);
                                   },
-                                  key: Key(
-                                      "categories_edit:category_name_input"),
+                                  key: Key("category_edit:category_name_input"),
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   style: TextStyle(fontSize: 20),
@@ -191,7 +190,7 @@ class _EditCategoryState extends State<EditCategory> {
                               alignment: Alignment.centerRight,
                               child: IconButton(
                                 icon: Icon(Icons.content_copy),
-                                key: Key("categories_edit:copy_button"),
+                                key: Key("category_edit:copy_button"),
                                 tooltip: "Copy Category",
                                 onPressed: () {
                                   copyPopup();
@@ -216,7 +215,7 @@ class _EditCategoryState extends State<EditCategory> {
                             maxLines: 1,
                             minFontSize: 12,
                             overflow: TextOverflow.ellipsis,
-                            key: Key("categories_edit:category_owner_text"),
+                            key: Key("category_edit:category_owner_text"),
                           ),
                         ),
                         Padding(
@@ -233,7 +232,7 @@ class _EditCategoryState extends State<EditCategory> {
                                         (context, index) =>
                                             this.choiceRows[index],
                                         childCount: this.choiceRows.length),
-                                    key: Key("categories_edit:choice_list"))
+                                    key: Key("category_edit:choice_list"))
                               ],
                             ),
                           ),
@@ -251,7 +250,7 @@ class _EditCategoryState extends State<EditCategory> {
                 visible: this.isCategoryOwner,
                 child: FloatingActionButton(
                   child: Icon(Icons.add),
-                  key: Key("categories_edit:add_choice_button"),
+                  key: Key("category_edit:add_choice_button"),
                   onPressed: () {
                     if (this.isCategoryOwner) {
                       // only owners of the category can currently add new choices
@@ -311,7 +310,7 @@ class _EditCategoryState extends State<EditCategory> {
           minFontSize: 12,
           overflow: TextOverflow.ellipsis,
         )),
-        key: Key("categories_edit:scaffold_loading"),
+        key: Key("category_edit:scaffold_loading"),
         body: Center(child: CircularProgressIndicator()));
   }
 
@@ -325,7 +324,7 @@ class _EditCategoryState extends State<EditCategory> {
           minFontSize: 12,
           overflow: TextOverflow.ellipsis,
         )),
-        key: Key("categories_edit:scaffold_error"),
+        key: Key("category_edit:scaffold_error"),
         body: Container(
           height: MediaQuery.of(this.context).size.height * .80,
           child: RefreshIndicator(
@@ -375,14 +374,14 @@ class _EditCategoryState extends State<EditCategory> {
             actions: <Widget>[
               FlatButton(
                 child: Text("CANCEL"),
-                key: Key("categories_edit:copy_popup_cancel"),
+                key: Key("category_edit:copy_popup_cancel"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },
               ),
               FlatButton(
                 child: Text("SAVE AS NEW"),
-                key: Key("categories_edit:copy_popup_save"),
+                key: Key("category_edit:copy_popup_save"),
                 onPressed: () {
                   final form = copyForm.currentState;
                   if (form.validate()) {
@@ -405,8 +404,7 @@ class _EditCategoryState extends State<EditCategory> {
                       controller: copyNameController,
                       textCapitalization: TextCapitalization.sentences,
                       validator: validCategoryName,
-                      key:
-                          Key("categories_edit:copy_popup_category_name_input"),
+                      key: Key("category_edit:copy_popup_category_name_input"),
                       maxLength: Globals.maxCategoryNameLength,
                       decoration: InputDecoration(
                           labelText: "Category Name", counterText: ""),
@@ -430,7 +428,7 @@ class _EditCategoryState extends State<EditCategory> {
             actions: <Widget>[
               FlatButton(
                 child: Text("YES"),
-                key: Key("categories_edit:confirm_leave_page_button"),
+                key: Key("category_edit:confirm_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                   Navigator.of(this.context).pop();
@@ -438,7 +436,7 @@ class _EditCategoryState extends State<EditCategory> {
               ),
               FlatButton(
                 child: Text("NO"),
-                key: Key("categories_edit:denial_leave_page_button"),
+                key: Key("category_edit:denial_leave_page_button"),
                 onPressed: () {
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                 },

@@ -46,13 +46,13 @@ class _CategoryRow extends State<CategoryRow> {
             value: widget.selected,
             key: Key("category_row:checkbox:${widget.index}"),
             onChanged: (bool value) {
-              selectCategory(value);
+              selectCategory();
             },
           ),
           Expanded(
             child: GestureDetector(
               onTap: () {
-                selectCategory(!widget.selected);
+                selectCategory();
               },
               child: AutoSizeText(
                 this.categoryText,
@@ -70,7 +70,7 @@ class _CategoryRow extends State<CategoryRow> {
     );
   }
 
-  void selectCategory(bool value) {
+  void selectCategory() {
     this.widget.onSelect();
   }
 }

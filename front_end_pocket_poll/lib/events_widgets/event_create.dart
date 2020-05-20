@@ -11,17 +11,17 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
-import 'package:front_end_pocket_poll/widgets/category_popup_single.dart';
+import 'event_pick_category.dart';
 
-class CreateEvent extends StatefulWidget {
+class EventCreate extends StatefulWidget {
   @required
-  CreateEvent({Key key}) : super(key: key);
+  EventCreate({Key key}) : super(key: key);
 
   @override
-  _CreateEventState createState() => _CreateEventState();
+  _EventCreateState createState() => _EventCreateState();
 }
 
-class _CreateEventState extends State<CreateEvent> {
+class _EventCreateState extends State<EventCreate> {
   final TextEditingController eventNameController = TextEditingController();
   final TextEditingController votingDurationController =
       TextEditingController();
@@ -544,7 +544,7 @@ class _CreateEventState extends State<CreateEvent> {
   void showCategoriesPopup() {
     showDialog(
             context: this.context,
-            child: CategoryPopupSingle(this.selectedCategory))
+            child: EventPickCategory(this.selectedCategory))
         .then((selectedCategory) {
       hideKeyboard(this.context); // close keyboard
       setState(() {

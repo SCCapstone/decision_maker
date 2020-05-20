@@ -13,17 +13,17 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
-import 'package:front_end_pocket_poll/widgets/category_pick.dart';
+import 'group_create_pick_categories.dart';
 import 'package:front_end_pocket_poll/widgets/members_page.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
-class CreateGroup extends StatefulWidget {
+class GroupCreate extends StatefulWidget {
   @override
-  _CreateGroupState createState() => _CreateGroupState();
+  _GroupCreateState createState() => _GroupCreateState();
 }
 
-class _CreateGroupState extends State<CreateGroup> {
+class _GroupCreateState extends State<GroupCreate> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
   final TextEditingController votingDurationController =
@@ -72,7 +72,7 @@ class _CreateGroupState extends State<CreateGroup> {
         appBar: AppBar(
           title: Text("Create New Group"),
         ),
-        key: Key("groups_create:scaffold"),
+        key: Key("group_create:scaffold"),
         body: Form(
           key: this.formKey,
           autovalidate: this.autoValidate,
@@ -95,7 +95,7 @@ class _CreateGroupState extends State<CreateGroup> {
                       // when user hits the done button on keyboard, hide it.
                       FocusScope.of(context).requestFocus(this.considerFocus);
                     },
-                    key: Key("groups_create:group_name_input"),
+                    key: Key("group_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter group name", counterText: ""),
                   ),
@@ -142,7 +142,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.considerDuration = int.parse(arg.trim());
                     },
-                    key: Key("groups_create:consider_input"),
+                    key: Key("group_create:consider_input"),
                     decoration: InputDecoration(
                         labelText: "Enter default consider duration (mins)",
                         counterText: ""),
@@ -163,7 +163,7 @@ class _CreateGroupState extends State<CreateGroup> {
                     onSaved: (String arg) {
                       this.votingDuration = int.parse(arg.trim());
                     },
-                    key: Key("groups_create:vote_input"),
+                    key: Key("group_create:vote_input"),
                     decoration: InputDecoration(
                         labelText: "Enter default voting duration (mins)",
                         counterText: ""),
@@ -184,14 +184,15 @@ class _CreateGroupState extends State<CreateGroup> {
                           width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
                             icon: Icon(Icons.add),
-                            key: Key("groups_create:add_categories_button"),
+                            key: Key("group_create:add_categories_button"),
                             onPressed: () {
                               hideKeyboard(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          CategoryPick(this.groupCategories)));
+                                          GroupCreatePickCategories(
+                                              this.groupCategories)));
                             },
                           )),
                     ],
@@ -212,7 +213,7 @@ class _CreateGroupState extends State<CreateGroup> {
                           width: MediaQuery.of(context).size.width * .20,
                           child: IconButton(
                             icon: Icon(Icons.add),
-                            key: Key("groups_create:add_members_button"),
+                            key: Key("group_create:add_members_button"),
                             onPressed: () {
                               hideKeyboard(context);
                               Navigator.push(
@@ -268,7 +269,7 @@ class _CreateGroupState extends State<CreateGroup> {
               RaisedButton.icon(
                   onPressed: validateInput,
                   icon: Icon(Icons.add),
-                  key: Key("groups_create:save_button"),
+                  key: Key("group_create:save_button"),
                   label: Text("Create Group"))
             ],
           ),

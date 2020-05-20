@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/categories_widgets/categories_create.dart';
+import 'package:front_end_pocket_poll/categories_widgets/category_create.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
@@ -127,7 +127,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
           } else {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CreateCategory()),
+              MaterialPageRoute(builder: (context) => CategoryCreate()),
             ).then((_) => this.getCategories());
           }
         },

@@ -6,16 +6,16 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'imports/globals.dart';
-import 'imports/response_item.dart';
-import 'imports/user_tokens_manager.dart';
+import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/imports/response_item.dart';
+import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 
-class SignInPage extends StatefulWidget {
+class LoginPage extends StatefulWidget {
   @override
-  _SignInState createState() => _SignInState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _SignInState extends State<SignInPage> {
+class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController usernameController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();

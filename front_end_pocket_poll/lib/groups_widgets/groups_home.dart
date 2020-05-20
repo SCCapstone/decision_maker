@@ -9,21 +9,21 @@ import 'package:front_end_pocket_poll/about_widgets/about_page.dart';
 import 'package:front_end_pocket_poll/about_widgets/user_manual.dart';
 import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
 import 'package:front_end_pocket_poll/groups_widgets//groups_list.dart';
-import 'package:front_end_pocket_poll/groups_widgets/groups_create.dart';
+import 'package:front_end_pocket_poll/groups_widgets/group_create.dart';
 import 'package:front_end_pocket_poll/groups_widgets/groups_left_list.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
-import 'package:front_end_pocket_poll/login_page.dart';
+import 'package:front_end_pocket_poll/widgets/login_page.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
 import 'package:front_end_pocket_poll/models/message.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
-import '../user_settings.dart';
+import 'package:front_end_pocket_poll/widgets//user_settings.dart';
 import 'group_page.dart';
 
 class GroupsHome extends StatefulWidget {
@@ -278,7 +278,7 @@ class _GroupsHomeState extends State<GroupsHome>
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (BuildContext context) => SignInPage(),
+                              builder: (BuildContext context) => LoginPage(),
                             ),
                             ModalRoute.withName('/'));
                       }),
@@ -566,7 +566,7 @@ class _GroupsHomeState extends State<GroupsHome>
               // Navigate to second route when tapped.
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CreateGroup()),
+                MaterialPageRoute(builder: (context) => GroupCreate()),
               ).then((val) {
                 refreshList();
               });

@@ -4,19 +4,20 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
 
-import 'category_row.dart';
+import 'package:front_end_pocket_poll/widgets/category_row.dart';
 
-class CategoryPick extends StatefulWidget {
+class GroupCreatePickCategories extends StatefulWidget {
   final Map<String, GroupCategory>
       selectedCategories; // map of categoryIds -> GroupCategory
 
-  CategoryPick(this.selectedCategories);
+  GroupCreatePickCategories(this.selectedCategories);
 
   @override
-  _CategoryPickState createState() => _CategoryPickState();
+  _GroupCreatePickCategoriesState createState() =>
+      _GroupCreatePickCategoriesState();
 }
 
-class _CategoryPickState extends State<CategoryPick> {
+class _GroupCreatePickCategoriesState extends State<GroupCreatePickCategories> {
   List<Widget> categoryRows;
 
   @override
@@ -31,7 +32,7 @@ class _CategoryPickState extends State<CategoryPick> {
       appBar: AppBar(
         title: Text("Select Categories"),
       ),
-      key: Key("category_pick:scaffold"),
+      key: Key("group_create_pick_categories:scaffold"),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
