@@ -33,9 +33,9 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     this.eventCreator = "";
     this.userRows = new Map<String, EventUserRow>();
     // clicking on the details page marks the event unseen
-    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
+    if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
@@ -197,7 +197,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   }
 
   void getEvent() {
-    this.event = Globals.currentGroup.events[widget.eventId];
+    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -219,9 +219,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     ResultStatus<GetGroupResponse> resultStatus =
         await GroupsManager.getGroup(widget.groupId);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data.groupInfo;
-      Globals.eventsUnseen = resultStatus.data.eventsUnseen;
-      Globals.eventsWithoutRatings = resultStatus.data.eventsWithoutRatings;
+      Globals.currentGroupResponse = resultStatus.data;
       getEvent();
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);

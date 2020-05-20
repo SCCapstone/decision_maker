@@ -39,7 +39,7 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void dispose() {
-    Globals.currentGroup = null;
+    Globals.currentGroupResponse.group = null;
     Globals.refreshGroupPage = null;
     super.dispose();
   }
@@ -55,7 +55,7 @@ class _GroupPageState extends State<GroupPage> {
         appBar: AppBar(
           centerTitle: true,
           title: AutoSizeText(
-            Globals.currentGroup.groupName,
+            Globals.currentGroupResponse.group.groupName,
             maxLines: 1,
             style: TextStyle(fontSize: 40),
             minFontSize: 12,
@@ -124,8 +124,8 @@ class _GroupPageState extends State<GroupPage> {
                   height: MediaQuery.of(context).size.height * .80,
                   child: RefreshIndicator(
                     child: EventsList(
-                      group: Globals.currentGroup,
-                      events: Globals.currentGroup.events,
+                      group: Globals.currentGroupResponse.group,
+                      events: Globals.currentGroupResponse.group.events,
                       refreshEventsUnseen: updatePage,
                       refreshPage: refreshList,
                       getNextBatch: getNextBatch,
@@ -164,18 +164,16 @@ class _GroupPageState extends State<GroupPage> {
 
   // attempts to get group from DB. If success then display all events. Else show error
   void getGroup() async {
-    int batchNum = (Globals.currentGroup == null)
+    int batchNum = (Globals.currentGroupResponse.group == null)
         ? 0
-        : Globals.currentGroup.currentBatchNum;
+        : Globals.currentGroupResponse.group.currentBatchNum;
     ResultStatus<GetGroupResponse> status =
         await GroupsManager.getGroup(widget.groupId, batchNumber: batchNum);
     this.loading = false;
     if (status.success) {
       this.errorLoading = false;
-      Globals.currentGroup = status.data.groupInfo;
-      Globals.eventsUnseen = status.data.eventsUnseen;
-      Globals.eventsWithoutRatings = status.data.eventsWithoutRatings;
-      Globals.currentGroup.currentBatchNum = batchNum;
+      Globals.currentGroupResponse = status.data;
+      Globals.currentGroupResponse.group.currentBatchNum = batchNum;
       updatePage();
     } else {
       this.errorLoading = true;
@@ -285,6 +283,7 @@ class _GroupPageState extends State<GroupPage> {
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen = 0;
+    Globals.currentGroupResponse.eventsUnseen.clear();
     updatePage();
   }
 }

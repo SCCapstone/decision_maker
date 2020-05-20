@@ -11,12 +11,12 @@ class GetGroupResponse {
 
   Map<String, dynamic> eventsUnseen;
   Map<String, dynamic> eventsWithoutRatings;
-  Group groupInfo;
+  Group group;
 
   GetGroupResponse();
 
   setGroupInfo(Map<String, dynamic> groupJson) {
-    this.groupInfo = Group.fromJson(groupJson);
+    this.group = Group.fromJson(groupJson);
   }
 
   setUserInfo(Map<String, dynamic> userJson) {

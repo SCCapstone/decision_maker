@@ -37,9 +37,9 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     this.eventCreator = "";
     this.userRows = new Map<String, EventUserRow>();
     // clicking on the details page marks the event unseen
-    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
+    if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
@@ -201,7 +201,7 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   }
 
   void getEvent() {
-    this.event = Globals.currentGroup.events[widget.eventId];
+    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -222,11 +222,9 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   Future<Null> refreshEvent() async {
     ResultStatus<GetGroupResponse> resultStatus = await GroupsManager.getGroup(
         widget.groupId,
-        batchNumber: Globals.currentGroup.currentBatchNum);
+        batchNumber: Globals.currentGroupResponse.group.currentBatchNum);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data.groupInfo;
-      Globals.eventsUnseen = resultStatus.data.eventsUnseen;
-      Globals.eventsWithoutRatings = resultStatus.data.eventsWithoutRatings;
+      Globals.currentGroupResponse = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page

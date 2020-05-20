@@ -95,9 +95,9 @@ class _EventCreateState extends State<EventCreate> {
         Globals.dateFormatter.format(this.proposedEventDateTime);
 
     this.votingDurationController.text =
-        Globals.currentGroup.defaultVotingDuration.toString();
+        Globals.currentGroupResponse.group.defaultVotingDuration.toString();
     this.considerDurationController.text =
-        Globals.currentGroup.defaultConsiderDuration.toString();
+        Globals.currentGroupResponse.group.defaultConsiderDuration.toString();
     this.considerDuration = this.considerDurationController.text;
     this.votingDuration = this.votingDurationController.text;
     if (this.considerDuration == "0") {
@@ -394,7 +394,9 @@ class _EventCreateState extends State<EventCreate> {
                                   this.considerButtonText = "Set Consider";
                                 } else {
                                   this.considerDurationController.text = Globals
-                                      .currentGroup.defaultConsiderDuration
+                                      .currentGroupResponse
+                                      .group
+                                      .defaultConsiderDuration
                                       .toString();
                                   this.considerDuration =
                                       this.considerDurationController.text;
@@ -477,7 +479,9 @@ class _EventCreateState extends State<EventCreate> {
                                   this.voteButtonText = "Set Voting";
                                 } else {
                                   this.votingDurationController.text = Globals
-                                      .currentGroup.defaultVotingDuration
+                                      .currentGroupResponse
+                                      .group
+                                      .defaultVotingDuration
                                       .toString();
                                   this.votingDuration =
                                       this.votingDurationController.text;
@@ -701,12 +705,12 @@ class _EventCreateState extends State<EventCreate> {
             considerDuration: int.parse(this.considerDuration));
 
         showLoadingDialog(context, "Creating event...", true);
-        ResultStatus<Group> result =
-            await GroupsManager.newEvent(Globals.currentGroup.groupId, event);
+        ResultStatus<Group> result = await GroupsManager.newEvent(
+            Globals.currentGroupResponse.group.groupId, event);
         Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
         if (result.success) {
-          Globals.currentGroup = result.data;
+          Globals.currentGroupResponse.group = result.data;
           Navigator.of(this.context).pop("Event Created");
         } else {
           showErrorMessage("Error", result.errorMessage, this.context);

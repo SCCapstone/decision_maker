@@ -38,9 +38,9 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     this.eventCreator = "";
     this.userRows = new Map<String, EventUserRow>();
     // clicking on the details page marks the event unseen
-    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
+    if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
@@ -277,14 +277,14 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     bool oldConsiderUser = !considerUser;
     // update group in local memory to reflect the change in consider value
     if (considerUser) {
-      Globals.currentGroup.events[widget.eventId].optedIn.putIfAbsent(
+      Globals.currentGroupResponse.group.events[widget.eventId].optedIn.putIfAbsent(
           Globals.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.username,
           () => EventUserRow(
               Globals.user.displayName, Globals.username, Globals.user.icon));
     } else {
-      Globals.currentGroup.events[widget.eventId].optedIn
+      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
           .remove(Globals.username);
       this.userRows.remove(Globals.username);
     }
@@ -295,14 +295,14 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (!resultStatus.success) {
       // revert consider back if it failed
       if (oldConsiderUser) {
-        Globals.currentGroup.events[widget.eventId].optedIn.putIfAbsent(
+        Globals.currentGroupResponse.group.events[widget.eventId].optedIn.putIfAbsent(
             Globals.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
             Globals.username,
             () => EventUserRow(
                 Globals.user.displayName, Globals.username, Globals.user.icon));
       } else {
-        Globals.currentGroup.events[widget.eventId].optedIn
+        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
             .remove(Globals.username);
         this.userRows.remove(Globals.username);
       }
@@ -312,7 +312,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
   }
 
   void getEvent() {
-    this.event = Globals.currentGroup.events[widget.eventId];
+    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -333,11 +333,9 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
   Future<Null> refreshEvent() async {
     ResultStatus<GetGroupResponse> resultStatus = await GroupsManager.getGroup(
         widget.groupId,
-        batchNumber: Globals.currentGroup.currentBatchNum);
+        batchNumber: Globals.currentGroupResponse.group.currentBatchNum);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data.groupInfo;
-      Globals.eventsUnseen = resultStatus.data.eventsUnseen;
-      Globals.eventsWithoutRatings = resultStatus.data.eventsWithoutRatings;
+      Globals.currentGroupResponse = resultStatus.data;
       getEvent();
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page

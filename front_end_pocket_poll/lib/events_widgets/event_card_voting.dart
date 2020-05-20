@@ -65,7 +65,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
                   ),
                   Visibility(
                     visible: (Globals.user.groups[widget.groupId] != null &&
-                        Globals.eventsUnseen.containsKey(widget.eventId)),
+                        Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
@@ -126,10 +126,10 @@ class _EventCardVotingState extends State<EventCardVoting> {
   }
 
   void markEventRead() {
-    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
+    if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
       setState(() {
         widget.refreshEventsUnseen();

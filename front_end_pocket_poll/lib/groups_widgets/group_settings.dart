@@ -71,37 +71,37 @@ class _GroupSettingsState extends State<GroupSettings> {
     this.originalCategories = new Map<String, GroupCategory>();
     this.selectedCategories = new Map<String, GroupCategory>();
 
-    if (Globals.username == Globals.currentGroup.groupCreator) {
+    if (Globals.username == Globals.currentGroupResponse.group.groupCreator) {
       // to display the delete group button, check if user owns this group
       this.owner = true;
     } else {
       this.owner = false;
     }
-    for (String username in Globals.currentGroup.members.keys) {
+    for (String username in Globals.currentGroupResponse.group.members.keys) {
       Member member = new Member(
           username: username,
-          displayName: Globals.currentGroup.members[username].displayName,
-          icon: Globals.currentGroup.members[username].icon);
+          displayName: Globals.currentGroupResponse.group.members[username].displayName,
+          icon: Globals.currentGroupResponse.group.members[username].icon);
       this.originalMembers.add(member); // preserve original members
       this.displayedMembers.add(member); // current selected members
     }
-    for (String catId in Globals.currentGroup.categories.keys) {
+    for (String catId in Globals.currentGroupResponse.group.categories.keys) {
       // preserve original categories selected
       this
           .originalCategories
-          .putIfAbsent(catId, () => Globals.currentGroup.categories[catId]);
+          .putIfAbsent(catId, () => Globals.currentGroupResponse.group.categories[catId]);
       this
           .selectedCategories
-          .putIfAbsent(catId, () => Globals.currentGroup.categories[catId]);
+          .putIfAbsent(catId, () => Globals.currentGroupResponse.group.categories[catId]);
     }
-    for (String username in Globals.currentGroup.membersLeft.keys) {
+    for (String username in Globals.currentGroupResponse.group.membersLeft.keys) {
       this.membersLeft.add(username);
     }
-    this.groupName = Globals.currentGroup.groupName;
-    this.votingDuration = Globals.currentGroup.defaultVotingDuration;
-    this.considerDuration = Globals.currentGroup.defaultConsiderDuration;
-    this.currentGroupIcon = Globals.currentGroup.icon;
-    this.isOpen = Globals.currentGroup.isOpen;
+    this.groupName = Globals.currentGroupResponse.group.groupName;
+    this.votingDuration = Globals.currentGroupResponse.group.defaultVotingDuration;
+    this.considerDuration = Globals.currentGroupResponse.group.defaultConsiderDuration;
+    this.currentGroupIcon = Globals.currentGroupResponse.group.icon;
+    this.isOpen = Globals.currentGroupResponse.group.isOpen;
     this.canEdit = owner || (isOpen && !owner);
 
     this.groupNameController.text = groupName;
@@ -503,21 +503,21 @@ class _GroupSettingsState extends State<GroupSettings> {
       }
 
       Group group = new Group(
-          groupId: Globals.currentGroup.groupId,
-          groupName: Globals.currentGroup.groupName,
-          groupCreator: Globals.currentGroup.groupCreator,
-          categories: Globals.currentGroup.categories,
+          groupId: Globals.currentGroupResponse.group.groupId,
+          groupName: Globals.currentGroupResponse.group.groupName,
+          groupCreator: Globals.currentGroupResponse.group.groupCreator,
+          categories: Globals.currentGroupResponse.group.categories,
           members: membersMap,
-          events: Globals.currentGroup.events,
-          defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
-          isOpen: Globals.currentGroup.isOpen);
+          events: Globals.currentGroupResponse.group.events,
+          defaultVotingDuration: Globals.currentGroupResponse.group.defaultVotingDuration,
+          defaultConsiderDuration: Globals.currentGroupResponse.group.defaultConsiderDuration,
+          isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroup = resultStatus.data;
+        Globals.currentGroupResponse.group = resultStatus.data;
         this.originalMembers.clear();
         this.originalMembers.addAll(displayedMembers);
       } else {
@@ -540,21 +540,21 @@ class _GroupSettingsState extends State<GroupSettings> {
         oldCategories.length == newCategories.length);
     if (changedCategories) {
       Group group = new Group(
-          groupId: Globals.currentGroup.groupId,
-          groupName: Globals.currentGroup.groupName,
-          groupCreator: Globals.currentGroup.groupCreator,
+          groupId: Globals.currentGroupResponse.group.groupId,
+          groupName: Globals.currentGroupResponse.group.groupName,
+          groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
-          members: Globals.currentGroup.members,
-          events: Globals.currentGroup.events,
-          defaultVotingDuration: Globals.currentGroup.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroup.defaultConsiderDuration,
-          isOpen: Globals.currentGroup.isOpen);
+          members: Globals.currentGroupResponse.group.members,
+          events: Globals.currentGroupResponse.group.events,
+          defaultVotingDuration: Globals.currentGroupResponse.group.defaultVotingDuration,
+          defaultConsiderDuration: Globals.currentGroupResponse.group.defaultConsiderDuration,
+          isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroup = resultStatus.data;
+        Globals.currentGroupResponse.group = resultStatus.data;
         originalCategories.clear();
         originalCategories.addAll(this.selectedCategories);
       } else {
@@ -680,17 +680,17 @@ class _GroupSettingsState extends State<GroupSettings> {
   void tryLeave() async {
     showLoadingDialog(this.context, "Leaving group...", true);
     ResultStatus resultStatus =
-        await GroupsManager.leaveGroup(Globals.currentGroup.groupId);
+        await GroupsManager.leaveGroup(Globals.currentGroupResponse.group.groupId);
     Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
-      Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Globals.user.groups.remove(Globals.currentGroupResponse.group.groupId);
       Globals.user.groupsLeft.putIfAbsent(
-          Globals.currentGroup.groupId,
+          Globals.currentGroupResponse.group.groupId,
           () => new GroupLeft(
-              groupId: Globals.currentGroup.groupId,
-              groupName: Globals.currentGroup.groupName,
-              icon: Globals.currentGroup.icon));
+              groupId: Globals.currentGroupResponse.group.groupId,
+              groupName: Globals.currentGroupResponse.group.groupName,
+              icon: Globals.currentGroupResponse.group.icon));
       Navigator.of(this.context).popUntil((route) => route.isFirst);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
@@ -700,11 +700,11 @@ class _GroupSettingsState extends State<GroupSettings> {
   void tryDelete() async {
     showLoadingDialog(this.context, "Deleting group...", true);
     ResultStatus resultStatus =
-        await GroupsManager.deleteGroup(Globals.currentGroup.groupId);
+        await GroupsManager.deleteGroup(Globals.currentGroupResponse.group.groupId);
     Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
-      Globals.user.groups.remove(Globals.currentGroup.groupId);
+      Globals.user.groups.remove(Globals.currentGroupResponse.group.groupId);
       Navigator.of(this.context).popUntil((route) => route.isFirst);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
@@ -713,10 +713,10 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   // the moment the user makes changes to their previously saved settings, display the save button
   void showSaveButton() {
-    if (this.votingDuration != Globals.currentGroup.defaultVotingDuration ||
-        this.considerDuration != Globals.currentGroup.defaultConsiderDuration ||
-        this.groupName != Globals.currentGroup.groupName ||
-        this.isOpen != Globals.currentGroup.isOpen ||
+    if (this.votingDuration != Globals.currentGroupResponse.group.defaultVotingDuration ||
+        this.considerDuration != Globals.currentGroupResponse.group.defaultConsiderDuration ||
+        this.groupName != Globals.currentGroupResponse.group.groupName ||
+        this.isOpen != Globals.currentGroupResponse.group.isOpen ||
         this.newIcon) {
       setState(() {
         this.editing = true;
@@ -745,17 +745,17 @@ class _GroupSettingsState extends State<GroupSettings> {
       }
 
       Group group = new Group(
-          groupId: Globals.currentGroup.groupId,
+          groupId: Globals.currentGroupResponse.group.groupId,
           groupName: this.groupName,
-          groupCreator: Globals.currentGroup.groupCreator,
+          groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
           members: membersMap,
-          events: Globals.currentGroup.events,
+          events: Globals.currentGroupResponse.group.events,
           defaultVotingDuration: this.votingDuration,
           defaultConsiderDuration: this.considerDuration,
           isOpen: this.isOpen);
 
-      int batchNum = Globals.currentGroup.currentBatchNum;
+      int batchNum = Globals.currentGroupResponse.group.currentBatchNum;
 
       showLoadingDialog(this.context, "Saving...", true);
       ResultStatus<Group> resultStatus =
@@ -763,8 +763,8 @@ class _GroupSettingsState extends State<GroupSettings> {
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        Globals.currentGroup = resultStatus.data;
-        Globals.currentGroup.currentBatchNum = batchNum;
+        Globals.currentGroupResponse.group = resultStatus.data;
+        Globals.currentGroupResponse.group.currentBatchNum = batchNum;
         setState(() {
           // reset everything and reflect changes made
           this.originalMembers.clear();
