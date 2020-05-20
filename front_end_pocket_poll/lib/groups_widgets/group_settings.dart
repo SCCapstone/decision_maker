@@ -80,26 +80,28 @@ class _GroupSettingsState extends State<GroupSettings> {
     for (String username in Globals.currentGroupResponse.group.members.keys) {
       Member member = new Member(
           username: username,
-          displayName: Globals.currentGroupResponse.group.members[username].displayName,
+          displayName:
+              Globals.currentGroupResponse.group.members[username].displayName,
           icon: Globals.currentGroupResponse.group.members[username].icon);
       this.originalMembers.add(member); // preserve original members
       this.displayedMembers.add(member); // current selected members
     }
     for (String catId in Globals.currentGroupResponse.group.categories.keys) {
       // preserve original categories selected
-      this
-          .originalCategories
-          .putIfAbsent(catId, () => Globals.currentGroupResponse.group.categories[catId]);
-      this
-          .selectedCategories
-          .putIfAbsent(catId, () => Globals.currentGroupResponse.group.categories[catId]);
+      this.originalCategories.putIfAbsent(
+          catId, () => Globals.currentGroupResponse.group.categories[catId]);
+      this.selectedCategories.putIfAbsent(
+          catId, () => Globals.currentGroupResponse.group.categories[catId]);
     }
-    for (String username in Globals.currentGroupResponse.group.membersLeft.keys) {
+    for (String username
+        in Globals.currentGroupResponse.group.membersLeft.keys) {
       this.membersLeft.add(username);
     }
     this.groupName = Globals.currentGroupResponse.group.groupName;
-    this.votingDuration = Globals.currentGroupResponse.group.defaultVotingDuration;
-    this.considerDuration = Globals.currentGroupResponse.group.defaultConsiderDuration;
+    this.votingDuration =
+        Globals.currentGroupResponse.group.defaultVotingDuration;
+    this.considerDuration =
+        Globals.currentGroupResponse.group.defaultConsiderDuration;
     this.currentGroupIcon = Globals.currentGroupResponse.group.icon;
     this.isOpen = Globals.currentGroupResponse.group.isOpen;
     this.canEdit = owner || (isOpen && !owner);
@@ -509,8 +511,10 @@ class _GroupSettingsState extends State<GroupSettings> {
           categories: Globals.currentGroupResponse.group.categories,
           members: membersMap,
           events: Globals.currentGroupResponse.group.events,
-          defaultVotingDuration: Globals.currentGroupResponse.group.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroupResponse.group.defaultConsiderDuration,
+          defaultVotingDuration:
+              Globals.currentGroupResponse.group.defaultVotingDuration,
+          defaultConsiderDuration:
+              Globals.currentGroupResponse.group.defaultConsiderDuration,
           isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
@@ -546,8 +550,10 @@ class _GroupSettingsState extends State<GroupSettings> {
           categories: this.selectedCategories,
           members: Globals.currentGroupResponse.group.members,
           events: Globals.currentGroupResponse.group.events,
-          defaultVotingDuration: Globals.currentGroupResponse.group.defaultVotingDuration,
-          defaultConsiderDuration: Globals.currentGroupResponse.group.defaultConsiderDuration,
+          defaultVotingDuration:
+              Globals.currentGroupResponse.group.defaultVotingDuration,
+          defaultConsiderDuration:
+              Globals.currentGroupResponse.group.defaultConsiderDuration,
           isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
@@ -679,8 +685,8 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void tryLeave() async {
     showLoadingDialog(this.context, "Leaving group...", true);
-    ResultStatus resultStatus =
-        await GroupsManager.leaveGroup(Globals.currentGroupResponse.group.groupId);
+    ResultStatus resultStatus = await GroupsManager.leaveGroup(
+        Globals.currentGroupResponse.group.groupId);
     Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
@@ -699,8 +705,8 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   void tryDelete() async {
     showLoadingDialog(this.context, "Deleting group...", true);
-    ResultStatus resultStatus =
-        await GroupsManager.deleteGroup(Globals.currentGroupResponse.group.groupId);
+    ResultStatus resultStatus = await GroupsManager.deleteGroup(
+        Globals.currentGroupResponse.group.groupId);
     Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {
@@ -713,8 +719,10 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   // the moment the user makes changes to their previously saved settings, display the save button
   void showSaveButton() {
-    if (this.votingDuration != Globals.currentGroupResponse.group.defaultVotingDuration ||
-        this.considerDuration != Globals.currentGroupResponse.group.defaultConsiderDuration ||
+    if (this.votingDuration !=
+            Globals.currentGroupResponse.group.defaultVotingDuration ||
+        this.considerDuration !=
+            Globals.currentGroupResponse.group.defaultConsiderDuration ||
         this.groupName != Globals.currentGroupResponse.group.groupName ||
         this.isOpen != Globals.currentGroupResponse.group.isOpen ||
         this.newIcon) {

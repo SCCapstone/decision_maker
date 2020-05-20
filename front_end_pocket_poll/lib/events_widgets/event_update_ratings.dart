@@ -1,4 +1,5 @@
 import 'dart:collection';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/choice_row.dart';

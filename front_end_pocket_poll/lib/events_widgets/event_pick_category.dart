@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
-
 import 'package:front_end_pocket_poll/widgets/category_row.dart';
 
 class EventPickCategory extends StatefulWidget {

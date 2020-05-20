@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
@@ -116,8 +116,8 @@ class _EventsListState extends State<EventsList> {
       });
 
       List<Widget> widgetList = new List<Widget>.from(eventCards);
-      int numEvents =
-          (Globals.currentGroupResponse.group.currentBatchNum + 1) * GroupsManager.BATCH_SIZE;
+      int numEvents = (Globals.currentGroupResponse.group.currentBatchNum + 1) *
+          GroupsManager.BATCH_SIZE;
       // have a button shown if more events to show
       Row buttonRow = new Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -135,14 +135,18 @@ class _EventsListState extends State<EventsList> {
           ),
           Visibility(
             visible: Globals.currentGroupResponse.group.currentBatchNum > 0 &&
-                Globals.currentGroupResponse.group.totalNumberOfEvents - numEvents > 0,
+                Globals.currentGroupResponse.group.totalNumberOfEvents -
+                        numEvents >
+                    0,
             child: Padding(
               padding: EdgeInsets.all(MediaQuery.of(context).size.width * .02),
             ),
           ),
           // next button only present when there are more events to show
           Visibility(
-            visible: Globals.currentGroupResponse.group.totalNumberOfEvents - numEvents > 0,
+            visible: Globals.currentGroupResponse.group.totalNumberOfEvents -
+                    numEvents >
+                0,
             child: RaisedButton(
               onPressed: () {
                 Globals.currentGroupResponse.group.currentBatchNum += 1;

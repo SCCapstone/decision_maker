@@ -694,7 +694,8 @@ class _GroupsHomeState extends State<GroupsHome>
           refreshList();
         } else if (Globals.currentGroupResponse.group.groupId == groupId) {
           // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-          Globals.user.groups.remove(Globals.currentGroupResponse.group.groupId);
+          Globals.user.groups
+              .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
       } else if (notification.action == Globals.addedToGroupAction) {
@@ -779,7 +780,8 @@ class _GroupsHomeState extends State<GroupsHome>
           refreshList();
         } else if (Globals.currentGroupResponse.group.groupId == groupId) {
           // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
-          Globals.user.groups.remove(Globals.currentGroupResponse.group.groupId);
+          Globals.user.groups
+              .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
       } else if (notification.action == Globals.addedToGroupAction) {

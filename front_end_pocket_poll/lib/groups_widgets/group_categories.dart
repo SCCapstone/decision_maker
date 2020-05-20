@@ -335,7 +335,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
    */
   Future<void> getCategories() async {
     ResultStatus<List<CategoryRatingTuple>> resultStatus =
-        await GroupsManager.getAllCategoriesList(Globals.currentGroupResponse.group.groupId);
+        await GroupsManager.getAllCategoriesList(
+            Globals.currentGroupResponse.group.groupId);
     this.loading = false;
 
     if (resultStatus.success) {
@@ -363,7 +364,8 @@ class _GroupCategoriesState extends State<GroupCategories> {
       //build the users's categories
       for (Category category in Globals.user.ownedCategories) {
         if (widget.canEdit ||
-            Globals.currentGroupResponse.group.categories.containsKey(category.categoryId)) {
+            Globals.currentGroupResponse.group.categories
+                .containsKey(category.categoryId)) {
           this.ownedCategoryRows.add(new GroupCategoryRow(
               null,
               category,

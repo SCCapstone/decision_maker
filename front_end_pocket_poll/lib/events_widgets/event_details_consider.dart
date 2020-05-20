@@ -11,9 +11,9 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/get_group_response.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
+
 import 'event_user_row.dart';
 
 class EventDetailsConsider extends StatefulWidget {
@@ -277,8 +277,9 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     bool oldConsiderUser = !considerUser;
     // update group in local memory to reflect the change in consider value
     if (considerUser) {
-      Globals.currentGroupResponse.group.events[widget.eventId].optedIn.putIfAbsent(
-          Globals.username, () => new Member.fromUser(Globals.user));
+      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+          .putIfAbsent(
+              Globals.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.username,
           () => EventUserRow(
@@ -295,8 +296,9 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (!resultStatus.success) {
       // revert consider back if it failed
       if (oldConsiderUser) {
-        Globals.currentGroupResponse.group.events[widget.eventId].optedIn.putIfAbsent(
-            Globals.username, () => new Member.fromUser(Globals.user));
+        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+            .putIfAbsent(
+                Globals.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
             Globals.username,
             () => EventUserRow(

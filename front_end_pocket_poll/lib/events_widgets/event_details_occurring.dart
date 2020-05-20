@@ -10,8 +10,8 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/get_group_response.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
+
 import 'event_user_row.dart';
 
 class EventDetailsOccurring extends StatefulWidget {
