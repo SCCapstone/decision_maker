@@ -71,16 +71,11 @@ public class EditGroupHandler implements ApiRequestHandler {
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
       final Integer batchNumber, final List<Integer> iconData) {
     final String classMethod = "EditGroupHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
-
-      //TODO update the categories passed in to be a list of ids, then create categories map
-      //TODO similar to what we're doing with the members above (currently we're just relying on
-      //TODO user input which is bad
-
       final Group oldGroup = this.dbAccessManager.getGroup(groupId);
 
       final Optional<String> errorMessage = this
@@ -141,15 +136,15 @@ public class EditGroupHandler implements ApiRequestHandler {
         resultStatus = new ResultStatus(true,
             JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
       } else {
-        resultStatus.resultMessage = errorMessage.get();
-        metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
+        resultStatus = ResultStatus.failure(errorMessage.get());
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
       }
     } catch (Exception e) {
-      resultStatus.resultMessage = "Exception in: " + classMethod;
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      resultStatus = ResultStatus.failure("Exception in: " + classMethod);
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

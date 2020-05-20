@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import javax.inject.Inject;
 import managers.DbAccessManager;
@@ -25,8 +26,11 @@ import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.ResultStatus;
+import utilities.WarningDescriptor;
 
 public class CreateNewGroupHandler implements ApiRequestHandler {
+
+  public static final Integer MAX_DURATION = 10000;
 
   private DbAccessManager dbAccessManager;
   private S3AccessManager s3AccessManager;
@@ -64,45 +68,52 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
       final List<Integer> iconData) {
     final String classMethod = "CreateNewGroupHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
     try {
-      final String newGroupId = UUID.randomUUID().toString();
-      final String lastActivity = this.dbAccessManager.now();
+      final Optional<String> errorMessage = this
+          .newGroupInputIsValid(defaultVotingDuration, defaultRsvpDuration);
+      if (!errorMessage.isPresent()) {
+        final String newGroupId = UUID.randomUUID().toString();
+        final String lastActivity = this.dbAccessManager.now();
 
-      final Group newGroup = new Group();
-      newGroup.setGroupName(name);
-      newGroup.setDefaultVotingDuration(defaultVotingDuration);
-      newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
-      newGroup.setOpen(isOpen);
-      newGroup.setGroupId(newGroupId);
-      newGroup.setGroupCreator(activeUser);
-      newGroup.setMembersLeft(Collections.emptyMap());
-      newGroup.setEvents(Collections.emptyMap());
-      newGroup.setLastActivity(lastActivity);
+        final Group newGroup = new Group();
+        newGroup.setGroupName(name);
+        newGroup.setDefaultVotingDuration(defaultVotingDuration);
+        newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
+        newGroup.setOpen(isOpen);
+        newGroup.setGroupId(newGroupId);
+        newGroup.setGroupCreator(activeUser);
+        newGroup.setMembersLeft(Collections.emptyMap());
+        newGroup.setEvents(Collections.emptyMap());
+        newGroup.setLastActivity(lastActivity);
 
-      //sanity check, add the active user to this mapping to make sure their data is added
-      membersList.add(activeUser);
-      newGroup.setMembers(this.getMembersMapForInsertion(membersList));
+        //sanity check, add the active user to this mapping to make sure their data is added
+        membersList.add(activeUser);
+        newGroup.setMembers(this.getMembersMapForInsertion(membersList));
 
-      newGroup.setCategoriesRawMap(this.getCategoriesMapForInsertion(categoriesList));
+        newGroup.setCategoriesRawMap(this.getCategoriesMapForInsertion(categoriesList));
 
-      if (iconData != null) { // if it's there, assume it's new image data
-        final String newIconFileName = this.s3AccessManager.uploadImage(iconData, this.metrics)
-            .orElseThrow(Exception::new);
+        if (iconData != null) { // if it's there, assume it's new image data
+          final String newIconFileName = this.s3AccessManager.uploadImage(iconData, this.metrics)
+              .orElseThrow(Exception::new);
 
-        newGroup.setIcon(newIconFileName);
+          newGroup.setIcon(newIconFileName);
+        }
+
+        this.dbAccessManager.putGroup(newGroup);
+
+        this.updateUsersTable(newGroup);
+        this.updateCategoriesTable(newGroup);
+
+        resultStatus = new ResultStatus(true,
+            JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+      } else {
+        resultStatus = ResultStatus.failure(errorMessage.get());
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
       }
-
-      this.dbAccessManager.putGroup(newGroup);
-
-      this.updateUsersTable(newGroup);
-      this.updateCategoriesTable(newGroup);
-
-      resultStatus = new ResultStatus(true,
-          JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
     } catch (Exception e) {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
@@ -133,6 +144,41 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     }
 
     return categoriesMap;
+  }
+
+  /**
+   * This function takes the old definition of a group and checks to see if proposed edits are
+   * valid.
+   *
+   * @param defaultVotingDuration the new voting duration
+   * @param defaultRsvpDuration   the new rsvp duration
+   * @return A nullable errorMessage. If null, then there was no error and it is valid
+   */
+  private Optional<String> newGroupInputIsValid(final Integer defaultVotingDuration,
+      final Integer defaultRsvpDuration) {
+
+    String errorMessage = null;
+
+    if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad voting duration.");
+    }
+
+    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
+    }
+
+    return Optional.ofNullable(errorMessage);
+  }
+
+  private String getUpdatedErrorMessage(final String current, final String update) {
+    String invalidString;
+    if (current == null) {
+      invalidString = update;
+    } else {
+      invalidString = current + "\n" + update;
+    }
+
+    return invalidString;
   }
 
   /**
