@@ -196,8 +196,12 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     );
   }
 
-  void getEvent() {
-    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
+  void getEvent({final Event event}) {
+    if (event == null) {
+      this.event = Globals.currentGroupResponse.group.events[widget.eventId];
+    } else {
+      this.event = event;
+    }
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -216,11 +220,10 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   }
 
   Future<Null> refreshList() async {
-    ResultStatus<GetGroupResponse> resultStatus =
-        await GroupsManager.getGroup(widget.groupId);
+    final ResultStatus<Event> resultStatus =
+        await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      Globals.currentGroupResponse = resultStatus.data;
-      getEvent();
+      this.getEvent(event: resultStatus.data);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }

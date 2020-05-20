@@ -46,6 +46,7 @@ public class ProxyPostController implements
           .put("markAllEventsSeen", MarkAllEventsSeenController.class)
           .put("getBatchOfEvents", GetBatchOfEventsController.class)
           .put("newEvent", NewEventController.class)
+          .put("getEvent", GetEventController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,

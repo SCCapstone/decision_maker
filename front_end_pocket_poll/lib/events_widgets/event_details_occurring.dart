@@ -200,8 +200,12 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
     );
   }
 
-  void getEvent() {
-    this.event = Globals.currentGroupResponse.group.events[widget.eventId];
+  void getEvent({final Event event}) {
+    if (event == null) {
+      this.event = Globals.currentGroupResponse.group.events[widget.eventId];
+    } else {
+      this.event = event;
+    }
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -220,12 +224,10 @@ class _EventDetailsOccurringState extends State<EventDetailsOccurring> {
   }
 
   Future<Null> refreshEvent() async {
-    ResultStatus<GetGroupResponse> resultStatus = await GroupsManager.getGroup(
-        widget.groupId,
-        batchNumber: Globals.currentGroupResponse.group.currentBatchNum);
+    final ResultStatus<Event> resultStatus =
+        await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      Globals.currentGroupResponse = resultStatus.data;
-      getEvent();
+      this.getEvent(event: resultStatus.data);
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
         Navigator.of(this.context).pop();

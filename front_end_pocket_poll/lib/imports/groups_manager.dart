@@ -38,6 +38,7 @@ class GroupsManager {
   static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
+  static final String getEventAction = "getEvent";
   static final String deleteGroupAction = "deleteGroup";
   static final String createGroupAction = "createNewGroup";
   static final String editGroupAction = "editGroup";
@@ -492,6 +493,43 @@ class GroupsManager {
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.data = new CategoryRatingTuple.fromJson(responseJson.first);
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to load categories.";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Unable to load categories.";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+          "Network error. Unable to load categories. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to load categories.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus<Event>> getEvent(
+      final String groupId, final String eventId) async {
+    final ResultStatus<Event> retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = GroupsManager.getEventAction;
+    jsonRequestBody[RequestFields.PAYLOAD] = {
+      GROUP_ID: groupId,
+      RequestFields.EVENT_ID: eventId
+    };
+
+    final ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        final Map<String, dynamic> body = jsonDecode(response.data);
+        final ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.data = Event.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";

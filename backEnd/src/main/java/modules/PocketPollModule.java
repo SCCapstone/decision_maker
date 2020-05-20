@@ -4,6 +4,7 @@ import dagger.Module;
 import dagger.Provides;
 import handlers.AddPendingEventHandler;
 import handlers.GetBatchOfEventsHandler;
+import handlers.GetEventHandler;
 import handlers.NewCategoryHandler;
 import handlers.CreateNewGroupHandler;
 import handlers.DeleteCategoryHandler;
@@ -229,5 +230,10 @@ public class PocketPollModule {
       final AddPendingEventHandler addPendingEventHandler) {
     return new ProcessPendingEventHandler(dbAccessManager, snsAccessManager, addPendingEventHandler,
         this.metrics);
+  }
+
+  @Provides
+  public GetEventHandler provideGetEventHandler(final DbAccessManager dbAccessManager) {
+    return new GetEventHandler(dbAccessManager, this.metrics);
   }
 }
