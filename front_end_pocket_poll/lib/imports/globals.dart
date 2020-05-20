@@ -14,6 +14,8 @@ class Globals {
   static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
   static DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
   static Group currentGroup;
+  static Map<String, dynamic> eventsUnseen;
+  static Map<String, dynamic> eventsWithoutRatings;
   static List<CategoryRatingTuple> cachedCategories = new List<CategoryRatingTuple>();
   static SharedPreferences sharedPrefs;
   static int dateNewestSort = 0;

@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_create.dart';
+import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
+import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
-import 'group_settings.dart';
-import 'package:front_end_pocket_poll/imports/globals.dart';
-import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
+import 'package:front_end_pocket_poll/models/get_group_response.dart';
 
-import 'package:front_end_pocket_poll/events_widgets/event_create.dart';
+import 'group_settings.dart';
 
 class GroupPage extends StatefulWidget {
   final String groupId;
@@ -101,8 +101,7 @@ class _GroupPageState extends State<GroupPage> {
                     ),
                     Visibility(
                       visible: (Globals.user.groups[widget.groupId] != null &&
-                          Globals.user.groups[widget.groupId].eventsUnseen
-                              .isNotEmpty),
+                          Globals.user.groups[widget.groupId].eventsUnseen > 0),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(
@@ -168,12 +167,14 @@ class _GroupPageState extends State<GroupPage> {
     int batchNum = (Globals.currentGroup == null)
         ? 0
         : Globals.currentGroup.currentBatchNum;
-    ResultStatus<Group> status =
+    ResultStatus<GetGroupResponse> status =
         await GroupsManager.getGroup(widget.groupId, batchNumber: batchNum);
     this.loading = false;
     if (status.success) {
       this.errorLoading = false;
-      Globals.currentGroup = status.data;
+      Globals.currentGroup = status.data.groupInfo;
+      Globals.eventsUnseen = status.data.eventsUnseen;
+      Globals.eventsWithoutRatings = status.data.eventsWithoutRatings;
       Globals.currentGroup.currentBatchNum = batchNum;
       updatePage();
     } else {
@@ -283,7 +284,7 @@ class _GroupPageState extends State<GroupPage> {
   // blind send to mark all events as seen, not critical
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
-    Globals.user.groups[widget.groupId].eventsUnseen.clear();
+    Globals.user.groups[widget.groupId].eventsUnseen = 0;
     updatePage();
   }
 }

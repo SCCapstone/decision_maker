@@ -65,8 +65,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                   ),
                   Visibility(
                     visible: (Globals.user.groups[widget.groupId] != null &&
-                        Globals.user.groups[widget.groupId].eventsUnseen
-                            .containsKey(widget.eventId)),
+                        Globals.eventsUnseen.containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
@@ -138,11 +137,11 @@ class _EventCardConsiderState extends State<EventCardConsider> {
   }
 
   void markEventRead() {
-    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
-        true) {
+    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
       // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen--;
       setState(() {
         widget.refreshEventsUnseen();
       });

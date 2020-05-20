@@ -8,6 +8,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
+import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'event_user_row.dart';
@@ -32,10 +33,10 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     this.eventCreator = "";
     this.userRows = new Map<String, EventUserRow>();
     // clicking on the details page marks the event unseen
-    if (Globals.user.groups[widget.groupId].eventsUnseen[widget.eventId] ==
-        true) {
+    if (Globals.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
-      Globals.user.groups[widget.groupId].eventsUnseen.remove(widget.eventId);
+      Globals.eventsUnseen.remove(widget.eventId);
+      Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
     getEvent();
@@ -215,10 +216,12 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
   }
 
   Future<Null> refreshList() async {
-    ResultStatus<Group> resultStatus =
+    ResultStatus<GetGroupResponse> resultStatus =
         await GroupsManager.getGroup(widget.groupId);
     if (resultStatus.success) {
-      Globals.currentGroup = resultStatus.data;
+      Globals.currentGroup = resultStatus.data.groupInfo;
+      Globals.eventsUnseen = resultStatus.data.eventsUnseen;
+      Globals.eventsWithoutRatings = resultStatus.data.eventsWithoutRatings;
       getEvent();
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);

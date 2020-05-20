@@ -705,11 +705,10 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        String eventId = notification.payload[EventsManager.EVENT_ID];
+        // String eventId = notification.payload[EventsManager.EVENT_ID];
         String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen
-              .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].eventsUnseen++;
           Globals.user.groups[groupId].lastActivity = date;
         }
         if (Globals.refreshGroupPage != null) {
@@ -791,11 +790,10 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        String eventId = notification.payload[EventsManager.EVENT_ID];
+        // String eventId = notification.payload[EventsManager.EVENT_ID];
         String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen
-              .putIfAbsent(eventId, () => true);
+          Globals.user.groups[groupId].eventsUnseen++;
           Globals.user.groups[groupId].lastActivity = date;
         }
         if (Globals.refreshGroupPage != null) {

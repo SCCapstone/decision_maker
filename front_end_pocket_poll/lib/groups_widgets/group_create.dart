@@ -345,7 +345,7 @@ class _GroupCreateState extends State<GroupCreate> {
             icon: resultStatus.data.icon,
             lastActivity: resultStatus.data.lastActivity,
             muted: false,
-            eventsUnseen: new Map<String, bool>());
+            eventsUnseen: 0);
         Globals.user.groups
             .putIfAbsent(resultStatus.data.groupId, () => newGroup);
         Navigator.of(this.context).pop();
