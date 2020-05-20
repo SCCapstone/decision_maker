@@ -10,7 +10,6 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
-import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -46,7 +45,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    getEvent();
+    getEvent(Globals.currentGroupResponse.group.events[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -231,12 +230,8 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     );
   }
 
-  void getEvent({final Event event}) {
-    if (event == null) {
-      this.event = Globals.currentGroupResponse.group.events[widget.eventId];
-    } else {
-      this.event = event;
-    }
+  void getEvent(final Event event) {
+    this.event = event;
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -258,7 +253,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     final ResultStatus<Event> resultStatus =
         await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      this.getEvent(event: resultStatus.data);
+      this.getEvent(resultStatus.data);
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
         Navigator.of(this.context).pop();

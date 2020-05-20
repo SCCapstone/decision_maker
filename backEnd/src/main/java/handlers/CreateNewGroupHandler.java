@@ -148,9 +148,9 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
   }
 
   /**
-   * This function takes the old definition of a group and checks to see if proposed edits are
-   * valid.
+   * This function takes the perameters for creating a group and checks if they are valid.
    *
+   * @param membersList           A list of the usernames to associate with this group.
    * @param defaultVotingDuration the new voting duration
    * @param defaultRsvpDuration   the new rsvp duration
    * @return A nullable errorMessage. If null, then there was no error and it is valid

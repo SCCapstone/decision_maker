@@ -8,7 +8,6 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
-import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
 import 'event_user_row.dart';
@@ -39,7 +38,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    getEvent();
+    getEvent(Globals.currentGroupResponse.group.events[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -196,12 +195,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     );
   }
 
-  void getEvent({final Event event}) {
-    if (event == null) {
-      this.event = Globals.currentGroupResponse.group.events[widget.eventId];
-    } else {
-      this.event = event;
-    }
+  void getEvent(final Event event) {
+    this.event = event;
 
     this.userRows.clear();
     for (String username in this.event.optedIn.keys) {
@@ -223,7 +218,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     final ResultStatus<Event> resultStatus =
         await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      this.getEvent(event: resultStatus.data);
+      this.getEvent(resultStatus.data);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }

@@ -693,7 +693,7 @@ class _GroupsHomeState extends State<GroupsHome>
           // this avoids the current page flashing for a second, don't need to pop if already here
           refreshList();
         } else if (Globals.currentGroupResponse.group.groupId == groupId) {
-          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home page
           Globals.user.groups
               .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);

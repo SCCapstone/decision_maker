@@ -39,9 +39,9 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
    * group based on the batch number. This method is used in the 'infinitely' scrolling list of
    * events on a group's page. Using this, we continue to get the next set or 'batch' of events.
    *
-   * @param activeUser
-   * @param groupId
-   * @param batchNumber
+   * @param activeUser  The username of the user making this api request.
+   * @param groupId     The id of the group to get events from.
+   * @param batchNumber The batch index of events to get from the group.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId,
