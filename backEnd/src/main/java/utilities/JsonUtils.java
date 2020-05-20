@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import models.Model;
 
 public class JsonUtils {
   public static Item getItemFromFile(final String fileName) throws IOException {
@@ -55,6 +56,8 @@ public class JsonUtils {
       outputString.append(JsonUtils.convertIterableToJson((Iterable) value));
     } else if (value instanceof Number || value instanceof Boolean) {
       outputString.append(value.toString());
+    } else if (value instanceof Model) {
+      outputString.append(JsonUtils.convertMapToJson(((Model) value).asMap()));
     } else {
       outputString.append("null"); // assuming null pointer
     }

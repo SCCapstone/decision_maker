@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class User {
+public class User implements Model {
 
   public static final String USERNAME = "Username";
   public static final String DISPLAY_NAME = "DisplayName";

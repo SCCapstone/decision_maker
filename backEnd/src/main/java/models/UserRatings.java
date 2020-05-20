@@ -30,6 +30,10 @@ public class UserRatings {
     return this.versionsToRatingMaps.getOrDefault(version, new HashMap<>());
   }
 
+  public boolean contains(final Integer version) {
+    return this.versionsToRatingMaps.containsKey(version.toString());
+  }
+
   public Map<String, Integer> getRatings(final Integer version) {
     return this.versionsToRatingMaps.getOrDefault(version.toString(), new HashMap<>());
   }
