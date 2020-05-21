@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.PENDING_EVENTS_DELIM;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -14,7 +16,6 @@ import utilities.ResultStatus;
 
 public class AddPendingEventHandler implements ApiRequestHandler {
 
-  private static final String DELIM = ";";
   private static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
 
   private DbAccessManager dbAccessManager;
@@ -53,7 +54,7 @@ public class AddPendingEventHandler implements ApiRequestHandler {
       final String updateExpression = "set #key = :date";
       final ValueMap valueMap = new ValueMap()
           .withString(":date", expirationDate.format(this.dbAccessManager.getDateTimeFormatter()));
-      final NameMap nameMap = new NameMap().with("#key", groupId + DELIM + eventId);
+      final NameMap nameMap = new NameMap().with("#key", groupId + PENDING_EVENTS_DELIM + eventId);
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)

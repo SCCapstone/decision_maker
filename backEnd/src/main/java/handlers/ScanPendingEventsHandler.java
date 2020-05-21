@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.PENDING_EVENTS_DELIM;
+
 import com.google.common.collect.ImmutableMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,8 +18,6 @@ import utilities.RequestFields;
 import utilities.ResultStatus;
 
 public class ScanPendingEventsHandler {
-
-  private static final String DELIM = ";";
 
   private final DbAccessManager dbAccessManager;
   private final StepFunctionManager stepFunctionManager;
@@ -62,7 +62,7 @@ public class ScanPendingEventsHandler {
                   this.dbAccessManager.getDateTimeFormatter());
 
           if (currentDate.isAfter(resolutionDate)) {
-            keyPair = Arrays.asList(key.split(DELIM));
+            keyPair = Arrays.asList(key.split(PENDING_EVENTS_DELIM));
 
             if (keyPair.size() == 2) {
               groupId = keyPair.get(0);

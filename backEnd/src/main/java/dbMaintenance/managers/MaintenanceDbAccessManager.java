@@ -17,4 +17,8 @@ public class MaintenanceDbAccessManager extends DbAccessManager {
   public Iterator<Item> scanGroupsTable() {
     return this.groupsTable.scan().iterator();
   }
+
+  public Iterator<Item> scanPendingEventsTable() {
+    return this.pendingEventsTable.scan().iterator();
+  }
 }

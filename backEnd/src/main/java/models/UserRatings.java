@@ -2,6 +2,7 @@ package models;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import lombok.Data;
 
 @Data
@@ -24,6 +25,10 @@ public class UserRatings {
       modelAsMap.putIfAbsent(versionRatingsEntry.getKey(), versionRatingsEntry.getValue());
     }
     return modelAsMap;
+  }
+
+  public Set<String> getVersionSet() {
+    return this.versionsToRatingMaps.keySet();
   }
 
   public Map<String, Integer> getRatings(final String version) {

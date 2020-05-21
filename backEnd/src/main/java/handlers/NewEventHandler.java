@@ -130,11 +130,9 @@ public class NewEventHandler implements ApiRequestHandler {
               .handle(groupId, eventId, null);
         }
 
-        //since the event could have been updated by skipping consider, we need to pull to get the most up to date event
+        //since the event could have been updated by skipping consider, we need to pull to get the
+        // most up to date event
         final Group newGroup = this.dbAccessManager.getGroupNoCache(groupId);
-//        final Group newGroup = oldGroup.clone();
-//        newGroup.getEvents().put(eventId, newEvent);
-//        newGroup.setLastActivity(lastActivity);
 
         //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
         if (newEvent.getRsvpDuration() > 0) {

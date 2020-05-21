@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.PENDING_EVENTS_DELIM;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.google.common.collect.ImmutableMap;
@@ -117,7 +119,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
       final NameMap nameMap = new NameMap();
       IntStream.range(0, eventIdsList.size()).boxed()
           .forEach(i -> nameMap.with("#groupEventKey" + i,
-              deletedGroup.getGroupId() + DbAccessManager.DELIM + eventIdsList.get(i)));
+              deletedGroup.getGroupId() + PENDING_EVENTS_DELIM + eventIdsList.get(i)));
 
       final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
           .withUpdateExpression(updateExpression)

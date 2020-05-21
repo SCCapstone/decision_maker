@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.PENDING_EVENTS_DELIM;
+
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
@@ -24,14 +26,12 @@ import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.NondeterministicOptimalChoiceSelector;
-import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
 public class ProcessPendingEventHandler {
 
   private static final Float K = 0.2f;
-  private static final String DELIM = ";";
 
   private DbAccessManager dbAccessManager;
   private SnsAccessManager snsAccessManager;
@@ -58,7 +58,7 @@ public class ProcessPendingEventHandler {
    *                  processing is being done for a brand new event.
    * @return Standard result status object giving insight on whether the request was successful.
    */
-  public ResultStatus handle(final String groupId, final String eventId, String scannerId) {
+  public ResultStatus handle(final String groupId, final String eventId, final String scannerId) {
     final String classMethod = "ProcessPendingEventHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -67,7 +67,9 @@ public class ProcessPendingEventHandler {
     try {
       final Boolean isNewEvent = (scannerId == null);
 
-      final Item groupData = this.dbAccessManager.getGroupItem(groupId);
+      //if the flow was passed here from new event, we need to get the new version of the group
+      final Item groupData = this.dbAccessManager.getGroupItemNoCache(groupId);
+
       if (groupData != null) { // if null, assume the group was deleted
         final GroupWithCategoryChoices group = new GroupWithCategoryChoices(groupData.asMap());
         final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
@@ -109,7 +111,8 @@ public class ProcessPendingEventHandler {
           if (!isNewEvent) {
             final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withUpdateExpression("remove #groupEventKey")
-                .withNameMap(new NameMap().with("#groupEventKey", groupId + DELIM + eventId));
+                .withNameMap(
+                    new NameMap().with("#groupEventKey", groupId + PENDING_EVENTS_DELIM + eventId));
 
             this.dbAccessManager.updatePendingEvent(scannerId, updateItemSpec);
           }

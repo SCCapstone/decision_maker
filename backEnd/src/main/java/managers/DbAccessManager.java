@@ -43,13 +43,12 @@ public class DbAccessManager {
   public static final String PENDING_EVENTS_PRIMARY_KEY = "ScannerId";
 
   public static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
-  public static final String DELIM = ";";
 
   //making protected for extended classes
   protected final Table groupsTable;
   protected final Table usersTable;
   private final Table categoriesTable;
-  private final Table pendingEventsTable;
+  protected final Table pendingEventsTable;
 
   private final AmazonDynamoDBClient client;
   private final DateTimeFormatter dateTimeFormatter;
@@ -180,15 +179,41 @@ public class DbAccessManager {
   }
 
   public Group getGroup(final String groupId) {
-    return new Group(this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId)));
+    Item groupItem;
+    if (this.cache.containsKey(groupId)) {
+      groupItem = this.cache.get(groupId);
+    } else {
+      groupItem = this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+      this.cache.put(groupId, groupItem);
+    }
+
+    return new Group(groupItem);
   }
 
   public Group getGroupNoCache(final String groupId) {
-    return new Group(this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId)));
+    final Item groupItem = this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+    this.cache.put(groupId, groupItem);
+
+    return new Group(groupItem);
   }
 
   public Item getGroupItem(final String groupId) {
-    return this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+    Item groupItem;
+    if (this.cache.containsKey(groupId)) {
+      groupItem = this.cache.get(groupId);
+    } else {
+      groupItem = this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+      this.cache.put(groupId, groupItem);
+    }
+
+    return groupItem;
+  }
+
+  public Item getGroupItemNoCache(final String groupId) {
+    final Item groupItem = this.groupsTable.getItem(new PrimaryKey(GROUPS_PRIMARY_KEY, groupId));
+    this.cache.put(groupId, groupItem);
+
+    return groupItem;
   }
 
   public UpdateItemOutcome updateGroup(final String groupId,
