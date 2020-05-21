@@ -301,9 +301,13 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
+      // this event will be in the consider stage so go to that tab
+      var considerTab = find.byValueKey("groups_page:consider_tab");
+      await driver.tap(considerTab);
+
       // make sure event is there
       await driver.waitFor(find.descendant(
-          of: find.byValueKey("events_list:event_list"),
+          of: find.byValueKey("group_page:tab_view"),
           matching: find.text(eventName)));
     });
 
@@ -358,9 +362,13 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
+      // this event will be in the voting stage so go to that tab
+      var considerTab = find.byValueKey("groups_page:voting_tab");
+      await driver.tap(considerTab);
+
       // make sure event is there
       await driver.waitFor(find.descendant(
-          of: find.byValueKey("events_list:event_list"),
+          of: find.byValueKey("group_page:tab_view"),
           matching: find.text(eventName)));
     });
 
@@ -414,9 +422,13 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
+      // this event will be in the consider stage so go to that tab
+      var considerTab = find.byValueKey("groups_page:consider_tab");
+      await driver.tap(considerTab);
+
       // make sure event is there
       await driver.waitFor(find.descendant(
-          of: find.byValueKey("events_list:event_list"),
+          of: find.byValueKey("group_page:tab_view"),
           matching: find.text(eventName)));
     });
 
@@ -470,9 +482,13 @@ void main() {
       await driver.tap(saveEventButton);
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
+      // this event will be in the consider stage so go to that tab
+      var considerTab = find.byValueKey("groups_page:done_tab");
+      await driver.tap(considerTab);
+
       // make sure event is there
       await driver.waitFor(find.descendant(
-          of: find.byValueKey("events_list:event_list"),
+          of: find.byValueKey("group_page:tab_view"),
           matching: find.text(eventName)));
     });
 

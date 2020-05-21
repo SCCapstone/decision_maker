@@ -28,41 +28,6 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
-  String emptyMessage;
-
-  @override
-  void initState() {
-    if (widget.isUnseenTab) {
-      this.emptyMessage = "No new events.";
-    } else {
-      this.emptyMessage = "No events currently in this stage.";
-    }
-    // sort the events
-    widget.events.sort((a, b) {
-      if (a.getEventMode() == EventsManager.considerMode) {
-        return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin) ? 1 : -1;
-      } else if (a.getEventMode() == EventsManager.votingMode) {
-        return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
-      } else if (a.getEventMode() == EventsManager.occurringMode) {
-        return b
-                .getEvent()
-                .eventStartDateTime
-                .isBefore(a.getEvent().eventStartDateTime)
-            ? 1
-            : -1;
-      } else {
-        // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
-        return a
-                .getEvent()
-                .eventStartDateTime
-                .isBefore(b.getEvent().eventStartDateTime)
-            ? 1
-            : -1;
-      }
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.events.isEmpty) {
@@ -71,12 +36,42 @@ class _EventsListState extends State<EventsList> {
           Padding(
             padding: EdgeInsets.all(20.0),
             child: Center(
-              child: Text(this.emptyMessage, style: TextStyle(fontSize: 30)),
+              child: Text(
+                  (widget.isUnseenTab)
+                      ? "No new events"
+                      : "No events currently in this stage",
+                  style: TextStyle(fontSize: 30)),
             ),
           )
         ],
       );
     } else {
+      // sort the events
+      widget.events.sort((a, b) {
+        if (a.getEventMode() == EventsManager.considerMode) {
+          return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
+              ? 1
+              : -1;
+        } else if (a.getEventMode() == EventsManager.votingMode) {
+          return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
+        } else if (a.getEventMode() == EventsManager.occurringMode) {
+          return b
+                  .getEvent()
+                  .eventStartDateTime
+                  .isBefore(a.getEvent().eventStartDateTime)
+              ? 1
+              : -1;
+        } else {
+          // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
+          return a
+                  .getEvent()
+                  .eventStartDateTime
+                  .isBefore(b.getEvent().eventStartDateTime)
+              ? 1
+              : -1;
+        }
+      });
+
       List<Widget> widgetList = new List<Widget>.from(widget.events);
       int numEvents = (Globals.currentGroupResponse.group.currentBatchNum + 1) *
           GroupsManager.BATCH_SIZE;

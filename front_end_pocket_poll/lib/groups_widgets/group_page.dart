@@ -46,8 +46,7 @@ class _GroupPageState extends State<GroupPage>
   int currentTab;
   bool loading;
   bool errorLoading;
-  bool
-      refreshFlag; // hacky but the onResume method below is being called twice for some reason
+  bool firstLoading;
   Widget errorWidget;
 
   @override
@@ -58,12 +57,12 @@ class _GroupPageState extends State<GroupPage>
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
         key: Key("groups_page:unseen_tab"));
-    this.tabs[occurringTab] = new AutoSizeText("Occurring",
+    this.tabs[occurringTab] = new AutoSizeText("Ready",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
-        key: Key("groups_page:occurring_tab"));
+        key: Key("groups_page:done_tab"));
     this.tabs[votingTab] = new AutoSizeText("Voting",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
@@ -76,7 +75,7 @@ class _GroupPageState extends State<GroupPage>
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
         key: Key("groups_page:consider_tab"));
-    this.tabs[closedTab] = new AutoSizeText("Closed",
+    this.tabs[closedTab] = new AutoSizeText("Old",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
         minFontSize: 12,
@@ -85,8 +84,8 @@ class _GroupPageState extends State<GroupPage>
 
     WidgetsBinding.instance.addObserver(this);
     this.loading = true;
-    this.refreshFlag = false;
     this.errorLoading = false;
+    this.firstLoading = true;
     this.tabController =
         new TabController(length: this.tabs.length, vsync: this);
     this.tabController.addListener(handleTabChange);
@@ -113,11 +112,8 @@ class _GroupPageState extends State<GroupPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print("whyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
     if (state == AppLifecycleState.resumed) {
       Globals.refreshGroupPage = refreshList;
-      // TODO why tf is this being called twice...
-      print("***************************");
       // app was recently resumed with this state being active, so signal to refresh the group in case changes happened
       getGroup();
     }
@@ -202,19 +198,16 @@ class _GroupPageState extends State<GroupPage>
                   controller: this.tabController,
                   key: Key("group_page:tab_view"),
                   children: List.generate(this.tabs.length, (index) {
-                    return Container(
-                      height: MediaQuery.of(context).size.height * .80,
-                      child: RefreshIndicator(
-                        child: EventsList(
-                          group: Globals.currentGroupResponse.group,
-                          events: this.eventCards[index],
-                          isUnseenTab: (index == unseenTab) ? true : false,
-                          refreshEventsUnseen: updatePage,
-                          refreshPage: refreshList,
-                          getNextBatch: getNextBatch,
-                        ),
-                        onRefresh: refreshList,
+                    return RefreshIndicator(
+                      child: EventsList(
+                        group: Globals.currentGroupResponse.group,
+                        events: this.eventCards[index],
+                        isUnseenTab: (index == unseenTab) ? true : false,
+                        refreshEventsUnseen: updatePage,
+                        refreshPage: refreshList,
+                        getNextBatch: getNextBatch,
                       ),
+                      onRefresh: refreshList,
                     );
                   }),
                 ),
@@ -259,6 +252,20 @@ class _GroupPageState extends State<GroupPage>
       this.errorLoading = false;
       Globals.currentGroupResponse = status.data;
       Globals.currentGroupResponse.group.currentBatchNum = batchNum;
+
+      if (this.firstLoading) {
+        /*
+            On the first loading of the page, check to see if there are any unseen events.
+            If so, then the first landing tab will be the unseen events tab. Else, go to the second tab
+         */
+        if (Globals.currentGroupResponse.eventsUnseen.isEmpty) {
+          this.currentTab = occurringTab;
+        } else {
+          this.currentTab = unseenTab;
+        }
+        this.firstLoading = false;
+      }
+      this.tabController.animateTo(this.currentTab);
       populateEventStages();
     } else {
       this.errorLoading = true;
