@@ -1,19 +1,20 @@
 package modules;
 
-import controllers.GetBatchOfEventsController;
-import controllers.GetEventController;
-import controllers.NewCategoryController;
+import controllers.AddFavoriteController;
 import controllers.CreateNewGroupController;
 import controllers.DeleteCategoryController;
 import controllers.DeleteGroupController;
 import controllers.EditCategoryController;
 import controllers.EditGroupController;
+import controllers.GetBatchOfEventsController;
 import controllers.GetCategoriesController;
+import controllers.GetEventController;
 import controllers.GetGroupController;
 import controllers.GetUserDataController;
 import controllers.LeaveGroupController;
 import controllers.MarkAllEventsSeenController;
 import controllers.MarkEventAsSeenController;
+import controllers.NewCategoryController;
 import controllers.NewEventController;
 import controllers.OptUserInOutController;
 import controllers.PendingEventResolutionController;
@@ -60,4 +61,5 @@ public interface PocketPollComponent {
   void inject(PendingEventsScanningController pendingEventsScanningController);
   void inject(PendingEventResolutionController pendingEventResolutionController);
   void inject(GetEventController getEventController);
+  void inject(AddFavoriteController addFavoriteController);
 }

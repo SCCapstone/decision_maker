@@ -2,6 +2,7 @@ package modules;
 
 import dagger.Module;
 import dagger.Provides;
+import handlers.AddFavoriteHandler;
 import handlers.AddPendingEventHandler;
 import handlers.GetBatchOfEventsHandler;
 import handlers.GetEventHandler;
@@ -235,5 +236,10 @@ public class PocketPollModule {
   @Provides
   public GetEventHandler provideGetEventHandler(final DbAccessManager dbAccessManager) {
     return new GetEventHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public AddFavoriteHandler provideAddFavoriteHandler(final DbAccessManager dbAccessManager) {
+    return new AddFavoriteHandler(dbAccessManager, this.metrics);
   }
 }
