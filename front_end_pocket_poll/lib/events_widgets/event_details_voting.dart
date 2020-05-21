@@ -45,7 +45,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    getEvent(Globals.currentGroupResponse.group.events[widget.eventId]);
+    buildUserRows(Globals.currentGroupResponse.group.events[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -230,7 +230,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     );
   }
 
-  void getEvent(final Event event) {
+  void buildUserRows(final Event event) {
     this.event = event;
 
     this.userRows.clear();
@@ -253,7 +253,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
     final ResultStatus<Event> resultStatus =
         await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      this.getEvent(resultStatus.data);
+      this.buildUserRows(resultStatus.data);
       if (EventsManager.getEventMode(this.event) != widget.mode) {
         // if while the user was here and the mode changed, take them back to the group page
         Navigator.of(this.context).pop();

@@ -38,7 +38,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    getEvent(Globals.currentGroupResponse.group.events[widget.eventId]);
+    buildUserRows(Globals.currentGroupResponse.group.events[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -195,7 +195,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     );
   }
 
-  void getEvent(final Event event) {
+  void buildUserRows(final Event event) {
     this.event = event;
 
     this.userRows.clear();
@@ -218,7 +218,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     final ResultStatus<Event> resultStatus =
         await GroupsManager.getEvent(widget.groupId, widget.eventId);
     if (resultStatus.success) {
-      this.getEvent(resultStatus.data);
+      this.buildUserRows(resultStatus.data);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
     }

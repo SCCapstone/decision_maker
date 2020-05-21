@@ -305,13 +305,13 @@ class _MembersPageState extends State<MembersPage> {
     if (widget.membersLeft.contains(username)) {
       showErrorMessage(
           "Error",
-          "Cannot add $username because they have previously left this group.",
+          "Cannot add '$username' because they have previously left this group.",
           this.context);
       hideKeyboard(this.context);
     } else if (widget.displayedMembers.length >= Globals.maxGroupMembers) {
       showErrorMessage(
           "Error",
-          "Cannot add $username because the max group size of ${Globals.maxGroupMembers} has been met.",
+          "Cannot add '$username' because the max group size of ${Globals.maxGroupMembers} has been met.",
           this.context);
       hideKeyboard(this.context);
     } else {
@@ -347,7 +347,7 @@ class _MembersPageState extends State<MembersPage> {
     if (widget.displayedMembers.length >= Globals.maxGroupMembers) {
       showErrorMessage(
           "Error",
-          "Cannot add ${memberToAdd.username} because the max group size of ${Globals.maxGroupMembers} has been met.",
+          "Cannot add '${memberToAdd.username}' because the max group size of ${Globals.maxGroupMembers} has been met.",
           this.context);
       hideKeyboard(this.context);
     } else {

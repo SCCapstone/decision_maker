@@ -20,6 +20,14 @@ public class GetEventHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
+  /**
+   * This function is used to get the event map for a specific event within a group.
+   *
+   * @param activeUser The username of the user making the api request.
+   * @param groupId    The id of the group that the event is associated with.
+   * @param eventId    The id of the event to get the data of.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final String groupId, final String eventId) {
     final String classMethod = "GetEventHandler.handle";
     this.metrics.commonSetup(classMethod);
