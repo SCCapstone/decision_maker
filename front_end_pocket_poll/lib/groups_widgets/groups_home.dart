@@ -693,7 +693,7 @@ class _GroupsHomeState extends State<GroupsHome>
           // this avoids the current page flashing for a second, don't need to pop if already here
           refreshList();
         } else if (Globals.currentGroupResponse.group.groupId == groupId) {
-          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home apge
+          // somewhere in the app the user is in the group they were kicked out of, so bring them back to the home page
           Globals.user.groups
               .remove(Globals.currentGroupResponse.group.groupId);
           Navigator.of(context).popUntil((route) => route.isFirst);
@@ -706,16 +706,18 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        // String eventId = notification.payload[EventsManager.EVENT_ID];
-        String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen++;
-          Globals.user.groups[groupId].lastActivity = date;
+          Globals.user.groups[groupId].eventsUnseen =
+              notification.payload[GroupsManager.EVENTS_UNSEEN];
+          Globals.user.groups[groupId].lastActivity =
+              notification.payload[GroupsManager.LAST_ACTIVITY];
         }
+
         if (Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
+
         if (ModalRoute.of(context).isCurrent) {
           // only update groups home if it actually visible
           loadGroups();
@@ -792,16 +794,18 @@ class _GroupsHomeState extends State<GroupsHome>
       } else {
         // event updates
         String groupId = notification.payload[GroupsManager.GROUP_ID];
-        // String eventId = notification.payload[EventsManager.EVENT_ID];
-        String date = notification.payload[GroupsManager.LAST_ACTIVITY];
         if (Globals.user.groups[groupId] != null) {
-          Globals.user.groups[groupId].eventsUnseen++;
-          Globals.user.groups[groupId].lastActivity = date;
+          Globals.user.groups[groupId].eventsUnseen =
+              notification.payload[GroupsManager.EVENTS_UNSEEN];
+          Globals.user.groups[groupId].lastActivity =
+              notification.payload[GroupsManager.LAST_ACTIVITY];
         }
+
         if (Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
+
         if (ModalRoute.of(context).isCurrent) {
           // only update groups home if it actually visible
           loadGroups();

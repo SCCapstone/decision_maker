@@ -47,6 +47,7 @@ class Globals {
   static final int maxDisplayNameLength = 40;
   static final int minGroupNameLength = 1;
   static final int maxGroupNameLength = 40;
+  static final int maxGroupMembers = 300;
   static final int minEventNameLength = 1;
   static final int maxEventNameLength = 30;
   static final int minCategoryNameLength = 1;

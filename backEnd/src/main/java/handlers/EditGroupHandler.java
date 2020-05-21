@@ -1,5 +1,8 @@
 package handlers;
 
+import static utilities.Config.MAX_DURATION;
+import static utilities.Config.MAX_GROUP_MEMBERS;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -29,8 +32,6 @@ import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
 public class EditGroupHandler implements ApiRequestHandler {
-
-  public static final Integer MAX_DURATION = 10000;
 
   private DbAccessManager dbAccessManager;
   private S3AccessManager s3AccessManager;
@@ -71,16 +72,11 @@ public class EditGroupHandler implements ApiRequestHandler {
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
       final Integer batchNumber, final List<Integer> iconData) {
     final String classMethod = "EditGroupHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus = new ResultStatus();
+    ResultStatus resultStatus;
 
     try {
-
-      //TODO update the categories passed in to be a list of ids, then create categories map
-      //TODO similar to what we're doing with the members above (currently we're just relying on
-      //TODO user input which is bad
-
       final Group oldGroup = this.dbAccessManager.getGroup(groupId);
 
       final Optional<String> errorMessage = this
@@ -141,15 +137,15 @@ public class EditGroupHandler implements ApiRequestHandler {
         resultStatus = new ResultStatus(true,
             JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
       } else {
-        resultStatus.resultMessage = errorMessage.get();
-        metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
+        resultStatus = ResultStatus.failure(errorMessage.get());
+        this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
       }
     } catch (Exception e) {
-      resultStatus.resultMessage = "Exception in: " + classMethod;
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      resultStatus = ResultStatus.failure("Exception in: " + classMethod);
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -422,6 +418,13 @@ public class EditGroupHandler implements ApiRequestHandler {
     if (!members.contains(oldGroup.getGroupCreator())) {
       errorMessage = this.getUpdatedErrorMessage(errorMessage,
           "Error: Group creator cannot be removed from group.");
+    }
+
+    //NOTE this could potentially be a bad error since not all usernames are guaranteed to exist.
+    // That being said, it should be assumed all names are valid from front end validation. This
+    // also saves potentially unnecessary db hits.
+    if (new HashSet<>(members).size() > MAX_GROUP_MEMBERS) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Too many members.");
     }
 
     //make a copy so we don't actually update the member map on the old group

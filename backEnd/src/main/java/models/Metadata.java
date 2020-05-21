@@ -18,4 +18,10 @@ public class Metadata {
     objectAsMap.put("payload", this.payload);
     return objectAsMap;
   }
+
+  public void addToPayload(final String key, final Object value) {
+    if (this.payload != null) {
+      this.payload.putIfAbsent(key, value);
+    }
+  }
 }

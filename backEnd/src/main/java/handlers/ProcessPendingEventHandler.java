@@ -378,7 +378,6 @@ public class ProcessPendingEventHandler {
     payload.putIfAbsent(Group.GROUP_ID, group.getGroupId());
     payload.putIfAbsent(Group.GROUP_NAME, group.getGroupName());
     payload.putIfAbsent(Group.LAST_ACTIVITY, group.getLastActivity());
-    payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
     String action = "eventCreated";
 
@@ -406,9 +405,15 @@ public class ProcessPendingEventHandler {
       //if it's a new event, the event creator doesn't need a notification
       if (!(isNewEvent && username.equals(updatedEventCreator))) {
         try {
-          final User user = this.dbAccessManager.getUser(username);
+          //we aren't using cache here since the old user might have been cached before updating the
+          // users table if this processing required getting the tentative algorithm choices
+          final User user = this.dbAccessManager.getUserNoCache(username);
 
           if (user.pushEndpointArnIsSet()) {
+            //each user needs to know how many events they haven't seen for the given group now
+            metadata.addToPayload(User.EVENTS_UNSEEN,
+                user.getGroups().get(group.getGroupId()).getEventsUnseen().size());
+
             if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())
                 .isMuted()) {
               this.snsAccessManager.sendMutedMessage(user.getPushEndpointArn(), metadata);

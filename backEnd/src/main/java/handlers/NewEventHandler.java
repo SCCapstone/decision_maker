@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.MAX_DURATION;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -27,7 +29,6 @@ import utilities.WarningDescriptor;
 
 public class NewEventHandler implements ApiRequestHandler {
 
-  private static final Integer MAX_DURATION = 10000;
   private static final Integer MAX_EVENT_NAME_LENGTH = 30;
 
   private final DbAccessManager dbAccessManager;
@@ -265,7 +266,6 @@ public class NewEventHandler implements ApiRequestHandler {
     payload.putIfAbsent(Group.GROUP_ID, group.getGroupId());
     payload.putIfAbsent(Group.GROUP_NAME, group.getGroupName());
     payload.putIfAbsent(Group.LAST_ACTIVITY, group.getLastActivity());
-    payload.putIfAbsent(RequestFields.EVENT_ID, eventId);
 
     String action = "eventCreated";
 
@@ -296,6 +296,10 @@ public class NewEventHandler implements ApiRequestHandler {
           final User user = this.dbAccessManager.getUser(username);
 
           if (user.pushEndpointArnIsSet()) {
+            //each user needs to know how many events they haven't seen for the given group now
+            metadata.addToPayload(User.EVENTS_UNSEEN,
+                user.getGroups().get(group.getGroupId()).getEventsUnseen().size());
+
             if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())
                 .isMuted()) {
               this.snsAccessManager.sendMutedMessage(user.getPushEndpointArn(), metadata);

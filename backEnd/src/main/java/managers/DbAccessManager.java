@@ -100,6 +100,13 @@ public class DbAccessManager {
     return new User(userItem);
   }
 
+  public User getUserNoCache(final String username) throws InvalidAttributeValueException {
+    final Item userItem = this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
+    this.cache.put(username, userItem);
+
+    return new User(userItem);
+  }
+
   public Item getUserItem(final String username) throws NullPointerException {
     Item userItem;
     if (this.cache.containsKey(username)) {

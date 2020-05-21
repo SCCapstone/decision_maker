@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor // needed for the clone method to work
 @Builder(toBuilder = true)
-public class Event {
+public class Event implements Model {
 
   public static final String EVENT_NAME = "EventName";
   public static final String EVENT_CREATOR = "EventCreator";

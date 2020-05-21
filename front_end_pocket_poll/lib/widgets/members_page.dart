@@ -45,10 +45,12 @@ class _MembersPageState extends State<MembersPage> {
       bool displayOwner = false;
       if (!widget.isCreating) {
         // can't delete yourself or the group creator
-        displayDelete = user.username != Globals.currentGroupResponse.group.groupCreator &&
-            user.username != Globals.username &&
-            widget.canEdit;
-        displayOwner = user.username == Globals.currentGroupResponse.group.groupCreator;
+        displayDelete =
+            user.username != Globals.currentGroupResponse.group.groupCreator &&
+                user.username != Globals.username &&
+                widget.canEdit;
+        displayOwner =
+            user.username == Globals.currentGroupResponse.group.groupCreator;
       }
       UserRow userRow = new UserRow(user.displayName, user.username, user.icon,
           displayDelete, false, displayOwner, deleteUser: () {
@@ -269,7 +271,7 @@ class _MembersPageState extends State<MembersPage> {
 
   // populate the total favorites using the favorites on the local user object
   void getDisplayedFavorites() {
-    for (Favorite favorite in Globals.user.favorites) {
+    for (final Favorite favorite in Globals.user.favorites) {
       // can't ever add the owner of a group, so it's always false below
       this.displayedFavoritesRows.add(new UserRow(
             favorite.displayName,
@@ -303,7 +305,13 @@ class _MembersPageState extends State<MembersPage> {
     if (widget.membersLeft.contains(username)) {
       showErrorMessage(
           "Error",
-          "Cannot add $username because they have previously left this group.",
+          "Cannot add '$username' because they have previously left this group.",
+          this.context);
+      hideKeyboard(this.context);
+    } else if (widget.displayedMembers.length >= Globals.maxGroupMembers) {
+      showErrorMessage(
+          "Error",
+          "Cannot add '$username' because the max group size of ${Globals.maxGroupMembers} has been met.",
           this.context);
       hideKeyboard(this.context);
     } else {
@@ -335,21 +343,29 @@ class _MembersPageState extends State<MembersPage> {
   }
 
   // add the new user to the list and then display it in the scroll view
-  void addMemberFromFavorites(Favorite memberToAdd) {
-    widget.displayedMembers.add(new Member.fromFavorite(memberToAdd));
-    this.displayedUserRows.add(new UserRow(
-            memberToAdd.displayName,
-            memberToAdd.username,
-            memberToAdd.icon,
-            true,
-            false,
-            false, deleteUser: () {
-          removeMember(memberToAdd.username);
-        }));
-    this
-        .displayedFavoritesRows
-        .removeWhere((row) => row.username == memberToAdd.username);
-    setState(() {});
+  void addMemberFromFavorites(final Favorite memberToAdd) {
+    if (widget.displayedMembers.length >= Globals.maxGroupMembers) {
+      showErrorMessage(
+          "Error",
+          "Cannot add '${memberToAdd.username}' because the max group size of ${Globals.maxGroupMembers} has been met.",
+          this.context);
+      hideKeyboard(this.context);
+    } else {
+      widget.displayedMembers.add(new Member.fromFavorite(memberToAdd));
+      this.displayedUserRows.add(new UserRow(
+              memberToAdd.displayName,
+              memberToAdd.username,
+              memberToAdd.icon,
+              true,
+              false,
+              false, deleteUser: () {
+            removeMember(memberToAdd.username);
+          }));
+      this
+          .displayedFavoritesRows
+          .removeWhere((row) => row.username == memberToAdd.username);
+      setState(() {});
+    }
   }
 
   // removes a member from the list
