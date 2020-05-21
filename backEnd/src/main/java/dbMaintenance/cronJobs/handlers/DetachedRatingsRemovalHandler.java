@@ -4,9 +4,9 @@ import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import javax.inject.Inject;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
@@ -17,6 +17,7 @@ public class DetachedRatingsRemovalHandler {
   private MaintenanceDbAccessManager maintenanceDbAccessManager;
   private Metrics metrics;
 
+  @Inject
   public DetachedRatingsRemovalHandler(final MaintenanceDbAccessManager maintenanceDbAccessManager,
       final Metrics metrics) {
     this.maintenanceDbAccessManager = maintenanceDbAccessManager;
