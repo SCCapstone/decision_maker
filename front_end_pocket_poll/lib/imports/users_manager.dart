@@ -7,6 +7,7 @@ import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/app_settings.dart';
+import 'package:front_end_pocket_poll/models/favorite.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
 
@@ -230,5 +231,38 @@ class UsersManager {
 
     //blind send here, not critical for app or user if it fails
     makeApiRequest(apiEndpoint, jsonRequestBody);
+  }
+
+  static Future<ResultStatus> addFavorite(final Favorite favorite) async {
+    ResultStatus retVal = new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = "addFavorite";
+    jsonRequestBody[RequestFields.PAYLOAD]
+        .putIfAbsent(USERNAME, () => favorite.username);
+
+    final ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        Map<String, dynamic> body = jsonDecode(response.data);
+        ResponseItem responseItem = new ResponseItem.fromJson(body);
+        if (responseItem.success) {
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to add favorite.";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Unable to add favorite.";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+          "Network error. Unable to add favorite. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to add favorite.";
+    }
+
+    return retVal;
   }
 }
