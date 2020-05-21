@@ -380,6 +380,11 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
 
     if (resultStatus.success) {
       setState(() {
+        if (Globals.currentGroupResponse.eventsWithoutRatings
+            .containsKey(widget.eventId)) {
+          Globals.currentGroupResponse.eventsWithoutRatings
+              .remove(widget.eventId);
+        }
         setOriginalValues();
         this.ratingsChanged = false;
       });

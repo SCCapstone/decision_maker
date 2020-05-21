@@ -38,8 +38,8 @@ class _EventsListState extends State<EventsList> {
             child: Center(
               child: Text(
                   (widget.isUnseenTab)
-                      ? "No new events"
-                      : "No events currently in this stage",
+                      ? "No new events."
+                      : "No events currently in this stage. Click the button below to create new events.",
                   style: TextStyle(fontSize: 30)),
             ),
           )
@@ -75,6 +75,10 @@ class _EventsListState extends State<EventsList> {
       List<Widget> widgetList = new List<Widget>.from(widget.events);
       int numEvents = (Globals.currentGroupResponse.group.currentBatchNum + 1) *
           GroupsManager.BATCH_SIZE;
+      // TODO this needs to be updated with the new multiple batches.
+      //  Since at this stage there is at least one event. Can just do evetcard.getEventMode()
+      // and then in the currentGroupResponse have a map of modes to batchNums
+
       // have a button shown if more events to show
       Row buttonRow = new Row(
         mainAxisAlignment: MainAxisAlignment.center,

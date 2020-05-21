@@ -20,7 +20,9 @@ void main() {
     final Random rng = new Random();
     final int maxCategoryName = 100000;
     final int maxChoiceName = 10000;
-    final int maxEventName = 10000;
+    final int maxEventName = 100000;
+
+    String eventNameForUpdatingRatings;
 
     String getRandomCategoryName() {
       return rng.nextInt(maxCategoryName).toString();
@@ -372,66 +374,6 @@ void main() {
           matching: find.text(eventName)));
     });
 
-    test('create_event_skip_vote', () async {
-      // enter the create event page
-      var createEventButton = find.byValueKey("group_page:create_event_button");
-      await driver.tap(createEventButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
-
-      // enter an event name (save it for verifying later it was created)
-      String eventName = getRandomEventName();
-      var eventNameInput = find.byValueKey("event_create:event_name_input");
-      await driver.tap(eventNameInput);
-      await driver.enterText(eventName);
-
-      // select a category
-      var addCategoryButton =
-          find.byValueKey("event_create:add_category_button");
-      await driver.tap(addCategoryButton);
-
-      // wait for categories to load
-      await driver
-          .waitFor(find.byValueKey("event_pick_category:category_container"));
-
-      // always select first category
-      var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
-      await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("event_pick_category:done_button");
-      await driver.tap(doneButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
-
-      // enter the start time (date is already set for current day by default)
-      var hourInput = find.byValueKey("event_create:hour_input");
-      await driver.tap(hourInput);
-      await driver.enterText(" "); // space automatically picks next hour
-      var minuteInput = find.byValueKey("event_create:minute_input");
-      await driver.tap(minuteInput);
-      await driver.enterText(" "); // space automatically picks current minute
-
-      // enter a consider time
-      var considerInput = find.byValueKey("event_create:consider_input");
-      await driver.tap(considerInput);
-      await driver.enterText("2");
-
-      // SKIP the vote time
-      var skipVoteButton = find.byValueKey("event_create:skip_vote_button");
-      await driver.tap(skipVoteButton);
-
-      // save the event
-      var saveEventButton = find.byValueKey("event_create:save_event_button");
-      await driver.tap(saveEventButton);
-      await driver.waitFor(find.byValueKey("group_page:scaffold"));
-
-      // this event will be in the consider stage so go to that tab
-      var considerTab = find.byValueKey("groups_page:consider_tab");
-      await driver.tap(considerTab);
-
-      // make sure event is there
-      await driver.waitFor(find.descendant(
-          of: find.byValueKey("group_page:tab_view"),
-          matching: find.text(eventName)));
-    });
-
     test('create_event_skip_both', () async {
       // enter the create event page
       var createEventButton = find.byValueKey("group_page:create_event_button");
@@ -490,6 +432,94 @@ void main() {
       await driver.waitFor(find.descendant(
           of: find.byValueKey("group_page:tab_view"),
           matching: find.text(eventName)));
+    });
+    test('create_event_skip_vote', () async {
+      // enter the create event page
+      var createEventButton = find.byValueKey("group_page:create_event_button");
+      await driver.tap(createEventButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+
+      // enter an event name (save it globally for updating rating test)
+      eventNameForUpdatingRatings = getRandomEventName();
+      var eventNameInput = find.byValueKey("event_create:event_name_input");
+      await driver.tap(eventNameInput);
+      await driver.enterText(eventNameForUpdatingRatings);
+
+      // select a category
+      var addCategoryButton =
+          find.byValueKey("event_create:add_category_button");
+      await driver.tap(addCategoryButton);
+
+      // wait for categories to load
+      await driver
+          .waitFor(find.byValueKey("event_pick_category:category_container"));
+
+      // always select first category
+      var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
+      await driver.tap(categoryCheckBox);
+      var doneButton = find.byValueKey("event_pick_category:done_button");
+      await driver.tap(doneButton);
+      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+
+      // enter the start time (date is already set for current day by default)
+      var hourInput = find.byValueKey("event_create:hour_input");
+      await driver.tap(hourInput);
+      await driver.enterText(" "); // space automatically picks next hour
+      var minuteInput = find.byValueKey("event_create:minute_input");
+      await driver.tap(minuteInput);
+      await driver.enterText(" "); // space automatically picks current minute
+
+      // enter a consider time
+      var considerInput = find.byValueKey("event_create:consider_input");
+      await driver.tap(considerInput);
+      await driver.enterText("2");
+
+      // SKIP the vote time
+      var skipVoteButton = find.byValueKey("event_create:skip_vote_button");
+      await driver.tap(skipVoteButton);
+
+      // save the event
+      var saveEventButton = find.byValueKey("event_create:save_event_button");
+      await driver.tap(saveEventButton);
+      await driver.waitFor(find.byValueKey("group_page:scaffold"));
+
+      // this event will be in the consider stage so go to that tab
+      var considerTab = find.byValueKey("groups_page:consider_tab");
+      await driver.tap(considerTab);
+
+      // make sure event is there
+      await driver.waitFor(find.descendant(
+          of: find.byValueKey("group_page:tab_view"),
+          matching: find.text(eventNameForUpdatingRatings)));
+    });
+
+    test('update_event_ratings', () async {
+      // click any consider button
+      var considerButton =
+          find.byValueKey("event_card_consider:$eventNameForUpdatingRatings");
+      await driver.tap(considerButton);
+      await driver.waitFor(find.byValueKey("event_details_consider:scaffold"));
+
+      // click the update ratings button
+      var updateRatingsButton =
+          find.byValueKey("event_details_consider:update_ratings_button");
+      await driver.tap(updateRatingsButton);
+      await driver.waitFor(find.byValueKey("event_update_ratings:scaffold"));
+
+      // update the first rating
+      var ratingInput = find.byValueKey("choice_row:rating_input:1");
+      await driver.tap(ratingInput);
+      await driver.enterText("5");
+
+      // save the ratings
+      var saveRatingsButton =
+          find.byValueKey("event_update_ratings:save_button");
+      await driver.tap(saveRatingsButton);
+
+      // go back to the groups page
+      await driver.tap(find.pageBack());
+      await driver.tap(find.pageBack());
+      await driver.waitFor(find.byValueKey("group_page:scaffold"));
     });
 
     test('edit_group', () async {
@@ -665,7 +695,7 @@ void main() {
       await driver.waitFor(find.byValueKey("groups_home:scaffold"));
     });
 
-    test('delete_category', () async {
+    test('copy_category', () async {
       // load the categories home page
       var drawerOpenButton = find.byTooltip("Open navigation menu");
       await driver.tap(drawerOpenButton);
@@ -673,15 +703,49 @@ void main() {
       await driver.tap(categoryButton);
       await driver.waitFor(find.byValueKey("categories_home:scaffold"));
 
-      // delete the category (always the first one in the list)
+      // we're always copying the first category in the tests
+      var categoryEditButton =
+          find.byValueKey("categories_list_item:category_edit_button:0");
+      driver.tap(categoryEditButton);
+      await driver.waitFor(find.byValueKey("category_edit:scaffold"));
+
+      // click the copy button
+      var copyCategoryButton = find.byValueKey("category_edit:copy_button");
+      driver.tap(copyCategoryButton);
+
+      // enter the category name for the copied category
+      String newCategoryName = getRandomCategoryName();
+      var categoryNameField =
+          find.byValueKey("category_edit:copy_popup_category_name_input");
+      await driver.tap(categoryNameField);
+      await driver.enterText(newCategoryName);
+
+      // save the new copied category
+      var saveButton = find.byValueKey("category_edit:copy_popup_save");
+      await driver.tap(saveButton);
+      await driver.tap(find.pageBack());
+      await driver.waitFor(find.text(newCategoryName));
+    });
+
+    test('delete_category', () async {
+      // since above test passed, always guaranteed to be 2 categories, so delete the first two
       var categoryDeleteButton =
           find.byValueKey("categories_list_item:category_delete_button:0");
       driver.tap(categoryDeleteButton);
 
-      // always delete the first category, more might exist if previous tests failed
       var categoryDeleteConfirmButton = find
           .byValueKey("categories_list_item:category_delete_button_confirm:0");
       await driver.tap(categoryDeleteConfirmButton);
+      await driver.waitFor(find.byValueKey("categories_home:scaffold"));
+
+      // deleting second category. Still index 0 because setState changed the indices
+      var categoryDeleteButton2 =
+          find.byValueKey("categories_list_item:category_delete_button:0");
+      driver.tap(categoryDeleteButton2);
+
+      var categoryDeleteConfirmButton2 = find
+          .byValueKey("categories_list_item:category_delete_button_confirm:0");
+      await driver.tap(categoryDeleteConfirmButton2);
       await driver.waitFor(find.byValueKey("categories_home:scaffold"));
 
       // go back to groups home
