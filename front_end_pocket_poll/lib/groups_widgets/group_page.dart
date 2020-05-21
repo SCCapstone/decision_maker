@@ -22,14 +22,18 @@ class GroupPage extends StatefulWidget {
   _GroupPageState createState() => new _GroupPageState();
 }
 
-class _GroupPageState extends State<GroupPage> {
+class _GroupPageState extends State<GroupPage> with WidgetsBindingObserver {
   bool loading;
   bool errorLoading;
+  bool
+      refreshFlag; // hacky but the onResume method below is being called twice for some reason
   Widget errorWidget;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     this.loading = true;
+    this.refreshFlag = false;
     this.errorLoading = false;
     // allows this page to be refreshed if a new notification comes in for the group
     Globals.refreshGroupPage = refreshList;
@@ -42,6 +46,18 @@ class _GroupPageState extends State<GroupPage> {
     Globals.currentGroupResponse.group = null;
     Globals.refreshGroupPage = null;
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("whyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+    if (state == AppLifecycleState.resumed) {
+      Globals.refreshGroupPage = refreshList;
+      // TODO why tf is this being called twice...
+      print("***************************");
+      // app was recently resumed with this state being active, so signal to refresh the group in case changes happened
+      getGroup();
+    }
   }
 
   @override
