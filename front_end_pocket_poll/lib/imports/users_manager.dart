@@ -42,6 +42,7 @@ class UsersManager {
   static final String markEventAsSeenAction = "markEventAsSeen";
   static final String markAllEventsSeenAction = "markAllEventsSeen";
   static final String setUserGroupMuteAction = "setUserGroupMute";
+  static final String addFavoriteAction = "addFavorite";
 
   static Future<ResultStatus<User>> getUserData({String username}) async {
     ResultStatus<User> retVal = new ResultStatus(success: false);
@@ -234,10 +235,10 @@ class UsersManager {
   }
 
   static Future<ResultStatus> addFavorite(final Favorite favorite) async {
-    ResultStatus retVal = new ResultStatus(success: false);
+    final ResultStatus retVal = new ResultStatus(success: false);
 
-    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
-    jsonRequestBody[RequestFields.ACTION] = "addFavorite";
+    final Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = addFavoriteAction;
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(USERNAME, () => favorite.username);
 
@@ -246,8 +247,9 @@ class UsersManager {
 
     if (response.success) {
       try {
-        Map<String, dynamic> body = jsonDecode(response.data);
-        ResponseItem responseItem = new ResponseItem.fromJson(body);
+        final Map<String, dynamic> body = jsonDecode(response.data);
+        final ResponseItem responseItem = new ResponseItem.fromJson(body);
+
         if (responseItem.success) {
           retVal.success = true;
         } else {

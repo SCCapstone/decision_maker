@@ -22,7 +22,7 @@ public class AddFavoriteController implements ApiRequestController {
   @Override
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "CreateNewGroupController.processApiRequest";
+    final String classMethod = "AddFavoriteController.processApiRequest";
 
     ResultStatus resultStatus;
 
