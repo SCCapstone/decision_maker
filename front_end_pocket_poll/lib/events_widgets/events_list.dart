@@ -12,6 +12,7 @@ class EventsList extends StatefulWidget {
   final Function refreshEventsUnseen;
   final Function refreshPage;
   final Function getNextBatch;
+  final Function markAllEventsSeen;
 
   EventsList(
       {Key key,
@@ -19,6 +20,7 @@ class EventsList extends StatefulWidget {
       this.events,
       this.isUnseenTab,
       this.refreshEventsUnseen,
+      this.markAllEventsSeen,
       this.refreshPage,
       this.getNextBatch})
       : super(key: key);
@@ -119,6 +121,25 @@ class _EventsListState extends State<EventsList> {
         ],
       );
       widgetList.add(buttonRow);
+      if (widget.isUnseenTab) {
+        // if unseen events are here, then we add a mark all seen button to the top of the list
+        widgetList.insert(
+            0,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                height: MediaQuery.of(context).size.height * .045,
+                child: IconButton(
+                  icon: Icon(Icons.done_all),
+                  color: Globals.pocketPollGreen,
+                  tooltip: "Mark all seen",
+                  onPressed: () {
+                    widget.markAllEventsSeen();
+                  },
+                ),
+              ),
+            ));
+      }
 
       return Scrollbar(
           child: ListView.builder(

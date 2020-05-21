@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
@@ -51,7 +52,8 @@ class _GroupPageState extends State<GroupPage>
 
   @override
   void initState() {
-    this.tabs[unseenTab] = new AutoSizeText("Unseen",
+    WidgetsBinding.instance.addObserver(this);
+    this.tabs[unseenTab] = new AutoSizeText("New",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
         minFontSize: 12,
@@ -63,7 +65,7 @@ class _GroupPageState extends State<GroupPage>
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
         key: Key("groups_page:done_tab"));
-    this.tabs[votingTab] = new AutoSizeText("Voting",
+    this.tabs[votingTab] = new AutoSizeText("Vote",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
         minFontSize: 12,
@@ -82,7 +84,6 @@ class _GroupPageState extends State<GroupPage>
         overflow: TextOverflow.ellipsis,
         key: Key("groups_page:closed_tab"));
 
-    WidgetsBinding.instance.addObserver(this);
     this.loading = true;
     this.errorLoading = false;
     this.firstLoading = true;
@@ -114,7 +115,7 @@ class _GroupPageState extends State<GroupPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       Globals.refreshGroupPage = refreshList;
-      // app was recently resumed with this state being active, so signal to refresh the group in case changes happened
+      // app was recently resumed with this state being active, so refresh the group in case changes happened
       getGroup();
     }
   }
@@ -152,7 +153,7 @@ class _GroupPageState extends State<GroupPage>
           bottom: PreferredSize(
             // used to display the tabs and the sort icon
             preferredSize: Size(MediaQuery.of(context).size.width,
-                MediaQuery.of(context).size.height * .045),
+                MediaQuery.of(context).size.height * .035),
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -171,28 +172,6 @@ class _GroupPageState extends State<GroupPage>
         body: Center(
           child: Column(
             children: <Widget>[
-              Container(
-                // height has to be here otherwise it overflows
-                height: MediaQuery.of(context).size.height * .045,
-                child: Visibility(
-                  visible: (Globals.user.groups[widget.groupId] != null &&
-                      this.currentTab == unseenTab &&
-                      Globals.user.groups[widget.groupId].eventsUnseen > 0),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      child: IconButton(
-                        icon: Icon(Icons.done_all),
-                        color: Globals.pocketPollGreen,
-                        tooltip: "Mark all seen",
-                        onPressed: () {
-                          markAllEventsSeen();
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               Expanded(
                 child: TabBarView(
                   controller: this.tabController,
@@ -204,6 +183,7 @@ class _GroupPageState extends State<GroupPage>
                         events: this.eventCards[index],
                         isUnseenTab: (index == unseenTab) ? true : false,
                         refreshEventsUnseen: updatePage,
+                        markAllEventsSeen: markAllEventsSeen,
                         refreshPage: refreshList,
                         getNextBatch: getNextBatch,
                       ),
@@ -354,7 +334,13 @@ class _GroupPageState extends State<GroupPage>
                   icon: Icon(Icons.settings),
                 ),
               )
-            ]),
+            ],
+            bottom: PreferredSize(
+              // just have this empty so no weird flash after loading
+              preferredSize: Size(MediaQuery.of(context).size.width,
+                  MediaQuery.of(context).size.height * .035),
+              child: Container(),
+            )),
         body: Center(child: CircularProgressIndicator()),
         key: Key("group_page:loading_scaffold"));
   }
@@ -382,6 +368,12 @@ class _GroupPageState extends State<GroupPage>
               ),
             )
           ],
+          bottom: PreferredSize(
+            // just have this empty so no weird flash after loading
+            preferredSize: Size(MediaQuery.of(context).size.width,
+                MediaQuery.of(context).size.height * .035),
+            child: Container(),
+          ),
         ),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
@@ -441,6 +433,8 @@ class _GroupPageState extends State<GroupPage>
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen = 0;
     Globals.currentGroupResponse.eventsUnseen.clear();
+    this.currentTab = this.occurringTab;
+    this.tabController.animateTo(this.currentTab);
     populateEventStages();
   }
 }
