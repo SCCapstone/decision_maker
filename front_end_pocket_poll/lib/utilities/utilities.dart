@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
@@ -202,15 +203,21 @@ void showUserImage(Favorite user, BuildContext buildContext) {
           title: Text("${user.displayName} (@${user.username})"),
           actions: <Widget>[
             Visibility(
-              visible: showFavoriteButton,
-              child: FlatButton(
-                child: Text("ADD TO FAVORITES"),
-                onPressed: () {
-                  // TODO add to favorites as a blind send
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
+                visible: showFavoriteButton,
+                child: FlatButton(
+                    child: Text("ADD TO FAVORITES"),
+                    onPressed: () {
+                      Globals.user.favorites.add(user);
+                      Navigator.of(context).pop();
+
+                      UsersManager.addFavorite(user).then((resultStatus) {
+                        if (!resultStatus.success) {
+                          Globals.user.favorites.remove(user);
+                          showErrorMessage(
+                              "Error", resultStatus.errorMessage, buildContext);
+                        }
+                      });
+                    })),
             FlatButton(
               child: Text("RETURN"),
               onPressed: () {
