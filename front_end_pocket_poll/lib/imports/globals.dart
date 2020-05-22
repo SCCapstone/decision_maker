@@ -17,16 +17,49 @@ class Globals {
   static List<CategoryRatingTuple> cachedCategories =
       new List<CategoryRatingTuple>();
   static SharedPreferences sharedPrefs;
-  static int dateNewestSort = 0;
-  static int alphabeticalSort = 1;
-  static int alphabeticalReverseSort = 2;
-  static int dateOldestSort = 3;
-  static String alphabeticalSortString = "Alphabetical (A-Z)";
-  static String alphabeticalReverseSortString = "Alphabetical (Z-A)";
-  static String dateNewestSortString = "Date Modified (Newest)";
-  static String dateOldestSortString = "Date Modified (Oldest)";
+
+  static Future<SharedPreferences> getSharedPrefs() async {
+    if (sharedPrefs == null) {
+      sharedPrefs = await SharedPreferences.getInstance();
+    }
+    return sharedPrefs;
+  }
+
   static bool fireBaseConfigured = false;
   static Function refreshGroupPage;
+  static ThemeData darkTheme = ThemeData(
+      brightness: Brightness.dark,
+      primarySwatch: Colors.green,
+      primaryColor: pocketPollGreen,
+      accentColor: pocketPollGreen,
+      primaryColorDark: Colors.black,
+      buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
+      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
+      textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
+  static ThemeData lightTheme = ThemeData(
+      brightness: Brightness.light,
+      primarySwatch: Colors.green,
+      primaryColor: pocketPollGreen,
+      accentColor: pocketPollGreen,
+      primaryColorDark: Colors.black,
+      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
+      textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
+
+  // *************** CONSTANTS ***************
+  static final int dateNewestSort = 0;
+  static final int alphabeticalSort = 1;
+  static final int alphabeticalReverseSort = 2;
+  static final int dateOldestSort = 3;
+  static final int defaultChoiceSort = 4;
+  static final int choiceRatingAscending = 5;
+  static final int choiceRatingDescending = 6;
+  static final String alphabeticalSortString = "Alphabetical (A-Z)";
+  static final String alphabeticalReverseSortString = "Alphabetical (Z-A)";
+  static final String dateNewestSortString = "Date Modified (Newest)";
+  static final String dateOldestSortString = "Date Modified (Oldest)";
+  static final String defaultChoiceSortString = "Original Insert Order";
+  static final String choiceRatingAscendingSortString = "Ratings (Ascending)";
+  static final String choiceRatingDescendingSortString = "Ratings (Descending)";
   static final String removedFromGroupAction = "removedFromGroup";
   static final String addedToGroupAction = "addedToGroup";
   static final String eventCreatedAction = "eventCreated";
@@ -64,9 +97,9 @@ class Globals {
   static final int minChoiceRating = 0;
   static final int maxChoiceRatingDigits = maxChoiceRating.toString().length;
 
-  static String resetPasswordUrl =
+  static final String resetPasswordUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://pocket-poll-documents.s3.us-east-2.amazonaws.com/login_redirect.html";
-  static String imageUrl =
+  static final String imageUrl =
       "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
   static final String termsUrl =
       "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/terms_conditions.html";
@@ -74,29 +107,4 @@ class Globals {
       "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/privacy_policy.html";
   static final String flutterUrl = "https://flutter.dev/";
   static final String awsUrl = "https://aws.amazon.com/";
-
-  static ThemeData darkTheme = ThemeData(
-      brightness: Brightness.dark,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
-      primaryColorDark: Colors.black,
-      buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
-  static ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
-      primaryColorDark: Colors.black,
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-
-  static Future<SharedPreferences> getSharedPrefs() async {
-    if (sharedPrefs == null) {
-      sharedPrefs = await SharedPreferences.getInstance();
-    }
-    return sharedPrefs;
-  }
 }

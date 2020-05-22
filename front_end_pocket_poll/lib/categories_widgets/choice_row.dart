@@ -12,10 +12,24 @@ class ChoiceRow extends StatefulWidget {
   final Function deleteChoice;
   final VoidCallback checkForChange;
   final FocusNode focusNode;
+  final String originalRating;
+  final String originalLabel;
+  final bool isNewChoice;
+  final bool displayLabelHelpText;
+  final bool displayRateHelpText;
 
   ChoiceRow(this.choiceNumber, this.isOwner, this.labelController,
       this.rateController,
-      {this.deleteChoice, this.focusNode, this.checkForChange});
+      {Key key,
+      this.deleteChoice,
+      this.focusNode,
+      this.checkForChange,
+      this.isNewChoice,
+      this.displayLabelHelpText,
+      this.displayRateHelpText,
+      this.originalLabel,
+      this.originalRating})
+      : super(key: key);
 
   // opens up the keyboard to this specific widget
   void requestFocus(BuildContext context) {
@@ -29,11 +43,35 @@ class ChoiceRow extends StatefulWidget {
 class _ChoiceRowState extends State<ChoiceRow> {
   FocusNode ratingsFocus;
   int rating;
+  bool changed;
+  String labelHelpText;
   final String ratingRegex =
       "[${Globals.minChoiceRating}-${Globals.maxChoiceRating}]";
 
   @override
   void initState() {
+    this.changed = false;
+    // used in editing a category as the owner
+    if (widget.displayLabelHelpText) {
+      if (widget.isNewChoice) {
+        this.labelHelpText = "(New)";
+      } else {
+        this.labelHelpText = "(Modified)";
+      }
+    } else {
+      this.labelHelpText = " ";
+    }
+
+    // used for when updating ratings from an event
+    if (widget.displayRateHelpText) {
+      this.labelHelpText = "(Modified)";
+    }
+    // do this check since choice row can get destroyed at any point, if destroyed still want to show if new/modified
+    if (widget.labelController.text.toString() != widget.originalLabel ||
+        widget.rateController.text.toString() != widget.originalRating) {
+      this.changed = true;
+    }
+
     this.rating = int.parse(widget.rateController.text);
     this.ratingsFocus = new FocusNode();
     this.ratingsFocus.addListener(() {
@@ -55,6 +93,15 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: TextFormField(
             onChanged: (val) {
               widget.checkForChange();
+              if (val == widget.originalLabel) {
+                setState(() {
+                  this.changed = false;
+                });
+              } else {
+                setState(() {
+                  this.changed = true;
+                });
+              }
             },
             validator: validChoiceName,
             maxLength: Globals.maxChoiceNameLength,
@@ -67,7 +114,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelStyle: TextStyle(fontSize: 15),
                 labelText: "Choice",
                 counterText: "",
-                helperText: " "),
+                helperText: (this.changed) ? this.labelHelpText : " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(this.ratingsFocus);
@@ -87,6 +134,15 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 hideKeyboard(context);
                 widget.checkForChange();
               }
+              if (this.rating.toString() == widget.originalRating) {
+                setState(() {
+                  this.changed = false;
+                });
+              } else {
+                setState(() {
+                  this.changed = true;
+                });
+              }
             },
             validator: validChoiceRating,
             focusNode: this.ratingsFocus,
@@ -104,7 +160,9 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelText:
                     "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
                 counterText: "",
-                helperText: " "),
+                helperText: (this.changed && !widget.isOwner)
+                    ? this.labelHelpText
+                    : " "),
           ),
         ),
         Visibility(
@@ -113,9 +171,23 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: IconButton(
             color: Colors.red,
             icon: Icon(Icons.cancel),
+            tooltip: "Delete Choice",
             key: Key("choice_row:delete_button:${widget.choiceNumber}"),
             onPressed: () {
               widget.deleteChoice(widget);
+            },
+          ),
+        ),
+        Visibility(
+          // if user is not the category owner, they cannot delete choices
+          visible: !widget.isOwner,
+          child: IconButton(
+            color: Colors.yellow,
+            icon: Icon(Icons.new_releases),
+            tooltip: "New Choice",
+            key: Key("choice_row:new_choice_button:${widget.choiceNumber}"),
+            onPressed: () {
+              // TODO remove from user object
             },
           ),
         )

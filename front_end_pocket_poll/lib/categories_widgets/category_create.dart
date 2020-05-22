@@ -53,6 +53,9 @@ class _CategoryCreateState extends State<CategoryCreate> {
     ChoiceRow choice = new ChoiceRow(
         0, true, initLabelController, initRatingController,
         focusNode: new FocusNode(),
+        key: Key(0.toString()),
+        displayLabelHelpText: false,
+        displayRateHelpText: false,
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -169,26 +172,29 @@ class _CategoryCreateState extends State<CategoryCreate> {
                   labelController,
                   rateController,
                   deleteChoice: (choice) => deleteChoice(choice),
+                  displayLabelHelpText: false,
+                  displayRateHelpText: false,
+                  key: Key(this.nextChoiceValue.toString()),
                   focusNode: focusNode,
                 );
                 setState(() {
-                  this.choiceRows.add(choice);
+                  this.choiceRows.insert(0, choice);
                   this.nextChoiceValue++;
                 });
                 SchedulerBinding.instance
-                    .addPostFrameCallback((_) => scrollToBottom(choice));
+                    .addPostFrameCallback((_) => scrollToTop(choice));
               },
             )),
       ),
     );
   }
 
-  // scrolls to the bottom of the listview of all the choices
-  void scrollToBottom(ChoiceRow choiceRow) async {
+  // scrolls to the top of the listview of all the choices
+  void scrollToTop(ChoiceRow choiceRow) async {
     await this
         .scrollController
         .animateTo(
-          this.scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(microseconds: 100),
           curve: Curves.easeOut,
         )

@@ -41,6 +41,7 @@ class _CategoryEditState extends State<CategoryEdit> {
   bool errorLoading;
   bool categoryChanged;
   int nextChoiceNum;
+  int sortVal;
   Widget errorWidget;
   Category category;
 
@@ -63,6 +64,8 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.categoryChanged = false;
     this.loading = true;
     this.errorLoading = false;
+    this.sortVal =
+        Globals.defaultChoiceSort; // TODO use value from user settings
 
     if (widget.categoryRatingTuple != null) {
       // means we are editing from the group category page
@@ -95,7 +98,7 @@ class _CategoryEditState extends State<CategoryEdit> {
       // category not cached so fetch from DB
       getCategory();
     } else {
-      buildChoiceRows();
+      initializeChoiceRows();
     }
     super.initState();
   }
@@ -153,43 +156,133 @@ class _CategoryEditState extends State<CategoryEdit> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .004),
                         ),
-                        Stack(
+                        Row(
                           children: <Widget>[
-                            Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * .7,
-                                child: TextFormField(
-                                  enabled: this.isCategoryOwner,
-                                  onChanged: (val) => checkForChanges(),
-                                  maxLength: Globals.maxCategoryNameLength,
-                                  controller: this.categoryNameController,
-                                  validator: (value) {
-                                    return validCategoryName(value.trim(),
-                                        categoryId: widget.category.categoryId);
-                                  },
-                                  key: Key("category_edit:category_name_input"),
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  style: TextStyle(fontSize: 20),
-                                  decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: "Category Name",
-                                      counterText: ""),
-                                ),
+                            Container(
+                              width: MediaQuery.of(context).size.width * .7,
+                              child: TextFormField(
+                                enabled: this.isCategoryOwner,
+                                onChanged: (val) => checkForChanges(),
+                                maxLength: Globals.maxCategoryNameLength,
+                                controller: this.categoryNameController,
+                                validator: (value) {
+                                  return validCategoryName(value.trim(),
+                                      categoryId: widget.category.categoryId);
+                                },
+                                key: Key("category_edit:category_name_input"),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                style: TextStyle(fontSize: 20),
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Category Name",
+                                    counterText: ""),
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                icon: Icon(Icons.content_copy),
-                                key: Key("category_edit:copy_button"),
-                                tooltip: "Copy Category",
-                                onPressed: () {
-                                  copyPopup();
-                                },
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: Icon(Icons.content_copy),
+                                    key: Key("category_edit:copy_button"),
+                                    tooltip: "Copy Category",
+                                    onPressed: () {
+                                      copyPopup();
+                                    },
+                                  ),
+                                  PopupMenuButton<int>(
+                                    child: Icon(
+                                      Icons.sort,
+                                      size: MediaQuery.of(context).size.height *
+                                          .04,
+                                    ),
+                                    key: Key("category_edit:sort_button"),
+                                    tooltip: "Sort Choices",
+                                    onSelected: (int result) {
+                                      if (this.sortVal != result) {
+                                        hideKeyboard(context);
+                                        // prevents useless updates if sort didn't change
+                                        this.sortVal = result;
+                                        setState(() {
+                                          // VERY IMPORTANT. Cannot rebuild rows otherwise original order is messed up
+                                          sortChoiceRows(
+                                              this.choiceRows, this.sortVal);
+                                        });
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<int>>[
+                                      PopupMenuItem<int>(
+                                        value: Globals.defaultChoiceSort,
+                                        child: Text(
+                                          Globals.defaultChoiceSortString,
+                                          style: TextStyle(
+                                              // if it is selected, underline it
+                                              decoration: (this.sortVal ==
+                                                      Globals.defaultChoiceSort)
+                                                  ? TextDecoration.underline
+                                                  : null),
+                                        ),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.alphabeticalSort,
+                                        child: Text(
+                                          Globals.alphabeticalSortString,
+                                          style: TextStyle(
+                                              // if it is selected, underline it
+                                              decoration: (this.sortVal ==
+                                                      Globals.alphabeticalSort)
+                                                  ? TextDecoration.underline
+                                                  : null),
+                                        ),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.alphabeticalReverseSort,
+                                        child: Text(
+                                            Globals
+                                                .alphabeticalReverseSortString,
+                                            style: TextStyle(
+                                                // if it is selected, underline it
+                                                decoration: (this.sortVal ==
+                                                        Globals
+                                                            .alphabeticalReverseSort)
+                                                    ? TextDecoration.underline
+                                                    : null)),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.choiceRatingAscending,
+                                        child: Text(
+                                            Globals
+                                                .choiceRatingAscendingSortString,
+                                            style: TextStyle(
+                                                // if it is selected, underline it
+                                                decoration: (this.sortVal ==
+                                                        Globals
+                                                            .choiceRatingAscending)
+                                                    ? TextDecoration.underline
+                                                    : null)),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.choiceRatingDescending,
+                                        child: Text(
+                                          Globals
+                                              .choiceRatingDescendingSortString,
+                                          style: TextStyle(
+                                              // if it is selected, underline it
+                                              decoration: (this.sortVal ==
+                                                      Globals
+                                                          .choiceRatingDescending)
+                                                  ? TextDecoration.underline
+                                                  : null),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            )
+                            ),
                           ],
                         ),
                         Visibility(
@@ -217,16 +310,12 @@ class _CategoryEditState extends State<CategoryEdit> {
                         ),
                         Expanded(
                           child: Scrollbar(
-                            child: CustomScrollView(
+                            child: ListView.builder(
                               controller: this.scrollController,
-                              slivers: <Widget>[
-                                SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                        (context, index) =>
-                                            this.choiceRows[index],
-                                        childCount: this.choiceRows.length),
-                                    key: Key("category_edit:choice_list"))
-                              ],
+                              key: Key("category_edit:choice_list"),
+                              itemBuilder: (context, index) =>
+                                  this.choiceRows[index],
+                              itemCount: this.choiceRows.length,
                             ),
                           ),
                         ),
@@ -254,18 +343,28 @@ class _CategoryEditState extends State<CategoryEdit> {
                           new TextEditingController();
                       rateController.text = this.defaultRate.toString();
 
-                      ChoiceRow choice = new ChoiceRow(this.nextChoiceNum,
-                          this.isCategoryOwner, labelController, rateController,
-                          deleteChoice: (choice) => deleteChoice(choice),
-                          focusNode: focusNode,
-                          checkForChange: checkForChanges);
+                      ChoiceRow choice = new ChoiceRow(
+                        this.nextChoiceNum,
+                        this.isCategoryOwner,
+                        labelController,
+                        rateController,
+                        deleteChoice: (choice) => deleteChoice(choice),
+                        focusNode: focusNode,
+                        checkForChange: checkForChanges,
+                        displayLabelHelpText: true,
+                        displayRateHelpText: false,
+                        key: Key(this.nextChoiceNum.toString()),
+                        isNewChoice: true,
+                        originalLabel: "",
+                        originalRating: "3",
+                      );
+                      this.choiceRows.insert(0, choice);
                       setState(() {
-                        this.choiceRows.add(choice);
                         this.nextChoiceNum++;
                         checkForChanges();
                       });
                       SchedulerBinding.instance
-                          .addPostFrameCallback((_) => scrollToBottom(choice));
+                          .addPostFrameCallback((_) => scrollToTop(choice));
                     }
                   },
                 ),
@@ -275,12 +374,12 @@ class _CategoryEditState extends State<CategoryEdit> {
     }
   }
 
-  // scrolls to the bottom of the listview of all the choices
-  void scrollToBottom(ChoiceRow choiceRow) async {
+  // scrolls to the top of the listview of all the choices
+  void scrollToTop(ChoiceRow choiceRow) async {
     await this
         .scrollController
         .animateTo(
-          this.scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(microseconds: 100),
           curve: Curves.easeOut,
         )
@@ -480,7 +579,7 @@ class _CategoryEditState extends State<CategoryEdit> {
           Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
         }
       }
-      buildChoiceRows();
+      initializeChoiceRows();
     } else {
       this.errorLoading = true;
       this.errorWidget = categoriesError(resultStatus.errorMessage);
@@ -490,8 +589,8 @@ class _CategoryEditState extends State<CategoryEdit> {
     });
   }
 
-  // build choice rows and populate them with ratings if they exist for the category
-  void buildChoiceRows() {
+  // initialize choice rows and populate them with ratings if they exist for the category
+  void initializeChoiceRows() {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
 
@@ -516,6 +615,12 @@ class _CategoryEditState extends State<CategoryEdit> {
         rateController,
         deleteChoice: (choice) => deleteChoice(choice),
         checkForChange: checkForChanges,
+        originalLabel: choiceLabel,
+        displayLabelHelpText: true,
+        displayRateHelpText: false,
+        isNewChoice: false,
+        key: Key(i.toString()),
+        originalRating: rateController.text.toString(),
       );
       this.choiceRows.add(choice);
       i++;
@@ -523,7 +628,7 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.nextChoiceNum = i;
 
     // sort by rows by choice number
-    this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
+    sortChoiceRows(this.choiceRows, this.sortVal);
     setOriginalValues();
   }
 

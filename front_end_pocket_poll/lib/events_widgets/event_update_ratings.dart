@@ -329,6 +329,8 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
         false,
         labelController,
         rateController,
+        displayRateHelpText: true,
+        displayLabelHelpText: false,
         checkForChange: checkForChanges,
       );
       this.choiceRows.add(choice);
