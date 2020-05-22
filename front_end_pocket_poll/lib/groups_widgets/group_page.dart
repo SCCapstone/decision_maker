@@ -2,12 +2,19 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_create.dart';
 import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
+import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
+import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/get_group_response.dart';
 
 import 'group_settings.dart';
@@ -22,15 +29,73 @@ class GroupPage extends StatefulWidget {
   _GroupPageState createState() => new _GroupPageState();
 }
 
-class _GroupPageState extends State<GroupPage> {
+class _GroupPageState extends State<GroupPage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  static final int totalTabs = 5;
+  final List<AutoSizeText> tabs = new List(totalTabs);
+
+  // indexes for the tabs
+  final int unseenTab = 0;
+  final int considerTab = 3;
+  final int votingTab = 2;
+  final int occurringTab = 1;
+  final int closedTab = 4;
+  final Map<int, List<EventCardInterface>> eventCards = new Map<int,
+      List<EventCardInterface>>(); // map of tab index to list of event cards
+
+  TabController tabController;
+  int currentTab;
   bool loading;
   bool errorLoading;
+  bool firstLoading;
   Widget errorWidget;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    this.tabs[unseenTab] = new AutoSizeText("New",
+        maxLines: 1,
+        style: TextStyle(fontSize: 17),
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        key: Key("groups_page:unseen_tab"));
+    this.tabs[occurringTab] = new AutoSizeText("Ready",
+        maxLines: 1,
+        style: TextStyle(fontSize: 17),
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        key: Key("groups_page:ready_tab"));
+    this.tabs[votingTab] = new AutoSizeText("Vote",
+        maxLines: 1,
+        style: TextStyle(fontSize: 17),
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        key: Key("groups_page:voting_tab"));
+    this.tabs[considerTab] = new AutoSizeText("Consider",
+        maxLines: 1,
+        style: TextStyle(fontSize: 17),
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        key: Key("groups_page:consider_tab"));
+    this.tabs[closedTab] = new AutoSizeText("Old",
+        maxLines: 1,
+        style: TextStyle(fontSize: 17),
+        minFontSize: 12,
+        overflow: TextOverflow.ellipsis,
+        key: Key("groups_page:closed_tab"));
+
     this.loading = true;
     this.errorLoading = false;
+    this.firstLoading = true;
+    this.tabController =
+        new TabController(length: this.tabs.length, vsync: this);
+    this.tabController.addListener(handleTabChange);
+
+    for (int i = 0; i < totalTabs; i++) {
+      // init the map of event cards with empty lists
+      this.eventCards.putIfAbsent(i, () => new List<EventCardInterface>());
+    }
+
     // allows this page to be refreshed if a new notification comes in for the group
     Globals.refreshGroupPage = refreshList;
     getGroup();
@@ -39,9 +104,20 @@ class _GroupPageState extends State<GroupPage> {
 
   @override
   void dispose() {
+    this.tabController.dispose();
     Globals.currentGroupResponse.group = null;
     Globals.refreshGroupPage = null;
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Globals.refreshGroupPage = refreshList;
+      // app was recently resumed with this state being active, so refresh the group in case changes happened
+      getGroup();
+    }
   }
 
   @override
@@ -74,64 +150,46 @@ class _GroupPageState extends State<GroupPage> {
               },
             ),
           ],
+          bottom: PreferredSize(
+            // used to display the tabs and the sort icon
+            preferredSize: Size(MediaQuery.of(context).size.width,
+                MediaQuery.of(context).size.height * .035),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TabBar(
+                      controller: this.tabController,
+                      isScrollable: true,
+                      indicatorWeight: 3,
+                      indicatorColor: Colors.blueAccent,
+                      tabs: this.tabs),
+                )
+              ],
+            ),
+          ),
         ),
         key: Key("group_page:scaffold"),
         body: Center(
           child: Column(
             children: <Widget>[
-              Container(
-                // height has to be here otherwise it overflows
-                height: MediaQuery.of(context).size.height * .045,
-                child: Stack(
-                  children: <Widget>[
-                    Align(
-                      alignment: Alignment.center,
-                      child: AutoSizeText(
-                        "Events",
-                        minFontSize: 12,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Visibility(
-                      visible: (Globals.user.groups[widget.groupId] != null &&
-                          Globals.user.groups[widget.groupId].eventsUnseen > 0),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          child: IconButton(
-                            icon: Icon(Icons.done_all),
-                            color: Globals.pocketPollGreen,
-                            tooltip: "Mark all seen",
-                            onPressed: () {
-                              markAllEventsSeen();
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               Expanded(
-                child: Container(
-                  height: MediaQuery.of(context).size.height * .80,
-                  child: RefreshIndicator(
-                    child: EventsList(
-                      group: Globals.currentGroupResponse.group,
-                      events: Globals.currentGroupResponse.group.events,
-                      refreshEventsUnseen: updatePage,
-                      refreshPage: refreshList,
-                      getNextBatch: getNextBatch,
-                    ),
-                    onRefresh: refreshList,
-                  ),
+                child: TabBarView(
+                  controller: this.tabController,
+                  key: Key("group_page:tab_view"),
+                  children: List.generate(this.tabs.length, (index) {
+                    return RefreshIndicator(
+                      child: EventsList(
+                        group: Globals.currentGroupResponse.group,
+                        events: this.eventCards[index],
+                        isUnseenTab: (index == unseenTab) ? true : false,
+                        refreshEventsUnseen: updatePage,
+                        markAllEventsSeen: markAllEventsSeen,
+                        refreshPage: refreshList,
+                        getNextBatch: getNextBatch,
+                      ),
+                      onRefresh: refreshList,
+                    );
+                  }),
                 ),
               ),
               Padding(
@@ -150,7 +208,21 @@ class _GroupPageState extends State<GroupPage> {
                 .then((val) {
               if (val != null) {
                 // this means that an event was created, so don't make an API call to refresh
-                updatePage();
+                try {
+                  int eventMode = val as int;
+                  if (eventMode == EventsManager.considerMode) {
+                    this.currentTab = considerTab;
+                  } else if (eventMode == EventsManager.votingMode) {
+                    this.currentTab = votingTab;
+                  } else if (eventMode == EventsManager.occurringMode) {
+                    this.currentTab = occurringTab;
+                  }
+                } catch (e) {
+                  // do nothing, this shouldn't ever be reached
+                  debugPrintStack();
+                }
+                this.tabController.animateTo(this.currentTab);
+                populateEventStages();
               } else {
                 // no event created, so make API call to make sure page is most up to date
                 refreshList();
@@ -174,12 +246,76 @@ class _GroupPageState extends State<GroupPage> {
       this.errorLoading = false;
       Globals.currentGroupResponse = status.data;
       Globals.currentGroupResponse.group.currentBatchNum = batchNum;
-      updatePage();
+
+      if (this.firstLoading) {
+        /*
+            On the first loading of the page, check to see if there are any unseen events.
+            If so, then the first landing tab will be the unseen events tab. Else, go to the second tab
+         */
+        if (Globals.currentGroupResponse.eventsUnseen.isEmpty) {
+          this.currentTab = occurringTab;
+        } else {
+          this.currentTab = unseenTab;
+        }
+        this.firstLoading = false;
+      }
+      this.tabController.animateTo(this.currentTab);
+      populateEventStages();
     } else {
       this.errorLoading = true;
       this.errorWidget = groupError(status.errorMessage);
       updatePage();
     }
+  }
+
+  // populates the listviews of all the different event stages with what was returned by db
+  void populateEventStages() {
+    for (int tab in this.eventCards.keys) {
+      this.eventCards[tab].clear();
+    }
+
+    for (String eventId in Globals.currentGroupResponse.group.events.keys) {
+      int eventMode = EventsManager.getEventMode(
+          Globals.currentGroupResponse.group.events[eventId]);
+      EventCardInterface eventCard;
+      if (eventMode == EventsManager.considerMode) {
+        eventCard = new EventCardConsider(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.events[eventId],
+            eventId,
+            updatePage,
+            refreshList);
+        this.eventCards[considerTab].add(eventCard);
+      } else if (eventMode == EventsManager.votingMode) {
+        eventCard = new EventCardVoting(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.events[eventId],
+            eventId,
+            updatePage,
+            refreshList);
+        this.eventCards[votingTab].add(eventCard);
+      } else if (eventMode == EventsManager.occurringMode) {
+        eventCard = new EventCardOccurring(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.events[eventId],
+            eventId,
+            updatePage,
+            refreshList);
+        this.eventCards[occurringTab].add(eventCard);
+      } else if (eventMode == EventsManager.closedMode) {
+        eventCard = new EventCardClosed(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.events[eventId],
+            eventId,
+            updatePage,
+            refreshList);
+        this.eventCards[closedTab].add(eventCard);
+      }
+      if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
+        this.eventCards[unseenTab].add(eventCard);
+      }
+    }
+    updatePage();
   }
 
   Widget groupLoading() {
@@ -204,7 +340,13 @@ class _GroupPageState extends State<GroupPage> {
                   icon: Icon(Icons.settings),
                 ),
               )
-            ]),
+            ],
+            bottom: PreferredSize(
+              // just have this empty so no weird flash after loading
+              preferredSize: Size(MediaQuery.of(context).size.width,
+                  MediaQuery.of(context).size.height * .035),
+              child: Container(),
+            )),
         body: Center(child: CircularProgressIndicator()),
         key: Key("group_page:loading_scaffold"));
   }
@@ -232,6 +374,12 @@ class _GroupPageState extends State<GroupPage> {
               ),
             )
           ],
+          bottom: PreferredSize(
+            // just have this empty so no weird flash after loading
+            preferredSize: Size(MediaQuery.of(context).size.width,
+                MediaQuery.of(context).size.height * .035),
+            child: Container(),
+          ),
         ),
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
@@ -279,11 +427,20 @@ class _GroupPageState extends State<GroupPage> {
     getGroup();
   }
 
+  // whenever the tab changes make sure to save current tab index
+  void handleTabChange() {
+    setState(() {
+      this.currentTab = this.tabController.index;
+    });
+  }
+
   // blind send to mark all events as seen, not critical
   void markAllEventsSeen() {
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen = 0;
     Globals.currentGroupResponse.eventsUnseen.clear();
-    updatePage();
+    this.currentTab = this.occurringTab;
+    this.tabController.animateTo(this.currentTab);
+    populateEventStages();
   }
 }

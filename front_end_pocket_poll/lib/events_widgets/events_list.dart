@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
-import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {
-  final Map<String, Event> events;
+  final List<EventCardInterface> events;
+  final bool isUnseenTab;
   final Group group;
   final Function refreshEventsUnseen;
   final Function refreshPage;
   final Function getNextBatch;
+  final Function markAllEventsSeen;
 
   EventsList(
       {Key key,
       this.group,
       this.events,
+      this.isUnseenTab,
       this.refreshEventsUnseen,
+      this.markAllEventsSeen,
       this.refreshPage,
       this.getNextBatch})
       : super(key: key);
@@ -40,84 +39,48 @@ class _EventsListState extends State<EventsList> {
             padding: EdgeInsets.all(20.0),
             child: Center(
               child: Text(
-                  "No events found! Click the button below to create one!",
+                  (widget.isUnseenTab)
+                      ? "No new events."
+                      : "No events currently in this stage. Click the plus button below to create new events.",
                   style: TextStyle(fontSize: 30)),
             ),
           )
         ],
       );
     } else {
-      List<EventCardInterface> eventCards = new List<EventCardInterface>();
-      for (String eventId in widget.events.keys) {
-        EventCardInterface eventCard;
-        int eventMode = EventsManager.getEventMode(widget.events[eventId]);
-        if (eventMode == EventsManager.considerMode) {
-          eventCard = new EventCardConsider(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.votingMode) {
-          eventCard = new EventCardVoting(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.occurringMode) {
-          eventCard = new EventCardOccurring(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.closedMode) {
-          eventCard = new EventCardClosed(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        }
-        eventCards.add(eventCard);
-      }
-
-      eventCards.sort((a, b) {
-        if (a.getEventMode() > b.getEventMode()) {
-          return -1;
-        } else if (b.getEventMode() > a.getEventMode()) {
-          return 1;
+      // sort the events
+      widget.events.sort((a, b) {
+        if (a.getEventMode() == EventsManager.considerMode) {
+          return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
+              ? 1
+              : -1;
+        } else if (a.getEventMode() == EventsManager.votingMode) {
+          return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
+        } else if (a.getEventMode() == EventsManager.occurringMode) {
+          return b
+                  .getEvent()
+                  .eventStartDateTime
+                  .isBefore(a.getEvent().eventStartDateTime)
+              ? 1
+              : -1;
         } else {
-          // cards are the same priority, so sort accordingly (most recent time first)
-          if (a.getEventMode() == EventsManager.considerMode) {
-            return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
-                ? 1
-                : -1;
-          } else if (a.getEventMode() == EventsManager.votingMode) {
-            return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
-          } else if (a.getEventMode() == EventsManager.occurringMode) {
-            return b
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(a.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
-          } else {
-            // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
-            return a
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(b.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
-          }
+          // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
+          return a
+                  .getEvent()
+                  .eventStartDateTime
+                  .isBefore(b.getEvent().eventStartDateTime)
+              ? 1
+              : -1;
         }
       });
 
-      List<Widget> widgetList = new List<Widget>.from(eventCards);
+      List<Widget> widgetList = new List<Widget>.from(widget.events);
       int numEvents = (Globals.currentGroupResponse.group.currentBatchNum + 1) *
           GroupsManager.BATCH_SIZE;
+      // TODO this needs to be updated with the new multiple batches.
+      //  Since at this stage there is at least one event. Can just do evetcard.getEventMode()
+      // and then in the currentGroupResponse have a map of modes to batchNums
+
       // have a button shown if more events to show
       Row buttonRow = new Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -158,12 +121,30 @@ class _EventsListState extends State<EventsList> {
         ],
       );
       widgetList.add(buttonRow);
+      if (widget.isUnseenTab) {
+        // if unseen events are here, then we add a mark all seen button to the top of the list
+        widgetList.insert(
+            0,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                height: MediaQuery.of(context).size.height * .045,
+                child: IconButton(
+                  icon: Icon(Icons.done_all),
+                  color: Globals.pocketPollGreen,
+                  tooltip: "Mark all seen",
+                  onPressed: () {
+                    widget.markAllEventsSeen();
+                  },
+                ),
+              ),
+            ));
+      }
 
       return Scrollbar(
           child: ListView.builder(
               shrinkWrap: true,
               itemCount: widgetList.length,
-              key: Key("events_list:event_list"),
               itemBuilder: (context, index) {
                 return widgetList[index];
               }));

@@ -11,7 +11,6 @@ import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
 import 'package:front_end_pocket_poll/groups_widgets//groups_list.dart';
 import 'package:front_end_pocket_poll/groups_widgets/group_create.dart';
 import 'package:front_end_pocket_poll/groups_widgets/groups_left_list.dart';
-import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
@@ -34,7 +33,7 @@ class GroupsHome extends StatefulWidget {
 }
 
 class _GroupsHomeState extends State<GroupsHome>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController searchBarController = new TextEditingController();
   final int totalTabs = 2;
   final int groupsHomeTab = 0;
@@ -52,6 +51,7 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     this.searching = false;
     this.searchIcon = new Icon(Icons.search);
     this.searchGroups = new List<UserGroup>();
@@ -146,9 +146,18 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void dispose() {
-    tabController.dispose();
-    searchBarController.dispose();
+    this.tabController.dispose();
+    this.searchBarController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // app was recently resumed with this state being active, refresh in case changes happened
+      refreshList();
+    }
   }
 
   @override

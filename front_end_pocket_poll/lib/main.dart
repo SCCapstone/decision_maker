@@ -51,7 +51,7 @@ class InternetCheck extends StatelessWidget {
                     return MaterialApp(
                         home: InternetLoss(), theme: Globals.darkTheme);
                   } else {
-                    return MyApp();
+                    return PocketPoll();
                   }
                 }
               }),
@@ -59,7 +59,7 @@ class InternetCheck extends StatelessWidget {
   }
 }
 
-class MyApp extends StatelessWidget {
+class PocketPoll extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(

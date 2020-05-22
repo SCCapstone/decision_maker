@@ -81,6 +81,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
         ],
         leading: BackButton(),
       ),
+      key: Key("event_details_consider:scaffold"),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
         child: Padding(
@@ -146,28 +147,39 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 32),
                   ),
-                  AutoSizeText(
-                    "Version: ${this.event.categoryVersion.toString()}",
-                    minFontSize: 12,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  RaisedButton(
-                    child: Text("Update Ratings"),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => EventUpdateRatings(
-                                  groupId: widget.groupId,
-                                  eventId: widget.eventId))).then((_) {
-                        refreshEvent();
-                      });
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      RaisedButton(
+                        child: Text("Update Ratings"),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        key:
+                            Key("event_details_consider:update_ratings_button"),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EventUpdateRatings(
+                                      groupId: widget.groupId,
+                                      eventId: widget.eventId))).then((_) {
+                            refreshEvent();
+                          });
+                        },
+                      ),
+                      Visibility(
+                        visible: Globals
+                            .currentGroupResponse.eventsWithoutRatings
+                            .containsKey(widget.eventId),
+                        child: Tooltip(
+                            message: "Unrated Category Choices",
+                            child: Icon(
+                              Icons.priority_high,
+                            )),
+                      ),
+                    ],
                   ),
                   Padding(
                     padding: EdgeInsets.all(

@@ -324,7 +324,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (signedIn) {
       Navigator.pushReplacement(
-          this.context, new MaterialPageRoute(builder: (context) => MyApp()));
+          this.context, new MaterialPageRoute(builder: (context) => PocketPoll()));
     }
   }
 
