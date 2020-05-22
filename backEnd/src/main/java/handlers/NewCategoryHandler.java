@@ -53,7 +53,6 @@ public class NewCategoryHandler implements ApiRequestHandler {
       newCategory.setCategoryName(categoryName);
       newCategory.setOwner(activeUser);
       newCategory.setGroups(Collections.emptyMap());
-      newCategory.updateNextChoiceNo();
       newCategory.setChoicesRawMap(choices); // duplicate keys will get filtered out here
 
       final Optional<String> errorMessage = this.newCategoryIsValid(newCategory);

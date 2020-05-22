@@ -56,20 +56,16 @@ public class EditCategoryHandler implements ApiRequestHandler {
           .editCategoryIsValid(newCategory, oldCategory, activeUser);
       if (!errorMessage.isPresent()) {
         //make sure the new category has everything set on it for the encoding in the api response
-        newCategory.updateNextChoiceNo();
         newCategory.setGroups(oldCategory.getGroups());
         newCategory.setOwner(oldCategory.getOwner());
 
         final List<TransactWriteItem> actions = new ArrayList<>();
 
-        //TODO determine if labels have changed and generate new uuids
         final String updateExpression =
-            "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, "
-                + Category.NEXT_CHOICE_NO + " = :next";
+            "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map";
         final ValueMap valueMap = new ValueMap()
             .withString(":name", newCategory.getCategoryName())
-            .withMap(":map", newCategory.getChoices())
-            .withInt(":next", newCategory.getNextChoiceNo());
+            .withMap(":map", newCategory.getChoices());
 
         final UpdateItemData updateItemData = new UpdateItemData(categoryId,
             DbAccessManager.CATEGORIES_TABLE_NAME)

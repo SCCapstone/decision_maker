@@ -25,7 +25,7 @@ public class ResultStatus<T> {
         + "\",\"resultMessage\":\"" + this.resultMessage + "\"}";
   }
 
-  public ResultStatus<T> applyResultStatus(ResultStatus<T> otherStatus) {
+  public ResultStatus<T> applyResultStatus(ResultStatus otherStatus) {
     this.success = this.success && otherStatus.success;
     this.resultMessage += "\n\n" + otherStatus.resultMessage;
     return this;

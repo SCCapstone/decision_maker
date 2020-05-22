@@ -2,18 +2,17 @@
   "CategoryId": "5a25aebc-6e10-4b4a-898e-ef2580976a26",
   "CategoryName": "Lunch Options",
   "Choices": {
-    "1": "Beezers",
-    "2": "Cool Beans",
-    "3": "Moes",
-    "4": "Saharas",
-    "5": "Wired Cafe"
+    "Beezers":  1,
+    "Cool Beans": 2,
+    "Moes": 3,
+    "Saharas": 4,
+    "Wired Cafe": 5
   },
   "Groups": {
     "385eec2f-d54d-4f50-839d-35ae289566c2": "Freshman Friends",
     "b702b849-d981-4b74-bb93-18819a2c1156": "Event stages testing",
     "c316031a-2fdb-4cc2-b932-7c3af449902b": "test test test"
   },
-  "NextChoiceNo": 6,
   "Owner": "johnplaysgolf",
   "Version": 1
 }
