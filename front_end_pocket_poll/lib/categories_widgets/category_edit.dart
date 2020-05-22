@@ -445,7 +445,6 @@ class _CategoryEditState extends State<CategoryEdit> {
     bool choiceChanged = false;
     // check to see if the rating or name for a given choice id changed
     for (ChoiceRow choiceRow in this.choiceRows) {
-      //TODO will this error on null?
       if (this.originalLabels[choiceRow.labelController.text] !=
               choiceRow.choiceNumber ||
           this.originalRatings[choiceRow.labelController.text] !=

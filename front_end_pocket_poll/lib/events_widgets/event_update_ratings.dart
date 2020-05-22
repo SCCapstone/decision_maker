@@ -288,7 +288,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
   }
 
   // fetches category and ratings from DB for the given category version
-  Future<Null> getCategory() async {
+  Future<void> getCategory() async {
     ResultStatus<CategoryRatingTuple> resultStatus =
         await GroupsManager.getEventCategory(widget.groupId, widget.eventId);
     if (resultStatus.success) {
@@ -334,7 +334,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
       this.choiceRows.add(choice);
     }
 
-    // sort by rows choice number
+    // sort the rows by choice number
     this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
     setOriginalValues();
   }
