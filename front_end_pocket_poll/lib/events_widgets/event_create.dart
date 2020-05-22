@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
@@ -711,7 +712,15 @@ class _EventCreateState extends State<EventCreate> {
 
         if (result.success) {
           Globals.currentGroupResponse.group = result.data;
-          Navigator.of(this.context).pop("Event Created");
+          // tell the group page what stage this event is going to start in
+          int retVal = EventsManager.considerMode;
+          if (int.parse(this.considerDuration) == 0 &&
+              int.parse(this.votingDuration) == 0) {
+            retVal = EventsManager.occurringMode;
+          } else if (int.parse(this.considerDuration) == 0) {
+            retVal = EventsManager.votingMode;
+          }
+          Navigator.of(this.context).pop(retVal);
         } else {
           showErrorMessage("Error", result.errorMessage, this.context);
         }

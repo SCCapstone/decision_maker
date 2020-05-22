@@ -425,7 +425,7 @@ void main() {
       await driver.waitFor(find.byValueKey("group_page:scaffold"));
 
       // this event will be in the consider stage so go to that tab
-      var considerTab = find.byValueKey("groups_page:done_tab");
+      var considerTab = find.byValueKey("groups_page:ready_tab");
       await driver.tap(considerTab);
 
       // make sure event is there

@@ -64,7 +64,7 @@ class _GroupPageState extends State<GroupPage>
         style: TextStyle(fontSize: 17),
         minFontSize: 12,
         overflow: TextOverflow.ellipsis,
-        key: Key("groups_page:done_tab"));
+        key: Key("groups_page:ready_tab"));
     this.tabs[votingTab] = new AutoSizeText("Vote",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
@@ -208,6 +208,20 @@ class _GroupPageState extends State<GroupPage>
                 .then((val) {
               if (val != null) {
                 // this means that an event was created, so don't make an API call to refresh
+                try {
+                  int eventMode = val as int;
+                  if (eventMode == EventsManager.considerMode) {
+                    this.currentTab = considerTab;
+                  } else if (eventMode == EventsManager.votingMode) {
+                    this.currentTab = votingTab;
+                  } else if (eventMode == EventsManager.occurringMode) {
+                    this.currentTab = occurringTab;
+                  }
+                } catch (e) {
+                  // do nothing, this shouldn't ever be reached
+                  debugPrintStack();
+                }
+                this.tabController.animateTo(this.currentTab);
                 populateEventStages();
               } else {
                 // no event created, so make API call to make sure page is most up to date
@@ -263,50 +277,42 @@ class _GroupPageState extends State<GroupPage>
     for (String eventId in Globals.currentGroupResponse.group.events.keys) {
       int eventMode = EventsManager.getEventMode(
           Globals.currentGroupResponse.group.events[eventId]);
+      EventCardInterface eventCard;
       if (eventMode == EventsManager.considerMode) {
-        EventCardInterface eventCard = new EventCardConsider(
+        eventCard = new EventCardConsider(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
             updatePage,
             refreshList);
         this.eventCards[considerTab].add(eventCard);
-        if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
-          this.eventCards[unseenTab].add(eventCard);
-        }
       } else if (eventMode == EventsManager.votingMode) {
-        EventCardInterface eventCard = new EventCardVoting(
+        eventCard = new EventCardVoting(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
             updatePage,
             refreshList);
         this.eventCards[votingTab].add(eventCard);
-        if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
-          this.eventCards[unseenTab].add(eventCard);
-        }
       } else if (eventMode == EventsManager.occurringMode) {
-        EventCardInterface eventCard = new EventCardOccurring(
+        eventCard = new EventCardOccurring(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
             updatePage,
             refreshList);
         this.eventCards[occurringTab].add(eventCard);
-        if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
-          this.eventCards[unseenTab].add(eventCard);
-        }
       } else if (eventMode == EventsManager.closedMode) {
-        EventCardInterface eventCard = new EventCardClosed(
+        eventCard = new EventCardClosed(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
             updatePage,
             refreshList);
         this.eventCards[closedTab].add(eventCard);
-        if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
-          this.eventCards[unseenTab].add(eventCard);
-        }
+      }
+      if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
+        this.eventCards[unseenTab].add(eventCard);
       }
     }
     updatePage();

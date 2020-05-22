@@ -41,7 +41,7 @@ class _EventsListState extends State<EventsList> {
               child: Text(
                   (widget.isUnseenTab)
                       ? "No new events."
-                      : "No events currently in this stage. Click the button below to create new events.",
+                      : "No events currently in this stage. Click the plus button below to create new events.",
                   style: TextStyle(fontSize: 30)),
             ),
           )
