@@ -148,7 +148,7 @@
                     <source>8</source>
                     <target>8</target>
                     <excludes>
-<!--                        <exclude>src/main/java/dbMaintenance/**</exclude>-->
+                        <exclude>src/main/java/dbMaintenance/**</exclude>
                     </excludes>
                     <annotationProcessorPaths>
                         <path>
