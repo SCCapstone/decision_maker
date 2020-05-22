@@ -49,7 +49,6 @@ public class UpdateUserChoiceRatingsHandlerTest {
   private ArrayList<Object> updateUserChoiceRatingsInputs = new ArrayList<Object>() {{
     add("john_andrews12"); // active user
     add("ef8dfc02-a79d-4d55-bb03-654a7a31bb16"); // categoryId
-    add(2); // category version
     //removing 1's mapping and adding mapping for 3
     add(Maps.newHashMap(ImmutableMap.of("2", 5, "3", 4))); // ratings
     add(true); // updateDb
@@ -59,7 +58,6 @@ public class UpdateUserChoiceRatingsHandlerTest {
   private ArrayList<Class> inputClasses = new ArrayList<Class>() {{
     add(String.class);
     add(String.class);
-    add(Integer.class);
     add(Map.class);
     add(boolean.class);
   }};
@@ -96,7 +94,7 @@ public class UpdateUserChoiceRatingsHandlerTest {
           .when(this.dbAccessManager).getUser(any(String.class));
 
       this.updateUserChoiceRatingsInputs.set(1, "new-id"); // new cat id
-      this.updateUserChoiceRatingsInputs.set(4, false); // don't update the db
+      this.updateUserChoiceRatingsInputs.set(3, false); // don't update the db
       this.updateUserChoiceRatingsInputs.add("TestName"); // categoryName
       this.updateUserChoiceRatingsInputs.add(true); // isNewCategory
       this.inputClasses.add(String.class);
@@ -172,17 +170,17 @@ public class UpdateUserChoiceRatingsHandlerTest {
   public void updateUserChoiceRatings_mapRatingValues_failureResult()
       throws Exception {
     this.updateUserChoiceRatingsInputs
-        .set(3, ImmutableMap.of("1", 10)); // greater than 5
+        .set(2, ImmutableMap.of("1", 10)); // greater than 5
     ResultStatus resultStatus = this.getResult();
     assertFalse(resultStatus.success);
 
     this.updateUserChoiceRatingsInputs
-        .set(3, ImmutableMap.of("1", -5)); // less than 0
+        .set(2, ImmutableMap.of("1", -5)); // less than 0
     resultStatus = this.getResult();
     assertFalse(resultStatus.success);
 
     this.updateUserChoiceRatingsInputs
-        .set(3, ImmutableMap.of("1", "not a number")); // NaN
+        .set(2, ImmutableMap.of("1", "not a number")); // NaN
     resultStatus = this.getResult();
     assertFalse(resultStatus.success);
 

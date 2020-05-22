@@ -15,15 +15,15 @@ public class Category implements Model {
   public static final String CHOICES = "Choices";
   public static final String GROUPS = "Groups";
   public static final String NEXT_CHOICE_NO = "NextChoiceNo";
-  public static final String VERSION = "Version";
   public static final String OWNER = "Owner";
+
+  //NOTICE: Choice ids are the labels! This uniqueness is enforced in add/edit category
 
   private String categoryId;
   private String categoryName;
   private String owner;
   private Integer nextChoiceNo;
-  private Integer version;
-  private Map<String, String> choices;
+  private Map<String, Integer> choices; // choice label to sort order
   private Map<String, String> groups;
 
   public Category(final Item categoryItem) {
@@ -35,13 +35,12 @@ public class Category implements Model {
     this.setCategoryName((String) jsonMap.get(CATEGORY_NAME));
     this.setOwner((String) jsonMap.get(OWNER));
     this.setNextChoiceNo(this.getIntFromObject(jsonMap.get(NEXT_CHOICE_NO)));
-    this.setVersion(this.getIntFromObject(jsonMap.get(VERSION)));
     this.setChoicesRawMap((Map<String, Object>) jsonMap.get(CHOICES));
     this.setGroupsRawMap((Map<String, Object>) jsonMap.get(GROUPS));
   }
 
   public Item asItem() {
-    Item modelAsItem = Item.fromMap(this.asMap());
+    final Item modelAsItem = Item.fromMap(this.asMap());
 
     //change the category id to be the primary key
     modelAsItem.removeAttribute(CATEGORY_ID);
@@ -56,7 +55,6 @@ public class Category implements Model {
     modelAsMap.putIfAbsent(CATEGORY_NAME, this.categoryName);
     modelAsMap.putIfAbsent(OWNER, this.owner);
     modelAsMap.putIfAbsent(NEXT_CHOICE_NO, this.nextChoiceNo);
-    modelAsMap.putIfAbsent(VERSION, this.version);
     modelAsMap.putIfAbsent(CHOICES, this.choices);
     modelAsMap.putIfAbsent(GROUPS, this.groups);
     return modelAsMap;
@@ -66,8 +64,8 @@ public class Category implements Model {
     this.choices = null;
     if (jsonMap != null) {
       this.choices = new HashMap<>();
-      for (String choiceId : jsonMap.keySet()) {
-        this.choices.putIfAbsent(choiceId, (String) jsonMap.get(choiceId));
+      for (final String choiceId : jsonMap.keySet()) {
+        this.choices.putIfAbsent(choiceId, this.getIntFromObject(jsonMap.get(choiceId)));
       }
     }
   }

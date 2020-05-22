@@ -57,37 +57,31 @@ public class EditCategoryHandler implements ApiRequestHandler {
       if (!errorMessage.isPresent()) {
         //make sure the new category has everything set on it for the encoding in the api response
         newCategory.updateNextChoiceNo();
-        newCategory.setVersion(this.determineVersionNumber(newCategory, oldCategory));
         newCategory.setGroups(oldCategory.getGroups());
         newCategory.setOwner(oldCategory.getOwner());
 
         final List<TransactWriteItem> actions = new ArrayList<>();
 
-        // only edit the category definition if something has changed
-        if (!newCategory.getVersion().equals(oldCategory.getVersion())) {
-          final String updateExpression =
-              "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, "
-                  + Category.NEXT_CHOICE_NO
-                  + " = :next, " + Category.VERSION + " = :version";
-          final ValueMap valueMap = new ValueMap()
-              .withString(":name", newCategory.getCategoryName())
-              .withMap(":map", newCategory.getChoices())
-              .withInt(":next", newCategory.getNextChoiceNo())
-              .withInt(":version", newCategory.getVersion());
+        //TODO determine if labels have changed and generate new uuids
+        final String updateExpression =
+            "set " + Category.CATEGORY_NAME + " = :name, " + Category.CHOICES + " = :map, "
+                + Category.NEXT_CHOICE_NO + " = :next";
+        final ValueMap valueMap = new ValueMap()
+            .withString(":name", newCategory.getCategoryName())
+            .withMap(":map", newCategory.getChoices())
+            .withInt(":next", newCategory.getNextChoiceNo());
 
-          final UpdateItemData updateItemData = new UpdateItemData(categoryId,
-              DbAccessManager.CATEGORIES_TABLE_NAME)
-              .withUpdateExpression(updateExpression)
-              .withValueMap(valueMap);
+        final UpdateItemData updateItemData = new UpdateItemData(categoryId,
+            DbAccessManager.CATEGORIES_TABLE_NAME)
+            .withUpdateExpression(updateExpression)
+            .withValueMap(valueMap);
 
-          actions.add(new TransactWriteItem().withUpdate(updateItemData.asUpdate()));
-        }
+        actions.add(new TransactWriteItem().withUpdate(updateItemData.asUpdate()));
 
         //get the update data to entered the ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult =
             this.updateUserChoiceRatingsHandler
-                .handle(activeUser, categoryId, newCategory.getVersion(), userRatings, false,
-                    categoryName);
+                .handle(activeUser, categoryId, userRatings, false, categoryName);
 
         if (updatedUsersTableResult.success) {
           actions.add(new TransactWriteItem().withUpdate(updatedUsersTableResult.data.asUpdate()));
@@ -114,32 +108,6 @@ public class EditCategoryHandler implements ApiRequestHandler {
 
     this.metrics.commonClose(resultStatus.success);
     return resultStatus;
-  }
-
-  private Integer determineVersionNumber(final Category editCategory, final Category oldCategory) {
-    Integer versionNumber = oldCategory.getVersion();
-
-    if (!editCategory.getCategoryName().equals(oldCategory.getCategoryName())) {
-      // if the category name changed then update the version
-      versionNumber++;
-    } else if (editCategory.getChoices().size() != oldCategory.getChoices().size()) {
-      // if there are a different number of choices then we know the version is different
-      versionNumber++;
-    } else if (!editCategory.getChoices().keySet().containsAll(oldCategory.getChoices().keySet())) {
-      // there are the same number of choices but they aren't the same choices
-      versionNumber++;
-    } else {
-      // check each label, if any differ then it's a new version
-      for (final String choiceId : oldCategory.getChoices().keySet()) {
-        if (!oldCategory.getChoices().get(choiceId)
-            .equals(editCategory.getChoices().get(choiceId))) {
-          versionNumber++;
-          break;
-        }
-      }
-    }
-
-    return versionNumber;
   }
 
   private Optional<String> editCategoryIsValid(final Category editCategory,
@@ -174,7 +142,7 @@ public class EditCategoryHandler implements ApiRequestHandler {
             "Error: category must have at least one choice.");
       }
 
-      for (String choiceLabel : editCategory.getChoices().values()) {
+      for (final String choiceLabel : editCategory.getChoices().keySet()) {
         if (choiceLabel.trim().length() < 1) {
           errorMessage = this
               .getUpdatedErrorMessage(errorMessage, "Error: choice labels cannot be empty.");

@@ -6,8 +6,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Event;
+import models.EventWithCategoryChoices;
 import models.Group;
 import models.GroupForApiResponse;
+import models.GroupWithCategoryChoices;
 import models.Model;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -45,7 +47,8 @@ public class GetGroupHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final Group group = this.dbAccessManager.getGroup(groupId);
+      final GroupWithCategoryChoices group = new GroupWithCategoryChoices(
+          this.dbAccessManager.getGroupItem(groupId).asMap());
 
       //the user should not be able to retrieve info from the group if they are not a member
       if (group.getMembers().containsKey(activeUser)) {
@@ -56,22 +59,25 @@ public class GetGroupHandler implements ApiRequestHandler {
 
         final GetGroupResponse getGroupResponse = new GetGroupResponse(groupForApiResponse);
 
-        for (final Map.Entry<String, Event> eventEntry : groupForApiResponse.getEvents()
-            .entrySet()) {
+        for (final Map.Entry<String, EventWithCategoryChoices> eventEntry : group
+            .getEventsWithCategoryChoices().entrySet()) {
           final String eventId = eventEntry.getKey();
-          final Event event = eventEntry.getValue();
+          final EventWithCategoryChoices event = eventEntry.getValue();
 
           if (user.getGroups().get(groupId).getEventsUnseen().containsKey(eventId)) {
             getGroupResponse.addEventUnseen(eventId);
           }
 
-          if (!user.getCategoryRatings().containsKey(event.getCategoryId())) {
-            //first we check if the user has ratings for the category at all
-            getGroupResponse.addEventWithoutRating(eventId);
-          } else if (!user.getCategoryRatings().get(event.getCategoryId())
-              .contains(event.getCategoryVersion())) {
-            //next we check if the user has ratings for the version of the category
-            getGroupResponse.addEventWithoutRating(eventId);
+          //if the event no longer has choices then we don't care if the user has ratings
+          if (event.getCategoryChoices() != null) {
+            if (!user.getCategoryRatings().containsKey(event.getCategoryId())) {
+              //first we check if the user has ratings for the category at all
+              getGroupResponse.addEventWithoutRating(eventId);
+            } else if (!user.getCategoryRatings().get(event.getCategoryId()).keySet()
+                .containsAll(event.getCategoryChoices().keySet())) {
+              //then we check if the user has choice ratings set for all of the event choices
+              getGroupResponse.addEventWithoutRating(eventId);
+            }
           }
         }
 

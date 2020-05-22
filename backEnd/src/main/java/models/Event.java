@@ -29,7 +29,6 @@ public class Event implements Model {
 
   private String categoryId;
   private String categoryName;
-  private Integer categoryVersion;
   private String eventName;
   private String createdDateTime;
   private String eventStartDateTime;
@@ -48,7 +47,6 @@ public class Event implements Model {
   public Event(final Map<String, Object> jsonMap) {
     this.setCategoryId((String) jsonMap.get(Category.CATEGORY_ID));
     this.setCategoryName((String) jsonMap.get(Category.CATEGORY_NAME));
-    this.setCategoryVersion(this.getIntFromObject(jsonMap.get(Category.VERSION)));
     this.setEventName((String) jsonMap.get(EVENT_NAME));
     this.setCreatedDateTime((String) jsonMap.get(CREATED_DATE_TIME));
     this.setEventStartDateTime((String) jsonMap.get(EVENT_START_DATE_TIME));
@@ -69,7 +67,6 @@ public class Event implements Model {
     final Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(Category.CATEGORY_ID, this.categoryId);
     modelAsMap.putIfAbsent(Category.CATEGORY_NAME, this.categoryName);
-    modelAsMap.putIfAbsent(Category.VERSION, this.categoryVersion);
     modelAsMap.putIfAbsent(EVENT_NAME, this.eventName);
     modelAsMap.putIfAbsent(CREATED_DATE_TIME, this.createdDateTime);
     modelAsMap.putIfAbsent(EVENT_START_DATE_TIME, this.eventStartDateTime);
@@ -88,7 +85,6 @@ public class Event implements Model {
     return this.toBuilder()
         .categoryId(this.categoryId)
         .categoryName(this.categoryName)
-        .categoryVersion(this.categoryVersion)
         .eventName(this.eventName)
         .createdDateTime(this.createdDateTime)
         .eventStartDateTime(this.eventStartDateTime)
@@ -106,7 +102,6 @@ public class Event implements Model {
   public void setCategoryFields(final Category category) {
     this.categoryId = category.getCategoryId();
     this.categoryName = category.getCategoryName();
-    this.categoryVersion = category.getVersion();
   }
 
   public void setOptedInRawMap(final Map<String, Object> jsonMap) {

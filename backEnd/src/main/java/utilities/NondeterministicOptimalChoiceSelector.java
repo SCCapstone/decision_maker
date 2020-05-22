@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.google.common.base.Functions;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import models.EventWithCategoryChoices;
 import models.User;
-import models.UserRatings;
 
 public class NondeterministicOptimalChoiceSelector {
 
@@ -40,8 +40,7 @@ public class NondeterministicOptimalChoiceSelector {
     for (String username : this.event.getOptedIn().keySet()) {
       allCategoryChoiceRatings.add(
           this.allUsers.get(username).getCategoryRatings()
-              .getOrDefault(this.event.getCategoryId(), new UserRatings())
-              .getRatings(this.event.getCategoryVersion())
+              .getOrDefault(this.event.getCategoryId(), Collections.emptyMap())
       );
     }
 
@@ -155,7 +154,7 @@ public class NondeterministicOptimalChoiceSelector {
                 ? -1 : 1)
         .limit(x)
         .collect(collectingAndThen(
-            toMap(Entry::getKey, (Map.Entry e) -> this.event.getCategoryChoices().get(e.getKey())),
+            toMap(Entry::getKey, Entry::getKey), // the key and the label are the same thing now
             HashMap::new));
   }
 }

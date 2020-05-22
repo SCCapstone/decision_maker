@@ -17,6 +17,7 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
+//TODO update this to be UnkeyUserRatingsByVersionHandler
 public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
 
   private final MaintenanceDbAccessManager maintenanceDbAccessManager;
@@ -72,7 +73,7 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
                     .get(categoryId);
 
                 final Map versionToRatingsMap = ImmutableMap
-                    .of(category.getVersion().toString(), choiceToRatings);
+                    .of(category.toString(), choiceToRatings);
 
                 final String updateExpression =
                     "Set " + User.CATEGORY_RATINGS + ".#categoryId = :versionMap";
