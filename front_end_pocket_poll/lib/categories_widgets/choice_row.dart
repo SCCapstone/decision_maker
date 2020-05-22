@@ -5,7 +5,7 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
 class ChoiceRow extends StatefulWidget {
-  final String choiceNumber;
+  final int choiceNumber;
   final bool isOwner;
   final TextEditingController labelController;
   final TextEditingController rateController;

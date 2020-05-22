@@ -134,8 +134,8 @@ class UsersManager {
     return retVal;
   }
 
-  static Future<ResultStatus> updateUserChoiceRatings(String categoryId,
-      int categoryVersion, Map<String, String> choiceRatings) async {
+  static Future<ResultStatus> updateUserChoiceRatings(
+      String categoryId, Map<String, String> choiceRatings) async {
     ResultStatus retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -144,8 +144,6 @@ class UsersManager {
         .putIfAbsent(CategoriesManager.CATEGORY_ID, () => categoryId);
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(CategoriesManager.CATEGORY_VERSION, () => categoryVersion);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
