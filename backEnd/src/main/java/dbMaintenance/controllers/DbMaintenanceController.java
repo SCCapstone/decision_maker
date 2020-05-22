@@ -24,6 +24,7 @@ public class DbMaintenanceController implements
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
           .put("unkeyUserRatingsByVersion", UnkeyUserRatingsByVersionController.class)
           .put("addCategoryCreatorToGroup", AddCategoryCreatorToGroupController.class)
+          .put("keyChoicesByLabel", KeyChoicesByLabelController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
