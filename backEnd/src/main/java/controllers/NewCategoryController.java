@@ -20,7 +20,7 @@ public class NewCategoryController implements ApiRequestController {
 
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "AddNewCategoryController.processApiRequest";
+    final String classMethod = "NewCategoryController.processApiRequest";
 
     ResultStatus resultStatus;
 

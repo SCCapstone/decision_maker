@@ -1,6 +1,6 @@
 package dbMaintenance.controllers;
 
-import dbMaintenance.handlers.KeyUserRatingsByVersionHandler;
+import dbMaintenance.handlers.UnkeyUserRatingsByVersionHandler;
 import dbMaintenance.modules.MaintenanceInjector;
 import controllers.ApiRequestController;
 import exceptions.MissingApiRequestKeyException;
@@ -10,21 +10,21 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
-public class KeyUserRatingsByVersionController implements ApiRequestController {
+public class UnkeyUserRatingsByVersionController implements ApiRequestController {
 
   @Inject
-  public KeyUserRatingsByVersionHandler keyUserRatingsByVersionHandler;
+  public UnkeyUserRatingsByVersionHandler unkeyUserRatingsByVersionHandler;
 
   @Override
   public ResultStatus processApiRequest(Map<String, Object> jsonMap, Metrics metrics)
       throws MissingApiRequestKeyException {
-    final String classMethod = "KeyUserRatingsByVersionController.processApiRequest";
+    final String classMethod = "UnkeyUserRatingsByVersionController.processApiRequest";
 
     ResultStatus resultStatus;
 
     try {
       MaintenanceInjector.getInjector(metrics).inject(this);
-      resultStatus = this.keyUserRatingsByVersionHandler.handle();
+      resultStatus = this.unkeyUserRatingsByVersionHandler.handle();
     } catch (final Exception e) {
       metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);

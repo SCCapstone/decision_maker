@@ -40,7 +40,7 @@ public class NewCategoryHandler implements ApiRequestHandler {
 
   public ResultStatus handle(final String activeUser, final String categoryName,
       final Map<String, Object> choices, final Map<String, Object> userRatings) {
-    final String classMethod = "AddNewCategoryHandler.handle";
+    final String classMethod = "NewCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;

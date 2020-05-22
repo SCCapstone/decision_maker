@@ -69,8 +69,8 @@ public class NewCategoryHandlerTest {
   private ArrayList<Object> addNewCategoryInputs = new ArrayList<Object>() {{
     add("ActiveUser"); // active user
     add("Category Name"); // category name
-    add(Maps.newHashMap(ImmutableMap.of("0", "label 1", "2", "label 2"))); // choices
-    add(Maps.newHashMap(ImmutableMap.of("0", 5, "2", 4))); // ratings
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 0, "label 2", 1))); // choices
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 5, "label 2", 4))); // ratings
   }};
 
   private ArrayList<Class> inputClasses = new ArrayList<Class>() {{
@@ -155,7 +155,7 @@ public class NewCategoryHandlerTest {
   @Test
   public void addNewCategory_invalidInput2_failureResult() throws Exception {
     //testing no empty choice labels and no empty category names
-    this.addNewCategoryInputs.set(2, ImmutableMap.of("0", "")); // empty choice label
+    this.addNewCategoryInputs.set(2, ImmutableMap.of("", 0)); // empty choice label
     this.addNewCategoryInputs.set(1, ""); // empty name
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));

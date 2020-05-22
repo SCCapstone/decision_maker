@@ -1,5 +1,6 @@
 package dbMaintenance.handlers;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
@@ -8,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.google.common.collect.ImmutableMap;
 import handlers.ApiRequestHandler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import javax.inject.Inject;
@@ -17,14 +19,14 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
-//TODO update this to be UnkeyUserRatingsByVersionHandler
-public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
+public class UnkeyUserRatingsByVersionHandler implements ApiRequestHandler {
 
   private final MaintenanceDbAccessManager maintenanceDbAccessManager;
   private final Metrics metrics;
 
   @Inject
-  public KeyUserRatingsByVersionHandler(final MaintenanceDbAccessManager maintenanceDbAccessManager,
+  public UnkeyUserRatingsByVersionHandler(
+      final MaintenanceDbAccessManager maintenanceDbAccessManager,
       final Metrics metrics) {
     this.maintenanceDbAccessManager = maintenanceDbAccessManager;
     this.metrics = metrics;
@@ -37,7 +39,7 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle() {
-    final String classMethod = "KeyUserRatingsByVersionHandler.handle";
+    final String classMethod = "UnkeyUserRatingsByVersionHandler.handle";
     this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus = ResultStatus
@@ -52,7 +54,7 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
         try {
           final String username = userItem.getString(User.USERNAME);
 
-          if (username.equals("johnplaysgolf")) {
+          if (username.equals("john_andrews12")) {
             continue; // I tested on this user, so no need to reprocess
           }
 
@@ -60,44 +62,31 @@ public class KeyUserRatingsByVersionHandler implements ApiRequestHandler {
 
           for (final String categoryId : oldUserRatings.keySet()) {
             try {
-              final Item categoryItem = this.maintenanceDbAccessManager.getCategoryItem(categoryId);
-
-              if (categoryItem != null) {
-                //We are assuming the ratings are saved for the newest version. With this being the
-                // case, we simply get the newest version and map the current rating map one level
-                // below that.
-
-                final Category category = new Category(categoryItem);
-
-                final Map<String, Object> choiceToRatings = (Map<String, Object>) oldUserRatings
-                    .get(categoryId);
-
-                final Map versionToRatingsMap = ImmutableMap
-                    .of(category.toString(), choiceToRatings);
-
-                final String updateExpression =
-                    "Set " + User.CATEGORY_RATINGS + ".#categoryId = :versionMap";
-                final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-                final ValueMap valueMap = new ValueMap()
-                    .withMap(":versionMap", versionToRatingsMap);
-
-                final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                    .withUpdateExpression(updateExpression)
-                    .withNameMap(nameMap)
-                    .withValueMap(valueMap);
-
-                this.maintenanceDbAccessManager.updateUser(username, updateItemSpec);
-              } else {
-                //The category couldn't be found. Assume it was deleted and delete the rating entry.
-                final String updateExpression = "remove " + User.CATEGORY_RATINGS + ".#categoryId";
-                final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
-
-                final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
-                    .withUpdateExpression(updateExpression)
-                    .withNameMap(nameMap);
-
-                this.maintenanceDbAccessManager.updateUser(username, updateItemSpec);
+              final Map<String, Object> versionToRatingsMap = (Map<String, Object>) oldUserRatings
+                  .get(categoryId);
+              String biggestVersion = null;
+              for (final String version : versionToRatingsMap.keySet()) {
+                if (biggestVersion == null || Integer.parseInt(biggestVersion) < Integer
+                    .parseInt(version)) {
+                  biggestVersion = version;
+                }
               }
+
+              final Map<String, Object> choiceToRatings = (Map<String, Object>) versionToRatingsMap
+                  .get(biggestVersion);
+
+              final String updateExpression =
+                  "Set " + User.CATEGORY_RATINGS + ".#categoryId = :versionMap";
+              final NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+              final ValueMap valueMap = new ValueMap()
+                  .withMap(":versionMap", choiceToRatings);
+
+              final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
+                  .withUpdateExpression(updateExpression)
+                  .withNameMap(nameMap)
+                  .withValueMap(valueMap);
+
+              this.maintenanceDbAccessManager.updateUser(username, updateItemSpec);
             } catch (final Exception e) {
               this.metrics.log(new ErrorDescriptor<>(username + " " + categoryId, classMethod, e));
               resultStatus = ResultStatus.failure("Exception in " + classMethod);
