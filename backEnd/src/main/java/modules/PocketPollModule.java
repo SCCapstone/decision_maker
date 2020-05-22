@@ -70,7 +70,7 @@ public class PocketPollModule {
   }
 
   @Provides
-  public NewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager,
+  public NewCategoryHandler provideNewCategoryHandler(final DbAccessManager dbAccessManager,
       final
       UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
     return new NewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, this.metrics);

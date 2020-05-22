@@ -1,8 +1,9 @@
 package dbMaintenance.modules;
 
 import dbMaintenance.handlers.AddCategoryCreatorToGroupHandler;
+import dbMaintenance.handlers.KeyChoicesByLabelHandler;
+import dbMaintenance.handlers.UnkeyUserRatingsByVersionHandler;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
-import dbMaintenance.handlers.KeyUserRatingsByVersionHandler;
 import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
@@ -22,14 +23,20 @@ public class PocketPollMaintenanceModule {
   }
 
   @Provides
-  public KeyUserRatingsByVersionHandler provideKeyUserRatingsByVersionHandler(
+  public UnkeyUserRatingsByVersionHandler provideKeyUserRatingsByVersionHandler(
       final MaintenanceDbAccessManager maintenanceDbAccessManager) {
-    return new KeyUserRatingsByVersionHandler(maintenanceDbAccessManager, this.metrics);
+    return new UnkeyUserRatingsByVersionHandler(maintenanceDbAccessManager, this.metrics);
   }
 
   @Provides
   public AddCategoryCreatorToGroupHandler provideAddCategoryCreatorToGroupHandler(
       final MaintenanceDbAccessManager maintenanceDbAccessManager) {
     return new AddCategoryCreatorToGroupHandler(maintenanceDbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public KeyChoicesByLabelHandler provideKeyChoicesByLabelHandler(
+      final MaintenanceDbAccessManager maintenanceDbAccessManager) {
+    return new KeyChoicesByLabelHandler(maintenanceDbAccessManager, this.metrics);
   }
 }

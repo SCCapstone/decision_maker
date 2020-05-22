@@ -5,10 +5,8 @@ import 'group_category.dart';
 class Category {
   final String categoryName;
   final String categoryId;
-  final Map<String, String> choices;
+  final Map<String, int> choices; // choice label -> sort order
   final Map<String, String> groups; // groupId -> groupName
-  final int nextChoiceNum;
-  final int categoryVersion;
   final String owner;
 
   Category(
@@ -16,12 +14,10 @@ class Category {
       this.categoryName,
       this.choices,
       this.groups,
-      this.nextChoiceNum,
-      this.categoryVersion,
       this.owner});
 
   Category.debug(this.categoryId, this.categoryName, this.choices, this.groups,
-      this.nextChoiceNum, this.categoryVersion, this.owner);
+      this.owner);
 
   factory Category.fromJson(Map<String, dynamic> json) {
     Map<String, String> groupsMap = new Map<String, String>();
@@ -30,10 +26,11 @@ class Category {
       groupsMap.putIfAbsent(groupId, () => groupsRaw[groupId].toString());
     }
 
-    Map<String, String> choicesMap = new Map<String, String>();
+    Map<String, int> choicesMap = new Map<String, int>();
     Map<String, dynamic> choicesRaw = json[CategoriesManager.CHOICES];
     for (String choiceNum in choicesRaw.keys) {
-      choicesMap.putIfAbsent(choiceNum, () => choicesRaw[choiceNum].toString());
+      choicesMap.putIfAbsent(
+          choiceNum, () => int.parse(choicesRaw[choiceNum].toString()));
     }
 
     return Category(
@@ -41,8 +38,6 @@ class Category {
         categoryName: json[CategoriesManager.CATEGORY_NAME],
         choices: choicesMap,
         groups: groupsMap,
-        nextChoiceNum: json[CategoriesManager.NEXT_CHOICE_NO],
-        categoryVersion: json[CategoriesManager.CATEGORY_VERSION],
         owner: json[CategoriesManager.OWNER]);
   }
 
@@ -72,6 +67,6 @@ class Category {
   @override
   String toString() {
     return "CategoryId: $categoryId CategoryName: $categoryName Choices: "
-        "$choices Groups: $groups NextChoiceNum: $nextChoiceNum Owner: $owner CategoryVersion: $categoryVersion";
+        "$choices Groups: $groups Owner: $owner";
   }
 }

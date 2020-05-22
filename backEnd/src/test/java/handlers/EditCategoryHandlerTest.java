@@ -57,8 +57,8 @@ public class EditCategoryHandlerTest {
     add("johnplaysgolf"); // active user
     add("CategoryId"); // category id
     add("CategoryName"); // category name
-    add(Maps.newHashMap(ImmutableMap.of("0", "label 1", "2", "label 2"))); // choices
-    add(Maps.newHashMap(ImmutableMap.of("0", 5, "2", 4))); // ratings
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 0, "label 2", 2))); // choices
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 5, "label 2", 4))); // ratings
   }};
 
   private ArrayList<Class> inputClasses = new ArrayList<Class>() {{
@@ -79,7 +79,7 @@ public class EditCategoryHandlerTest {
   public void editCategory_validInputCategoryNameChange_successfulResult() {
     try {
       doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-          .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class),
+          .handle(any(String.class), any(String.class), any(Map.class),
               eq(false), any(String.class));
       doReturn(new Category(JsonUtils.getItemFromFile("categoryLunchOptions.json")))
           .when(this.dbAccessManager).getCategory(any(String.class));

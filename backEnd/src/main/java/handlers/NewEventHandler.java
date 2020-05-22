@@ -122,6 +122,7 @@ public class NewEventHandler implements ApiRequestHandler {
 
         //Hope it works, we aren't using transactions yet (that's why nothing done with result).
         if (newEvent.getRsvpDuration() > 0) {
+          //TODO make this a transaction
           final ResultStatus pendingEventAdded = this.addPendingEventHandler
               .handle(groupId, eventId, newEvent.getRsvpDuration());
         } else {
@@ -132,9 +133,6 @@ public class NewEventHandler implements ApiRequestHandler {
 
         //since the event could have been updated by skipping consider, we need to pull to get the most up to date event
         final Group newGroup = this.dbAccessManager.getGroupNoCache(groupId);
-//        final Group newGroup = oldGroup.clone();
-//        newGroup.getEvents().put(eventId, newEvent);
-//        newGroup.setLastActivity(lastActivity);
 
         //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
         if (newEvent.getRsvpDuration() > 0) {

@@ -69,8 +69,8 @@ public class NewCategoryHandlerTest {
   private ArrayList<Object> addNewCategoryInputs = new ArrayList<Object>() {{
     add("ActiveUser"); // active user
     add("Category Name"); // category name
-    add(Maps.newHashMap(ImmutableMap.of("0", "label 1", "2", "label 2"))); // choices
-    add(Maps.newHashMap(ImmutableMap.of("0", 5, "2", 4))); // ratings
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 0, "label 2", 1))); // choices
+    add(Maps.newHashMap(ImmutableMap.of("label 1", 5, "label 2", 4))); // ratings
   }};
 
   private ArrayList<Class> inputClasses = new ArrayList<Class>() {{
@@ -89,7 +89,7 @@ public class NewCategoryHandlerTest {
   @Test
   public void addNewCategory_validInput_successfulResult() throws Exception {
     doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+        .handle(any(String.class), any(String.class), any(Map.class), eq(false),
             any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
@@ -107,7 +107,7 @@ public class NewCategoryHandlerTest {
   public void addNewCategory_validInputBadUserRatingsUpdate_failureResult() throws Exception {
     doReturn(new ResultStatus(false, "usersManagerBroken"))
         .when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+        .handle(any(String.class), any(String.class), any(Map.class), eq(false),
             any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
@@ -155,7 +155,7 @@ public class NewCategoryHandlerTest {
   @Test
   public void addNewCategory_invalidInput2_failureResult() throws Exception {
     //testing no empty choice labels and no empty category names
-    this.addNewCategoryInputs.set(2, ImmutableMap.of("0", "")); // empty choice label
+    this.addNewCategoryInputs.set(2, ImmutableMap.of("", 0)); // empty choice label
     this.addNewCategoryInputs.set(1, ""); // empty name
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));
@@ -175,7 +175,7 @@ public class NewCategoryHandlerTest {
     doThrow(NullPointerException.class).when(this.dbAccessManager)
         .executeWriteTransaction(any(List.class));
     doReturn(this.updateUserChoiceRatingResult).when(this.updateUserChoiceRatingsHandler)
-        .handle(any(String.class), any(String.class), any(Integer.class), any(Map.class), eq(false),
+        .handle(any(String.class), any(String.class), any(Map.class), eq(false),
             any(String.class), eq(true));
     doReturn(new User(newCategoryGoodUser)).when(this.dbAccessManager)
         .getUser(any(String.class));

@@ -48,10 +48,10 @@ class _CategoryCreateState extends State<CategoryCreate> {
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = this.defaultRate.toString();
 
-    this.nextChoiceValue = 2;
+    this.nextChoiceValue = 1;
 
     ChoiceRow choice = new ChoiceRow(
-        "1", true, initLabelController, initRatingController,
+        0, true, initLabelController, initRatingController,
         focusNode: new FocusNode(),
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
@@ -164,7 +164,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                 rateController.text = this.defaultRate.toString();
 
                 ChoiceRow choice = new ChoiceRow(
-                  this.nextChoiceValue.toString(),
+                  this.nextChoiceValue,
                   true,
                   labelController,
                   rateController,
@@ -259,16 +259,16 @@ class _CategoryCreateState extends State<CategoryCreate> {
     if (this.choiceRows.isEmpty) {
       showErrorMessage("Error", "Must have at least one choice!", this.context);
     } else if (form.validate()) {
-      Map<String, String> labelsToSave = new LinkedHashMap<String, String>();
+      Map<String, int> labelsToSave = new LinkedHashMap<String, int>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
       bool duplicates = false;
       // using a set is more efficient than looping over the maps
       Set names = new Set();
       for (ChoiceRow choiceRow in this.choiceRows) {
-        labelsToSave.putIfAbsent(choiceRow.choiceNumber,
-            () => choiceRow.labelController.text.trim());
-        ratesToSave.putIfAbsent(
-            choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
+        labelsToSave.putIfAbsent(choiceRow.labelController.text.trim(),
+            () => choiceRow.choiceNumber);
+        ratesToSave.putIfAbsent(choiceRow.labelController.text.trim(),
+            () => choiceRow.rateController.text.trim());
         if (!names.add(choiceRow.labelController.text.trim())) {
           duplicates = true;
         }

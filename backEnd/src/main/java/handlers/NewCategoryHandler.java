@@ -23,7 +23,6 @@ import utilities.WarningDescriptor;
 public class NewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
-  public static final Integer DEFAULT_CATEGORY_VERSION = 1;
 
   private final DbAccessManager dbAccessManager;
   private final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
@@ -41,7 +40,7 @@ public class NewCategoryHandler implements ApiRequestHandler {
 
   public ResultStatus handle(final String activeUser, final String categoryName,
       final Map<String, Object> choices, final Map<String, Object> userRatings) {
-    final String classMethod = "AddNewCategoryHandler.handle";
+    final String classMethod = "NewCategoryHandler.handle";
     this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
@@ -52,17 +51,15 @@ public class NewCategoryHandler implements ApiRequestHandler {
       final Category newCategory = new Category();
       newCategory.setCategoryId(categoryId);
       newCategory.setCategoryName(categoryName);
-      newCategory.setVersion(DEFAULT_CATEGORY_VERSION);
       newCategory.setOwner(activeUser);
       newCategory.setGroups(Collections.emptyMap());
-      newCategory.setChoicesRawMap(choices);
-      newCategory.updateNextChoiceNo();
+      newCategory.setChoicesRawMap(choices); // duplicate keys will get filtered out here
 
-      Optional<String> errorMessage = this.newCategoryIsValid(newCategory);
+      final Optional<String> errorMessage = this.newCategoryIsValid(newCategory);
       if (!errorMessage.isPresent()) {
         //get the update data for entering the user ratings into the users table
         final ResultStatus<UpdateItemData> updatedUsersTableResult = this.updateUserChoiceRatingsHandler
-            .handle(activeUser, categoryId, DEFAULT_CATEGORY_VERSION, userRatings, false,
+            .handle(activeUser, categoryId, userRatings, false,
                 categoryName, true);
 
         if (updatedUsersTableResult.success) {
@@ -122,8 +119,9 @@ public class NewCategoryHandler implements ApiRequestHandler {
             "Error: category must have at least one choice.");
       }
 
-      for (String choiceLabel : newCategory.getChoices().values()) {
-        if (choiceLabel.trim().length() < 1) {
+      //choice ids are the labels
+      for (final String choiceId : newCategory.getChoices().keySet()) {
+        if (choiceId.trim().length() < 1) {
           errorMessage = this
               .getUpdatedErrorMessage(errorMessage, "Error: choice labels cannot be empty.");
           break;

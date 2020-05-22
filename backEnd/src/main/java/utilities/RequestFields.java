@@ -11,5 +11,4 @@ public class RequestFields {
   public static final String VOTE_VALUE = "VoteValue";
   public static final String DEVICE_TOKEN = "DeviceToken";
   public static final String BATCH_NUMBER = "BatchNumber";
-  public static final String NEW_EVENT = "NewEvent";
 }

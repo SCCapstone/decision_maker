@@ -39,7 +39,7 @@ public class User implements Model {
   @Setter(AccessLevel.NONE)
   private Map<String, Group> groupsLeft;
   @Setter(AccessLevel.NONE)
-  private Map<String, UserRatings> categoryRatings;
+  private Map<String, Map<String, Integer>> categoryRatings;
   @Setter(AccessLevel.NONE)
   private Map<String, String> ownedCategories;
   @Setter(AccessLevel.NONE)
@@ -75,7 +75,7 @@ public class User implements Model {
     modelAsMap.putIfAbsent(APP_SETTINGS, this.appSettings.asMap());
     modelAsMap.putIfAbsent(GROUPS, this.getGroupsMap());
     modelAsMap.putIfAbsent(GROUPS_LEFT, this.getGroupsLeftMap());
-    modelAsMap.putIfAbsent(CATEGORY_RATINGS, this.getCategoryRatingsMap());
+    modelAsMap.putIfAbsent(CATEGORY_RATINGS, this.categoryRatings);
     modelAsMap.putIfAbsent(OWNED_CATEGORIES, this.ownedCategories);
     modelAsMap.putIfAbsent(FAVORITE_OF, this.favoriteOf);
     modelAsMap.putIfAbsent(FAVORITES, this.getFavoritesMap());
@@ -115,17 +115,6 @@ public class User implements Model {
             HashMap::new));
   }
 
-  public Map<String, Map<String, Object>> getCategoryRatingsMap() {
-    if (this.categoryRatings == null) {
-      return null;
-    }
-
-    return this.categoryRatings.entrySet().stream().collect(
-        collectingAndThen(
-            toMap(Entry::getKey, (Map.Entry<String, UserRatings> e) -> e.getValue().asMap()),
-            HashMap::new));
-  }
-
   public Member asMember() {
     return new Member(this.displayName, this.icon);
   }
@@ -155,8 +144,16 @@ public class User implements Model {
     if (jsonMap != null) {
       this.categoryRatings = new HashMap<>();
       for (String categoryId : jsonMap.keySet()) {
-        this.categoryRatings.putIfAbsent(categoryId,
-            new UserRatings((Map<String, Object>) jsonMap.get(categoryId)));
+        final Map<String, Integer> choiceRatingsMapConverted = new HashMap<>();
+        final Map<String, Object> choiceRatingsMapRaw = (Map<String, Object>) jsonMap
+            .get(categoryId);
+
+        for (final String choiceId : choiceRatingsMapRaw.keySet()) {
+          choiceRatingsMapConverted
+              .put(choiceId, this.getIntFromObject(choiceRatingsMapRaw.get(choiceId)));
+        }
+
+        this.categoryRatings.putIfAbsent(categoryId, choiceRatingsMapConverted);
       }
     }
   }
@@ -194,5 +191,12 @@ public class User implements Model {
 
   public boolean pushEndpointArnIsSet() {
     return this.pushEndpointArn != null;
+  }
+
+  private Integer getIntFromObject(final Object input) {
+    if (input != null) {
+      return Integer.parseInt(input.toString());
+    }
+    return null;
   }
 }

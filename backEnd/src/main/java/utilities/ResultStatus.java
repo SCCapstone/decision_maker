@@ -25,17 +25,21 @@ public class ResultStatus<T> {
         + "\",\"resultMessage\":\"" + this.resultMessage + "\"}";
   }
 
-  public ResultStatus applyResultStatus(ResultStatus otherStatus) {
+  public ResultStatus<T> applyResultStatus(ResultStatus otherStatus) {
     this.success = this.success && otherStatus.success;
     this.resultMessage += "\n\n" + otherStatus.resultMessage;
     return this;
   }
 
-  public static ResultStatus successful(final String resultMessage) {
-    return new ResultStatus(true, resultMessage);
+  public static <T> ResultStatus<T> successful(final String resultMessage) {
+    return new ResultStatus<>(true, resultMessage);
   }
 
-  public static ResultStatus failure(final String resultMessage) {
-    return new ResultStatus(false, resultMessage);
+  public static <T> ResultStatus<T> successful(final String resultMessage, final T data) {
+    return new ResultStatus<>(true, data, resultMessage);
+  }
+
+  public static <T> ResultStatus<T> failure(final String resultMessage) {
+    return new ResultStatus<>(false, resultMessage);
   }
 }

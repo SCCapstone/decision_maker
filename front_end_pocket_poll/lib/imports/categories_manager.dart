@@ -18,9 +18,7 @@ class CategoriesManager {
   static final String CATEGORY_NAME = "CategoryName";
   static final String CHOICES = "Choices";
   static final String GROUPS = "Groups";
-  static final String NEXT_CHOICE_NO = "NextChoiceNo";
   static final String OWNER = "Owner";
-  static final String CATEGORY_VERSION = "Version";
 
   static final String editAction = "editCategory";
   static final String createAction = "newCategory";
@@ -29,7 +27,7 @@ class CategoriesManager {
 
   static Future<ResultStatus<Category>> addOrEditCategory(
       String categoryName,
-      Map<String, String> choiceLabels,
+      Map<String, int> choiceLabels,
       Map<String, String> choiceRatings,
       Category category) async {
     ResultStatus<Category> retVal = new ResultStatus(success: false);

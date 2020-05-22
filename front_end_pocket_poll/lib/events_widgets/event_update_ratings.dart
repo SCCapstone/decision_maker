@@ -101,13 +101,6 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                     EdgeInsets.all(MediaQuery.of(context).size.height * .015),
                 child: Column(
                   children: <Widget>[
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Text(
-                        "Version: ${this.category.categoryVersion}",
-                        key: Key("event_update_ratings:version_text"),
-                      ),
-                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .004),
@@ -295,7 +288,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
   }
 
   // fetches category and ratings from DB for the given category version
-  Future<Null> getCategory() async {
+  Future<void> getCategory() async {
     ResultStatus<CategoryRatingTuple> resultStatus =
         await GroupsManager.getEventCategory(widget.groupId, widget.eventId);
     if (resultStatus.success) {
@@ -318,15 +311,21 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
 
-    for (String choiceId in this.category.choices.keys) {
+    for (final String choiceLabel in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
-      labelController.text = this.category.choices[choiceId];
+      labelController.text = choiceLabel;
       // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
       rateController.text = this.defaultRate.toString();
 
+      //check to see if the above assumption of having no ratings was true
+      if (this.originalRatings != null &&
+          this.originalRatings.containsKey(choiceLabel)) {
+        rateController.text = this.originalRatings[choiceLabel];
+      }
+
       ChoiceRow choice = new ChoiceRow(
-        choiceId,
+        this.category.choices[choiceLabel],
         false,
         labelController,
         rateController,
@@ -334,16 +333,8 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
       );
       this.choiceRows.add(choice);
     }
-    // populate the choices with the ratings if they exist in the user object
-    if (this.originalRatings != null) {
-      for (ChoiceRow choiceRow in this.choiceRows) {
-        if (originalRatings.containsKey(choiceRow.choiceNumber)) {
-          choiceRow.rateController.text =
-              originalRatings[choiceRow.choiceNumber];
-        }
-      }
-    }
-    // sort by rows choice number
+
+    // sort the rows by choice number
     this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
     setOriginalValues();
   }
@@ -356,7 +347,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
   void setOriginalValues() {
     this.originalRatings.clear();
     for (ChoiceRow choiceRow in this.choiceRows) {
-      this.originalRatings.putIfAbsent(choiceRow.choiceNumber,
+      this.originalRatings.putIfAbsent(choiceRow.labelController.text,
           () => choiceRow.rateController.text.toString());
     }
   }
@@ -369,13 +360,13 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
 
     Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
     for (ChoiceRow choiceRow in this.choiceRows) {
-      ratesToSave.putIfAbsent(
-          choiceRow.choiceNumber, () => choiceRow.rateController.text.trim());
+      ratesToSave.putIfAbsent(choiceRow.labelController.text,
+          () => choiceRow.rateController.text.trim());
     }
 
     showLoadingDialog(this.context, "Saving changes...", true);
     ResultStatus resultStatus = await UsersManager.updateUserChoiceRatings(
-        this.category.categoryId, this.category.categoryVersion, ratesToSave);
+        this.category.categoryId, ratesToSave);
     Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
     if (resultStatus.success) {

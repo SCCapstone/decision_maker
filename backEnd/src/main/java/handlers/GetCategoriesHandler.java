@@ -15,7 +15,6 @@ import models.EventWithCategoryChoices;
 import models.Group;
 import models.GroupWithCategoryChoices;
 import models.User;
-import models.UserRatings;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -148,12 +147,11 @@ public class GetCategoriesHandler implements ApiRequestHandler {
         if (event.getCategoryChoices() != null) {
           final Category category = this.dbAccessManager.getCategory(event.getCategoryId());
           category.setChoices(event.getCategoryChoices());
-          category.setVersion(event.getCategoryVersion());
           category.setCategoryName(event.getCategoryName());
 
           final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
-              user.getCategoryRatings().getOrDefault(category.getCategoryId(), new UserRatings())
-                  .getRatings(category.getVersion()));
+              user.getCategoryRatings()
+                  .getOrDefault(category.getCategoryId(), Collections.emptyMap()));
 
           resultStatus = ResultStatus.successful(
               JsonUtils
@@ -186,8 +184,7 @@ public class GetCategoriesHandler implements ApiRequestHandler {
       try {
         final Category category = this.dbAccessManager.getCategory(id);
         final CategoryRatingTuple categoryRatingTuple = new CategoryRatingTuple(category,
-            user.getCategoryRatings().getOrDefault(id, new UserRatings())
-                .getRatings(category.getVersion()));
+            user.getCategoryRatings().getOrDefault(id, Collections.emptyMap()));
         categoryRatingTuples.add(categoryRatingTuple.asMap());
       } catch (final NullPointerException npe) {
         //log warning assuming it's just a bad category id
