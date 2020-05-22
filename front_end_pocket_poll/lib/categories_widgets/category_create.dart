@@ -48,7 +48,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = this.defaultRate.toString();
 
-    this.nextChoiceValue = 2;
+    this.nextChoiceValue = 1;
 
     ChoiceRow choice = new ChoiceRow(
         0, true, initLabelController, initRatingController,
