@@ -6,16 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
-  static Color pocketPollDarkGreen = Color(0xff106126);
-  static Color pocketPollGreen = Color(0xff5ce080);
-  static Color pocketPollGrey = Color(0xff303030);
   static String username;
   static User user;
-  static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
-  static DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
   static GetGroupResponse currentGroupResponse = new GetGroupResponse();
   static List<CategoryRatingTuple> cachedCategories =
       new List<CategoryRatingTuple>();
+  static bool fireBaseConfigured = false;
+  static Function refreshGroupPage;
   static SharedPreferences sharedPrefs;
 
   static Future<SharedPreferences> getSharedPrefs() async {
@@ -25,9 +22,11 @@ class Globals {
     return sharedPrefs;
   }
 
-  static bool fireBaseConfigured = false;
-  static Function refreshGroupPage;
-  static ThemeData darkTheme = ThemeData(
+  // *************** CONSTANTS ***************
+  static final Color pocketPollDarkGreen = Color(0xff106126);
+  static final Color pocketPollGreen = Color(0xff5ce080);
+  static final Color pocketPollGrey = Color(0xff303030);
+  static final ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
       primarySwatch: Colors.green,
       primaryColor: pocketPollGreen,
@@ -36,7 +35,7 @@ class Globals {
       buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
-  static ThemeData lightTheme = ThemeData(
+  static final ThemeData lightTheme = ThemeData(
       brightness: Brightness.light,
       primarySwatch: Colors.green,
       primaryColor: pocketPollGreen,
@@ -44,8 +43,11 @@ class Globals {
       primaryColorDark: Colors.black,
       primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
+  static final DateFormat formatterWithTime =
+      DateFormat.yMMMMd("en_US").add_jm();
+  static final DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
 
-  // *************** CONSTANTS ***************
+  // sorting variables
   static final int dateNewestSort = 0;
   static final int alphabeticalSort = 1;
   static final int alphabeticalReverseSort = 2;
@@ -60,6 +62,8 @@ class Globals {
   static final String defaultChoiceSortString = "Original Insert Order";
   static final String choiceRatingAscendingSortString = "Ratings (Ascending)";
   static final String choiceRatingDescendingSortString = "Ratings (Descending)";
+
+  // notification actions
   static final String removedFromGroupAction = "removedFromGroup";
   static final String addedToGroupAction = "addedToGroup";
   static final String eventCreatedAction = "eventCreated";
@@ -97,6 +101,7 @@ class Globals {
   static final int minChoiceRating = 0;
   static final int maxChoiceRatingDigits = maxChoiceRating.toString().length;
 
+  // URLS
   static final String resetPasswordUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://pocket-poll-documents.s3.us-east-2.amazonaws.com/login_redirect.html";
   static final String imageUrl =

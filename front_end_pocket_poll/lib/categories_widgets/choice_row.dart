@@ -17,6 +17,7 @@ class ChoiceRow extends StatefulWidget {
   final bool isNewChoice;
   final bool displayLabelHelpText;
   final bool displayRateHelpText;
+  final Map<String, String> unratedChoices; // only used if not the owner
 
   ChoiceRow(this.choiceNumber, this.isOwner, this.labelController,
       this.rateController,
@@ -28,6 +29,7 @@ class ChoiceRow extends StatefulWidget {
       this.displayLabelHelpText,
       this.displayRateHelpText,
       this.originalLabel,
+      this.unratedChoices,
       this.originalRating})
       : super(key: key);
 
@@ -44,12 +46,14 @@ class _ChoiceRowState extends State<ChoiceRow> {
   FocusNode ratingsFocus;
   int rating;
   bool changed;
+  bool choiceNotRated;
   String labelHelpText;
   final String ratingRegex =
       "[${Globals.minChoiceRating}-${Globals.maxChoiceRating}]";
 
   @override
   void initState() {
+    print(widget.key.toString() + widget.choiceNumber.toString() + widget.focusNode.toString());
     this.changed = false;
     // used in editing a category as the owner
     if (widget.displayLabelHelpText) {
@@ -73,6 +77,13 @@ class _ChoiceRowState extends State<ChoiceRow> {
       this.changed = true;
     }
 
+    if (widget.unratedChoices != null &&
+        widget.unratedChoices.containsKey(widget.originalLabel)) {
+      this.choiceNotRated = true;
+    } else {
+      this.choiceNotRated = false;
+    }
+
     this.rating = int.parse(widget.rateController.text);
     this.ratingsFocus = new FocusNode();
     this.ratingsFocus.addListener(() {
@@ -92,6 +103,11 @@ class _ChoiceRowState extends State<ChoiceRow> {
       children: <Widget>[
         Flexible(
           child: TextFormField(
+            onTap: () {
+              setState(() {
+                this.choiceNotRated = false;
+              });
+            },
             onChanged: (val) {
               widget.checkForChange();
               if (val == widget.originalLabel) {
@@ -106,7 +122,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             },
             validator: validChoiceName,
             maxLength: Globals.maxChoiceNameLength,
-            enabled: widget.isOwner,
+            readOnly: !widget.isOwner,
             textCapitalization: TextCapitalization.sentences,
             focusNode: widget.focusNode,
             controller: widget.labelController,
@@ -115,7 +131,9 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelStyle: TextStyle(fontSize: 15),
                 labelText: "Choice",
                 counterText: "",
-                helperText: (this.changed) ? this.labelHelpText : " "),
+                helperText: (widget.displayLabelHelpText && this.changed)
+                    ? this.labelHelpText
+                    : " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(this.ratingsFocus);
@@ -145,6 +163,11 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 });
               }
             },
+            onTap: () {
+              setState(() {
+                this.choiceNotRated = false;
+              });
+            },
             validator: validChoiceRating,
             focusNode: this.ratingsFocus,
             controller: widget.rateController,
@@ -161,7 +184,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelText:
                     "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
                 counterText: "",
-                helperText: (this.changed && !widget.isOwner)
+                helperText: (widget.displayRateHelpText && this.changed)
                     ? this.labelHelpText
                     : " "),
           ),
@@ -181,14 +204,16 @@ class _ChoiceRowState extends State<ChoiceRow> {
         ),
         Visibility(
           // if user is not the category owner, they cannot delete choices
-          visible: !widget.isOwner,
+          visible: this.choiceNotRated,
           child: IconButton(
-            color: Colors.yellow,
-            icon: Icon(Icons.new_releases),
-            tooltip: "New Choice",
+            color: Colors.greenAccent,
+            icon: Icon(Icons.priority_high),
+            tooltip: "Unrated Choice",
             key: Key("choice_row:new_choice_button:${widget.choiceNumber}"),
             onPressed: () {
-              // TODO remove from user object
+              setState(() {
+                this.choiceNotRated = false;
+              });
             },
           ),
         )

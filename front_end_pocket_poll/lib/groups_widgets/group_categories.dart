@@ -53,7 +53,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           centerTitle: false,
           title: (widget.canEdit)
               ? Text(
-                  "Add Categories",
+                  "Select Categories",
                   style: TextStyle(
                       fontSize:
                           DefaultTextStyle.of(context).style.fontSize * 0.5),
@@ -245,7 +245,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         appBar: AppBar(
             centerTitle: false,
             title: (widget.canEdit)
-                ? Text("Add Categories",
+                ? Text("Select Categories",
                     style: TextStyle(
                         fontSize:
                             DefaultTextStyle.of(context).style.fontSize * 0.5))
@@ -262,7 +262,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         appBar: AppBar(
             centerTitle: false,
             title: (widget.canEdit)
-                ? Text("Add Categories",
+                ? Text("Select Categories",
                     style: TextStyle(
                         fontSize:
                             DefaultTextStyle.of(context).style.fontSize * 0.5))

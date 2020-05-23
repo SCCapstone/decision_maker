@@ -31,7 +31,6 @@ class AboutDescriptions {
       <p>Categories themselves are independent entities. They must be “attached” to a group in order to be used in events. This is done by going to the group settings page and adding any of the categories that you own.</p>
       <p>When your friends add categories to a group you are in you can edit your ratings for their choices from the group settings page. E.g. If Bob has ‘Coffee Shops’ as a choice you can go in and set your rating so your opinion is leveraged anytime that category is used for an event.</p>
       <p>Categories owned by you or your friends can be copied. When copied you gain ownership of the new category and can add or remove as many choices as you please.</p>
-      <p>Categories can change and this is tracked by a category's version. When an event is created it takes a snapshot of the selected category, so check the version number to know if you need to update your ratings.</p>
     """);
 
   static Html groups = Html(data: """

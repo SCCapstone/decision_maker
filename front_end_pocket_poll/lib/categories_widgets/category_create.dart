@@ -53,7 +53,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
     ChoiceRow choice = new ChoiceRow(
         0, true, initLabelController, initRatingController,
         focusNode: new FocusNode(),
-        key: Key(0.toString()),
+        key: Key("0"),
         displayLabelHelpText: false,
         displayRateHelpText: false,
         deleteChoice: (choice) => deleteChoice(choice));
@@ -114,6 +114,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                           controller: this.categoryNameController,
                           textCapitalization: TextCapitalization.sentences,
                           style: TextStyle(fontSize: 20),
+                          textInputAction: TextInputAction.next,
                           onFieldSubmitted: (val) {
                             // on enter, move focus to the first choice row
                             if (this.choiceRows.isNotEmpty) {
@@ -132,18 +133,13 @@ class _CategoryCreateState extends State<CategoryCreate> {
                       ),
                       Expanded(
                         child: Scrollbar(
-                          child: CustomScrollView(
-                            shrinkWrap: false,
-                            controller: this.scrollController,
-                            slivers: <Widget>[
-                              SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                      (context, index) =>
-                                          this.choiceRows[index],
-                                      childCount: this.choiceRows.length),
-                                  key: Key("category_create:choice_list"))
-                            ],
-                          ),
+                          child: ListView.builder(
+                              shrinkWrap: false,
+                              controller: this.scrollController,
+                              itemCount: this.choiceRows.length,
+                              itemBuilder: (context, index) =>
+                                  this.choiceRows[index],
+                              key: Key("category_create:choice_list")),
                         ),
                       ),
                       Padding(
@@ -174,11 +170,11 @@ class _CategoryCreateState extends State<CategoryCreate> {
                   deleteChoice: (choice) => deleteChoice(choice),
                   displayLabelHelpText: false,
                   displayRateHelpText: false,
-                  key: Key(this.nextChoiceValue.toString()),
+                  key: UniqueKey(),
                   focusNode: focusNode,
                 );
+                this.choiceRows.insert(0, choice);
                 setState(() {
-                  this.choiceRows.insert(0, choice);
                   this.nextChoiceValue++;
                 });
                 SchedulerBinding.instance

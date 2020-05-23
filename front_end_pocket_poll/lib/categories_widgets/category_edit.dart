@@ -33,12 +33,12 @@ class _CategoryEditState extends State<CategoryEdit> {
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
   final int defaultRate = 3;
-  final Random rng =
-      new Random(); // used for ensuring choice rows have unique keys
 
-  // preserve the original labels for copying purposes and detecting if changes were made
-  Map<String, int> originalLabels;
-  Map<String, String> originalRatings;
+  Map<String, int>
+      originalLabels; // for copying purposes and detecting if changes were made
+  Map<String, String>
+      originalRatings; // used if the user is not owner of the category
+  Map<String, String> unratedChoices;
   bool autoValidate;
   bool isCategoryOwner;
   bool loading;
@@ -64,6 +64,7 @@ class _CategoryEditState extends State<CategoryEdit> {
   void initState() {
     this.originalLabels = new LinkedHashMap<String, int>();
     this.originalRatings = new LinkedHashMap<String, String>();
+    this.unratedChoices = new LinkedHashMap<String, String>();
     this.autoValidate = false;
     this.categoryChanged = false;
     this.loading = true;
@@ -165,7 +166,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                             Container(
                               width: MediaQuery.of(context).size.width * .7,
                               child: TextFormField(
-                                enabled: this.isCategoryOwner,
+                                readOnly: !this.isCategoryOwner,
                                 onChanged: (val) => checkForChanges(),
                                 maxLength: Globals.maxCategoryNameLength,
                                 controller: this.categoryNameController,
@@ -347,7 +348,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                           new TextEditingController();
                       rateController.text = this.defaultRate.toString();
 
-                      ChoiceRow choice = new ChoiceRow(
+                      ChoiceRow choiceRow = new ChoiceRow(
                         this.nextChoiceNum,
                         this.isCategoryOwner,
                         labelController,
@@ -355,20 +356,20 @@ class _CategoryEditState extends State<CategoryEdit> {
                         deleteChoice: (choice) => deleteChoice(choice),
                         focusNode: focusNode,
                         checkForChange: checkForChanges,
-                        displayLabelHelpText: true,
-                        displayRateHelpText: false,
-                        key: Key(this.nextChoiceNum.toString()),
+                        displayLabelHelpText: this.isCategoryOwner,
+                        displayRateHelpText: !this.isCategoryOwner,
+                        key: UniqueKey(),
                         isNewChoice: true,
                         originalLabel: "",
                         originalRating: "3",
                       );
-                      this.choiceRows.insert(0, choice);
+                      this.choiceRows.insert(0, choiceRow);
                       setState(() {
                         this.nextChoiceNum++;
                         checkForChanges();
                       });
                       SchedulerBinding.instance
-                          .addPostFrameCallback((_) => scrollToTop(choice));
+                          .addPostFrameCallback((_) => scrollToTop(choiceRow));
                     }
                   },
                 ),
@@ -444,8 +445,27 @@ class _CategoryEditState extends State<CategoryEdit> {
       confirmLeavePage();
       return false;
     } else {
+      if (this.unratedChoices != null && this.unratedChoices.isNotEmpty) {
+        updateUnratedChoices();
+      }
       return true;
     }
+  }
+
+  /*
+    If the user has never opened this category before, then they won't have any ratings. The
+    category could have also changed too with new/edited labels. So we indicate which choices they
+    don't have ratings for.
+
+    If they never updated from the default rating, we assume that the rating is
+    fine for them and perform a blind send to the backend to add the default ratings to their user ratings.
+   */
+  void updateUnratedChoices() {
+    Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
+    for (String choiceLabel in this.unratedChoices.keys) {
+      ratesToSave.putIfAbsent(choiceLabel, () => this.defaultRate.toString());
+    }
+    UsersManager.updateUserChoiceRatings(this.category.categoryId, ratesToSave);
   }
 
   /*
@@ -523,6 +543,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                 child: Text("YES"),
                 key: Key("category_edit:confirm_leave_page_button"),
                 onPressed: () {
+                  updateUnratedChoices();
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                   Navigator.of(this.context).pop();
                 },
@@ -611,6 +632,10 @@ class _CategoryEditState extends State<CategoryEdit> {
       if (this.originalRatings != null &&
           this.originalRatings.containsKey(choiceLabel)) {
         rateController.text = this.originalRatings[choiceLabel];
+      } else {
+        this
+            .unratedChoices
+            .putIfAbsent(choiceLabel, () => this.defaultRate.toString());
       }
       ChoiceRow choice = new ChoiceRow(
         this.category.choices[choiceLabel],
@@ -620,11 +645,12 @@ class _CategoryEditState extends State<CategoryEdit> {
         deleteChoice: (choice) => deleteChoice(choice),
         checkForChange: checkForChanges,
         originalLabel: choiceLabel,
-        displayLabelHelpText: true,
-        displayRateHelpText: false,
-        isNewChoice: false,
-        key: Key(i.toString() + this.rng.nextInt(10000000).toString()),
         originalRating: rateController.text.toString(),
+        displayLabelHelpText: this.isCategoryOwner,
+        displayRateHelpText: !this.isCategoryOwner,
+        isNewChoice: false,
+        unratedChoices: unratedChoices,
+        key: UniqueKey(),
       );
       this.choiceRows.add(choice);
       i++;
@@ -711,6 +737,13 @@ class _CategoryEditState extends State<CategoryEdit> {
           choiceRow.labelController.text.trim(), () => choiceRow.choiceNumber);
       ratesToSave.putIfAbsent(choiceRow.labelController.text.trim(),
           () => choiceRow.rateController.text.trim());
+
+      if (this
+          .unratedChoices
+          .containsKey(choiceRow.labelController.text.trim())) {
+        // choice is no longer unrated, so make sure new rating isn't overwritten with default rate
+        this.unratedChoices.remove(choiceRow.labelController.text.trim());
+      }
       if (!names.add(choiceRow.labelController.text.trim())) {
         duplicates = true;
       }
