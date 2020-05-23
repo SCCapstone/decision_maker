@@ -59,6 +59,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
         this.labelHelpText = "(Modified)";
       }
     } else {
+      // if you aren't the owner, you shouldn't ever get text underneath the label text input
       this.labelHelpText = " ";
     }
 

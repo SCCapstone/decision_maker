@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -10,6 +11,7 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
@@ -31,6 +33,8 @@ class _CategoryEditState extends State<CategoryEdit> {
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
   final int defaultRate = 3;
+  final Random rng =
+      new Random(); // used for ensuring choice rows have unique keys
 
   // preserve the original labels for copying purposes and detecting if changes were made
   Map<String, int> originalLabels;
@@ -207,7 +211,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                                         this.sortVal = result;
                                         setState(() {
                                           // VERY IMPORTANT. Cannot rebuild rows otherwise original order is messed up
-                                          sortChoiceRows(
+                                          Sorter.sortChoiceRows(
                                               this.choiceRows, this.sortVal);
                                         });
                                       }
@@ -595,6 +599,7 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.categoryNameController.text = this.category.categoryName;
 
     int i = 0;
+
     for (String choiceLabel in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = choiceLabel;
@@ -607,7 +612,6 @@ class _CategoryEditState extends State<CategoryEdit> {
           this.originalRatings.containsKey(choiceLabel)) {
         rateController.text = this.originalRatings[choiceLabel];
       }
-
       ChoiceRow choice = new ChoiceRow(
         this.category.choices[choiceLabel],
         this.isCategoryOwner,
@@ -619,7 +623,7 @@ class _CategoryEditState extends State<CategoryEdit> {
         displayLabelHelpText: true,
         displayRateHelpText: false,
         isNewChoice: false,
-        key: Key(i.toString()),
+        key: Key(i.toString() + this.rng.nextInt(10000000).toString()),
         originalRating: rateController.text.toString(),
       );
       this.choiceRows.add(choice);
@@ -628,7 +632,7 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.nextChoiceNum = i;
 
     // sort by rows by choice number
-    sortChoiceRows(this.choiceRows, this.sortVal);
+    Sorter.sortChoiceRows(this.choiceRows, this.sortVal);
     setOriginalValues();
   }
 
@@ -725,6 +729,9 @@ class _CategoryEditState extends State<CategoryEdit> {
       if (resultStatus.success) {
         setState(() {
           setOriginalValues();
+          // need to re-initialize to get rid of all the modified tags on the choice rows
+          this.choiceRows.clear();
+          initializeChoiceRows();
           this.categoryChanged = false;
         });
       } else {
@@ -760,8 +767,11 @@ class _CategoryEditState extends State<CategoryEdit> {
               (cat) => cat.category.categoryId == this.category.categoryId);
           Globals.cachedCategories.add(new CategoryRatingTuple(
               category: this.category, ratings: ratesToSave));
+          setOriginalValues();
+          // need to re-initialize to get rid of all the modified tags on the choice rows
+          this.choiceRows.clear();
+          initializeChoiceRows();
           setState(() {
-            setOriginalValues();
             this.categoryChanged = false;
           });
         } else {
