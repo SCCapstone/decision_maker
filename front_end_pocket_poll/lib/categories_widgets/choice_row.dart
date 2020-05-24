@@ -17,7 +17,7 @@ class ChoiceRow extends StatefulWidget {
   final bool isNewChoice;
   final bool displayLabelHelpText;
   final bool displayRateHelpText;
-  final Map<String, bool> unratedChoices; // only used if not the owner
+  final Map<String, bool> unratedChoices; // used if not the owner of category
 
   ChoiceRow(this.choiceNumber, this.isOwner, this.labelController,
       this.rateController,
@@ -45,7 +45,7 @@ class ChoiceRow extends StatefulWidget {
 class _ChoiceRowState extends State<ChoiceRow> {
   FocusNode ratingsFocus;
   int rating;
-  bool changed;
+  bool choiceChanged;
   bool choiceNotRated;
   String labelHelpText;
   final String ratingRegex =
@@ -53,27 +53,26 @@ class _ChoiceRowState extends State<ChoiceRow> {
 
   @override
   void initState() {
-    this.changed = false;
-    // used in editing a category as the owner
+    this.choiceChanged = false;
     if (widget.displayLabelHelpText) {
+      // used if the owner is editing a category
+      this.labelHelpText = " ";
       if (widget.isNewChoice) {
         this.labelHelpText = "(New)";
       } else {
         this.labelHelpText = "(Modified)";
       }
-    } else {
-      // if you aren't the owner, you shouldn't ever get text underneath the label text input
-      this.labelHelpText = " ";
     }
 
-    // used for when updating ratings from an event
+    // used for when updating ratings
     if (widget.displayRateHelpText) {
       this.labelHelpText = "(Modified)";
     }
+
     // do this check since choice row can get destroyed at any point, if destroyed still want to show if new/modified
     if (widget.labelController.text.toString() != widget.originalLabel ||
         widget.rateController.text.toString() != widget.originalRating) {
-      this.changed = true;
+      this.choiceChanged = true;
     }
 
     if (widget.unratedChoices != null &&
@@ -117,11 +116,11 @@ class _ChoiceRowState extends State<ChoiceRow> {
               widget.checkForChange();
               if (val == widget.originalLabel) {
                 setState(() {
-                  this.changed = false;
+                  this.choiceChanged = false;
                 });
               } else {
                 setState(() {
-                  this.changed = true;
+                  this.choiceChanged = true;
                 });
               }
             },
@@ -136,7 +135,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelStyle: TextStyle(fontSize: 15),
                 labelText: "Choice",
                 counterText: "",
-                helperText: (widget.displayLabelHelpText && this.changed)
+                helperText: (widget.displayLabelHelpText && this.choiceChanged)
                     ? this.labelHelpText
                     : " "),
             key: Key("choice_row:choice_name_input:${widget.choiceNumber}"),
@@ -158,13 +157,14 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 hideKeyboard(context);
                 widget.checkForChange();
               }
+              // detect whether label text should be shown
               if (this.rating.toString() == widget.originalRating) {
                 setState(() {
-                  this.changed = false;
+                  this.choiceChanged = false;
                 });
               } else {
                 setState(() {
-                  this.changed = true;
+                  this.choiceChanged = true;
                 });
               }
             },
@@ -193,7 +193,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 labelText:
                     "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
                 counterText: "",
-                helperText: (widget.displayRateHelpText && this.changed)
+                helperText: (widget.displayRateHelpText && this.choiceChanged)
                     ? this.labelHelpText
                     : " "),
           ),

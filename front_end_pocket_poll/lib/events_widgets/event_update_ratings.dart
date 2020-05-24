@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -155,7 +154,6 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                                     // prevents useless updates if sort didn't change
                                     this.sortVal = result;
                                     setState(() {
-                                      // VERY IMPORTANT. Cannot rebuild rows otherwise original order is messed up
                                       Sorter.sortChoiceRows(
                                           this.choiceRows, this.sortVal);
                                     });
@@ -427,7 +425,6 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
         this.unratedChoices.putIfAbsent(choiceLabel, () => true);
       }
 
-      // TODO put map of choices that don't have rating in this constructor
       ChoiceRow choice = new ChoiceRow(
         this.category.choices[choiceLabel],
         false,
@@ -439,7 +436,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
         displayLabelHelpText: false,
         isNewChoice: false,
         checkForChange: checkForChanges,
-        unratedChoices: unratedChoices,
+        unratedChoices: this.unratedChoices,
         key: UniqueKey(),
       );
       this.choiceRows.add(choice);

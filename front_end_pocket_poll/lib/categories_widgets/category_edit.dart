@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -33,11 +32,9 @@ class _CategoryEditState extends State<CategoryEdit> {
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
-  Map<String, int>
-      originalLabels; // for copying purposes and detecting if changes were made
-  Map<String, String>
-      originalRatings; // used if the user is not owner of the category
-  Map<String, bool> unratedChoices;
+  Map<String, int> originalLabels; // for copying and detecting changes
+  Map<String, String> originalRatings;
+  Map<String, bool> unratedChoices; // used if user not owner of the category
   bool autoValidate;
   bool isCategoryOwner;
   bool loading;
@@ -210,7 +207,6 @@ class _CategoryEditState extends State<CategoryEdit> {
                                         // prevents useless updates if sort didn't change
                                         this.sortVal = result;
                                         setState(() {
-                                          // VERY IMPORTANT. Cannot rebuild rows otherwise original order is messed up
                                           Sorter.sortChoiceRows(
                                               this.choiceRows, this.sortVal);
                                         });
@@ -349,7 +345,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                         key: UniqueKey(),
                         isNewChoice: true,
                         originalLabel: "",
-                        originalRating: "3",
+                        originalRating: Globals.defaultChoiceRating.toString(),
                       );
                       this.choiceRows.insert(0, choiceRow);
                       setState(() {
@@ -608,8 +604,6 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
 
-    int i = 0;
-
     for (String choiceLabel in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = choiceLabel;
@@ -637,13 +631,12 @@ class _CategoryEditState extends State<CategoryEdit> {
         displayLabelHelpText: this.isCategoryOwner,
         displayRateHelpText: !this.isCategoryOwner,
         isNewChoice: false,
-        unratedChoices: unratedChoices,
+        unratedChoices: this.unratedChoices,
         key: UniqueKey(),
       );
       this.choiceRows.add(choice);
-      i++;
     }
-    this.nextChoiceNum = i;
+    this.nextChoiceNum = this.choiceRows.length;
 
     // sort by rows by choice number
     Sorter.sortChoiceRows(this.choiceRows, this.sortVal);

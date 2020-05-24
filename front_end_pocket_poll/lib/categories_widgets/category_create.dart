@@ -44,7 +44,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
   @override
   void initState() {
     this.autoValidate = false;
-    // we are creating a category, so thus the first choice value is already set to 1
+    // we are creating a category, so thus the first choice value is already set to 0
     TextEditingController initLabelController = new TextEditingController();
     TextEditingController initRatingController = new TextEditingController();
     initRatingController.text = Globals.defaultChoiceRating.toString();
@@ -145,7 +145,6 @@ class _CategoryCreateState extends State<CategoryCreate> {
                                 // prevents useless updates if sort didn't change
                                 this.sortVal = result;
                                 setState(() {
-                                  // VERY IMPORTANT. Cannot rebuild rows otherwise original order is messed up
                                   Sorter.sortChoiceRows(
                                       this.choiceRows, this.sortVal);
                                 });

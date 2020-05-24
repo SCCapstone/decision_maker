@@ -35,16 +35,6 @@ class _GroupCategoryRowState extends State<GroupCategoryRow> {
     } else if (widget.categoryRatingTuple == null && widget.category != null) {
       this.activeUserOwnsCategory = true;
     }
-
-//    if (!this.activeUserOwnsCategory) {
-//      // find the num of other groups this category is in if its not active user's category
-//      for (String groupId in Globals.user.groups.keys) {
-//        if (widget.categoryRatingTuple.category.groups.containsKey(groupId) &&
-//            groupId != Globals.currentGroupResponse.group.groupId) {
-//          this.groupNum++;
-//        }
-//      }
-//    }
     super.initState();
   }
 
