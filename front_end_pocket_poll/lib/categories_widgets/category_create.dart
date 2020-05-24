@@ -22,7 +22,6 @@ class _CategoryCreateState extends State<CategoryCreate> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
-  final int defaultRate = 3;
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
@@ -46,7 +45,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
     // we are creating a category, so thus the first choice value is already set to 1
     TextEditingController initLabelController = new TextEditingController();
     TextEditingController initRatingController = new TextEditingController();
-    initRatingController.text = this.defaultRate.toString();
+    initRatingController.text = Globals.defaultChoiceRating.toString();
 
     this.nextChoiceValue = 1;
 
@@ -160,7 +159,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                     new TextEditingController();
                 TextEditingController rateController =
                     new TextEditingController();
-                rateController.text = this.defaultRate.toString();
+                rateController.text = Globals.defaultChoiceRating.toString();
 
                 ChoiceRow choice = new ChoiceRow(
                   this.nextChoiceValue,

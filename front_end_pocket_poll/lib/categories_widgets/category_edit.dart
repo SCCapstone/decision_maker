@@ -32,13 +32,12 @@ class _CategoryEditState extends State<CategoryEdit> {
       new TextEditingController();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
-  final int defaultRate = 3;
 
   Map<String, int>
       originalLabels; // for copying purposes and detecting if changes were made
   Map<String, String>
       originalRatings; // used if the user is not owner of the category
-  Map<String, String> unratedChoices;
+  Map<String, bool> unratedChoices;
   bool autoValidate;
   bool isCategoryOwner;
   bool loading;
@@ -64,7 +63,7 @@ class _CategoryEditState extends State<CategoryEdit> {
   void initState() {
     this.originalLabels = new LinkedHashMap<String, int>();
     this.originalRatings = new LinkedHashMap<String, String>();
-    this.unratedChoices = new LinkedHashMap<String, String>();
+    this.unratedChoices = new LinkedHashMap<String, bool>();
     this.autoValidate = false;
     this.categoryChanged = false;
     this.loading = true;
@@ -346,7 +345,8 @@ class _CategoryEditState extends State<CategoryEdit> {
                           new TextEditingController();
                       TextEditingController rateController =
                           new TextEditingController();
-                      rateController.text = this.defaultRate.toString();
+                      rateController.text =
+                          Globals.defaultChoiceRating.toString();
 
                       ChoiceRow choiceRow = new ChoiceRow(
                         this.nextChoiceNum,
@@ -463,7 +463,8 @@ class _CategoryEditState extends State<CategoryEdit> {
   void updateUnratedChoices() {
     Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
     for (String choiceLabel in this.unratedChoices.keys) {
-      ratesToSave.putIfAbsent(choiceLabel, () => this.defaultRate.toString());
+      ratesToSave.putIfAbsent(
+          choiceLabel, () => Globals.defaultChoiceRating.toString());
     }
     UsersManager.updateUserChoiceRatings(this.category.categoryId, ratesToSave);
   }
@@ -626,16 +627,15 @@ class _CategoryEditState extends State<CategoryEdit> {
       labelController.text = choiceLabel;
       // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
-      rateController.text = this.defaultRate.toString();
+      rateController.text = Globals.defaultChoiceRating.toString();
 
       //check to see if the above assumption of having no ratings was true
       if (this.originalRatings != null &&
           this.originalRatings.containsKey(choiceLabel)) {
         rateController.text = this.originalRatings[choiceLabel];
       } else {
-        this
-            .unratedChoices
-            .putIfAbsent(choiceLabel, () => this.defaultRate.toString());
+        // "true" because user hasn't indicated that they've acknowledged the choice
+        this.unratedChoices.putIfAbsent(choiceLabel, () => true);
       }
       ChoiceRow choice = new ChoiceRow(
         this.category.choices[choiceLabel],

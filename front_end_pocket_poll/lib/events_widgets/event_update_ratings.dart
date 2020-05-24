@@ -27,10 +27,9 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final TextEditingController categoryNameController =
       new TextEditingController();
-  final int defaultRate = 3;
 
   Map<String, String> originalRatings;
-  Map<String, String> unratedChoices;
+  Map<String, bool> unratedChoices;
   bool isCategoryOwner;
   bool loading;
   bool errorLoading;
@@ -46,14 +45,13 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
       choiceRow.rateController.dispose();
       choiceRow.labelController.dispose();
     }
-    // TODO send to backend the ratings as a blind send
     super.dispose();
   }
 
   @override
   void initState() {
     this.originalRatings = new LinkedHashMap<String, String>();
-    this.unratedChoices = new LinkedHashMap<String, String>();
+    this.unratedChoices = new LinkedHashMap<String, bool>();
     this.ratingsChanged = false;
     this.loading = true;
     this.errorLoading = false;
@@ -349,7 +347,8 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
   void updateUnratedChoices() {
     Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
     for (String choiceLabel in this.unratedChoices.keys) {
-      ratesToSave.putIfAbsent(choiceLabel, () => this.defaultRate.toString());
+      ratesToSave.putIfAbsent(
+          choiceLabel, () => Globals.defaultChoiceRating.toString());
     }
     UsersManager.updateUserChoiceRatings(this.category.categoryId, ratesToSave);
   }
@@ -429,16 +428,15 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
       labelController.text = choiceLabel;
       // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
-      rateController.text = this.defaultRate.toString();
+      rateController.text = Globals.defaultChoiceRating.toString();
 
       //check to see if the above assumption of having no ratings was true
       if (this.originalRatings != null &&
           this.originalRatings.containsKey(choiceLabel)) {
         rateController.text = this.originalRatings[choiceLabel];
       } else {
-        this
-            .unratedChoices
-            .putIfAbsent(choiceLabel, () => this.defaultRate.toString());
+        // "true" because user hasn't indicated that they've acknowledged the choice
+        this.unratedChoices.putIfAbsent(choiceLabel, () => true);
       }
 
       // TODO put map of choices that don't have rating in this constructor

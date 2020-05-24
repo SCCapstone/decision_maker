@@ -46,6 +46,7 @@ class Globals {
   static final DateFormat formatterWithTime =
       DateFormat.yMMMMd("en_US").add_jm();
   static final DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
+  static final int defaultChoiceRating = 3;
 
   // sorting variables
   static final int dateNewestSort = 0;

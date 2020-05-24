@@ -17,7 +17,7 @@ class ChoiceRow extends StatefulWidget {
   final bool isNewChoice;
   final bool displayLabelHelpText;
   final bool displayRateHelpText;
-  final Map<String, String> unratedChoices; // only used if not the owner
+  final Map<String, bool> unratedChoices; // only used if not the owner
 
   ChoiceRow(this.choiceNumber, this.isOwner, this.labelController,
       this.rateController,
@@ -53,7 +53,6 @@ class _ChoiceRowState extends State<ChoiceRow> {
 
   @override
   void initState() {
-    print(widget.key.toString() + widget.choiceNumber.toString() + widget.focusNode.toString());
     this.changed = false;
     // used in editing a category as the owner
     if (widget.displayLabelHelpText) {
@@ -78,7 +77,9 @@ class _ChoiceRowState extends State<ChoiceRow> {
     }
 
     if (widget.unratedChoices != null &&
-        widget.unratedChoices.containsKey(widget.originalLabel)) {
+        widget.unratedChoices.containsKey(widget.originalLabel) &&
+        widget.unratedChoices[widget.originalLabel]) {
+      // only show alert icon if user hasn't acknowledged the new choices
       this.choiceNotRated = true;
     } else {
       this.choiceNotRated = false;
@@ -105,6 +106,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: TextFormField(
             onTap: () {
               setState(() {
+                widget.unratedChoices
+                    .update(widget.originalLabel, (_) => false);
                 this.choiceNotRated = false;
               });
             },
@@ -165,6 +168,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
             },
             onTap: () {
               setState(() {
+                widget.unratedChoices
+                    .update(widget.originalLabel, (_) => false);
                 this.choiceNotRated = false;
               });
             },
@@ -212,6 +217,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
             key: Key("choice_row:new_choice_button:${widget.choiceNumber}"),
             onPressed: () {
               setState(() {
+                widget.unratedChoices
+                    .update(widget.originalLabel, (_) => false);
                 this.choiceNotRated = false;
               });
             },
