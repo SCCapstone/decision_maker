@@ -187,16 +187,4 @@ class CategoriesManager {
     }
     return retVal;
   }
-
-  // sorts a list of categories alphabetically (ascending)
-  static void sortByAlphaAscending(List<Category> categories) {
-    categories.sort((a, b) =>
-        a.categoryName.toUpperCase().compareTo(b.categoryName.toUpperCase()));
-  }
-
-  // sorts a list of categories alphabetically (descending)
-  static void sortByAlphaDescending(List<Category> categories) {
-    categories.sort((a, b) =>
-        b.categoryName.toUpperCase().compareTo(a.categoryName.toUpperCase()));
-  }
 }

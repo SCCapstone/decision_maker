@@ -69,7 +69,7 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.loading = true;
     this.errorLoading = false;
     this.sortVal =
-        Globals.defaultChoiceSort; // TODO use value from user settings
+        Globals.alphabeticalSort; // TODO use value from user settings
 
     if (widget.categoryRatingTuple != null) {
       // means we are editing from the group category page
@@ -218,18 +218,6 @@ class _CategoryEditState extends State<CategoryEdit> {
                                     },
                                     itemBuilder: (BuildContext context) =>
                                         <PopupMenuEntry<int>>[
-                                      PopupMenuItem<int>(
-                                        value: Globals.defaultChoiceSort,
-                                        child: Text(
-                                          Globals.defaultChoiceSortString,
-                                          style: TextStyle(
-                                              // if it is selected, underline it
-                                              decoration: (this.sortVal ==
-                                                      Globals.defaultChoiceSort)
-                                                  ? TextDecoration.underline
-                                                  : null),
-                                        ),
-                                      ),
                                       PopupMenuItem<int>(
                                         value: Globals.alphabeticalSort,
                                         child: Text(

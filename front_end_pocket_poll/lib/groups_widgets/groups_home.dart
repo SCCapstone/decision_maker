@@ -15,6 +15,7 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/widgets/login_page.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
 import 'package:front_end_pocket_poll/models/message.dart';
@@ -93,7 +94,7 @@ class _GroupsHomeState extends State<GroupsHome>
               }
             }
             this.searchGroups = temp;
-            GroupsManager.sortByAlphaAscending(this.searchGroups);
+            Sorter.sortGroupRowsByAlphaAscending(this.searchGroups);
           });
         }
       } else {
@@ -118,7 +119,7 @@ class _GroupsHomeState extends State<GroupsHome>
               }
             }
             this.searchGroupsLeft = temp;
-            GroupsManager.sortByAlphaAscending(this.searchGroups);
+            Sorter.sortGroupRowsByAlphaAscending(this.searchGroups);
           });
         }
       }
@@ -595,13 +596,13 @@ class _GroupsHomeState extends State<GroupsHome>
 
   void setGroupsHomeSort(bool sendUpdate) {
     if (this.groupHomeSortVal == Globals.dateNewestSort) {
-      GroupsManager.sortByDateNewest(this.totalGroups);
+      Sorter.sortGroupRowsByDateNewest(this.totalGroups);
     } else if (this.groupHomeSortVal == Globals.dateOldestSort) {
-      GroupsManager.sortByDateOldest(totalGroups);
+      Sorter.sortGroupRowsByDateOldest(totalGroups);
     } else if (this.groupHomeSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(this.totalGroups);
+      Sorter.sortGroupRowsByAlphaDescending(this.totalGroups);
     } else if (this.groupHomeSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(this.totalGroups);
+      Sorter.sortGroupRowsByAlphaAscending(this.totalGroups);
     }
     if (sendUpdate) {
       // blind send, don't care if it doesn't work since it's just a sort value
@@ -614,9 +615,9 @@ class _GroupsHomeState extends State<GroupsHome>
   void setGroupsLeftSort() {
     // don't need to update DB, separate method so there isn't a break in consistency
     if (this.groupsLeftSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(this.groupsLeft);
+      Sorter.sortGroupRowsByAlphaDescending(this.groupsLeft);
     } else if (this.groupsLeftSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(this.groupsLeft);
+      Sorter.sortGroupRowsByAlphaAscending(this.groupsLeft);
     }
   }
 

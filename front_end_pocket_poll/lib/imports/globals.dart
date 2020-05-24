@@ -53,14 +53,12 @@ class Globals {
   static final int alphabeticalSort = 1;
   static final int alphabeticalReverseSort = 2;
   static final int dateOldestSort = 3;
-  static final int defaultChoiceSort = 4;
-  static final int choiceRatingAscending = 5;
-  static final int choiceRatingDescending = 6;
+  static final int choiceRatingAscending = 4;
+  static final int choiceRatingDescending = 5;
   static final String alphabeticalSortString = "Alphabetical (A-Z)";
   static final String alphabeticalReverseSortString = "Alphabetical (Z-A)";
   static final String dateNewestSortString = "Date Modified (Newest)";
   static final String dateOldestSortString = "Date Modified (Oldest)";
-  static final String defaultChoiceSortString = "Original Insert Order";
   static final String choiceRatingAscendingSortString = "Ratings (Ascending)";
   static final String choiceRatingDescendingSortString = "Ratings (Descending)";
 

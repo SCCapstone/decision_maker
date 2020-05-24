@@ -55,7 +55,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
     this.ratingsChanged = false;
     this.loading = true;
     this.errorLoading = false;
-    this.sortVal = Globals.defaultChoiceSort; // TODO get from user object
+    this.sortVal = Globals.alphabeticalSort; // TODO get from user object
     getCategory();
     super.initState();
   }
@@ -163,18 +163,6 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                                 },
                                 itemBuilder: (BuildContext context) =>
                                     <PopupMenuEntry<int>>[
-                                  PopupMenuItem<int>(
-                                    value: Globals.defaultChoiceSort,
-                                    child: Text(
-                                      Globals.defaultChoiceSortString,
-                                      style: TextStyle(
-                                          // if it is selected, underline it
-                                          decoration: (this.sortVal ==
-                                                  Globals.defaultChoiceSort)
-                                              ? TextDecoration.underline
-                                              : null),
-                                    ),
-                                  ),
                                   PopupMenuItem<int>(
                                     value: Globals.alphabeticalSort,
                                     child: Text(

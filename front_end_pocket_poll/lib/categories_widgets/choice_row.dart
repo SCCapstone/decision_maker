@@ -106,8 +106,10 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: TextFormField(
             onTap: () {
               setState(() {
-                widget.unratedChoices
-                    .update(widget.originalLabel, (_) => false);
+                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                  widget.unratedChoices
+                      .update(widget.originalLabel, (_) => false);
+                }
                 this.choiceNotRated = false;
               });
             },
@@ -168,8 +170,10 @@ class _ChoiceRowState extends State<ChoiceRow> {
             },
             onTap: () {
               setState(() {
-                widget.unratedChoices
-                    .update(widget.originalLabel, (_) => false);
+                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                  widget.unratedChoices
+                      .update(widget.originalLabel, (_) => false);
+                }
                 this.choiceNotRated = false;
               });
             },
@@ -217,8 +221,10 @@ class _ChoiceRowState extends State<ChoiceRow> {
             key: Key("choice_row:new_choice_button:${widget.choiceNumber}"),
             onPressed: () {
               setState(() {
-                widget.unratedChoices
-                    .update(widget.originalLabel, (_) => false);
+                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                  widget.unratedChoices
+                      .update(widget.originalLabel, (_) => false);
+                }
                 this.choiceNotRated = false;
               });
             },
