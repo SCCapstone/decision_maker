@@ -406,34 +406,6 @@ class GroupsManager {
     return retVal;
   }
 
-  // sorts a list of groups by date modified (ascending)
-  static void sortByDateNewest(List<UserGroup> groups) {
-    groups.sort((a, b) => DateTime.parse(b.lastActivity)
-        .compareTo(DateTime.parse(a.lastActivity)));
-  }
-
-  // sorts a list of groups by date modified (descending)
-  static void sortByDateOldest(List<UserGroup> groups) {
-    groups.sort((a, b) => DateTime.parse(a.lastActivity)
-        .compareTo(DateTime.parse(b.lastActivity)));
-  }
-
-  // sorts a list of groups alphabetically (ascending)
-  static void sortByAlphaAscending(List<GroupInterface> groups) {
-    groups.sort((a, b) => a
-        .getGroupName()
-        .toUpperCase()
-        .compareTo(b.getGroupName().toUpperCase()));
-  }
-
-  // sorts a list of groups alphabetically (descending)
-  static void sortByAlphaDescending(List<GroupInterface> groups) {
-    groups.sort((a, b) => b
-        .getGroupName()
-        .toUpperCase()
-        .compareTo(a.getGroupName().toUpperCase()));
-  }
-
   static Future<ResultStatus<List<CategoryRatingTuple>>> getAllCategoriesList(
       final String groupId) async {
     ResultStatus<List<CategoryRatingTuple>> retVal =

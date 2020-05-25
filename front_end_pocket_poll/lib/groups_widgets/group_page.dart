@@ -283,7 +283,7 @@ class _GroupPageState extends State<GroupPage>
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
-            updatePage,
+            populateEventStages,
             refreshList);
         this.eventCards[considerTab].add(eventCard);
       } else if (eventMode == EventsManager.votingMode) {
@@ -291,7 +291,7 @@ class _GroupPageState extends State<GroupPage>
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
-            updatePage,
+            populateEventStages,
             refreshList);
         this.eventCards[votingTab].add(eventCard);
       } else if (eventMode == EventsManager.occurringMode) {
@@ -299,7 +299,7 @@ class _GroupPageState extends State<GroupPage>
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
-            updatePage,
+            populateEventStages,
             refreshList);
         this.eventCards[occurringTab].add(eventCard);
       } else if (eventMode == EventsManager.closedMode) {
@@ -307,7 +307,7 @@ class _GroupPageState extends State<GroupPage>
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.events[eventId],
             eventId,
-            updatePage,
+            populateEventStages,
             refreshList);
         this.eventCards[closedTab].add(eventCard);
       }
@@ -410,7 +410,7 @@ class _GroupPageState extends State<GroupPage>
 
   /*
     Re-builds the page.
-    It's own method to allow the mark all seen button to disappear if marking the last event seen
+    It's own method to prevent exceptions if user clicks out of the page quickly
    */
   void updatePage() {
     if (!this.mounted) {

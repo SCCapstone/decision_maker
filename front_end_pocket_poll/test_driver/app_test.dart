@@ -89,7 +89,7 @@ void main() {
       await driver.enterText(getRandomCategoryName());
 
       // enter a choice
-      var choiceNameField = find.byValueKey("choice_row:choice_name_input:1");
+      var choiceNameField = find.byValueKey("choice_row:choice_name_input:0");
       await driver.tap(choiceNameField);
       await driver.enterText(getRandomChoiceName());
 
@@ -113,7 +113,7 @@ void main() {
       await driver.enterText(getRandomCategoryName());
 
       // edit a choice
-      var choiceNameField = find.byValueKey("choice_row:choice_name_input:1");
+      var choiceNameField = find.byValueKey("choice_row:choice_name_input:0");
       await driver.tap(choiceNameField);
       await driver.enterText(getRandomChoiceName());
 
@@ -507,7 +507,7 @@ void main() {
       await driver.waitFor(find.byValueKey("event_update_ratings:scaffold"));
 
       // update the first rating
-      var ratingInput = find.byValueKey("choice_row:rating_input:1");
+      var ratingInput = find.byValueKey("choice_row:rating_input:0");
       await driver.tap(ratingInput);
       await driver.enterText("5");
 

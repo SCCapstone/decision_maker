@@ -166,7 +166,7 @@ public class UpdateUserSettingsHandler implements ApiRequestHandler {
         this.updateActiveUsersFavorites(newFavorites, oldUser.getFavorites().keySet(), activeUser);
 
         final UserForApiResponse updatedUser = new UserForApiResponse(
-            this.dbAccessManager.getUserItem(activeUser));
+            this.dbAccessManager.getUserNoCache(activeUser));
         resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(updatedUser.asMap()));
       } else {
         metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));

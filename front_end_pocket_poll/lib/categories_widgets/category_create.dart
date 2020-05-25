@@ -8,6 +8,7 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
@@ -22,11 +23,11 @@ class _CategoryCreateState extends State<CategoryCreate> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController categoryNameController =
       new TextEditingController();
-  final int defaultRate = 3;
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
 
   int nextChoiceValue;
+  int sortVal;
   bool autoValidate;
 
   @override
@@ -43,16 +44,20 @@ class _CategoryCreateState extends State<CategoryCreate> {
   @override
   void initState() {
     this.autoValidate = false;
-    // we are creating a category, so thus the first choice value is already set to 1
+    // we are creating a category, so thus the first choice value is already set to 0
     TextEditingController initLabelController = new TextEditingController();
     TextEditingController initRatingController = new TextEditingController();
-    initRatingController.text = this.defaultRate.toString();
+    initRatingController.text = Globals.defaultChoiceRating.toString();
 
     this.nextChoiceValue = 1;
+    this.sortVal = Globals.alphabeticalSort;
 
     ChoiceRow choice = new ChoiceRow(
         0, true, initLabelController, initRatingController,
         focusNode: new FocusNode(),
+        key: UniqueKey(),
+        displayLabelHelpText: false,
+        displayRateHelpText: false,
         deleteChoice: (choice) => deleteChoice(choice));
     this.choiceRows.add(choice); // provide an initial choice to edit
     super.initState();
@@ -102,26 +107,100 @@ class _CategoryCreateState extends State<CategoryCreate> {
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .008),
                       ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * .7,
-                        child: TextFormField(
-                          maxLength: Globals.maxCategoryNameLength,
-                          validator: validCategoryName,
-                          key: Key("category_create:category_name_input"),
-                          controller: this.categoryNameController,
-                          textCapitalization: TextCapitalization.sentences,
-                          style: TextStyle(fontSize: 20),
-                          onFieldSubmitted: (val) {
-                            // on enter, move focus to the first choice row
-                            if (this.choiceRows.isNotEmpty) {
-                              this.choiceRows[0].requestFocus(context);
-                            }
-                          },
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Category Name",
-                              counterText: ""),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Container(
+                            width: MediaQuery.of(context).size.width * .7,
+                            child: TextFormField(
+                              maxLength: Globals.maxCategoryNameLength,
+                              validator: validCategoryName,
+                              key: Key("category_create:category_name_input"),
+                              controller: this.categoryNameController,
+                              textCapitalization: TextCapitalization.sentences,
+                              style: TextStyle(fontSize: 20),
+                              textInputAction: TextInputAction.next,
+                              onFieldSubmitted: (val) {
+                                // on enter, move focus to the first choice row
+                                if (this.choiceRows.isNotEmpty) {
+                                  this.choiceRows[0].requestFocus(context);
+                                }
+                              },
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Category Name",
+                                  counterText: ""),
+                            ),
+                          ),
+                          PopupMenuButton<int>(
+                            child: Icon(
+                              Icons.sort,
+                              size: MediaQuery.of(context).size.height * .04,
+                            ),
+                            key: Key("category_create:sort_button"),
+                            tooltip: "Sort Choices",
+                            onSelected: (int result) {
+                              if (this.sortVal != result) {
+                                hideKeyboard(context);
+                                // prevents useless updates if sort didn't change
+                                this.sortVal = result;
+                                setState(() {
+                                  Sorter.sortChoiceRows(
+                                      this.choiceRows, this.sortVal);
+                                });
+                              }
+                            },
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<int>>[
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalSort,
+                                child: Text(
+                                  Globals.alphabeticalSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.sortVal ==
+                                              Globals.alphabeticalSort)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.alphabeticalReverseSort,
+                                child: Text(
+                                    Globals.alphabeticalReverseSortString,
+                                    style: TextStyle(
+                                        // if it is selected, underline it
+                                        decoration: (this.sortVal ==
+                                                Globals.alphabeticalReverseSort)
+                                            ? TextDecoration.underline
+                                            : null)),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.choiceRatingAscending,
+                                child: Text(
+                                    Globals.choiceRatingAscendingSortString,
+                                    style: TextStyle(
+                                        // if it is selected, underline it
+                                        decoration: (this.sortVal ==
+                                                Globals.choiceRatingAscending)
+                                            ? TextDecoration.underline
+                                            : null)),
+                              ),
+                              PopupMenuItem<int>(
+                                value: Globals.choiceRatingDescending,
+                                child: Text(
+                                  Globals.choiceRatingDescendingSortString,
+                                  style: TextStyle(
+                                      // if it is selected, underline it
+                                      decoration: (this.sortVal ==
+                                              Globals.choiceRatingDescending)
+                                          ? TextDecoration.underline
+                                          : null),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                       Padding(
                         padding: EdgeInsets.all(
@@ -129,18 +208,13 @@ class _CategoryCreateState extends State<CategoryCreate> {
                       ),
                       Expanded(
                         child: Scrollbar(
-                          child: CustomScrollView(
-                            shrinkWrap: false,
-                            controller: this.scrollController,
-                            slivers: <Widget>[
-                              SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                      (context, index) =>
-                                          this.choiceRows[index],
-                                      childCount: this.choiceRows.length),
-                                  key: Key("category_create:choice_list"))
-                            ],
-                          ),
+                          child: ListView.builder(
+                              shrinkWrap: false,
+                              controller: this.scrollController,
+                              itemCount: this.choiceRows.length,
+                              itemBuilder: (context, index) =>
+                                  this.choiceRows[index],
+                              key: Key("category_create:choice_list")),
                         ),
                       ),
                       Padding(
@@ -161,7 +235,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                     new TextEditingController();
                 TextEditingController rateController =
                     new TextEditingController();
-                rateController.text = this.defaultRate.toString();
+                rateController.text = Globals.defaultChoiceRating.toString();
 
                 ChoiceRow choice = new ChoiceRow(
                   this.nextChoiceValue,
@@ -169,26 +243,29 @@ class _CategoryCreateState extends State<CategoryCreate> {
                   labelController,
                   rateController,
                   deleteChoice: (choice) => deleteChoice(choice),
+                  displayLabelHelpText: false,
+                  displayRateHelpText: false,
+                  key: UniqueKey(),
                   focusNode: focusNode,
                 );
+                this.choiceRows.insert(0, choice);
                 setState(() {
-                  this.choiceRows.add(choice);
                   this.nextChoiceValue++;
                 });
                 SchedulerBinding.instance
-                    .addPostFrameCallback((_) => scrollToBottom(choice));
+                    .addPostFrameCallback((_) => scrollToTop(choice));
               },
             )),
       ),
     );
   }
 
-  // scrolls to the bottom of the listview of all the choices
-  void scrollToBottom(ChoiceRow choiceRow) async {
+  // scrolls to the top of the listview of all the choices
+  void scrollToTop(ChoiceRow choiceRow) async {
     await this
         .scrollController
         .animateTo(
-          this.scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(microseconds: 100),
           curve: Curves.easeOut,
         )
@@ -281,6 +358,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
         });
       } else {
         showLoadingDialog(this.context, "Creating category...", true);
+        // TODO need to add sort value in request
         ResultStatus<Category> resultStatus =
             await CategoriesManager.addOrEditCategory(
                 this.categoryNameController.text.trim(),

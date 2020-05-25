@@ -10,6 +10,7 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 
@@ -30,17 +31,17 @@ class _CategoryEditState extends State<CategoryEdit> {
       new TextEditingController();
   final List<ChoiceRow> choiceRows = new List<ChoiceRow>();
   final ScrollController scrollController = new ScrollController();
-  final int defaultRate = 3;
 
-  // preserve the original labels for copying purposes and detecting if changes were made
-  Map<String, int> originalLabels;
+  Map<String, int> originalLabels; // for copying and detecting changes
   Map<String, String> originalRatings;
+  Map<String, bool> unratedChoices; // used if user not owner of the category
   bool autoValidate;
   bool isCategoryOwner;
   bool loading;
   bool errorLoading;
   bool categoryChanged;
   int nextChoiceNum;
+  int sortVal;
   Widget errorWidget;
   Category category;
 
@@ -59,10 +60,13 @@ class _CategoryEditState extends State<CategoryEdit> {
   void initState() {
     this.originalLabels = new LinkedHashMap<String, int>();
     this.originalRatings = new LinkedHashMap<String, String>();
+    this.unratedChoices = new LinkedHashMap<String, bool>();
     this.autoValidate = false;
     this.categoryChanged = false;
     this.loading = true;
     this.errorLoading = false;
+    this.sortVal =
+        Globals.alphabeticalSort; // TODO use value from user settings
 
     if (widget.categoryRatingTuple != null) {
       // means we are editing from the group category page
@@ -95,7 +99,7 @@ class _CategoryEditState extends State<CategoryEdit> {
       // category not cached so fetch from DB
       getCategory();
     } else {
-      buildChoiceRows();
+      initializeChoiceRows();
     }
     super.initState();
   }
@@ -153,43 +157,120 @@ class _CategoryEditState extends State<CategoryEdit> {
                           padding: EdgeInsets.all(
                               MediaQuery.of(context).size.height * .004),
                         ),
-                        Stack(
+                        Row(
                           children: <Widget>[
-                            Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * .7,
-                                child: TextFormField(
-                                  enabled: this.isCategoryOwner,
-                                  onChanged: (val) => checkForChanges(),
-                                  maxLength: Globals.maxCategoryNameLength,
-                                  controller: this.categoryNameController,
-                                  validator: (value) {
-                                    return validCategoryName(value.trim(),
-                                        categoryId: widget.category.categoryId);
-                                  },
-                                  key: Key("category_edit:category_name_input"),
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  style: TextStyle(fontSize: 20),
-                                  decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: "Category Name",
-                                      counterText: ""),
-                                ),
+                            Container(
+                              width: MediaQuery.of(context).size.width * .7,
+                              child: TextFormField(
+                                readOnly: !this.isCategoryOwner,
+                                onChanged: (val) => checkForChanges(),
+                                maxLength: Globals.maxCategoryNameLength,
+                                controller: this.categoryNameController,
+                                validator: (value) {
+                                  return validCategoryName(value.trim(),
+                                      categoryId: widget.category.categoryId);
+                                },
+                                key: Key("category_edit:category_name_input"),
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                style: TextStyle(fontSize: 20),
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Category Name",
+                                    counterText: ""),
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                icon: Icon(Icons.content_copy),
-                                key: Key("category_edit:copy_button"),
-                                tooltip: "Copy Category",
-                                onPressed: () {
-                                  copyPopup();
-                                },
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  IconButton(
+                                    icon: Icon(Icons.content_copy),
+                                    key: Key("category_edit:copy_button"),
+                                    tooltip: "Copy Category",
+                                    onPressed: () {
+                                      copyPopup();
+                                    },
+                                  ),
+                                  PopupMenuButton<int>(
+                                    child: Icon(
+                                      Icons.sort,
+                                      size: MediaQuery.of(context).size.height *
+                                          .04,
+                                    ),
+                                    key: Key("category_edit:sort_button"),
+                                    tooltip: "Sort Choices",
+                                    onSelected: (int result) {
+                                      if (this.sortVal != result) {
+                                        hideKeyboard(context);
+                                        // prevents useless updates if sort didn't change
+                                        this.sortVal = result;
+                                        setState(() {
+                                          Sorter.sortChoiceRows(
+                                              this.choiceRows, this.sortVal);
+                                        });
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<int>>[
+                                      PopupMenuItem<int>(
+                                        value: Globals.alphabeticalSort,
+                                        child: Text(
+                                          Globals.alphabeticalSortString,
+                                          style: TextStyle(
+                                              // if it is selected, underline it
+                                              decoration: (this.sortVal ==
+                                                      Globals.alphabeticalSort)
+                                                  ? TextDecoration.underline
+                                                  : null),
+                                        ),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.alphabeticalReverseSort,
+                                        child: Text(
+                                            Globals
+                                                .alphabeticalReverseSortString,
+                                            style: TextStyle(
+                                                // if it is selected, underline it
+                                                decoration: (this.sortVal ==
+                                                        Globals
+                                                            .alphabeticalReverseSort)
+                                                    ? TextDecoration.underline
+                                                    : null)),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.choiceRatingAscending,
+                                        child: Text(
+                                            Globals
+                                                .choiceRatingAscendingSortString,
+                                            style: TextStyle(
+                                                // if it is selected, underline it
+                                                decoration: (this.sortVal ==
+                                                        Globals
+                                                            .choiceRatingAscending)
+                                                    ? TextDecoration.underline
+                                                    : null)),
+                                      ),
+                                      PopupMenuItem<int>(
+                                        value: Globals.choiceRatingDescending,
+                                        child: Text(
+                                          Globals
+                                              .choiceRatingDescendingSortString,
+                                          style: TextStyle(
+                                              // if it is selected, underline it
+                                              decoration: (this.sortVal ==
+                                                      Globals
+                                                          .choiceRatingDescending)
+                                                  ? TextDecoration.underline
+                                                  : null),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            )
+                            ),
                           ],
                         ),
                         Visibility(
@@ -217,16 +298,12 @@ class _CategoryEditState extends State<CategoryEdit> {
                         ),
                         Expanded(
                           child: Scrollbar(
-                            child: CustomScrollView(
+                            child: ListView.builder(
                               controller: this.scrollController,
-                              slivers: <Widget>[
-                                SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                        (context, index) =>
-                                            this.choiceRows[index],
-                                        childCount: this.choiceRows.length),
-                                    key: Key("category_edit:choice_list"))
-                              ],
+                              key: Key("category_edit:choice_list"),
+                              itemBuilder: (context, index) =>
+                                  this.choiceRows[index],
+                              itemCount: this.choiceRows.length,
                             ),
                           ),
                         ),
@@ -252,20 +329,31 @@ class _CategoryEditState extends State<CategoryEdit> {
                           new TextEditingController();
                       TextEditingController rateController =
                           new TextEditingController();
-                      rateController.text = this.defaultRate.toString();
+                      rateController.text =
+                          Globals.defaultChoiceRating.toString();
 
-                      ChoiceRow choice = new ChoiceRow(this.nextChoiceNum,
-                          this.isCategoryOwner, labelController, rateController,
-                          deleteChoice: (choice) => deleteChoice(choice),
-                          focusNode: focusNode,
-                          checkForChange: checkForChanges);
+                      ChoiceRow choiceRow = new ChoiceRow(
+                        this.nextChoiceNum,
+                        this.isCategoryOwner,
+                        labelController,
+                        rateController,
+                        deleteChoice: (choice) => deleteChoice(choice),
+                        focusNode: focusNode,
+                        checkForChange: checkForChanges,
+                        displayLabelHelpText: this.isCategoryOwner,
+                        displayRateHelpText: !this.isCategoryOwner,
+                        key: UniqueKey(),
+                        isNewChoice: true,
+                        originalLabel: "",
+                        originalRating: Globals.defaultChoiceRating.toString(),
+                      );
+                      this.choiceRows.insert(0, choiceRow);
                       setState(() {
-                        this.choiceRows.add(choice);
                         this.nextChoiceNum++;
                         checkForChanges();
                       });
                       SchedulerBinding.instance
-                          .addPostFrameCallback((_) => scrollToBottom(choice));
+                          .addPostFrameCallback((_) => scrollToTop(choiceRow));
                     }
                   },
                 ),
@@ -275,12 +363,12 @@ class _CategoryEditState extends State<CategoryEdit> {
     }
   }
 
-  // scrolls to the bottom of the listview of all the choices
-  void scrollToBottom(ChoiceRow choiceRow) async {
+  // scrolls to the top of the listview of all the choices
+  void scrollToTop(ChoiceRow choiceRow) async {
     await this
         .scrollController
         .animateTo(
-          this.scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(microseconds: 100),
           curve: Curves.easeOut,
         )
@@ -341,8 +429,28 @@ class _CategoryEditState extends State<CategoryEdit> {
       confirmLeavePage();
       return false;
     } else {
+      if (this.unratedChoices != null && this.unratedChoices.isNotEmpty) {
+        updateUnratedChoices();
+      }
       return true;
     }
+  }
+
+  /*
+    If the user has never opened this category before, then they won't have any ratings. The
+    category could have also changed too with new/edited labels. So we indicate which choices they
+    don't have ratings for.
+
+    If they never updated from the default rating, we assume that the rating is
+    fine for them and perform a blind send to the backend to add the default ratings to their user ratings.
+   */
+  void updateUnratedChoices() {
+    Map<String, String> ratesToSave = new LinkedHashMap<String, String>();
+    for (String choiceLabel in this.unratedChoices.keys) {
+      ratesToSave.putIfAbsent(
+          choiceLabel, () => Globals.defaultChoiceRating.toString());
+    }
+    UsersManager.updateUserChoiceRatings(this.category.categoryId, ratesToSave);
   }
 
   /*
@@ -420,6 +528,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                 child: Text("YES"),
                 key: Key("category_edit:confirm_leave_page_button"),
                 onPressed: () {
+                  updateUnratedChoices();
                   Navigator.of(this.context, rootNavigator: true).pop('dialog');
                   Navigator.of(this.context).pop();
                 },
@@ -480,7 +589,7 @@ class _CategoryEditState extends State<CategoryEdit> {
           Globals.cachedCategories.removeAt(Globals.maxCategoryCacheSize - 1);
         }
       }
-      buildChoiceRows();
+      initializeChoiceRows();
     } else {
       this.errorLoading = true;
       this.errorWidget = categoriesError(resultStatus.errorMessage);
@@ -490,25 +599,26 @@ class _CategoryEditState extends State<CategoryEdit> {
     });
   }
 
-  // build choice rows and populate them with ratings if they exist for the category
-  void buildChoiceRows() {
+  // initialize choice rows and populate them with ratings if they exist for the category
+  void initializeChoiceRows() {
     this.isCategoryOwner = (this.category.owner == Globals.username);
     this.categoryNameController.text = this.category.categoryName;
 
-    int i = 0;
     for (String choiceLabel in this.category.choices.keys) {
       TextEditingController labelController = new TextEditingController();
       labelController.text = choiceLabel;
       // we assume the user has no ratings so put all ratings to default value
       TextEditingController rateController = new TextEditingController();
-      rateController.text = this.defaultRate.toString();
+      rateController.text = Globals.defaultChoiceRating.toString();
 
       //check to see if the above assumption of having no ratings was true
       if (this.originalRatings != null &&
           this.originalRatings.containsKey(choiceLabel)) {
         rateController.text = this.originalRatings[choiceLabel];
+      } else {
+        // "true" because user hasn't indicated that they've acknowledged the choice
+        this.unratedChoices.putIfAbsent(choiceLabel, () => true);
       }
-
       ChoiceRow choice = new ChoiceRow(
         this.category.choices[choiceLabel],
         this.isCategoryOwner,
@@ -516,14 +626,20 @@ class _CategoryEditState extends State<CategoryEdit> {
         rateController,
         deleteChoice: (choice) => deleteChoice(choice),
         checkForChange: checkForChanges,
+        originalLabel: choiceLabel,
+        originalRating: rateController.text.toString(),
+        displayLabelHelpText: this.isCategoryOwner,
+        displayRateHelpText: !this.isCategoryOwner,
+        isNewChoice: false,
+        unratedChoices: this.unratedChoices,
+        key: UniqueKey(),
       );
       this.choiceRows.add(choice);
-      i++;
     }
-    this.nextChoiceNum = i;
+    this.nextChoiceNum = this.choiceRows.length;
 
     // sort by rows by choice number
-    this.choiceRows.sort((a, b) => a.choiceNumber.compareTo(b.choiceNumber));
+    Sorter.sortChoiceRows(this.choiceRows, this.sortVal);
     setOriginalValues();
   }
 
@@ -602,6 +718,13 @@ class _CategoryEditState extends State<CategoryEdit> {
           choiceRow.labelController.text.trim(), () => choiceRow.choiceNumber);
       ratesToSave.putIfAbsent(choiceRow.labelController.text.trim(),
           () => choiceRow.rateController.text.trim());
+
+      if (this
+          .unratedChoices
+          .containsKey(choiceRow.labelController.text.trim())) {
+        // choice is no longer unrated, so make sure new rating isn't overwritten with default rate
+        this.unratedChoices.remove(choiceRow.labelController.text.trim());
+      }
       if (!names.add(choiceRow.labelController.text.trim())) {
         duplicates = true;
       }
@@ -620,6 +743,9 @@ class _CategoryEditState extends State<CategoryEdit> {
       if (resultStatus.success) {
         setState(() {
           setOriginalValues();
+          // need to re-initialize to get rid of all the modified tags on the choice rows
+          this.choiceRows.clear();
+          initializeChoiceRows();
           this.categoryChanged = false;
         });
       } else {
@@ -655,8 +781,11 @@ class _CategoryEditState extends State<CategoryEdit> {
               (cat) => cat.category.categoryId == this.category.categoryId);
           Globals.cachedCategories.add(new CategoryRatingTuple(
               category: this.category, ratings: ratesToSave));
+          setOriginalValues();
+          // need to re-initialize to get rid of all the modified tags on the choice rows
+          this.choiceRows.clear();
+          initializeChoiceRows();
           setState(() {
-            setOriginalValues();
             this.categoryChanged = false;
           });
         } else {

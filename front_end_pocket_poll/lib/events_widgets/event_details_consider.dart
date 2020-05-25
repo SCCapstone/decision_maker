@@ -291,6 +291,8 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
       Globals.currentGroupResponse.group.events[widget.eventId].optedIn
           .putIfAbsent(
               Globals.username, () => new Member.fromUser(Globals.user));
+      this.event.optedIn.putIfAbsent(
+          Globals.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.username,
           () => EventUserRow(
@@ -298,6 +300,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     } else {
       Globals.currentGroupResponse.group.events[widget.eventId].optedIn
           .remove(Globals.username);
+      this.event.optedIn.remove(Globals.username);
       this.userRows.remove(Globals.username);
     }
     setState(() {});
