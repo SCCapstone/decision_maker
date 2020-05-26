@@ -211,7 +211,6 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     } else {
                                       confirmLeaveGroup();
                                     }
-                                    // try
                                   } else if (result == this.muteAction) {
                                     if ((Globals
                                         .user
