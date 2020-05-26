@@ -140,7 +140,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   key: Key("group_settings:save_button"),
-                  textColor: Colors.black,
+                  textColor: Colors.white,
                   onPressed: () {
                     if (this.canEdit) {
                       attemptSave();
@@ -151,7 +151,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               Visibility(
                   visible: !this.canEdit,
                   child: IconButton(
-                      disabledColor: Colors.black,
+                      disabledColor: Colors.white,
                       icon: Icon(Icons.lock),
                       tooltip: "Group is locked")),
             ],
@@ -586,7 +586,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         this.icon = croppedImage;

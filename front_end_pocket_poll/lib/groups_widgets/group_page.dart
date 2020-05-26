@@ -161,7 +161,7 @@ class _GroupPageState extends State<GroupPage>
                       controller: this.tabController,
                       isScrollable: true,
                       indicatorWeight: 3,
-                      indicatorColor: Colors.blueAccent,
+                      indicatorColor: Colors.white,
                       tabs: this.tabs),
                 )
               ],

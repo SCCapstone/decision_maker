@@ -105,7 +105,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
           child: TextFormField(
             onTap: () {
               setState(() {
-                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                if (widget.unratedChoices != null &&
+                    widget.unratedChoices.containsKey(widget.originalLabel)) {
                   widget.unratedChoices
                       .update(widget.originalLabel, (_) => false);
                 }
@@ -170,7 +171,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
             },
             onTap: () {
               setState(() {
-                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                if (widget.unratedChoices != null &&
+                    widget.unratedChoices.containsKey(widget.originalLabel)) {
                   widget.unratedChoices
                       .update(widget.originalLabel, (_) => false);
                 }
@@ -215,13 +217,14 @@ class _ChoiceRowState extends State<ChoiceRow> {
           // if user is not the category owner, they cannot delete choices
           visible: this.choiceNotRated,
           child: IconButton(
-            color: Colors.greenAccent,
+            color: Colors.blueAccent,
             icon: Icon(Icons.priority_high),
             tooltip: "Unrated Choice",
             key: Key("choice_row:new_choice_button:${widget.choiceNumber}"),
             onPressed: () {
               setState(() {
-                if (widget.unratedChoices.containsKey(widget.originalLabel)) {
+                if (widget.unratedChoices != null &&
+                    widget.unratedChoices.containsKey(widget.originalLabel)) {
                   widget.unratedChoices
                       .update(widget.originalLabel, (_) => false);
                 }

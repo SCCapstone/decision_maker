@@ -88,7 +88,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   key: Key("category_create:save_button"),
-                  textColor: Colors.black,
+                  textColor: Colors.white,
                   onPressed: saveCategory,
                 ),
               ],

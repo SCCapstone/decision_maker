@@ -92,7 +92,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     key: Key("event_update_ratings:save_button"),
-                    textColor: Colors.black,
+                    textColor: Colors.white,
                     onPressed: saveRatings,
                   ),
                 ),

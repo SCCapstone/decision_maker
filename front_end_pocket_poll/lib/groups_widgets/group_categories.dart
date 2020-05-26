@@ -69,7 +69,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               child: Icon(
                 Icons.sort,
                 size: MediaQuery.of(context).size.height * .04,
-                color: Colors.black,
+                color: Colors.white,
               ),
               tooltip: "Sort Categories",
               onSelected: (int result) {

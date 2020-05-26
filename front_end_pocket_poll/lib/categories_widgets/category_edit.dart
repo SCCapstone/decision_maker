@@ -137,7 +137,7 @@ class _CategoryEditState extends State<CategoryEdit> {
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       key: Key("category_edit:save_button"),
-                      textColor: Colors.black,
+                      textColor: Colors.white,
                       onPressed: saveCategory,
                     ),
                   ),
