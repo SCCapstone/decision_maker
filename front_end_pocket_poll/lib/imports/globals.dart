@@ -23,7 +23,6 @@ class Globals {
   }
 
   // *************** CONSTANTS ***************
-  static final Color pocketPollDarkGreen = Color(0xff106126);
   static final Color pocketPollPrimary = Color(0xff70919f);
   static final Color pocketPollDarkBlue = Color(0xff0a2757);
   static final Color pocketPollGreen = Color(0xff5ce080);
@@ -46,7 +45,6 @@ class Globals {
         buttonColor: pocketPollDarkBlue, textTheme: ButtonTextTheme.primary),
     primaryColorDark: Colors.black,
     primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
-//      textTheme: TextTheme(body1: TextStyle(color: Colors.black))
   );
   static final DateFormat formatterWithTime =
       DateFormat.yMMMMd("en_US").add_jm();

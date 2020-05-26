@@ -630,6 +630,9 @@ void main() {
       await driver.waitFor(find.byValueKey("group_settings:scaffold"));
 
       // leave the group
+      var moreOptionsButton =
+          find.byValueKey("group_settings:more_icon_button");
+      await driver.tap(moreOptionsButton);
       var leaveGroupButton =
           find.byValueKey("group_settings:delete_group_button");
       await driver.tap(leaveGroupButton);
@@ -687,6 +690,9 @@ void main() {
       await driver.waitFor(find.byValueKey("group_settings:scaffold"));
 
       // delete the group
+      var moreOptionsButton =
+          find.byValueKey("group_settings:more_icon_button");
+      await driver.tap(moreOptionsButton);
       var deleteGroupButton =
           find.byValueKey("group_settings:delete_group_button");
       await driver.tap(deleteGroupButton);

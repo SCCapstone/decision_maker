@@ -25,6 +25,10 @@ class AppStart extends StatelessWidget {
     //stop the app from going landscape
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    // set bottom navigation bar to black
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.black,
+    ));
 
     return InternetCheck();
   }

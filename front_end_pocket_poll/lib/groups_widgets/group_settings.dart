@@ -6,6 +6,7 @@ import 'package:front_end_pocket_poll/groups_widgets/group_categories.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
@@ -50,6 +51,8 @@ class _GroupSettingsState extends State<GroupSettings> {
       new TextEditingController();
   final TextEditingController considerDurationController =
       new TextEditingController();
+  final int muteAction = 0;
+  final int leaveDeleteAction = 1;
 
   @override
   void dispose() {
@@ -170,22 +173,104 @@ class _GroupSettingsState extends State<GroupSettings> {
                     children: <Widget>[
                       Column(
                         children: [
-                          TextFormField(
-                            enabled: this.canEdit,
-                            maxLength: Globals.maxGroupNameLength,
-                            controller: this.groupNameController,
-                            validator: validGroupName,
-                            onChanged: (String arg) {
-                              this.groupName = arg.trim();
-                              showSaveButton();
-                            },
-                            onSaved: (String arg) {
-                              this.groupName = arg.trim();
-                            },
-                            key: Key("group_settings:group_name_input"),
-                            style: TextStyle(fontSize: 33),
-                            decoration: InputDecoration(
-                                labelText: "Group Name", counterText: ""),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: TextFormField(
+                                  enabled: this.canEdit,
+                                  maxLength: Globals.maxGroupNameLength,
+                                  controller: this.groupNameController,
+                                  validator: validGroupName,
+                                  onChanged: (String arg) {
+                                    this.groupName = arg.trim();
+                                    showSaveButton();
+                                  },
+                                  onSaved: (String arg) {
+                                    this.groupName = arg.trim();
+                                  },
+                                  key: Key("group_settings:group_name_input"),
+                                  style: TextStyle(fontSize: 33),
+                                  decoration: InputDecoration(
+                                      labelText: "Group Name", counterText: ""),
+                                ),
+                              ),
+                              PopupMenuButton<int>(
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size:
+                                      MediaQuery.of(context).size.height * .04,
+                                ),
+                                key: Key("group_settings:more_icon_button"),
+                                tooltip: "More Options",
+                                onCanceled: () => hideKeyboard(context),
+                                onSelected: (int result) {
+                                  hideKeyboard(context);
+                                  if (result == this.leaveDeleteAction) {
+                                    if (this.owner) {
+                                      confirmDeleteGroup();
+                                    } else {
+                                      confirmLeaveGroup();
+                                    }
+                                    // try
+                                  } else if (result == this.muteAction) {
+                                    if ((Globals
+                                        .user
+                                        .groups[Globals
+                                            .currentGroupResponse.group.groupId]
+                                        .muted)) {
+                                      // we're unmuting the group
+                                      UsersManager.setUserGroupMute(
+                                          Globals.currentGroupResponse.group
+                                              .groupId,
+                                          false);
+                                      Globals
+                                          .user
+                                          .groups[Globals.currentGroupResponse
+                                              .group.groupId]
+                                          .muted = false;
+                                    } else {
+                                      // we muting that fool
+                                      UsersManager.setUserGroupMute(
+                                          Globals.currentGroupResponse.group
+                                              .groupId,
+                                          true);
+                                      Globals
+                                          .user
+                                          .groups[Globals.currentGroupResponse
+                                              .group.groupId]
+                                          .muted = true;
+                                    }
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<int>>[
+                                  PopupMenuItem<int>(
+                                    value: this.muteAction,
+                                    child: Text(
+                                      (Globals
+                                              .user
+                                              .groups[Globals
+                                                  .currentGroupResponse
+                                                  .group
+                                                  .groupId]
+                                              .muted)
+                                          ? "Unmute"
+                                          : "Mute",
+                                    ),
+                                  ),
+                                  PopupMenuItem<int>(
+                                    value: this.leaveDeleteAction,
+                                    key: Key(
+                                        "group_settings:delete_group_button"),
+                                    child: Text(
+                                      (this.owner)
+                                          ? "Delete Group"
+                                          : "Leave Group",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           Padding(
                             padding: EdgeInsets.all(
@@ -453,26 +538,6 @@ class _GroupSettingsState extends State<GroupSettings> {
               ),
             ),
           ]),
-          bottomNavigationBar: BottomAppBar(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                RaisedButton(
-                  child: Text((this.owner) ? "Delete Group" : "Leave Group"),
-                  color: Colors.red,
-                  key: Key("group_settings:delete_group_button"),
-                  onPressed: () {
-                    if (this.owner) {
-                      confirmDeleteGroup();
-                    } else {
-                      confirmLeaveGroup();
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

@@ -198,9 +198,7 @@ class _GroupsHomeState extends State<GroupsHome>
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.white),
+                        style: TextStyle(fontSize: 24, color: Colors.white),
                       ),
                       onTap: () {
                         // close the drawer menu when clicked
@@ -283,7 +281,7 @@ class _GroupsHomeState extends State<GroupsHome>
                         if (Platform.isAndroid) {
                           Globals.fireBaseConfigured = false;
                           // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
-                          firebaseMessaging.deleteInstanceID();
+                          this.firebaseMessaging.deleteInstanceID();
                         }
                         Navigator.pushAndRemoveUntil(
                             context,
@@ -300,7 +298,7 @@ class _GroupsHomeState extends State<GroupsHome>
         appBar: AppBar(
           centerTitle: true,
           title: Visibility(
-            visible: !(searching),
+            visible: !(this.searching),
             child: AutoSizeText(
               "Pocket Poll",
               maxLines: 1,
