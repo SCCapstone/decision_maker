@@ -212,7 +212,7 @@ class _EventDetailsVotingState extends State<EventDetailsVoting> {
                     controller: this.pageController,
                     count: this.choices.length,
                     effect: SlideEffect(
-                        dotColor: Colors.grey, activeDotColor: Colors.green),
+                        dotColor: Colors.grey, activeDotColor: Colors.blueAccent),
                   )
                 ],
               ),
