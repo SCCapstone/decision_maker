@@ -69,7 +69,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               child: Icon(
                 Icons.sort,
                 size: MediaQuery.of(context).size.height * .04,
-                color: Colors.black,
+                color: Colors.white,
               ),
               tooltip: "Sort Categories",
               onSelected: (int result) {
@@ -206,7 +206,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   this.ownedCategoryRows.isNotEmpty),
               child: Padding(
                 padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .05),
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .02),
               ),
             ),
             Visibility(

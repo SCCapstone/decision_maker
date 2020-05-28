@@ -293,7 +293,8 @@ class _GroupCreateState extends State<GroupCreate> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         setState(() {

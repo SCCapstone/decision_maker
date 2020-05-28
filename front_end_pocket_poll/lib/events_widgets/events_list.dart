@@ -50,27 +50,35 @@ class _EventsListState extends State<EventsList> {
     } else {
       // sort the events
       widget.events.sort((a, b) {
-        if (a.getEventMode() == EventsManager.considerMode) {
-          return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
-              ? 1
-              : -1;
-        } else if (a.getEventMode() == EventsManager.votingMode) {
-          return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
-        } else if (a.getEventMode() == EventsManager.occurringMode) {
-          return b
-                  .getEvent()
-                  .eventStartDateTime
-                  .isBefore(a.getEvent().eventStartDateTime)
-              ? 1
-              : -1;
+        // this if statement is only needed in the new tab since all of the event types can be in it
+        if (a.getEventMode() > b.getEventMode()) {
+          return -1;
+        } else if (b.getEventMode() > a.getEventMode()) {
+          return 1;
         } else {
-          // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
-          return a
-                  .getEvent()
-                  .eventStartDateTime
-                  .isBefore(b.getEvent().eventStartDateTime)
-              ? 1
-              : -1;
+          // cards are same priority
+          if (a.getEventMode() == EventsManager.considerMode) {
+            return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
+                ? 1
+                : -1;
+          } else if (a.getEventMode() == EventsManager.votingMode) {
+            return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
+          } else if (a.getEventMode() == EventsManager.occurringMode) {
+            return b
+                    .getEvent()
+                    .eventStartDateTime
+                    .isBefore(a.getEvent().eventStartDateTime)
+                ? 1
+                : -1;
+          } else {
+            // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
+            return a
+                    .getEvent()
+                    .eventStartDateTime
+                    .isBefore(b.getEvent().eventStartDateTime)
+                ? 1
+                : -1;
+          }
         }
       });
 

@@ -23,26 +23,29 @@ class Globals {
   }
 
   // *************** CONSTANTS ***************
-  static final Color pocketPollDarkGreen = Color(0xff106126);
+  static final Color pocketPollPrimary = Color(0xff70919f);
+  static final Color pocketPollDarkBlue = Color(0xff0a2757);
   static final Color pocketPollGreen = Color(0xff5ce080);
   static final Color pocketPollGrey = Color(0xff303030);
   static final ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
+      primarySwatch: Colors.blue,
+      primaryColor: pocketPollPrimary,
+      accentColor: pocketPollPrimary,
       primaryColorDark: Colors.black,
-      buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
+      buttonTheme: ButtonThemeData(buttonColor: pocketPollDarkBlue),
+      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
       textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
   static final ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
-      primaryColorDark: Colors.black,
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
+    brightness: Brightness.light,
+    primarySwatch: Colors.blue,
+    primaryColor: pocketPollPrimary,
+    accentColor: pocketPollPrimary,
+    buttonTheme: ButtonThemeData(
+        buttonColor: pocketPollDarkBlue, textTheme: ButtonTextTheme.primary),
+    primaryColorDark: Colors.black,
+    primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
+  );
   static final DateFormat formatterWithTime =
       DateFormat.yMMMMd("en_US").add_jm();
   static final DateFormat dateFormatter = DateFormat.yMMMMd("en_US");

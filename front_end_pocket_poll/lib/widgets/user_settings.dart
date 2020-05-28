@@ -75,7 +75,7 @@ class _UserSettingsState extends State<UserSettings> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   key: Key("user_settings:save_button"),
-                  textColor: Colors.black,
+                  textColor: Colors.white,
                   onPressed: saveSettings,
                 ),
               )
@@ -245,7 +245,8 @@ class _UserSettingsState extends State<UserSettings> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         this._icon = croppedImage;

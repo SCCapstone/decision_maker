@@ -231,7 +231,8 @@ class _FirstLoginState extends State<FirstLogin> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         this._icon = croppedImage;

@@ -44,7 +44,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             child: Icon(
               Icons.sort,
               size: MediaQuery.of(context).size.height * .04,
-              color: Colors.black,
+              color: Colors.white,
             ),
             key: Key("categories_home:sort_button"),
             tooltip: "Sort Categories",
