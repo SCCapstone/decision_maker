@@ -194,7 +194,7 @@ class _GroupsHomeState extends State<GroupsHome>
                                 getUserIconImage(Globals.user.icon)),
                       ),
                       title: AutoSizeText(
-                        Globals.username,
+                        Globals.user.username,
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

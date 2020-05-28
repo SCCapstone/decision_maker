@@ -406,7 +406,7 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
 
   // initialize choice rows and populate them with ratings if they exist for the category
   void initializeChoiceRows() {
-    this.isCategoryOwner = (this.category.owner == Globals.username);
+    this.isCategoryOwner = (this.category.owner == Globals.user.username);
     this.categoryNameController.text = this.category.categoryName;
 
     for (final String choiceLabel in this.category.choices.keys) {

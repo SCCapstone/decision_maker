@@ -23,7 +23,7 @@ class _CategoryRow extends State<CategoryRow> {
   @override
   void initState() {
     // only show owner username in row if the user doesn't own it
-    bool isActiveUserCategoryOwner = widget.category.owner == Globals.username;
+    bool isActiveUserCategoryOwner = widget.category.owner == Globals.user.username;
     if (isActiveUserCategoryOwner) {
       this.categoryText = widget.category.categoryName;
     } else {

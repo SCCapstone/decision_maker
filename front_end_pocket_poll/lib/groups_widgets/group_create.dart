@@ -320,7 +320,7 @@ class _GroupCreateState extends State<GroupCreate> {
       }
       // creator is always in the group of course
       membersMap.putIfAbsent(
-          Globals.username, () => new Member.fromUser(Globals.user));
+          Globals.user.username, () => new Member.fromUser(Globals.user));
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: this.groupName,

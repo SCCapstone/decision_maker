@@ -47,7 +47,7 @@ class _MembersPageState extends State<MembersPage> {
         // can't delete yourself or the group creator
         displayDelete =
             user.username != Globals.currentGroupResponse.group.groupCreator &&
-                user.username != Globals.username &&
+                user.username != Globals.user.username &&
                 widget.canEdit;
         displayOwner =
             user.username == Globals.currentGroupResponse.group.groupCreator;

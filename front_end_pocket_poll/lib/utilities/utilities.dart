@@ -24,6 +24,7 @@ void logOutUser(BuildContext context) async {
   UsersManager.unregisterPushEndpoint();
   Globals.cachedCategories.clear();
   await clearSharedPrefs();
+  Globals.user = null;
 }
 
 ImageProvider getUserIconImage(String iconUrl) {
@@ -184,7 +185,7 @@ void showLoadingDialog(BuildContext context, String msg, bool dismissible) {
 
 // shows a blown up image of another user. Allows for adding said user to favorites
 void showUserImage(Favorite user, BuildContext buildContext) {
-  bool showFavoriteButton = user.username != Globals.username;
+  bool showFavoriteButton = user.username != Globals.user.username;
   if (showFavoriteButton) {
     for (Favorite favorite in Globals.user.favorites) {
       if (favorite.username == user.username) {

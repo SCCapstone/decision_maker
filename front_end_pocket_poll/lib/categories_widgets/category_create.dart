@@ -370,7 +370,7 @@ class _CategoryCreateState extends State<CategoryCreate> {
           Category newCategory = resultStatus.data;
           // update local user object to reflect the new category
           Globals.user.ownedCategories.add(new Category(
-              owner: Globals.username,
+              owner: Globals.user.username,
               categoryId: newCategory.categoryId,
               categoryName: newCategory.categoryName));
           // attempt to cache the category

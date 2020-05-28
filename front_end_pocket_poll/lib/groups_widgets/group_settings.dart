@@ -74,7 +74,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     this.originalCategories = new Map<String, GroupCategory>();
     this.selectedCategories = new Map<String, GroupCategory>();
 
-    if (Globals.username == Globals.currentGroupResponse.group.groupCreator) {
+    if (Globals.user.username ==
+        Globals.currentGroupResponse.group.groupCreator) {
       // to display the delete group button, check if user owns this group
       this.owner = true;
     } else {

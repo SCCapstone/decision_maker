@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
-  static String username;
   static User user;
   static GetGroupResponse currentGroupResponse = new GetGroupResponse();
   static List<CategoryRatingTuple> cachedCategories =
@@ -24,7 +23,7 @@ class Globals {
 
   // *************** CONSTANTS ***************
   static final Color pocketPollPrimary = Color(0xff70919f);
-  static final Color pocketPollDarkBlue = Color(0xff0a2757);
+  static final Color pocketPollDarkBlue = Color(0xff2943ba);
   static final Color pocketPollGreen = Color(0xff5ce080);
   static final Color pocketPollGrey = Color(0xff303030);
   static final ThemeData darkTheme = ThemeData(

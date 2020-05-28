@@ -53,6 +53,7 @@ class _EventCreateState extends State<EventCreate> {
   int proposedMonth;
   int proposedDay;
   FocusNode minuteInputFocus;
+  List<Widget> test;
 
   @override
   void dispose() {
@@ -118,6 +119,10 @@ class _EventCreateState extends State<EventCreate> {
 
   @override
   Widget build(BuildContext context) {
+    test = new List();
+    for (int i = 0; i < 8; i++) {
+      test.add(new Checkbox(value: false, onChanged: (_) {}));
+    }
     return GestureDetector(
       // allows for anywhere on the screen to be clicked to lose focus of a textfield
       onTap: () {
@@ -146,32 +151,6 @@ class _EventCreateState extends State<EventCreate> {
                       key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
                           labelText: "Enter event name", counterText: ""),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              showCategoriesPopup();
-                            },
-                            child: AutoSizeText(
-                              getCategoryActionMessage(),
-                              minFontSize: 10,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 24),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add_circle_outline),
-                          iconSize: 40,
-                          key: Key("event_create:add_category_button"),
-                          onPressed: () {
-                            showCategoriesPopup();
-                          },
-                        )
-                      ],
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -334,6 +313,30 @@ class _EventCreateState extends State<EventCreate> {
                         )
                       ],
                     ),
+                    ListTileTheme(
+                      contentPadding: EdgeInsets.all(0),
+                      child: ExpansionTile(
+                        title: AutoSizeText(
+                          getCategoryActionMessage(),
+                          minFontSize: 10,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        key: Key("event_create:add_category_button"),
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * .2,
+                            ),
+                            child: EventPickCategory(
+                                this.selectedCategory, selectCategory),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .005),
@@ -417,13 +420,16 @@ class _EventCreateState extends State<EventCreate> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    AutoSizeText(
-                      calculateVotingStartDateTime(),
-                      maxLines: 1,
-                      minFontSize: 12,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18),
+                    Visibility(
+                      visible: this.willConsider,
+                      child: AutoSizeText(
+                        calculateVotingStartDateTime(),
+                        maxLines: 1,
+                        minFontSize: 12,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -502,13 +508,16 @@ class _EventCreateState extends State<EventCreate> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    AutoSizeText(
-                      calculateVotingEndDateTime(),
-                      minFontSize: 10,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18),
+                    Visibility(
+                      visible: this.willVote,
+                      child: AutoSizeText(
+                        calculateVotingEndDateTime(),
+                        minFontSize: 10,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                   ],
                 )
@@ -545,16 +554,10 @@ class _EventCreateState extends State<EventCreate> {
     setState(() {});
   }
 
-  // display a popup for picking a category for this event
-  void showCategoriesPopup() {
-    showDialog(
-            context: this.context,
-            child: EventPickCategory(this.selectedCategory))
-        .then((selectedCategory) {
-      hideKeyboard(this.context); // close keyboard
-      setState(() {
-        this.selectedCategory = selectedCategory;
-      });
+  // used by the expansion tile to select a category for the event
+  void selectCategory(Category category) {
+    setState(() {
+      this.selectedCategory = category;
     });
   }
 

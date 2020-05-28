@@ -579,7 +579,7 @@ class _CategoryEditState extends State<CategoryEdit> {
       this.errorLoading = false;
       this.category = resultStatus.data.first.category;
       this.originalRatings = resultStatus.data.first.ratings;
-      if (this.category.owner == Globals.username) {
+      if (this.category.owner == Globals.user.username) {
         // cache categories that the user owns
         Globals.cachedCategories.insert(
             0,
@@ -601,7 +601,7 @@ class _CategoryEditState extends State<CategoryEdit> {
 
   // initialize choice rows and populate them with ratings if they exist for the category
   void initializeChoiceRows() {
-    this.isCategoryOwner = (this.category.owner == Globals.username);
+    this.isCategoryOwner = (this.category.owner == Globals.user.username);
     this.categoryNameController.text = this.category.categoryName;
 
     for (String choiceLabel in this.category.choices.keys) {

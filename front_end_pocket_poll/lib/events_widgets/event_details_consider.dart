@@ -246,7 +246,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                             color: (!this
                                     .event
                                     .optedIn
-                                    .containsKey(Globals.username))
+                                    .containsKey(Globals.user.username))
                                 ? Colors.orangeAccent
                                 : Theme.of(context).scaffoldBackgroundColor,
                           )),
@@ -267,7 +267,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                             color: (this
                                     .event
                                     .optedIn
-                                    .containsKey(Globals.username))
+                                    .containsKey(Globals.user.username))
                                 ? Colors.greenAccent
                                 : Theme.of(context).scaffoldBackgroundColor,
                           )),
@@ -290,18 +290,18 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (considerUser) {
       Globals.currentGroupResponse.group.events[widget.eventId].optedIn
           .putIfAbsent(
-              Globals.username, () => new Member.fromUser(Globals.user));
+              Globals.user.username, () => new Member.fromUser(Globals.user));
       this.event.optedIn.putIfAbsent(
-          Globals.username, () => new Member.fromUser(Globals.user));
+          Globals.user.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
-          Globals.username,
+          Globals.user.username,
           () => EventUserRow(
-              Globals.user.displayName, Globals.username, Globals.user.icon));
+              Globals.user.displayName, Globals.user.username, Globals.user.icon));
     } else {
       Globals.currentGroupResponse.group.events[widget.eventId].optedIn
-          .remove(Globals.username);
-      this.event.optedIn.remove(Globals.username);
-      this.userRows.remove(Globals.username);
+          .remove(Globals.user.username);
+      this.event.optedIn.remove(Globals.user.username);
+      this.userRows.remove(Globals.user.username);
     }
     setState(() {});
 
@@ -312,15 +312,15 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
       if (oldConsiderUser) {
         Globals.currentGroupResponse.group.events[widget.eventId].optedIn
             .putIfAbsent(
-                Globals.username, () => new Member.fromUser(Globals.user));
+                Globals.user.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
-            Globals.username,
+            Globals.user.username,
             () => EventUserRow(
-                Globals.user.displayName, Globals.username, Globals.user.icon));
+                Globals.user.displayName, Globals.user.username, Globals.user.icon));
       } else {
         Globals.currentGroupResponse.group.events[widget.eventId].optedIn
-            .remove(Globals.username);
-        this.userRows.remove(Globals.username);
+            .remove(Globals.user.username);
+        this.userRows.remove(Globals.user.username);
       }
       showErrorMessage("Error", resultStatus.errorMessage, context);
       setState(() {});
