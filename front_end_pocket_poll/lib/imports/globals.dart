@@ -23,7 +23,7 @@ class Globals {
 
   // *************** CONSTANTS ***************
   static final Color pocketPollPrimary = Color(0xff70919f);
-  static final Color pocketPollDarkBlue = Color(0xff2943ba);
+  static final Color pocketPollDarkBlue = Color(0xff1a78d6);
   static final Color pocketPollGreen = Color(0xff5ce080);
   static final Color pocketPollGrey = Color(0xff303030);
   static final ThemeData darkTheme = ThemeData(

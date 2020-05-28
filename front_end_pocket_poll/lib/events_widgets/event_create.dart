@@ -53,7 +53,7 @@ class _EventCreateState extends State<EventCreate> {
   int proposedMonth;
   int proposedDay;
   FocusNode minuteInputFocus;
-  List<Widget> test;
+  FocusNode hourInputFocus;
 
   @override
   void dispose() {
@@ -69,6 +69,7 @@ class _EventCreateState extends State<EventCreate> {
   @override
   void initState() {
     this.minuteInputFocus = new FocusNode();
+    this.hourInputFocus = new FocusNode();
     this.autoValidate = false;
     this.willConsider = true;
     this.willVote = true;
@@ -119,10 +120,6 @@ class _EventCreateState extends State<EventCreate> {
 
   @override
   Widget build(BuildContext context) {
-    test = new List();
-    for (int i = 0; i < 8; i++) {
-      test.add(new Checkbox(value: false, onChanged: (_) {}));
-    }
     return GestureDetector(
       // allows for anywhere on the screen to be clicked to lose focus of a textfield
       onTap: () {
@@ -148,6 +145,10 @@ class _EventCreateState extends State<EventCreate> {
                       onSaved: (String arg) {
                         this.eventName = arg.trim();
                       },
+                      onFieldSubmitted: (_) {
+                        this.hourInputFocus.requestFocus();
+                      },
+                      textInputAction: TextInputAction.next,
                       key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
                           labelText: "Enter event name", counterText: ""),
@@ -156,16 +157,13 @@ class _EventCreateState extends State<EventCreate> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text("Start date and time for the event",
-                              style: TextStyle(fontSize: 16)),
-                        ]),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
+                    AutoSizeText("Event start date and time",
+                        minFontSize: 10,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 16,
+                            decoration: TextDecoration.underline)),
                     Row(
                       children: <Widget>[
                         Expanded(
@@ -205,6 +203,7 @@ class _EventCreateState extends State<EventCreate> {
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
                             maxLength: 2,
+                            focusNode: this.hourInputFocus,
                             decoration: InputDecoration(
                                 hintText: "HH", counterText: ""),
                             onFieldSubmitted: (form) {
@@ -336,7 +335,6 @@ class _EventCreateState extends State<EventCreate> {
                         ],
                       ),
                     ),
-
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .005),
