@@ -17,6 +17,7 @@ class EventPickCategory extends StatefulWidget {
 class _EventPickCategoryState extends State<EventPickCategory> {
   List<CategoryRow> categoryRows;
   Category selectedCategory;
+  final ScrollController controller = new ScrollController();
 
   bool loading;
   bool errorLoading;
@@ -33,35 +34,39 @@ class _EventPickCategoryState extends State<EventPickCategory> {
   @override
   Widget build(BuildContext context) {
     return Scrollbar(
-        child: (this.categoryRows.isNotEmpty)
-            ? ListView.builder(
-                shrinkWrap: true,
-                itemCount: this.categoryRows.length,
-                itemBuilder: (context, index) {
-                  return this.categoryRows[index];
-                },
-              )
-            : Container(
-                height: MediaQuery.of(context).size.height * .1,
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                        color: (Globals.user.appSettings.darkTheme)
-                            ? Colors.white
-                            : Colors.black),
-                    children: [
-                      TextSpan(
-                          text:
-                              "No categories found in this group. Click on this icon:  "),
-                      WidgetSpan(
-                        child: Icon(Icons.settings),
-                      ),
-                      TextSpan(
-                          text:
-                              " found in the top right corner of the group's page to add some."),
-                    ],
-                  ),
-                )));
+      child: (this.categoryRows.isNotEmpty)
+          ? ListView.builder(
+              controller: this.controller,
+              shrinkWrap: true,
+              itemCount: this.categoryRows.length,
+              itemBuilder: (context, index) {
+                return this.categoryRows[index];
+              },
+            )
+          : Container(
+              height: MediaQuery.of(context).size.height * .1,
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: (Globals.user.appSettings.darkTheme)
+                          ? Colors.white
+                          : Colors.black),
+                  children: [
+                    TextSpan(
+                        text:
+                            "No categories found in this group. Click on this icon:  "),
+                    WidgetSpan(
+                      child: Icon(Icons.settings),
+                    ),
+                    TextSpan(
+                        text:
+                            " found in the top right corner of the group's page to add some."),
+                  ],
+                ),
+              )),
+      isAlwaysShown: true,
+      controller: this.controller,
+    );
   }
 
   // builds choice rows using the current group categories
