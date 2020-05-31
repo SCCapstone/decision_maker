@@ -32,6 +32,12 @@ class _EventPickCategoryState extends State<EventPickCategory> {
   }
 
   @override
+  void dispose() {
+    this.controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scrollbar(
       child: (this.categoryRows.isNotEmpty)
