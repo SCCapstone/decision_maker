@@ -109,7 +109,7 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 ### 5.2 Behavioral Testing on the Front End
 
 ##### 5.2.1 Dependencies
-* These tests should be run using flutter version 1.12.13+hotfix.8 on the stable channel
+* These tests should be run using flutter version 1.17.1 on the stable channel
 * To fetch project specific dependencies, run `flutter pub get` from the front_end_pocket_poll directory.
 
 ##### 5.2.2 Running the Tests

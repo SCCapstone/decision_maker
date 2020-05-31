@@ -107,7 +107,7 @@ class _UserSettingsState extends State<UserSettings> {
                               onSaved: (String arg) {},
                               style: TextStyle(fontSize: 20),
                               decoration: InputDecoration(
-                                  labelText: "Nickname (@${Globals.username})",
+                                  labelText: "Nickname (@${Globals.user.username})",
                                   counterText: ""),
                             )),
                         Padding(

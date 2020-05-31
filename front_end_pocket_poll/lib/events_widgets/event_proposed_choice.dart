@@ -37,8 +37,8 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
   void initState() {
     this.currentVote = voteEmpty;
     this.voteMap = widget.event.votingNumbers[widget.choiceId];
-    if (this.voteMap != null && this.voteMap.containsKey(Globals.username)) {
-      this.currentVote = this.voteMap[Globals.username];
+    if (this.voteMap != null && this.voteMap.containsKey(Globals.user.username)) {
+      this.currentVote = this.voteMap[Globals.user.username];
     }
     super.initState();
   }
@@ -108,7 +108,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
           .putIfAbsent(widget.choiceId, () => new Map<String, int>());
     }
     widget.event.votingNumbers[widget.choiceId].update(
-        Globals.username, (existing) => voteVal,
+        Globals.user.username, (existing) => voteVal,
         ifAbsent: () => voteVal);
     setState(() {
       this.currentVote = voteVal;
@@ -124,7 +124,7 @@ class _EventProposedChoiceState extends State<EventProposedChoice> {
         this.currentVote = previousVote;
         // update changes locally so user doesn't have to fetch from DB to see new vote
         widget.event.votingNumbers[widget.choiceId].update(
-            Globals.username, (existing) => this.currentVote,
+            Globals.user.username, (existing) => this.currentVote,
             ifAbsent: () => this.currentVote);
       });
     }

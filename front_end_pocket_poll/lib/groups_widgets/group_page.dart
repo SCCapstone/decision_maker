@@ -16,6 +16,7 @@ import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/get_group_response.dart';
+import 'package:front_end_pocket_poll/utilities/utilities.dart';
 
 import 'group_settings.dart';
 
@@ -203,35 +204,76 @@ class _GroupPageState extends State<GroupPage>
           child: Icon(Icons.add),
           key: Key("group_page:create_event_button"),
           onPressed: () {
-            Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => EventCreate()))
-                .then((val) {
-              if (val != null) {
-                // this means that an event was created, so don't make an API call to refresh
-                try {
-                  int eventMode = val as int;
-                  if (eventMode == EventsManager.considerMode) {
-                    this.currentTab = considerTab;
-                  } else if (eventMode == EventsManager.votingMode) {
-                    this.currentTab = votingTab;
-                  } else if (eventMode == EventsManager.occurringMode) {
-                    this.currentTab = occurringTab;
+            if (Globals.currentGroupResponse.group.categories.isNotEmpty) {
+              Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => EventCreate()))
+                  .then((val) {
+                if (val != null) {
+                  // this means that an event was created, so don't make an API call to refresh
+                  try {
+                    int eventMode = val as int;
+                    if (eventMode == EventsManager.considerMode) {
+                      this.currentTab = considerTab;
+                    } else if (eventMode == EventsManager.votingMode) {
+                      this.currentTab = votingTab;
+                    } else if (eventMode == EventsManager.occurringMode) {
+                      this.currentTab = occurringTab;
+                    }
+                  } catch (e) {
+                    // do nothing, this shouldn't ever be reached
+                    debugPrintStack();
                   }
-                } catch (e) {
-                  // do nothing, this shouldn't ever be reached
-                  debugPrintStack();
+                  this.tabController.animateTo(this.currentTab);
+                  populateEventStages();
+                } else {
+                  // no event created, so make API call to make sure page is most up to date
+                  refreshList();
                 }
-                this.tabController.animateTo(this.currentTab);
-                populateEventStages();
-              } else {
-                // no event created, so make API call to make sure page is most up to date
-                refreshList();
-              }
-            });
+              });
+            } else {
+              // we aren't allowing users to go to this page if they have no categories, so show a popup telling them this
+              createEventError();
+            }
           },
         ),
       );
     }
+  }
+
+  void createEventError() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text("Cannot create event"),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+              content: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: (Globals.user.appSettings.darkTheme)
+                          ? Colors.white
+                          : Colors.black),
+                  children: [
+                    TextSpan(
+                        text:
+                            "No categories are attached to this group. Click on this icon:  "),
+                    WidgetSpan(
+                      child: Icon(Icons.settings),
+                    ),
+                    TextSpan(
+                        text:
+                            " found in the top right corner of this page to add some."),
+                  ],
+                ),
+              ));
+        });
   }
 
   // attempts to get group from DB. If success then display all events. Else show error

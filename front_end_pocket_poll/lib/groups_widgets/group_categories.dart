@@ -22,6 +22,8 @@ class GroupCategories extends StatefulWidget {
 }
 
 class _GroupCategoriesState extends State<GroupCategories> {
+  final ScrollController myCategoriesController = new ScrollController();
+  final ScrollController memberCategoriesController = new ScrollController();
   bool loading;
   bool errorLoading;
   int sortVal;
@@ -39,6 +41,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
     this.groupCategoryRows = new List<GroupCategoryRow>();
     this.getCategoriesAndBuildRows();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    this.myCategoriesController.dispose();
+    this.memberCategoriesController.dispose();
+    super.dispose();
   }
 
   @override
@@ -194,11 +203,14 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   maxHeight: MediaQuery.of(context).size.height * .40),
               child: Scrollbar(
                 child: ListView.builder(
+                    controller: this.myCategoriesController,
                     shrinkWrap: true,
                     itemCount: this.ownedCategoryRows.length,
                     itemBuilder: (BuildContext context, int index) {
                       return this.ownedCategoryRows[index];
                     }),
+                isAlwaysShown: true,
+                controller: this.myCategoriesController,
               ),
             ),
             Visibility(
@@ -224,10 +236,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 height: MediaQuery.of(context).size.height * .40,
                 child: Scrollbar(
                   child: ListView.builder(
+                      controller: this.memberCategoriesController,
                       itemCount: this.groupCategoryRows.length,
                       itemBuilder: (BuildContext context, int index) {
                         return this.groupCategoryRows[index];
                       }),
+                  isAlwaysShown: true,
+                  controller: this.memberCategoriesController,
                 ),
               ),
             ),

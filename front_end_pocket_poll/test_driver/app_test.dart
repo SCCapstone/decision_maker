@@ -269,16 +269,10 @@ void main() {
           find.byValueKey("event_create:add_category_button");
       await driver.tap(addCategoryButton);
 
-      // wait for categories to load
-      await driver
-          .waitFor(find.byValueKey("event_pick_category:category_container"));
-
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("event_pick_category:done_button");
-      await driver.tap(doneButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      await driver.tap(addCategoryButton);
 
       // enter the start time (date is already set for current day by default)
       var hourInput = find.byValueKey("event_create:hour_input");
@@ -330,16 +324,10 @@ void main() {
           find.byValueKey("event_create:add_category_button");
       await driver.tap(addCategoryButton);
 
-      // wait for categories to load
-      await driver
-          .waitFor(find.byValueKey("event_pick_category:category_container"));
-
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("event_pick_category:done_button");
-      await driver.tap(doneButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      await driver.tap(addCategoryButton);
 
       // enter the start time (date is already set for current day by default)
       var hourInput = find.byValueKey("event_create:hour_input");
@@ -391,16 +379,10 @@ void main() {
           find.byValueKey("event_create:add_category_button");
       await driver.tap(addCategoryButton);
 
-      // wait for categories to load
-      await driver
-          .waitFor(find.byValueKey("event_pick_category:category_container"));
-
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("event_pick_category:done_button");
-      await driver.tap(doneButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      await driver.tap(addCategoryButton);
 
       // enter the start time (date is already set for current day by default)
       var hourInput = find.byValueKey("event_create:hour_input");
@@ -450,16 +432,10 @@ void main() {
           find.byValueKey("event_create:add_category_button");
       await driver.tap(addCategoryButton);
 
-      // wait for categories to load
-      await driver
-          .waitFor(find.byValueKey("event_pick_category:category_container"));
-
       // always select first category
       var categoryCheckBox = find.byValueKey("category_row:checkbox:0");
       await driver.tap(categoryCheckBox);
-      var doneButton = find.byValueKey("event_pick_category:done_button");
-      await driver.tap(doneButton);
-      await driver.waitFor(find.byValueKey("event_create:scaffold"));
+      await driver.tap(addCategoryButton);
 
       // enter the start time (date is already set for current day by default)
       var hourInput = find.byValueKey("event_create:hour_input");

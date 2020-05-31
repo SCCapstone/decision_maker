@@ -6,8 +6,9 @@ import 'package:front_end_pocket_poll/widgets/category_row.dart';
 
 class EventPickCategory extends StatefulWidget {
   final Category initialSelectedCategory;
+  final Function selectCategory;
 
-  EventPickCategory(this.initialSelectedCategory);
+  EventPickCategory(this.initialSelectedCategory, this.selectCategory);
 
   @override
   _EventPickCategoryState createState() => _EventPickCategoryState();
@@ -16,6 +17,7 @@ class EventPickCategory extends StatefulWidget {
 class _EventPickCategoryState extends State<EventPickCategory> {
   List<CategoryRow> categoryRows;
   Category selectedCategory;
+  final ScrollController controller = new ScrollController();
 
   bool loading;
   bool errorLoading;
@@ -30,64 +32,46 @@ class _EventPickCategoryState extends State<EventPickCategory> {
   }
 
   @override
+  void dispose() {
+    this.controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text("Select Category"),
-      actions: <Widget>[
-        FlatButton(
-          child: Text("DONE"),
-          key: Key("event_pick_category:done_button"),
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pop(this.selectedCategory);
-          },
-        ),
-      ],
-      content: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Container(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Scrollbar(
-                  child: (this.categoryRows.isNotEmpty)
-                      ? Container(
-                          height: MediaQuery.of(context).size.height * .25,
-                          key: Key("event_pick_category:category_container"),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: this.categoryRows.length,
-                            itemBuilder: (context, index) {
-                              return this.categoryRows[index];
-                            },
-                          ),
-                        )
-                      : Container(
-                          height: MediaQuery.of(context).size.height * .25,
-                          child: RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                  color: (Globals.user.appSettings.darkTheme)
-                                      ? Colors.white
-                                      : Colors.black),
-                              children: [
-                                TextSpan(
-                                    text:
-                                        "No categories found in this group. Click on this icon:  "),
-                                WidgetSpan(
-                                  child: Icon(Icons.settings),
-                                ),
-                                TextSpan(
-                                    text:
-                                        " found in the top right corner of the group's page to add some."),
-                              ],
-                            ),
-                          ))),
-            ],
-          ),
-        ),
-      ),
+    return Scrollbar(
+      child: (this.categoryRows.isNotEmpty)
+          ? ListView.builder(
+              controller: this.controller,
+              shrinkWrap: true,
+              itemCount: this.categoryRows.length,
+              itemBuilder: (context, index) {
+                return this.categoryRows[index];
+              },
+            )
+          : Container(
+              height: MediaQuery.of(context).size.height * .1,
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                      color: (Globals.user.appSettings.darkTheme)
+                          ? Colors.white
+                          : Colors.black),
+                  children: [
+                    TextSpan(
+                        text:
+                            "No categories found in this group. Click on this icon:  "),
+                    WidgetSpan(
+                      child: Icon(Icons.settings),
+                    ),
+                    TextSpan(
+                        text:
+                            " found in the top right corner of the group's page to add some."),
+                  ],
+                ),
+              )),
+      isAlwaysShown: true,
+      controller: this.controller,
     );
   }
 
@@ -119,6 +103,7 @@ class _EventPickCategoryState extends State<EventPickCategory> {
 
   // selects a category for an event. Note only one category can be selected
   void selectCategory(Category category) {
+    widget.selectCategory(category);
     setState(() {
       this.selectedCategory = category;
       this.categoryRows.clear();

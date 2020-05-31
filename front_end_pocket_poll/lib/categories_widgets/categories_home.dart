@@ -148,6 +148,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     for (Category category in Globals.user.ownedCategories) {
       this.categories.add(category);
     }
+    setState(() {});
   }
 
   // is called when the user clicks back on this page to fetch any new/edited categories to display
