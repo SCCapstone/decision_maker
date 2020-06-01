@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
+import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
+import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {
@@ -38,6 +41,36 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
+  final ScrollController scrollController = new ScrollController();
+
+  @override
+  void dispose() {
+    this.scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    this.scrollController.addListener(scrollListener);
+  }
+
+  scrollListener() {
+    if (this.scrollController.offset >=
+            this.scrollController.position.maxScrollExtent &&
+        !this.scrollController.position.outOfRange) {
+      print("reach the bottom");
+      widget.getNextBatch(widget.eventsType);
+    }
+
+    if (this.scrollController.offset <=
+            this.scrollController.position.minScrollExtent &&
+        !this.scrollController.position.outOfRange) {
+      print("reach the top");
+      //todo
+      //widget.getPreviousBatch(widget.eventsType);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.events.isEmpty) {
@@ -159,6 +192,7 @@ class _EventsListState extends State<EventsList> {
 
       return Scrollbar(
           child: ListView.builder(
+              controller: this.scrollController,
               shrinkWrap: true,
               itemCount: widgetList.length,
               itemBuilder: (context, index) {

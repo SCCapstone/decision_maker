@@ -16,8 +16,10 @@ import java.util.Set;
 import managers.DbAccessManager;
 import models.Event;
 import models.EventForSorting;
+import models.GetGroupResponse;
 import models.Group;
 import models.GroupForApiResponse;
+import models.GroupWithCategoryChoices;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
@@ -63,16 +65,29 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final Group group = this.dbAccessManager.getGroup(groupId);
+      final GroupWithCategoryChoices groupWithCategoryChoices = new GroupWithCategoryChoices(
+          this.dbAccessManager.getGroupItem(groupId).asMap());
+
+      final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(
+          groupWithCategoryChoices);
+
       final User user = this.dbAccessManager.getUser(activeUser);
 
       //the user should not be able to retrieve info from the group if they are not a member
-      if (group.getMembers().containsKey(activeUser) && user.getGroups().containsKey(groupId)) {
+      if (groupForApiResponse.getMembers().containsKey(activeUser) && user.getGroups()
+          .containsKey(groupId)) {
         //we set the events on the group so we can use the group's getEventsMap method
-        group.setEvents(GetBatchOfEventsHandler.handle(user, group, batchNumber, batchType));
+        final Map<String, Event> eventsBatch = GetBatchOfEventsHandler
+            .handle(user, groupForApiResponse, batchNumber, batchType);
 
-        resultStatus = new ResultStatus(true,
-            JsonUtils.convertObjectToJson(group.getEventsMap()));
+        final Map<String, Map<String, Event>> eventBatches = new HashMap<>();
+        eventBatches.putIfAbsent(getEventPriorityLabelFromEventType(batchType), eventsBatch);
+        groupForApiResponse.setAllEvents(eventBatches);
+
+        final GetGroupResponse getGroupResponse = new GetGroupResponse(groupForApiResponse);
+        getGroupResponse.setUserData(user, groupWithCategoryChoices);
+
+        resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(getGroupResponse));
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, "User not in group."));
         resultStatus = ResultStatus.failure("Error: user not a member of the group.");
@@ -195,7 +210,6 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
 
     //linked hash maps maintain order whereas normal hash maps do not
     LinkedHashMap<String, EventForSorting> eventsBatch = new LinkedHashMap<>();
-    LinkedHashMap<String, EventForSorting> searchingEventsBatch = new LinkedHashMap<>();
 
     final Set<String> unseenEventIds = activeUser.getGroups().get(group.getGroupId())
         .getEventsUnseen().keySet();
@@ -208,33 +222,33 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
       //this way we don't have to do all of the sorting setup for every comparison in the sort
       //if setting up sorting params takes n time and sorting takes m times, then doing
       //this first leads to n + m complexity vs n * m complexity if we calculated every comparison
-      searchingEventsBatch = group.getEvents()
+      eventsBatch = group.getEvents()
           .entrySet()
           .stream()
           .collect(collectingAndThen(
               toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
               LinkedHashMap::new));
 
-      //then we filter to unseen events and sort those events up to the oldestEvent being asked for
-      eventsBatch = searchingEventsBatch
+      //then we sort those events oldest to newest
+      eventsBatch = eventsBatch
           .entrySet()
           .stream()
-          .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+          .sorted((e1, e2) -> -1 * e1.getValue().compareTo(e2.getValue()))
           .collect(collectingAndThen(toMap(Entry::getKey, Entry::getValue), LinkedHashMap::new));
     } // else there are no events in this range and we return the empty map
 
     String priorityLabel;
-    for (Entry<String, EventForSorting> eventEntry : eventsBatch.entrySet()) {
-      if (unseenEventIds.contains(eventEntry.getKey()) &&
+    for (final String eventId : eventsBatch.keySet()) {
+      if (unseenEventIds.contains(eventId) &&
           eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS).size() < EVENTS_BATCH_SIZE) {
         eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS)
-            .put(eventEntry.getKey(), eventEntry.getValue());
+            .put(eventId, eventsBatch.get(eventId));
       }
 
-      priorityLabel = getEventPriorityLabelFromEventType(eventEntry.getValue().getPriority());
+      priorityLabel = getEventPriorityLabelFromEventType(eventsBatch.get(eventId).getPriority());
 
       if (eventTypesToEvent.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
-        eventTypesToEvent.get(priorityLabel).put(eventEntry.getKey(), eventEntry.getValue());
+        eventTypesToEvent.get(priorityLabel).put(eventId, eventsBatch.get(eventId));
       }
     }
 

@@ -42,6 +42,13 @@ class _GroupPageState extends State<GroupPage>
   final int occurringTab = 1;
   final int closedTab = 4;
   final Map<int, int> listIndexesToEventTypes = new Map<int, int>();
+  final Map<int, int> eventTypesToBatchNumbers = {
+    EventsList.eventsTypeNew: 0,
+    EventsList.eventsTypeVoting: 0,
+    EventsList.eventsTypeConsider: 0,
+    EventsList.eventsTypeClosed: 0,
+    EventsList.eventsTypeOccurring: 0
+  };
   final Map<int, List<EventCardInterface>> eventCards = new Map<int,
       List<EventCardInterface>>(); // map of tab index to list of event cards
 
@@ -509,11 +516,40 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when next/back buttons are pressed in event list. Gets the next/previous number of events in group
-  void getNextBatch() {
-    setState(() {
-      this.loading = true;
+  void getNextBatch(final int batchType) {
+//    setState(() {
+//      this.loading = true;
+//    });
+
+    this.eventTypesToBatchNumbers[batchType]++;
+
+    GroupsManager.getBatchOfEventEvents(
+            widget.groupId, this.eventTypesToBatchNumbers[batchType], batchType)
+        .then((ResultStatus<GetGroupResponse> resultStatus) {
+      if (resultStatus.success) {
+        //addAll overwrites existing values which is good since this is up to date
+        if (batchType == EventsList.eventsTypeNew) {
+          Globals.currentGroupResponse.group.newEvents
+              .addAll(resultStatus.data.group.newEvents);
+        } else if (batchType == EventsList.eventsTypeVoting) {
+          Globals.currentGroupResponse.group.votingEvents
+              .addAll(resultStatus.data.group.votingEvents);
+        } else if (batchType == EventsList.eventsTypeClosed) {
+          Globals.currentGroupResponse.group.closedEvents
+              .addAll(resultStatus.data.group.closedEvents);
+        } else if (batchType == EventsList.eventsTypeConsider) {
+          Globals.currentGroupResponse.group.considerEvents
+              .addAll(resultStatus.data.group.considerEvents);
+        } else if (batchType == EventsList.eventsTypeOccurring) {
+          Globals.currentGroupResponse.group.occurringEvents
+              .addAll(resultStatus.data.group.occurringEvents);
+        }
+
+        populateEventStages();
+      } else {
+        print(resultStatus.errorMessage);
+      }
     });
-    getGroup();
   }
 
   // whenever the tab changes make sure to save current tab index

@@ -1,13 +1,16 @@
 package models;
 
 import handlers.GetBatchOfEventsHandler;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import lombok.Data;
 
 @Data
 public class GroupForApiResponse extends Group implements Model {
+
   public static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
   public static final String NEW_EVENTS = "NewEvents";
   public static final String VOTING_EVENTS = "VotingEvents";
@@ -32,6 +35,11 @@ public class GroupForApiResponse extends Group implements Model {
     this.setAllEvents(GetBatchOfEventsHandler.handle(user, this));
   }
 
+  public GroupForApiResponse(final Group group) {
+    super(group.asMap());
+    this.totalNumberOfEvents = group.getEvents().size();
+  }
+
   @Override
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = super.asMap();
@@ -41,10 +49,15 @@ public class GroupForApiResponse extends Group implements Model {
     modelAsMap.putIfAbsent(CONSIDER_EVENTS, this.eventsMapAsObjectMap(this.considerEvents));
     modelAsMap.putIfAbsent(CLOSED_EVENTS, this.eventsMapAsObjectMap(this.closedEvents));
     modelAsMap.putIfAbsent(OCCURRING_EVENTS, this.eventsMapAsObjectMap(this.occurringEvents));
+    modelAsMap.remove(EVENTS);
     return modelAsMap;
   }
 
   private Map<String, Object> eventsMapAsObjectMap(final Map<String, Event> eventMap) {
+    if (eventMap == null) {
+      return null;
+    }
+
     final Map<String, Object> modelAsMap = new HashMap<>();
     for (final Entry<String, Event> eventEntry : eventMap.entrySet()) {
       modelAsMap.putIfAbsent(eventEntry.getKey(), eventEntry.getValue());
@@ -52,18 +65,24 @@ public class GroupForApiResponse extends Group implements Model {
     return modelAsMap;
   }
 
-  private void setAllEvents(final Map<String, Map<String, Event>> eventBatches) {
+  public void setAllEvents(final Map<String, Map<String, Event>> eventBatches) {
     this.newEvents = eventBatches.get(NEW_EVENTS);
     this.votingEvents = eventBatches.get(VOTING_EVENTS);
     this.considerEvents = eventBatches.get(CONSIDER_EVENTS);
     this.closedEvents = eventBatches.get(CLOSED_EVENTS);
     this.occurringEvents = eventBatches.get(OCCURRING_EVENTS);
 
+    this.fillAllEvents();
+  }
+
+  private void fillAllEvents() {
     this.allEvents = new HashMap<>();
-    this.allEvents.putAll(this.newEvents);
-    this.allEvents.putAll(this.votingEvents);
-    this.allEvents.putAll(this.considerEvents);
-    this.allEvents.putAll(this.closedEvents);
-    this.allEvents.putAll(this.occurringEvents);
+
+    Stream.of(this.newEvents, this.votingEvents, this.considerEvents, this.closedEvents,
+        this.occurringEvents).forEach((Map<String, Event> events) -> {
+      if (events != null) {
+        this.allEvents.putAll(events);
+      }
+    });
   }
 }

@@ -111,6 +111,10 @@ class Group {
 
   static Map<String, Event> getEventsMapFromJson(
       final Map<String, dynamic> json) {
+    if (json == null) {
+      return null;
+    }
+
     // map of eventId -> event
     final Map<String, Event> eventsMap = new Map<String, Event>();
     for (final String eventId in json.keys) {

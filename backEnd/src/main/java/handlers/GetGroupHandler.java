@@ -1,16 +1,13 @@
 package handlers;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.HashMap;
 import java.util.Map;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import models.Event;
 import models.EventWithCategoryChoices;
-import models.Group;
+import models.GetGroupResponse;
 import models.GroupForApiResponse;
 import models.GroupWithCategoryChoices;
-import models.Model;
 import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
@@ -55,32 +52,7 @@ public class GetGroupHandler implements ApiRequestHandler {
       if (group.getMembers().containsKey(activeUser)) {
         final User user = this.dbAccessManager.getUser(activeUser);
 
-        final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(user, group);
-
-        final GetGroupResponse getGroupResponse = new GetGroupResponse(groupForApiResponse);
-
-        //loop over the events that are being sent to the front end and mark the unseen/unrated
-        for (final Map.Entry<String, Event> eventEntry : groupForApiResponse.getEvents()
-            .entrySet()) {
-          final String eventId = eventEntry.getKey();
-          final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
-
-          if (user.getGroups().get(groupId).getEventsUnseen().containsKey(eventId)) {
-            getGroupResponse.addEventUnseen(eventId);
-          }
-
-          //if the event no longer has choices then we don't care if the user has ratings
-          if (event.getCategoryChoices() != null) {
-            if (!user.getCategoryRatings().containsKey(event.getCategoryId())) {
-              //first we check if the user has ratings for the category at all
-              getGroupResponse.addEventWithoutRating(eventId);
-            } else if (!user.getCategoryRatings().get(event.getCategoryId()).keySet()
-                .containsAll(event.getCategoryChoices().keySet())) {
-              //then we check if the user has choice ratings set for all of the event choices
-              getGroupResponse.addEventWithoutRating(eventId);
-            }
-          }
-        }
+        final GetGroupResponse getGroupResponse = new GetGroupResponse(user, group);
 
         resultStatus = ResultStatus.successful(JsonUtils.convertObjectToJson(getGroupResponse));
       } else {
@@ -94,56 +66,5 @@ public class GetGroupHandler implements ApiRequestHandler {
 
     this.metrics.commonClose(resultStatus.success);
     return resultStatus;
-  }
-
-  //static class
-  private static class GetGroupResponse implements Model {
-
-    public static final String USER_INFO = "UserInfo";
-    public static final String EVENTS_WITHOUT_RATINGS = "EventsWithoutRatings";
-    public static final String GROUP_INFO = "GroupInfo";
-
-    private final Map<String, Object> userInfo;
-    private final Map<String, Boolean> eventsUnseen;
-    private final Map<String, Boolean> eventsWithoutRatings;
-    private Map<String, Object> groupInfo;
-
-    public GetGroupResponse() {
-      this.eventsUnseen = new HashMap<>();
-      this.eventsWithoutRatings = new HashMap<>();
-      this.userInfo = ImmutableMap.of(
-          EVENTS_WITHOUT_RATINGS, this.eventsWithoutRatings,
-          User.EVENTS_UNSEEN, this.eventsUnseen
-      );
-    }
-
-    public GetGroupResponse(final GroupForApiResponse groupForApiResponse) {
-      this.eventsUnseen = new HashMap<>();
-      this.eventsWithoutRatings = new HashMap<>();
-      this.userInfo = ImmutableMap.of(
-          EVENTS_WITHOUT_RATINGS, this.eventsWithoutRatings,
-          User.EVENTS_UNSEEN, this.eventsUnseen
-      );
-      this.setGroupInfo(groupForApiResponse);
-    }
-
-    public void addEventUnseen(final String eventId) {
-      this.eventsUnseen.put(eventId, true);
-    }
-
-    public void addEventWithoutRating(final String eventId) {
-      this.eventsWithoutRatings.put(eventId, true);
-    }
-
-    public void setGroupInfo(final GroupForApiResponse groupForApiResponse) {
-      this.groupInfo = groupForApiResponse.asMap();
-    }
-
-    public Map<String, Object> asMap() {
-      final Map<String, Object> modelAsMap = new HashMap<>();
-      modelAsMap.putIfAbsent(USER_INFO, this.userInfo);
-      modelAsMap.putIfAbsent(GROUP_INFO, this.groupInfo);
-      return modelAsMap;
-    }
   }
 }
