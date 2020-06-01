@@ -30,7 +30,11 @@ class GroupsManager {
   static final String CATEGORIES = "Categories";
   static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
   static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
-  static final String EVENTS = "Events";
+  static final String NEW_EVENTS = "NewEvents";
+  static final String VOTING_EVENTS = "VotingEvents";
+  static final String CONSIDER_EVENTS = "ConsiderEvents";
+  static final String CLOSED_EVENTS = "ClosedEvents";
+  static final String OCCURRING_EVENTS = "OccurringEvents";
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
   static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";

@@ -41,6 +41,7 @@ public class GetGroupHandler implements ApiRequestHandler {
    */
   public ResultStatus handle(final String activeUser, final String groupId,
       final Integer batchNumber) {
+    //todo remove batch number param
     final String classMethod = "GetGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -54,15 +55,15 @@ public class GetGroupHandler implements ApiRequestHandler {
       if (group.getMembers().containsKey(activeUser)) {
         final User user = this.dbAccessManager.getUser(activeUser);
 
-        final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(group,
-            batchNumber);
+        final GroupForApiResponse groupForApiResponse = new GroupForApiResponse(user, group);
 
         final GetGroupResponse getGroupResponse = new GetGroupResponse(groupForApiResponse);
 
-        for (final Map.Entry<String, EventWithCategoryChoices> eventEntry : group
-            .getEventsWithCategoryChoices().entrySet()) {
+        //loop over the events that are being sent to the front end and mark the unseen/unrated
+        for (final Map.Entry<String, Event> eventEntry : groupForApiResponse.getEvents()
+            .entrySet()) {
           final String eventId = eventEntry.getKey();
-          final EventWithCategoryChoices event = eventEntry.getValue();
+          final EventWithCategoryChoices event = group.getEventsWithCategoryChoices().get(eventId);
 
           if (user.getGroups().get(groupId).getEventsUnseen().containsKey(eventId)) {
             getGroupResponse.addEventUnseen(eventId);

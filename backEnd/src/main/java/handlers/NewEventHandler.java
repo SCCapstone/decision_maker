@@ -140,7 +140,8 @@ public class NewEventHandler implements ApiRequestHandler {
         }
 
         resultStatus = ResultStatus
-            .successful(JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+            .successful(
+                JsonUtils.convertObjectToJson(new GroupForApiResponse(eventCreator, newGroup)));
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());

@@ -38,7 +38,8 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    buildUserRows(Globals.currentGroupResponse.group.events[widget.eventId]);
+    buildUserRows(
+        Globals.currentGroupResponse.group.closedEvents[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";

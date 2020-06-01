@@ -41,6 +41,7 @@ class _GroupPageState extends State<GroupPage>
   final int votingTab = 2;
   final int occurringTab = 1;
   final int closedTab = 4;
+  final Map<int, int> listIndexesToEventTypes = new Map<int, int>();
   final Map<int, List<EventCardInterface>> eventCards = new Map<int,
       List<EventCardInterface>>(); // map of tab index to list of event cards
 
@@ -54,6 +55,13 @@ class _GroupPageState extends State<GroupPage>
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+
+    this.listIndexesToEventTypes[unseenTab] = EventsList.eventsTypeNew;
+    this.listIndexesToEventTypes[considerTab] = EventsList.eventsTypeConsider;
+    this.listIndexesToEventTypes[votingTab] = EventsList.eventsTypeVoting;
+    this.listIndexesToEventTypes[occurringTab] = EventsList.eventsTypeOccurring;
+    this.listIndexesToEventTypes[closedTab] = EventsList.eventsTypeClosed;
+
     this.tabs[unseenTab] = new AutoSizeText("New",
         maxLines: 1,
         style: TextStyle(fontSize: 17),
@@ -182,7 +190,7 @@ class _GroupPageState extends State<GroupPage>
                       child: EventsList(
                         group: Globals.currentGroupResponse.group,
                         events: this.eventCards[index],
-                        isUnseenTab: (index == unseenTab) ? true : false,
+                        eventsType: this.listIndexesToEventTypes[index],
                         refreshEventsUnseen: updatePage,
                         markAllEventsSeen: markAllEventsSeen,
                         refreshPage: refreshList,
@@ -316,47 +324,86 @@ class _GroupPageState extends State<GroupPage>
       this.eventCards[tab].clear();
     }
 
-    for (String eventId in Globals.currentGroupResponse.group.events.keys) {
+    for (String eventId
+        in Globals.currentGroupResponse.group.votingEvents.keys) {
+      EventCardInterface eventCard = new EventCardVoting(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.votingEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
+      this.eventCards[votingTab].add(eventCard);
+    }
+
+    for (String eventId
+        in Globals.currentGroupResponse.group.considerEvents.keys) {
+      EventCardInterface eventCard = new EventCardConsider(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.considerEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
+      this.eventCards[considerTab].add(eventCard);
+    }
+
+    for (String eventId
+        in Globals.currentGroupResponse.group.occurringEvents.keys) {
+      EventCardInterface eventCard = new EventCardOccurring(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.occurringEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
+      this.eventCards[occurringTab].add(eventCard);
+    }
+
+    for (String eventId
+        in Globals.currentGroupResponse.group.closedEvents.keys) {
+      EventCardInterface eventCard = new EventCardClosed(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.closedEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
+      this.eventCards[closedTab].add(eventCard);
+    }
+
+    for (String eventId in Globals.currentGroupResponse.group.newEvents.keys) {
       int eventMode = EventsManager.getEventMode(
-          Globals.currentGroupResponse.group.events[eventId]);
+          Globals.currentGroupResponse.group.newEvents[eventId]);
       EventCardInterface eventCard;
       if (eventMode == EventsManager.considerMode) {
         eventCard = new EventCardConsider(
             Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.events[eventId],
+            Globals.currentGroupResponse.group.newEvents[eventId],
             eventId,
             populateEventStages,
             refreshList);
-        this.eventCards[considerTab].add(eventCard);
       } else if (eventMode == EventsManager.votingMode) {
         eventCard = new EventCardVoting(
             Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.events[eventId],
+            Globals.currentGroupResponse.group.newEvents[eventId],
             eventId,
             populateEventStages,
             refreshList);
-        this.eventCards[votingTab].add(eventCard);
       } else if (eventMode == EventsManager.occurringMode) {
         eventCard = new EventCardOccurring(
             Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.events[eventId],
+            Globals.currentGroupResponse.group.newEvents[eventId],
             eventId,
             populateEventStages,
             refreshList);
-        this.eventCards[occurringTab].add(eventCard);
       } else if (eventMode == EventsManager.closedMode) {
         eventCard = new EventCardClosed(
             Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.events[eventId],
+            Globals.currentGroupResponse.group.newEvents[eventId],
             eventId,
             populateEventStages,
             refreshList);
-        this.eventCards[closedTab].add(eventCard);
       }
-      if (Globals.currentGroupResponse.eventsUnseen.keys.contains(eventId)) {
-        this.eventCards[unseenTab].add(eventCard);
-      }
+      this.eventCards[unseenTab].add(eventCard);
     }
+
     updatePage();
   }
 

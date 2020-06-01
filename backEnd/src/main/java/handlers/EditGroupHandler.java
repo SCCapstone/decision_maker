@@ -134,8 +134,10 @@ public class EditGroupHandler implements ApiRequestHandler {
         this.updateUsersTable(oldGroup, newGroup);
         this.updateCategoriesTable(oldGroup, newGroup);
 
+        final User user = this.dbAccessManager.getUser(activeUser);
+
         resultStatus = new ResultStatus(true,
-            JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
+            JsonUtils.convertObjectToJson(new GroupForApiResponse(user, newGroup).asMap()));
       } else {
         resultStatus = ResultStatus.failure(errorMessage.get());
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));

@@ -721,7 +721,9 @@ class _GroupsHomeState extends State<GroupsHome>
               notification.payload[GroupsManager.LAST_ACTIVITY];
         }
 
-        if (Globals.refreshGroupPage != null) {
+        //only refresh if the active group has the group id parsed above
+        if (Globals.currentGroupResponse.group.groupId == groupId &&
+            Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
@@ -809,7 +811,9 @@ class _GroupsHomeState extends State<GroupsHome>
               notification.payload[GroupsManager.LAST_ACTIVITY];
         }
 
-        if (Globals.refreshGroupPage != null) {
+        //only refresh if the active group has the group id parsed above
+        if (Globals.currentGroupResponse.group.groupId == groupId &&
+            Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }

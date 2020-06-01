@@ -6,7 +6,14 @@ import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {
+  static final int eventsTypeNew = 0;
+  static final int eventsTypeClosed = 1;
+  static final int eventsTypeConsider = 2;
+  static final int eventsTypeVoting = 3;
+  static final int eventsTypeOccurring = 4;
+
   final List<EventCardInterface> events;
+  final int eventsType;
   final bool isUnseenTab;
   final Group group;
   final Function refreshEventsUnseen;
@@ -18,12 +25,13 @@ class EventsList extends StatefulWidget {
       {Key key,
       this.group,
       this.events,
-      this.isUnseenTab,
+      this.eventsType,
       this.refreshEventsUnseen,
       this.markAllEventsSeen,
       this.refreshPage,
       this.getNextBatch})
-      : super(key: key);
+      : this.isUnseenTab = (eventsType == 0),
+        super(key: key);
 
   @override
   _EventsListState createState() => _EventsListState();

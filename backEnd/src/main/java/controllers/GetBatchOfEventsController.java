@@ -26,16 +26,19 @@ public class GetBatchOfEventsController implements ApiRequestController {
     ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID, RequestFields.BATCH_NUMBER);
+        .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID, RequestFields.BATCH_NUMBER,
+            RequestFields.BATCH_TYPE);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(Group.GROUP_ID);
         final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
+        final Integer batchType = (Integer) jsonMap.get(RequestFields.BATCH_TYPE);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.getBatchOfEventsHandler.handle(activeUser, groupId, batchNumber);
+        resultStatus = this.getBatchOfEventsHandler
+            .handle(activeUser, groupId, batchNumber, batchType);
       } catch (final Exception e) {
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
@@ -44,5 +47,6 @@ public class GetBatchOfEventsController implements ApiRequestController {
       throw new MissingApiRequestKeyException(requiredKeys);
     }
 
-    return resultStatus;  }
+    return resultStatus;
+  }
 }
