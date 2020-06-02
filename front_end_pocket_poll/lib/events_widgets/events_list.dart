@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
-import 'package:front_end_pocket_poll/imports/result_status.dart';
-import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
-import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {

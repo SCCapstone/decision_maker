@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import models.Group;
 import models.GroupForApiResponse;
 import models.GroupWithCategoryChoices;
 import models.User;
+import models.UserGroup;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
@@ -35,7 +37,7 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
   private static final Integer EVENTS_TYPE_VOTING = 3;
   private static final Integer EVENTS_TYPE_OCCURRING = 4;
 
-  private static final Integer EVENTS_BATCH_SIZE = 15;
+  private static final Integer EVENTS_BATCH_SIZE = 5;
 
   private final DbAccessManager dbAccessManager;
   private final Metrics metrics;
@@ -81,7 +83,7 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
             .handle(user, groupForApiResponse, batchNumber, batchType);
 
         final Map<String, Map<String, Event>> eventBatches = new HashMap<>();
-        eventBatches.putIfAbsent(getEventPriorityLabelFromEventType(batchType), eventsBatch);
+        eventBatches.putIfAbsent(getEventPriorityLabelFromBatchType(batchType), eventsBatch);
         groupForApiResponse.setAllEvents(eventBatches);
 
         final GetGroupResponse getGroupResponse = new GetGroupResponse(groupForApiResponse);
@@ -119,7 +121,7 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
     Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
     Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
-    //linked hash maps maintain order whereas normal hash maps do not
+    ArrayList<String> batchEventIds = new ArrayList<>(group.getEvents().keySet());
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
     //get all of the events from the first event to the oldest event in the batch
@@ -146,44 +148,24 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
         final Set<String> unseenEventIds = activeUser.getGroups().get(group.getGroupId())
             .getEventsUnseen().keySet();
 
-        //then we filter to unseen events and sort those events up to the oldestEvent being asked for
-        eventsBatch = searchingEventsBatch
-            .entrySet()
-            .stream()
-            .filter(e1 -> unseenEventIds.contains(e1.getKey()))
-            .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
-            .limit(oldestEventIndex)
-            .collect(collectingAndThen(toMap(Entry::getKey, (Map.Entry e) -> (Event) e.getValue()),
-                LinkedHashMap::new));
+        batchEventIds.removeIf(eventId -> !unseenEventIds.contains(eventId));
       } else {
-        final Integer eventsTypePriority = getEventPriorityFromEventType(batchType);
+        final Integer eventsTypePriority = getEventPriorityFromBatchType(batchType);
 
-        //then we filter to correct type and sort all events up to the oldestEvent being asked for
-        eventsBatch = searchingEventsBatch
-            .entrySet()
-            .stream()
-            .filter(e1 -> e1.getValue().getPriority().equals(eventsTypePriority))
-            .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
-            .limit(oldestEventIndex)
-            .collect(collectingAndThen(toMap(Entry::getKey, (Map.Entry e) -> (Event) e.getValue()),
-                LinkedHashMap::new));
+        batchEventIds.removeIf(
+            eventId -> !searchingEventsBatch.get(eventId).getPriority().equals(eventsTypePriority));
+      }
+
+      //sort the events
+      batchEventIds.sort((String e1, String e2) -> searchingEventsBatch.get(e1)
+          .compareTo(searchingEventsBatch.get(e2)));
+
+      String eventId;
+      for (int i = newestEventIndex; i < oldestEventIndex; i++) {
+        eventId = batchEventIds.get(i);
+        eventsBatch.put(eventId, group.getEvents().get(eventId));
       }
     } // else there are no events in this range and we return the empty map
-
-    //then we sort in the opposite direction and get the appropriate number of events for the batch
-    final List<String> reverseOrderKeys = new ArrayList<>(eventsBatch.keySet());
-    Collections.reverse(reverseOrderKeys);
-
-    final Map<String, Event> temp = new HashMap<>();
-    for (String eventId : reverseOrderKeys) {
-      temp.put(eventId, eventsBatch.get(eventId));
-
-      if (temp.size() >= oldestEventIndex - newestEventIndex) {
-        break;
-      }
-    }
-
-    eventsBatch = temp;
 
     return eventsBatch;
   }
@@ -211,8 +193,8 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
     //linked hash maps maintain order whereas normal hash maps do not
     LinkedHashMap<String, EventForSorting> eventsBatch = new LinkedHashMap<>();
 
-    final Set<String> unseenEventIds = activeUser.getGroups().get(group.getGroupId())
-        .getEventsUnseen().keySet();
+    final Set<String> unseenEventIds = activeUser.getGroups()
+        .getOrDefault(group.getGroupId(), UserGroup.fromNewGroup(group)).getEventsUnseen().keySet();
 
     //get all of the events from the first event to the oldest event in the batch
     if (group.getEvents().size() > 0) {
@@ -228,57 +210,68 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
           .collect(collectingAndThen(
               toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
               LinkedHashMap::new));
-
-      //then we sort those events oldest to newest
-      eventsBatch = eventsBatch
-          .entrySet()
-          .stream()
-          .sorted((e1, e2) -> -1 * e1.getValue().compareTo(e2.getValue()))
-          .collect(collectingAndThen(toMap(Entry::getKey, Entry::getValue), LinkedHashMap::new));
     } // else there are no events in this range and we return the empty map
 
-    String priorityLabel;
-    for (final String eventId : eventsBatch.keySet()) {
-      if (unseenEventIds.contains(eventId) &&
-          eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS).size() < EVENTS_BATCH_SIZE) {
-        eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS)
-            .put(eventId, eventsBatch.get(eventId));
-      }
+    //then we sort those events oldest to newest
+    eventsBatch.entrySet().stream()
+        .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
+        .forEach((eventEntry) -> {
+          if (unseenEventIds.contains(eventEntry.getKey()) &&
+              eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS).size() < EVENTS_BATCH_SIZE) {
+            eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS)
+                .put(eventEntry.getKey(), eventEntry.getValue());
+          }
 
-      priorityLabel = getEventPriorityLabelFromEventType(eventsBatch.get(eventId).getPriority());
+          String priorityLabel = getEventPriorityLabelFromPriority(
+              eventEntry.getValue().getPriority());
 
-      if (eventTypesToEvent.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
-        eventTypesToEvent.get(priorityLabel).put(eventId, eventsBatch.get(eventId));
-      }
-    }
+          if (eventTypesToEvent.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
+            eventTypesToEvent.get(priorityLabel).put(eventEntry.getKey(), eventEntry.getValue());
+          }
+        });
 
     return eventTypesToEvent;
   }
 
-  private static Integer getEventPriorityFromEventType(final Integer eventType) {
+  private static Integer getEventPriorityFromBatchType(final Integer batchType) {
     Integer priority = -1;
-    if (eventType.equals(EVENTS_TYPE_CLOSED)) {
+    if (batchType.equals(EVENTS_TYPE_CLOSED)) {
       priority = EventForSorting.PRIORITY_CLOSED;
-    } else if (eventType.equals(EVENTS_TYPE_CONSIDER)) {
+    } else if (batchType.equals(EVENTS_TYPE_CONSIDER)) {
       priority = EventForSorting.PRIORITY_CONSIDERING;
-    } else if (eventType.equals(EVENTS_TYPE_OCCURRING)) {
+    } else if (batchType.equals(EVENTS_TYPE_OCCURRING)) {
       priority = EventForSorting.PRIORITY_OCCURRING;
-    } else if (eventType.equals(EVENTS_TYPE_VOTING)) {
+    } else if (batchType.equals(EVENTS_TYPE_VOTING)) {
       priority = EventForSorting.PRIORITY_VOTING;
     }
 
     return priority;
   }
 
-  private static String getEventPriorityLabelFromEventType(final Integer eventType) {
+  private static String getEventPriorityLabelFromBatchType(final Integer batchType) {
     String label = null;
-    if (eventType.equals(EVENTS_TYPE_CLOSED)) {
+    if (batchType.equals(EVENTS_TYPE_CLOSED)) {
       label = GroupForApiResponse.CLOSED_EVENTS;
-    } else if (eventType.equals(EVENTS_TYPE_CONSIDER)) {
+    } else if (batchType.equals(EVENTS_TYPE_CONSIDER)) {
       label = GroupForApiResponse.CONSIDER_EVENTS;
-    } else if (eventType.equals(EVENTS_TYPE_OCCURRING)) {
+    } else if (batchType.equals(EVENTS_TYPE_OCCURRING)) {
       label = GroupForApiResponse.OCCURRING_EVENTS;
-    } else if (eventType.equals(EVENTS_TYPE_VOTING)) {
+    } else if (batchType.equals(EVENTS_TYPE_VOTING)) {
+      label = GroupForApiResponse.VOTING_EVENTS;
+    }
+
+    return label;
+  }
+
+  private static String getEventPriorityLabelFromPriority(final Integer priority) {
+    String label = null;
+    if (priority.equals(EventForSorting.PRIORITY_CLOSED)) {
+      label = GroupForApiResponse.CLOSED_EVENTS;
+    } else if (priority.equals(EventForSorting.PRIORITY_CONSIDERING)) {
+      label = GroupForApiResponse.CONSIDER_EVENTS;
+    } else if (priority.equals(EventForSorting.PRIORITY_OCCURRING)) {
+      label = GroupForApiResponse.OCCURRING_EVENTS;
+    } else if (priority.equals(EventForSorting.PRIORITY_VOTING)) {
       label = GroupForApiResponse.VOTING_EVENTS;
     }
 

@@ -36,7 +36,7 @@ class GroupsManager {
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
   static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
-  static final int BATCH_SIZE = 25;
+  static final int BATCH_SIZE = 5;
   static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
@@ -78,6 +78,7 @@ class GroupsManager {
         if (responseItem.success) {
           retVal.data = new GetGroupResponse.fromJson(
               json.decode(responseItem.resultMessage));
+
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load group.";
