@@ -21,15 +21,14 @@ class EventsList extends StatefulWidget {
   final Function getNextBatch;
   final Function markAllEventsSeen;
 
-  EventsList(
-      {Key key,
-      this.group,
-      this.events,
-      this.eventsType,
-      this.refreshEventsUnseen,
-      this.markAllEventsSeen,
-      this.refreshPage,
-      this.getNextBatch})
+  EventsList({Key key,
+    this.group,
+    this.events,
+    this.eventsType,
+    this.refreshEventsUnseen,
+    this.markAllEventsSeen,
+    this.refreshPage,
+    this.getNextBatch})
       : this.isUnseenTab = (eventsType == 0),
         super(key: key);
 
@@ -51,6 +50,7 @@ class _EventsListState extends State<EventsList> {
 
   @override
   void initState() {
+    print("event list init");
     this.scrollController.addListener(scrollListener);
     this.inBottomDelta = false;
     this.inTopDelta = false;
@@ -60,28 +60,28 @@ class _EventsListState extends State<EventsList> {
 
   scrollListener() {
     if (this.scrollController.offset >=
-            this.scrollController.position.maxScrollExtent &&
+        this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange) {
-      print("reach the bottom");
+//      print("reach the bottom");
 //      widget.getNextBatch(widget.eventsType);
     }
 
     double delta = this.scrollController.position.maxScrollExtent / 3;
     if (this.scrollController.position.maxScrollExtent -
-                scrollController.position.pixels <=
-            delta &&
+        scrollController.position.pixels <=
+        delta &&
         !this.inBottomDelta) {
       widget.getNextBatch(widget.eventsType);
       print("bottom third");
       this.inBottomDelta = true;
     } else if (this.scrollController.position.maxScrollExtent -
-            scrollController.position.pixels >
+        scrollController.position.pixels >
         delta) {
       this.inBottomDelta = false;
     }
 
     if (this.scrollController.offset <=
-            this.scrollController.position.minScrollExtent &&
+        this.scrollController.position.minScrollExtent &&
         !this.scrollController.position.outOfRange) {
       print("reach the top");
       //todo
@@ -117,24 +117,38 @@ class _EventsListState extends State<EventsList> {
         } else {
           // cards are same priority
           if (a.getEventMode() == EventsManager.considerMode) {
-            return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
+            return b
+                .getEvent()
+                .pollBegin
+                .isBefore(a
+                .getEvent()
+                .pollBegin)
                 ? 1
                 : -1;
           } else if (a.getEventMode() == EventsManager.votingMode) {
-            return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
+            return b
+                .getEvent()
+                .pollEnd
+                .isBefore(a
+                .getEvent()
+                .pollEnd) ? 1 : -1;
           } else if (a.getEventMode() == EventsManager.occurringMode) {
             return b
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(a.getEvent().eventStartDateTime)
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(a
+                .getEvent()
+                .eventStartDateTime)
                 ? 1
                 : -1;
           } else {
             // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
             return a
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(b.getEvent().eventStartDateTime)
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(b
+                .getEvent()
+                .eventStartDateTime)
                 ? 1
                 : -1;
           }
@@ -166,16 +180,19 @@ class _EventsListState extends State<EventsList> {
           Visibility(
             visible: Globals.currentGroupResponse.group.currentBatchNum > 0 &&
                 Globals.currentGroupResponse.group.totalNumberOfEvents -
-                        numEvents >
+                    numEvents >
                     0,
             child: Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width * .02),
+              padding: EdgeInsets.all(MediaQuery
+                  .of(context)
+                  .size
+                  .width * .02),
             ),
           ),
           // next button only present when there are more events to show
           Visibility(
             visible: Globals.currentGroupResponse.group.totalNumberOfEvents -
-                    numEvents >
+                numEvents >
                 0,
             child: RaisedButton(
               onPressed: () {
@@ -195,7 +212,10 @@ class _EventsListState extends State<EventsList> {
             Align(
               alignment: Alignment.centerRight,
               child: Container(
-                height: MediaQuery.of(context).size.height * .045,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height * .045,
                 child: IconButton(
                   icon: Icon(Icons.done_all),
                   color: Globals.pocketPollGreen,

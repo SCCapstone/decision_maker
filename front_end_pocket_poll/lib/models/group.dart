@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
@@ -126,6 +127,22 @@ class Group {
             .putIfAbsent(eventEntry.key, () => eventEntry.value);
       }
     }
+  }
+
+  Map<String, Event> getEventsFromBatchType(final int batchType) {
+    if (batchType == EventsList.eventsTypeNew) {
+      return this.newEvents;
+    } else if (batchType == EventsList.eventsTypeVoting) {
+      return this.votingEvents;
+    } else if (batchType == EventsList.eventsTypeClosed) {
+      return this.closedEvents;
+    } else if (batchType == EventsList.eventsTypeConsider) {
+      return this.considerEvents;
+    } else if (batchType == EventsList.eventsTypeOccurring) {
+      return this.occurringEvents;
+    }
+
+    return null;
   }
 
   static Map<String, Event> getEventsMapFromJson(

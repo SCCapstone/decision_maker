@@ -156,6 +156,7 @@ class _GroupPageState extends State<GroupPage>
 
   @override
   Widget build(BuildContext context) {
+    print("group_page build");
     if (this.loading) {
       return groupLoading();
     } else if (this.errorLoading) {
@@ -578,158 +579,51 @@ class _GroupPageState extends State<GroupPage>
   void getNextBatch(final int batchType) {
     //indicate that we're getting the next batch
     this.eventTypesToCurrentHighestBatchIndex[batchType]++;
+    final int batchIndex = this.eventTypesToCurrentHighestBatchIndex[batchType];
 
-    if (this.eventTypesToBatchLimits[batchType] == null ||
-        this.eventTypesToBatchLimits[batchType] >
-            this.eventTypesToCurrentHighestBatchIndex[batchType]) {
-      GroupsManager.getBatchOfEvents(widget.groupId,
-              this.eventTypesToCurrentHighestBatchIndex[batchType], batchType)
+    //we only query the db when we haven't hit the batch index limit
+    bool queryDb = (this.eventTypesToBatchLimits[batchType] == null ||
+        this.eventTypesToBatchLimits[batchType] > batchIndex);
+
+    if (queryDb) {
+      GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
           .then((ResultStatus<GetGroupResponse> resultStatus) {
+        final GetGroupResponse apiResponse = resultStatus.data;
         if (resultStatus.success) {
-          if (resultStatus.data.group.votingEvents.length > 0) {
+          if (apiResponse.group.getEventsFromBatchType(batchType).length > 0) {
             Globals.currentGroupResponse.group
-                .addEvents(resultStatus.data.group.votingEvents);
+                .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
+
+            //add the event ids to their map
+            this.eventTypesToBatchEventIds[batchType].putIfAbsent(
+                batchIndex,
+                () => apiResponse.group
+                    .getEventsFromBatchType(batchType)
+                    .keys
+                    .toList());
+
+            //remove the events at the top based on history
+            if (Globals.currentGroupResponse.group
+                    .getEventsFromBatchType(batchType)
+                    .length >
+                3 * GroupsManager.BATCH_SIZE) {
+              Globals.currentGroupResponse.group
+                  .getEventsFromBatchType(batchType)
+                  .removeWhere((k, v) {
+                return this
+                    .eventTypesToBatchEventIds[batchType][batchIndex - 3]
+                    .contains(k);
+              });
+
+              //delete the history
+              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - 3);
+            }
           } else {
             //we didn't get anything so set the limit and go back to the last
             // batch index that had events
             this.eventTypesToBatchLimits[batchType] =
                 this.eventTypesToCurrentHighestBatchIndex[batchType];
             this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-          }
-
-          //addAll overwrites existing values which is good since this is up to date
-          if (batchType == EventsList.eventsTypeNew) {
-            if (resultStatus.data.group.newEvents.length > 0) {
-              Globals.currentGroupResponse.group.newEvents
-                  .addAll(resultStatus.data.group.newEvents);
-
-              this
-                  .eventTypesToBatchEventIds[batchType]
-                  .putIfAbsent(
-                      this.eventTypesToCurrentHighestBatchIndex[batchType],
-                      () => resultStatus.data.group.newEvents.keys.toList());
-
-              if (Globals.currentGroupResponse.group.newEvents.length >
-                  3 * GroupsManager.BATCH_SIZE) {
-                //remove the events at the top
-                Globals.currentGroupResponse.group.newEvents
-                    .removeWhere((k, v) {
-                  return this
-                      .eventTypesToBatchEventIds[batchType][
-                          this.eventTypesToCurrentHighestBatchIndex[batchType] -
-                              3]
-                      .contains(k);
-                });
-
-                //delete the event keys
-                this.eventTypesToBatchEventIds[batchType].remove(
-                    this.eventTypesToCurrentHighestBatchIndex[batchType] - 3);
-              }
-            } else {
-              //we didn't get anything so set the limit and go back to the last
-              // batch index that had events
-              this.eventTypesToBatchLimits[batchType] =
-                  this.eventTypesToCurrentHighestBatchIndex[batchType];
-              this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-            }
-          } else if (batchType == EventsList.eventsTypeVoting) {
-            if (resultStatus.data.group.votingEvents.length > 0) {
-              Globals.currentGroupResponse.group.votingEvents
-                  .addAll(resultStatus.data.group.votingEvents);
-            } else {
-              //we didn't get anything so set the limit and go back to the last
-              // batch index that had events
-              this.eventTypesToBatchLimits[batchType] =
-                  this.eventTypesToCurrentHighestBatchIndex[batchType];
-              this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-            }
-          } else if (batchType == EventsList.eventsTypeClosed) {
-            if (resultStatus.data.group.closedEvents.length > 0) {
-              Globals.currentGroupResponse.group.closedEvents
-                  .addAll(resultStatus.data.group.closedEvents);
-
-              this
-                  .eventTypesToBatchEventIds[EventsList.eventsTypeClosed]
-                  .putIfAbsent(
-                      this.eventTypesToCurrentHighestBatchIndex[batchType],
-                      () => resultStatus.data.group.closedEvents.keys.toList());
-
-              if (Globals.currentGroupResponse.group.closedEvents.length >
-                  3 * GroupsManager.BATCH_SIZE) {
-                //remove the events at the top
-                Globals.currentGroupResponse.group.closedEvents
-                    .removeWhere((k, v) {
-                  return this
-                      .eventTypesToBatchEventIds[EventsList.eventsTypeClosed][
-                          this.eventTypesToCurrentHighestBatchIndex[batchType] -
-                              3]
-                      .contains(k);
-                });
-
-                //delete the event keys
-                this
-                    .eventTypesToBatchEventIds[EventsList.eventsTypeClosed]
-                    .remove(
-                        this.eventTypesToCurrentHighestBatchIndex[batchType] -
-                            3);
-              }
-            } else {
-              //we didn't get anything so set the limit and go back to the last
-              // batch index that had events
-              this.eventTypesToBatchLimits[batchType] =
-                  this.eventTypesToCurrentHighestBatchIndex[batchType];
-              this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-            }
-          } else if (batchType == EventsList.eventsTypeConsider) {
-            if (resultStatus.data.group.considerEvents.length > 0) {
-              Globals.currentGroupResponse.group.considerEvents
-                  .addAll(resultStatus.data.group.considerEvents);
-            } else {
-              //we didn't get anything so set the limit and go back to the last
-              // batch index that had events
-              this.eventTypesToBatchLimits[batchType] =
-                  this.eventTypesToCurrentHighestBatchIndex[batchType];
-              this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-            }
-          } else if (batchType == EventsList.eventsTypeOccurring) {
-            if (resultStatus.data.group.occurringEvents.length > 0) {
-              Globals.currentGroupResponse.group.occurringEvents
-                  .addAll(resultStatus.data.group.occurringEvents);
-
-              this
-                  .eventTypesToBatchEventIds[EventsList.eventsTypeOccurring]
-                  .putIfAbsent(
-                      this.eventTypesToCurrentHighestBatchIndex[batchType],
-                      () => resultStatus.data.group.occurringEvents.keys
-                          .toList());
-
-              if (Globals.currentGroupResponse.group.occurringEvents.length >
-                  3 * GroupsManager.BATCH_SIZE) {
-                //remove the events at the top
-                Globals.currentGroupResponse.group.occurringEvents
-                    .removeWhere((k, v) {
-                  return this
-                      .eventTypesToBatchEventIds[EventsList.eventsTypeOccurring]
-                          [
-                          this.eventTypesToCurrentHighestBatchIndex[batchType] -
-                              3]
-                      .contains(k);
-                });
-
-                //delete the event keys
-                this
-                    .eventTypesToBatchEventIds[EventsList.eventsTypeOccurring]
-                    .remove(
-                        this.eventTypesToCurrentHighestBatchIndex[batchType] -
-                            3);
-              }
-            } else {
-              //we didn't get anything so set the limit and go back to the last
-              // batch index that had events
-              this.eventTypesToBatchLimits[batchType] =
-                  this.eventTypesToCurrentHighestBatchIndex[batchType];
-              this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-            }
           }
 
           populateEventStages();
