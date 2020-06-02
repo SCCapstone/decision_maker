@@ -522,8 +522,9 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<GetGroupResponse>> getBatchOfEventEvents(
+  static Future<ResultStatus<GetGroupResponse>> getBatchOfEvents(
       final String groupId, final int batchNumber, final int batchType) async {
+    print("getBatchOfEvents invoked");
     final ResultStatus<GetGroupResponse> retVal =
         new ResultStatus(success: false);
 

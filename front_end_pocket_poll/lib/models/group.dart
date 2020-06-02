@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/member.dart';
@@ -107,6 +108,24 @@ class Group {
         defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
         totalNumberOfEvents: json[GroupsManager.TOTAL_NUMBER_OF_EVENTS],
         isOpen: json[GroupsManager.IS_OPEN]);
+  }
+
+  void addEvents(final Map<String, Event> events) {
+    for (MapEntry<String, Event> eventEntry in events.entries) {
+      int mode = EventsManager.getEventMode(eventEntry.value);
+
+      if (mode == EventsManager.closedMode) {
+        this.closedEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
+      } else if (mode == EventsManager.votingMode) {
+        this.votingEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
+      } else if (mode == EventsManager.considerMode) {
+        this.considerEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
+      } else if (mode == EventsManager.occurringMode) {
+        this
+            .occurringEvents
+            .putIfAbsent(eventEntry.key, () => eventEntry.value);
+      }
+    }
   }
 
   static Map<String, Event> getEventsMapFromJson(

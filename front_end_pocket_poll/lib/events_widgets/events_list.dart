@@ -40,6 +40,9 @@ class EventsList extends StatefulWidget {
 class _EventsListState extends State<EventsList> {
   final ScrollController scrollController = new ScrollController();
 
+  bool inTopDelta;
+  bool inBottomDelta;
+
   @override
   void dispose() {
     this.scrollController.dispose();
@@ -49,6 +52,10 @@ class _EventsListState extends State<EventsList> {
   @override
   void initState() {
     this.scrollController.addListener(scrollListener);
+    this.inBottomDelta = false;
+    this.inTopDelta = false;
+
+    super.initState();
   }
 
   scrollListener() {
@@ -56,7 +63,21 @@ class _EventsListState extends State<EventsList> {
             this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange) {
       print("reach the bottom");
+//      widget.getNextBatch(widget.eventsType);
+    }
+
+    double delta = this.scrollController.position.maxScrollExtent / 3;
+    if (this.scrollController.position.maxScrollExtent -
+                scrollController.position.pixels <=
+            delta &&
+        !this.inBottomDelta) {
       widget.getNextBatch(widget.eventsType);
+      print("bottom third");
+      this.inBottomDelta = true;
+    } else if (this.scrollController.position.maxScrollExtent -
+            scrollController.position.pixels >
+        delta) {
+      this.inBottomDelta = false;
     }
 
     if (this.scrollController.offset <=
