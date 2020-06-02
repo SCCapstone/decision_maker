@@ -17,8 +17,7 @@ class AboutDescriptions {
       <p>If you prefer brighter screens, try out the light theme.</p>
       <p>If your pocket is getting polled a little too much, you can turn off notifications entirely. You won't receive any more notifications regarding upcoming events or being added to groups.</p>
       <p>At any time, you can change your user icon. Simply click the edit icon in the top right corner of your current one.</p>
-      <p>No need to memorize all your friends' usernames. Add usernames to your Favorites to have their info saved and ready. These favorites can be utilized when adding members to a group.</p>
-      
+      <p>No need to memorize all your friends' usernames. Add usernames to your Favorites to have their info saved and ready. You can either add them by username in the settings page or click on their picture in any group they are in.</p>
     """);
 
   static Html categories = Html(data: """
@@ -40,17 +39,17 @@ class AboutDescriptions {
       <p>Groups are composed of members and categories. If the creator of the group makes it private, then changes to the group are only allowed by the creator. Otherwise, any member can add their categories or other members to the group. To utilize your favorites, click the contacts icon next to the “Add User” button when adding a member.</p>
       <p>To edit a group, navigate to the group settings page by clicking the settings icon in the top right corner of the group page. After making your changes to the group, make sure to hit the save button. Note that changes made to the group categories and members are saved automatically when you exit each respective page.</p>
       <p>If you no longer wish to be in a group and are not the group’s creator you can leave at any time from the group settings page. In addition, only you will be able to add yourself back to the group. You can rejoin the group from the “Groups Left” tab on the app’s homepage.</p>
-      <p>To toggle muting a group, click the blue mute icon next to the group row in the app’s homepage. You can still see the number of unseen events denoted by the number underneath this blue icon.</p>
+      <p>To toggle muting a group, click the blue mute icon next to the group row in the app’s homepage or mute the group directly from the group settings page (icon next to the group name). You can still see the number of unseen events denoted by the number underneath the blue icon on the homepage.</p>
     """);
 
   static Html events = Html(data: """
       <h2>Location</h2>
-      <p>Events of a group are listed after clicking on a group from the app homepage.</p>
+      <p>Events of a group are listed after clicking on a group from the app homepage. They are organized by their respective stages.</p>
       <h2>Overview</h2>
       <p>Events are made inside of groups and have a single category attached to them. This category is used by our algorithm to produce a selection of choices to be voted on.</p>
       <p>There are multiple stages of an event:</p>
       <ol>
-        <li>Consider stage: If you don’t want your ratings to be leveraged by our algorithm, then you can say “No” to being considered. By default, all members in the group are considered and you must say “No” to opt out.</li>
+        <li>Consider stage: If you don’t want your ratings to be leveraged by our algorithm, then you can say “No” to being considered. By default, all members in the group are considered and you must say “No” to opt out. Also make sure to update your ratings before the algorithm does its work.</li>
         <li>Voting stage: The algorithm has produced a handful of choices for all members to vote on (note that if you said “No” to being considered you can still vote). You simply vote no using the thumbs down button and yes with the thumbs up button.</li>
         <li>Ready stage: The highest voted choice is chosen and is displayed along with the start time of the event.</li>
       </ol>

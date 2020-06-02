@@ -576,7 +576,7 @@ class _EventCreateState extends State<EventCreate> {
     DateTime selectedDate = await showDatePicker(
         context: this.context,
         initialDate: this.proposedEventDateTime,
-        firstDate: DateTime.now().subtract(Duration(days: 1)),
+        firstDate: DateTime.now(),
         lastDate: DateTime(DateTime.now().year + 50));
     if (selectedDate != null) {
       // would be null if user clicks cancel or clicks outside of the popup

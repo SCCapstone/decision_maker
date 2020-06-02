@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:front_end_pocket_poll/widgets/first_login.dart';
 import 'package:front_end_pocket_poll/groups_widgets/groups_home.dart';
+import 'package:front_end_pocket_poll/widgets/intro_slideshow.dart';
 import 'package:front_end_pocket_poll/widgets/login_page.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/widgets/internet_loss.dart';
@@ -86,10 +86,8 @@ class PocketPoll extends StatelessWidget {
                 } else {
                   if (Globals.user.firstLogin) {
                     return MaterialApp(
-                      home: FirstLogin(),
-                      theme: (Globals.user.appSettings.darkTheme)
-                          ? Globals.darkTheme
-                          : Globals.lightTheme,
+                      home: IntroSlideShow(),
+                      theme: Globals.darkTheme,
                       title: "Pocket Poll",
                     );
                   } else {
