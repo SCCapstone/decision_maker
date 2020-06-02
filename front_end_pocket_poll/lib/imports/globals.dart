@@ -113,4 +113,6 @@ class Globals {
       "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/privacy_policy.html";
   static final String flutterUrl = "https://flutter.dev/";
   static final String awsUrl = "https://aws.amazon.com/";
+  static final String acknowledgementsUrl =
+      "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/acknowledgements.html";
 }

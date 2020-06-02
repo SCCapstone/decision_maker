@@ -131,18 +131,6 @@ class _FirstLoginState extends State<FirstLogin> {
                         padding: EdgeInsets.all(
                             MediaQuery.of(context).size.height * .004),
                       ),
-                      RaisedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FavoritesPage(
-                                        this.displayedFavorites))).then((_) {
-                              saveFavorites();
-                            });
-                          },
-                          icon: Icon(Icons.contacts),
-                          label: Text("My Favorites")),
                       Container(
                         width: MediaQuery.of(context).size.width * .8,
                         child: Column(
@@ -239,35 +227,6 @@ class _FirstLoginState extends State<FirstLogin> {
         this.newIcon = true;
       }
       setState(() {});
-    }
-  }
-
-  // if the favorites have changed, attempt to update them in the DB
-  void saveFavorites() async {
-    Set oldFavorites = this.originalFavorites.toSet();
-    Set newFavorites = this.displayedFavorites.toSet();
-    bool changedFavorites = !(oldFavorites.containsAll(newFavorites) &&
-        oldFavorites.length == newFavorites.length);
-    if (changedFavorites) {
-      List<String> userNames = new List<String>();
-      for (Favorite favorite in this.displayedFavorites) {
-        userNames.add(favorite.username);
-      }
-      ResultStatus resultStatus = await UsersManager.updateUserSettings(
-          Globals.user.displayName,
-          Globals.user.appSettings.darkTheme,
-          Globals.user.appSettings.muted,
-          userNames,
-          null);
-      if (resultStatus.success) {
-        this.originalFavorites.clear();
-        this.originalFavorites.addAll(this.displayedFavorites);
-      } else {
-        // if it failed then revert back to old favorites
-        this.displayedFavorites.clear();
-        this.displayedFavorites.addAll(this.originalFavorites);
-        showErrorMessage("Error", "Error saving favorites.", this.context);
-      }
     }
   }
 
