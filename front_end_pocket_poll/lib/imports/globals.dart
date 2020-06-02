@@ -59,8 +59,8 @@ class Globals {
   static final int choiceRatingDescending = 5;
   static final String alphabeticalSortString = "Alphabetical (A-Z)";
   static final String alphabeticalReverseSortString = "Alphabetical (Z-A)";
-  static final String dateNewestSortString = "Date Modified (Newest)";
-  static final String dateOldestSortString = "Date Modified (Oldest)";
+  static final String dateNewestSortString = "Newest Activity";
+  static final String dateOldestSortString = "Oldest Activity";
   static final String choiceRatingAscendingSortString = "Ratings (Ascending)";
   static final String choiceRatingDescendingSortString = "Ratings (Descending)";
 
