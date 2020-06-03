@@ -10,6 +10,7 @@ class Globals {
   static GetGroupResponse currentGroupResponse = new GetGroupResponse();
   static List<CategoryRatingTuple> cachedCategories =
       new List<CategoryRatingTuple>();
+  static Map<int, double> eventListScrollPositionsAtDispose = {};
   static bool fireBaseConfigured = false;
   static Function refreshGroupPage;
   static SharedPreferences sharedPrefs;

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_loading.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_create.dart';
@@ -24,6 +23,8 @@ class GroupPage extends StatefulWidget {
   final String groupId;
   final String groupName;
 
+  static final int maxEventBatchesInMemory = 3;
+
   GroupPage({Key key, this.groupId, this.groupName}) : super(key: key);
 
   @override
@@ -33,7 +34,6 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   static final int totalTabs = 5;
-  static final int maxEventBatchesInMemory = 3;
 
   final List<AutoSizeText> tabs = new List(totalTabs);
 
@@ -152,6 +152,7 @@ class _GroupPageState extends State<GroupPage>
     this.tabController.dispose();
     Globals.currentGroupResponse.group = null;
     Globals.refreshGroupPage = null;
+    Globals.eventListScrollPositionsAtDispose = {};
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -231,9 +232,11 @@ class _GroupPageState extends State<GroupPage>
                         markAllEventsSeen: markAllEventsSeen,
                         refreshPage: refreshList,
                         getNextBatch: getNextBatch,
-                        largestBatchIndex:
+                        getPreviousBatch: getPreviousBatch,
+                        largestBatchIndexLoaded:
                             this.eventTypesToCurrentHighestBatchIndex[
                                 this.listIndexesToEventTypes[index]],
+                        limitBatchIsLoaded: false,
                         previousMaxScrollExtent:
                             this.batchTypesToPreviousMaxScrollExtents[
                                 this.listIndexesToEventTypes[index]],
@@ -339,6 +342,12 @@ class _GroupPageState extends State<GroupPage>
       Globals.currentGroupResponse = status.data;
       Globals.currentGroupResponse.group.currentBatchNum = batchNum;
 
+      this.eventTypesToBatchEventIds[EventsList.eventsTypeNew].clear();
+      this.eventTypesToBatchEventIds[EventsList.eventsTypeVoting].clear();
+      this.eventTypesToBatchEventIds[EventsList.eventsTypeConsider].clear();
+      this.eventTypesToBatchEventIds[EventsList.eventsTypeClosed].clear();
+      this.eventTypesToBatchEventIds[EventsList.eventsTypeOccurring].clear();
+
       this.eventTypesToBatchEventIds[EventsList.eventsTypeNew].putIfAbsent(
           0, () => Globals.currentGroupResponse.group.newEvents.keys.toList());
       this.eventTypesToBatchEventIds[EventsList.eventsTypeVoting].putIfAbsent(0,
@@ -385,68 +394,45 @@ class _GroupPageState extends State<GroupPage>
 
     for (String eventId
         in Globals.currentGroupResponse.group.votingEvents.keys) {
-      EventCardInterface eventCard;
-
-      if (Globals.currentGroupResponse.group.votingEvents[eventId] != null) {
-        eventCard = new EventCardVoting(
-            Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.votingEvents[eventId],
-            eventId,
-            populateEventStages,
-            refreshList);
-      } else {
-        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeVoting);
-      }
+      EventCardInterface eventCard = new EventCardVoting(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.votingEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
       this.eventCards[votingTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.considerEvents.keys) {
-      EventCardInterface eventCard;
-      if (Globals.currentGroupResponse.group.considerEvents[eventId] != null) {
-        eventCard = new EventCardConsider(
-            Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.considerEvents[eventId],
-            eventId,
-            populateEventStages,
-            refreshList);
-      } else {
-        eventCard =
-            new EventCardLoading(eventId, EventsList.eventsTypeConsider);
-      }
+      EventCardInterface eventCard = new EventCardConsider(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.considerEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
       this.eventCards[considerTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.occurringEvents.keys) {
-      EventCardInterface eventCard;
-      if (Globals.currentGroupResponse.group.occurringEvents[eventId] != null) {
-        eventCard = new EventCardOccurring(
-            Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.occurringEvents[eventId],
-            eventId,
-            populateEventStages,
-            refreshList);
-      } else {
-        eventCard =
-            new EventCardLoading(eventId, EventsList.eventsTypeOccurring);
-      }
+      EventCardInterface eventCard = new EventCardOccurring(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.occurringEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
       this.eventCards[occurringTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.closedEvents.keys) {
-      EventCardInterface eventCard;
-      if (Globals.currentGroupResponse.group.closedEvents[eventId] != null) {
-        eventCard = new EventCardClosed(
-            Globals.currentGroupResponse.group.groupId,
-            Globals.currentGroupResponse.group.closedEvents[eventId],
-            eventId,
-            populateEventStages,
-            refreshList);
-      } else {
-        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeClosed);
-      }
+      EventCardInterface eventCard = new EventCardClosed(
+          Globals.currentGroupResponse.group.groupId,
+          Globals.currentGroupResponse.group.closedEvents[eventId],
+          eventId,
+          populateEventStages,
+          refreshList);
       this.eventCards[closedTab].add(eventCard);
     }
 
@@ -454,10 +440,7 @@ class _GroupPageState extends State<GroupPage>
       int eventMode = EventsManager.getEventMode(
           Globals.currentGroupResponse.group.newEvents[eventId]);
       EventCardInterface eventCard;
-      if (Globals.currentGroupResponse.group.newEvents[eventId] == null) {
-        eventCard =
-            new EventCardLoading(eventId, EventsList.eventsTypeNew); // TODO
-      } else if (eventMode == EventsManager.considerMode) {
+      if (eventMode == EventsManager.considerMode) {
         eventCard = new EventCardConsider(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.newEvents[eventId],
@@ -596,12 +579,6 @@ class _GroupPageState extends State<GroupPage>
           0;
       this.eventTypesToCurrentHighestBatchIndex[
           EventsList.eventsTypeOccurring] = 0;
-
-      this.eventTypesToBatchEventIds[EventsList.eventsTypeNew].clear();
-      this.eventTypesToBatchEventIds[EventsList.eventsTypeVoting].clear();
-      this.eventTypesToBatchEventIds[EventsList.eventsTypeConsider].clear();
-      this.eventTypesToBatchEventIds[EventsList.eventsTypeClosed].clear();
-      this.eventTypesToBatchEventIds[EventsList.eventsTypeOccurring].clear();
     }
     return;
   }
@@ -617,13 +594,13 @@ class _GroupPageState extends State<GroupPage>
     setState(() {});
   }
 
-  // called when next/back buttons are pressed in event list. Gets the next/previous number of events in group
+  // called when the user scrolls to the bottom of the page
   void getNextBatch(final int batchType, final double maxScrollExtent) {
     //indicate that we're getting the next batch
     this.eventTypesToCurrentHighestBatchIndex[batchType]++;
     final int batchIndex = this.eventTypesToCurrentHighestBatchIndex[batchType];
 
-    if (batchIndex < maxEventBatchesInMemory) {
+    if (batchIndex < GroupPage.maxEventBatchesInMemory) {
       this.batchTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
     }
 
@@ -652,13 +629,13 @@ class _GroupPageState extends State<GroupPage>
             if (Globals.currentGroupResponse.group
                     .getEventsFromBatchType(batchType)
                     .length >
-                maxEventBatchesInMemory * GroupsManager.BATCH_SIZE) {
+                GroupPage.maxEventBatchesInMemory * GroupsManager.BATCH_SIZE) {
               Globals.currentGroupResponse.group
                   .getEventsFromBatchType(batchType)
                   .removeWhere((k, v) {
                 return this
                     .eventTypesToBatchEventIds[batchType]
-                        [batchIndex - maxEventBatchesInMemory]
+                        [batchIndex - GroupPage.maxEventBatchesInMemory]
                     .contains(k);
               });
 
@@ -682,6 +659,66 @@ class _GroupPageState extends State<GroupPage>
       //we've just tried to get the 'limit' batch again, go back to the last
       // batch index that had events
       this.eventTypesToCurrentHighestBatchIndex[batchType]--;
+    }
+  }
+
+  // called when the user scrolls to the top of the page
+  void getPreviousBatch(final int batchType, final double maxScrollExtent) {
+//    //indicate that we're getting the previous batch
+//    this.eventTypesToCurrentHighestBatchIndex[batchType]--;
+
+    //the index we need is the max number allowed in memory before the max one
+    // currently loaded
+    final int batchIndex =
+        this.eventTypesToCurrentHighestBatchIndex[batchType] -
+            GroupPage.maxEventBatchesInMemory;
+
+    //since we start removing at maxEventBatchesInMemory, we stop tracking where
+    // we were since the load point on the page becomes fixed
+//    if (batchIndex >= 0) {
+//      this.batchTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
+//    }
+
+    //we only query the db when we haven't hit the batch index limit
+    bool queryDb = (batchIndex >= 0);
+
+    if (queryDb) {
+      GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
+          .then((ResultStatus<GetGroupResponse> resultStatus) {
+        final GetGroupResponse apiResponse = resultStatus.data;
+        if (resultStatus.success) {
+          Globals.currentGroupResponse.group
+              .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
+
+          //add the event ids to their map
+          this.eventTypesToBatchEventIds[batchType].putIfAbsent(
+              batchIndex,
+              () => apiResponse.group
+                  .getEventsFromBatchType(batchType)
+                  .keys
+                  .toList());
+
+          //remove the events at the bottom based on history
+          Globals.currentGroupResponse.group
+              .getEventsFromBatchType(batchType)
+              .removeWhere((k, v) {
+            return this
+                .eventTypesToBatchEventIds[batchType]
+                    [batchIndex + GroupPage.maxEventBatchesInMemory]
+                .contains(k);
+          });
+
+          //indicate that the largest batch currently loaded just got removed
+          this.eventTypesToCurrentHighestBatchIndex[batchType]--;
+
+//              //delete the history
+//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - maxEventBatchesInMemory);
+
+          populateEventStages();
+        } else {
+          print(resultStatus.errorMessage);
+        }
+      });
     }
   }
 
