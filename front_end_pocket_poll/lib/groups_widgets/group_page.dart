@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
+import 'package:front_end_pocket_poll/events_widgets/event_card_loading.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/events_widgets/event_create.dart';
@@ -156,7 +157,6 @@ class _GroupPageState extends State<GroupPage>
 
   @override
   Widget build(BuildContext context) {
-    print("group_page build");
     if (this.loading) {
       return groupLoading();
     } else if (this.errorLoading) {
@@ -369,45 +369,68 @@ class _GroupPageState extends State<GroupPage>
 
     for (String eventId
         in Globals.currentGroupResponse.group.votingEvents.keys) {
-      EventCardInterface eventCard = new EventCardVoting(
-          Globals.currentGroupResponse.group.groupId,
-          Globals.currentGroupResponse.group.votingEvents[eventId],
-          eventId,
-          populateEventStages,
-          refreshList);
+      EventCardInterface eventCard;
+
+      if (Globals.currentGroupResponse.group.votingEvents[eventId] != null) {
+        eventCard = new EventCardVoting(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.votingEvents[eventId],
+            eventId,
+            populateEventStages,
+            refreshList);
+      } else {
+        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeVoting);
+      }
       this.eventCards[votingTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.considerEvents.keys) {
-      EventCardInterface eventCard = new EventCardConsider(
-          Globals.currentGroupResponse.group.groupId,
-          Globals.currentGroupResponse.group.considerEvents[eventId],
-          eventId,
-          populateEventStages,
-          refreshList);
+      EventCardInterface eventCard;
+      if (Globals.currentGroupResponse.group.considerEvents[eventId] != null) {
+        eventCard = new EventCardConsider(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.considerEvents[eventId],
+            eventId,
+            populateEventStages,
+            refreshList);
+      } else {
+        eventCard =
+            new EventCardLoading(eventId, EventsList.eventsTypeConsider);
+      }
       this.eventCards[considerTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.occurringEvents.keys) {
-      EventCardInterface eventCard = new EventCardOccurring(
-          Globals.currentGroupResponse.group.groupId,
-          Globals.currentGroupResponse.group.occurringEvents[eventId],
-          eventId,
-          populateEventStages,
-          refreshList);
+      EventCardInterface eventCard;
+      if (Globals.currentGroupResponse.group.occurringEvents[eventId] != null) {
+        eventCard = new EventCardOccurring(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.occurringEvents[eventId],
+            eventId,
+            populateEventStages,
+            refreshList);
+      } else {
+        eventCard =
+            new EventCardLoading(eventId, EventsList.eventsTypeOccurring);
+      }
       this.eventCards[occurringTab].add(eventCard);
     }
 
     for (String eventId
         in Globals.currentGroupResponse.group.closedEvents.keys) {
-      EventCardInterface eventCard = new EventCardClosed(
-          Globals.currentGroupResponse.group.groupId,
-          Globals.currentGroupResponse.group.closedEvents[eventId],
-          eventId,
-          populateEventStages,
-          refreshList);
+      EventCardInterface eventCard;
+      if (Globals.currentGroupResponse.group.closedEvents[eventId] != null) {
+        eventCard = new EventCardClosed(
+            Globals.currentGroupResponse.group.groupId,
+            Globals.currentGroupResponse.group.closedEvents[eventId],
+            eventId,
+            populateEventStages,
+            refreshList);
+      } else {
+        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeClosed);
+      }
       this.eventCards[closedTab].add(eventCard);
     }
 
@@ -415,7 +438,9 @@ class _GroupPageState extends State<GroupPage>
       int eventMode = EventsManager.getEventMode(
           Globals.currentGroupResponse.group.newEvents[eventId]);
       EventCardInterface eventCard;
-      if (eventMode == EventsManager.considerMode) {
+      if (Globals.currentGroupResponse.group.newEvents[eventId] == null) {
+        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeNew); // TODO
+      } else if (eventMode == EventsManager.considerMode) {
         eventCard = new EventCardConsider(
             Globals.currentGroupResponse.group.groupId,
             Globals.currentGroupResponse.group.newEvents[eventId],
@@ -602,21 +627,25 @@ class _GroupPageState extends State<GroupPage>
                     .keys
                     .toList());
 
-            //remove the events at the top based on history
+            //nullify the events at the top based on history -> this will make loading cards!
             if (Globals.currentGroupResponse.group
                     .getEventsFromBatchType(batchType)
                     .length >
                 3 * GroupsManager.BATCH_SIZE) {
               Globals.currentGroupResponse.group
                   .getEventsFromBatchType(batchType)
-                  .removeWhere((k, v) {
-                return this
+                  .updateAll((k, v) {
+                if (this
                     .eventTypesToBatchEventIds[batchType][batchIndex - 3]
-                    .contains(k);
+                    .contains(k)) {
+                  return null;
+                } else {
+                  return v;
+                }
               });
 
-              //delete the history
-              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - 3);
+//              //delete the history
+//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - 3);
             }
           } else {
             //we didn't get anything so set the limit and go back to the last

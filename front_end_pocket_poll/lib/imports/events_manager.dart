@@ -1,6 +1,7 @@
 import 'package:front_end_pocket_poll/models/event.dart';
 
 class EventsManager {
+  static final int loadingMode = 5; // loading events appear above other events
   static final int votingMode = 4; // highest priority for sorting
   static final int considerMode = 3;
   static final int occurringMode = 2;
