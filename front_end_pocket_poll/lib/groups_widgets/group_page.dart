@@ -33,6 +33,8 @@ class GroupPage extends StatefulWidget {
 class _GroupPageState extends State<GroupPage>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   static final int totalTabs = 5;
+  static final int maxEventBatchesInMemory = 3;
+
   final List<AutoSizeText> tabs = new List(totalTabs);
 
   // indexes for the tabs
@@ -66,6 +68,14 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeConsider: new Map<int, List<String>>(),
     EventsList.eventsTypeClosed: new Map<int, List<String>>(),
     EventsList.eventsTypeOccurring: new Map<int, List<String>>()
+  };
+
+  final Map<int, double> batchTypesToPreviousMaxScrollExtents = {
+    EventsList.eventsTypeNew: null,
+    EventsList.eventsTypeVoting: null,
+    EventsList.eventsTypeConsider: null,
+    EventsList.eventsTypeClosed: null,
+    EventsList.eventsTypeOccurring: null
   };
 
   final Map<int, List<EventCardInterface>> eventCards = new Map<int,
@@ -221,6 +231,12 @@ class _GroupPageState extends State<GroupPage>
                         markAllEventsSeen: markAllEventsSeen,
                         refreshPage: refreshList,
                         getNextBatch: getNextBatch,
+                        largestBatchIndex:
+                            this.eventTypesToCurrentHighestBatchIndex[
+                                this.listIndexesToEventTypes[index]],
+                        previousMaxScrollExtent:
+                            this.batchTypesToPreviousMaxScrollExtents[
+                                this.listIndexesToEventTypes[index]],
                       ),
                       onRefresh: refreshList,
                     );
@@ -439,7 +455,8 @@ class _GroupPageState extends State<GroupPage>
           Globals.currentGroupResponse.group.newEvents[eventId]);
       EventCardInterface eventCard;
       if (Globals.currentGroupResponse.group.newEvents[eventId] == null) {
-        eventCard = new EventCardLoading(eventId, EventsList.eventsTypeNew); // TODO
+        eventCard =
+            new EventCardLoading(eventId, EventsList.eventsTypeNew); // TODO
       } else if (eventMode == EventsManager.considerMode) {
         eventCard = new EventCardConsider(
             Globals.currentGroupResponse.group.groupId,
@@ -601,10 +618,14 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when next/back buttons are pressed in event list. Gets the next/previous number of events in group
-  void getNextBatch(final int batchType) {
+  void getNextBatch(final int batchType, final double maxScrollExtent) {
     //indicate that we're getting the next batch
     this.eventTypesToCurrentHighestBatchIndex[batchType]++;
     final int batchIndex = this.eventTypesToCurrentHighestBatchIndex[batchType];
+
+    if (batchIndex < maxEventBatchesInMemory) {
+      this.batchTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
+    }
 
     //we only query the db when we haven't hit the batch index limit
     bool queryDb = (this.eventTypesToBatchLimits[batchType] == null ||
@@ -627,25 +648,22 @@ class _GroupPageState extends State<GroupPage>
                     .keys
                     .toList());
 
-            //nullify the events at the top based on history -> this will make loading cards!
+            //remove the events at the top based on history
             if (Globals.currentGroupResponse.group
                     .getEventsFromBatchType(batchType)
                     .length >
-                3 * GroupsManager.BATCH_SIZE) {
+                maxEventBatchesInMemory * GroupsManager.BATCH_SIZE) {
               Globals.currentGroupResponse.group
                   .getEventsFromBatchType(batchType)
-                  .updateAll((k, v) {
-                if (this
-                    .eventTypesToBatchEventIds[batchType][batchIndex - 3]
-                    .contains(k)) {
-                  return null;
-                } else {
-                  return v;
-                }
+                  .removeWhere((k, v) {
+                return this
+                    .eventTypesToBatchEventIds[batchType]
+                        [batchIndex - maxEventBatchesInMemory]
+                    .contains(k);
               });
 
 //              //delete the history
-//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - 3);
+//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - maxEventBatchesInMemory);
             }
           } else {
             //we didn't get anything so set the limit and go back to the last
