@@ -23,7 +23,7 @@ class EventsList extends StatefulWidget {
   final Function getPreviousBatch;
   final Function markAllEventsSeen;
   final int largestBatchIndexLoaded;
-  final bool limitBatchIsLoaded;
+  final bool batchLimitHit;
   final double previousMaxScrollExtent;
 
   EventsList(
@@ -37,7 +37,7 @@ class EventsList extends StatefulWidget {
       this.getNextBatch,
       this.getPreviousBatch,
       this.largestBatchIndexLoaded,
-      this.limitBatchIsLoaded,
+      this.batchLimitHit,
       this.previousMaxScrollExtent})
       : this.isUnseenTab = (eventsType == 0),
         super(key: key);
@@ -68,47 +68,13 @@ class _EventsListState extends State<EventsList> {
     this.inBottomDelta = false;
     this.inTopDelta = false;
     this.isInitializingBuild = true;
-    this.trackGlobalScrollPosition = true;
+    this.trackGlobalScrollPosition = false;
 
     super.initState();
   }
 
   afterBuild(BuildContext context) {
-    //print("after build call back");
-
-    //check if this build is the initial build or a build after getting a new batch
-//    if (widget.largestBatchIndex > 0) {
-//      //TODO this doesn't technically work, imagine if there was only the 0 batch, then there's still the excess call to getBatchOfEvents and the hop up the page.
-//      // Also when you get to the last one, there needs to
-//      int listSize = widget.events.length;
-//      double listPixelSize = this.scrollController.position.maxScrollExtent;
-//
-//      int newEventsSize = (listSize % GroupsManager.BATCH_SIZE);
-//      if (newEventsSize == 0) {
-//        newEventsSize = GroupsManager.BATCH_SIZE;
-//      }
-//
-//      //we subtract 1 to not over scroll
-//      double scrollPercentage = (listSize - newEventsSize - 1) / listSize;
-//      this.scrollController.jumpTo(listPixelSize * scrollPercentage);
-//    }
-
-//    if (widget.limitBatchIsLoaded) {
-//      //only once we've tried to load past the limiting batch will 'limitBatchIsLoaded' be set.
-//      this
-//          .scrollController
-//          .jumpTo(this.scrollController.position.maxScrollExtent);
-//    } else
-//    if (this.isInitializingBuild == true) {
-//      if (Globals.eventListScrollPositionsAtDispose[widget.eventsType] !=
-//          null) {
-//        print("scrolling from after build call back");
-//        //only once we've tried to load past the limiting batch will 'limitBatchIsLoaded' be set.
-//        this.scrollController.jumpTo(
-//            Globals.eventListScrollPositionsAtDispose[widget.eventsType]);
-//      }
     this.isInitializingBuild = false;
-//    }
   }
 
   scrollListener() {
@@ -129,35 +95,22 @@ class _EventsListState extends State<EventsList> {
           widget.eventsType, this.scrollController.position.maxScrollExtent);
     }
 
-//    double delta = 500.0; // any pixel size smaller than one batch height works
-//    if (this.scrollController.position.maxScrollExtent -
-//                this.scrollController.position.pixels <=
-//            delta &&
-//        !this.inBottomDelta) {
-////      widget.getNextBatch(widget.eventsType);
-////      print("bottom 500px");
-//      this.inBottomDelta = true;
-//    } else if (this.scrollController.position.maxScrollExtent -
-//            scrollController.position.pixels >
-//        delta) {
-//      this.inBottomDelta = false;
-//    }
-//
-//    if (scrollController.position.pixels <= delta && !this.inTopDelta) {
-//      //widget.getPreviousBatch(widget.eventsType);
-//      //print("top 500px");
-//      this.inTopDelta = true;
-//    } else if (scrollController.position.pixels > delta) {
-//      this.inTopDelta = false;
-//    }
-
     if (this.scrollController.offset <=
             this.scrollController.position.minScrollExtent &&
         !this.scrollController.position.outOfRange) {
       print("reached the top");
+      //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
+      // subtracting that from the max gives you the length to the bottom of
+      // the top 1/3
+      Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
+          this.scrollController.position.maxScrollExtent -
+              widget.previousMaxScrollExtent;
+      this.trackGlobalScrollPosition = false;
       widget.getPreviousBatch(
-          widget.eventsType, this.scrollController.position.maxScrollExtent);
+          widget.eventsType, widget.previousMaxScrollExtent);
     }
+
+    //TODO fix the last batch jump
 
     if (this.trackGlobalScrollPosition) {
       Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
@@ -243,15 +196,14 @@ class _EventsListState extends State<EventsList> {
             ));
       }
 
-//      if (!this.isInitializingBuild && widget.previousMaxScrollExtent != null) {
-//        print("scrolling " + widget.eventsType.toString());
-//        this.scrollController.jumpTo(widget.previousMaxScrollExtent);
-//      }
-
-      if (!this.isInitializingBuild &&
+      if (!this.isInitializingBuild && !widget.batchLimitHit &&
           Globals.eventListScrollPositionsAtDispose[widget.eventsType] !=
               null) {
-        print("scrolling " + widget.eventsType.toString());
+        print("scrolling " +
+            widget.eventsType.toString() +
+            " " +
+            Globals.eventListScrollPositionsAtDispose[widget.eventsType]
+                .toString());
         this.scrollController.jumpTo(
             Globals.eventListScrollPositionsAtDispose[widget.eventsType]);
       }

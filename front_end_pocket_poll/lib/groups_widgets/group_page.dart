@@ -223,6 +223,8 @@ class _GroupPageState extends State<GroupPage>
                   controller: this.tabController,
                   key: Key("group_page:tab_view"),
                   children: List.generate(this.tabs.length, (index) {
+                    int eventsType = this.listIndexesToEventTypes[index];
+
                     return RefreshIndicator(
                       child: EventsList(
                         group: Globals.currentGroupResponse.group,
@@ -233,13 +235,14 @@ class _GroupPageState extends State<GroupPage>
                         refreshPage: refreshList,
                         getNextBatch: getNextBatch,
                         getPreviousBatch: getPreviousBatch,
-                        largestBatchIndexLoaded:
+                        largestBatchIndexLoaded: this
+                            .eventTypesToCurrentHighestBatchIndex[eventsType],
+                        batchLimitHit:
                             this.eventTypesToCurrentHighestBatchIndex[
-                                this.listIndexesToEventTypes[index]],
-                        limitBatchIsLoaded: false,
-                        previousMaxScrollExtent:
-                            this.batchTypesToPreviousMaxScrollExtents[
-                                this.listIndexesToEventTypes[index]],
+                                    eventsType] + 1 ==
+                                this.eventTypesToBatchLimits[eventsType],
+                        previousMaxScrollExtent: this
+                            .batchTypesToPreviousMaxScrollExtents[eventsType],
                       ),
                       onRefresh: refreshList,
                     );
@@ -645,8 +648,7 @@ class _GroupPageState extends State<GroupPage>
           } else {
             //we didn't get anything so set the limit and go back to the last
             // batch index that had events
-            this.eventTypesToBatchLimits[batchType] =
-                this.eventTypesToCurrentHighestBatchIndex[batchType];
+            this.eventTypesToBatchLimits[batchType] = batchIndex;
             this.eventTypesToCurrentHighestBatchIndex[batchType]--;
           }
 
