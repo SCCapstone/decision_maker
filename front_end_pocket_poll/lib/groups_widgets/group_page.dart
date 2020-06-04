@@ -572,6 +572,9 @@ class _GroupPageState extends State<GroupPage>
       this.eventTypesToBatchLimits[EventsList.eventsTypeClosed] = null;
       this.eventTypesToBatchLimits[EventsList.eventsTypeOccurring] = null;
 
+      //reset this map, the page refresh means everything should be at the top
+      Globals.eventListScrollPositionsAtDispose = {};
+
       //reset these, the page refreshed and we just got the zeroed info
       this.eventTypesToCurrentHighestBatchIndex[EventsList.eventsTypeNew] = 0;
       this.eventTypesToCurrentHighestBatchIndex[EventsList.eventsTypeVoting] =
