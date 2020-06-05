@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/groups_widgets/group_page.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
-import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 
@@ -47,12 +46,7 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
-  final ScrollController scrollController = new ScrollController();
-
-  bool inTopDelta;
-  bool inBottomDelta;
-  bool isInitializingBuild;
-  bool trackGlobalScrollPosition;
+  ScrollController scrollController = new ScrollController();
 
   @override
   void dispose() {
@@ -65,32 +59,24 @@ class _EventsListState extends State<EventsList> {
   void initState() {
     print("event list init " + widget.eventsType.toString());
     this.scrollController.addListener(scrollListener);
-    this.inBottomDelta = false;
-    this.inTopDelta = false;
-    this.isInitializingBuild = true;
-    this.trackGlobalScrollPosition = false;
 
     super.initState();
   }
 
-  afterBuild(BuildContext context) {
-    this.isInitializingBuild = false;
-  }
-
   scrollListener() {
+    Globals.eventListScrollPositions[widget.eventsType] =
+        this.scrollController.position.pixels;
+
     if (this.scrollController.offset >=
             this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange) {
       print("reached the bottom");
       if (widget.largestBatchIndexLoaded >=
           GroupPage.maxEventBatchesInMemory - 1) {
-        Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
+        Globals.eventListScrollPositions[widget.eventsType] =
             widget.previousMaxScrollExtent;
-      } else {
-        Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
-            this.scrollController.position.maxScrollExtent;
       }
-      this.trackGlobalScrollPosition = false;
+
       widget.getNextBatch(
           widget.eventsType, this.scrollController.position.maxScrollExtent);
     }
@@ -102,27 +88,29 @@ class _EventsListState extends State<EventsList> {
       //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
       // subtracting that from the max gives you the length to the bottom of
       // the top 1/3
-      Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
+      Globals.eventListScrollPositions[widget.eventsType] =
           this.scrollController.position.maxScrollExtent -
               widget.previousMaxScrollExtent;
-      this.trackGlobalScrollPosition = false;
       widget.getPreviousBatch(
           widget.eventsType, widget.previousMaxScrollExtent);
     }
 
     //TODO fix the last batch jump
-
-    if (this.trackGlobalScrollPosition) {
-      Globals.eventListScrollPositionsAtDispose[widget.eventsType] =
-          this.scrollController.position.pixels;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     print("event list build " + widget.eventsType.toString());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+    if (!widget.batchLimitHit &&
+        Globals.eventListScrollPositions[widget.eventsType] != null) {
+      //dispose the old controller, reset the controller, add the listener
+      this.scrollController.dispose();
+      this.scrollController = new ScrollController(
+          initialScrollOffset:
+              Globals.eventListScrollPositions[widget.eventsType]);
+      this.scrollController.addListener(scrollListener);
+    }
 
     if (widget.events.isEmpty) {
       return ListView(
@@ -196,22 +184,8 @@ class _EventsListState extends State<EventsList> {
             ));
       }
 
-      if (!this.isInitializingBuild && !widget.batchLimitHit &&
-          Globals.eventListScrollPositionsAtDispose[widget.eventsType] !=
-              null) {
-        print("scrolling " +
-            widget.eventsType.toString() +
-            " " +
-            Globals.eventListScrollPositionsAtDispose[widget.eventsType]
-                .toString());
-        this.scrollController.jumpTo(
-            Globals.eventListScrollPositionsAtDispose[widget.eventsType]);
-      }
-
-      this.trackGlobalScrollPosition = true;
-
       return Scrollbar(
-          key: Key("events_list:scrollBar"),
+          key: UniqueKey(), //Key("events_list:scrollBar"),
           child: ListView.builder(
               controller: this.scrollController,
               shrinkWrap: true,
