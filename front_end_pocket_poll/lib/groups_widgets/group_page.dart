@@ -675,7 +675,7 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when the user scrolls to the top of the page
-  void getPreviousBatch(final int batchType, final double maxScrollExtent) {
+  void getPreviousBatch(final int batchType) {
     //the index we need is the max number allowed in memory before the max one
     // currently loaded
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] -

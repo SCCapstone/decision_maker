@@ -102,8 +102,7 @@ class _EventsListState extends State<EventsList> {
       widget.eventListScrollPositions[widget.eventsType] =
           this.scrollController.position.maxScrollExtent -
               widget.previousMaxScrollExtent;
-      widget.getPreviousBatch(
-          widget.eventsType, widget.previousMaxScrollExtent);
+      widget.getPreviousBatch(widget.eventsType);
     }
 
     //TODO fix the last batch jump
