@@ -50,19 +50,17 @@ class _EventsListState extends State<EventsList> {
 
   @override
   void dispose() {
-    print("event list dispose " + widget.eventsType.toString());
     this.scrollController.dispose();
-
-    this.loadingNext = false;
-    this.loadingPrevious = false;
 
     super.dispose();
   }
 
   @override
   void initState() {
-    print("event list init " + widget.eventsType.toString());
     this.scrollController.addListener(scrollListener);
+
+    this.loadingNext = false;
+    this.loadingPrevious = false;
 
     super.initState();
   }
@@ -78,9 +76,10 @@ class _EventsListState extends State<EventsList> {
 
     if (this.scrollController.offset >=
             this.scrollController.position.maxScrollExtent &&
-        !this.scrollController.position.outOfRange && !loadingBatch) {
-      print("reached the bottom");
+        !this.scrollController.position.outOfRange &&
+        !loadingBatch) {
       this.loadingNext = true;
+
       if (widget.largestBatchIndexLoaded >=
           GroupPage.maxEventBatchesInMemory - 1) {
         widget.eventListScrollPositions[widget.eventsType] =
@@ -93,9 +92,10 @@ class _EventsListState extends State<EventsList> {
 
     if (this.scrollController.offset <=
             this.scrollController.position.minScrollExtent &&
-        !this.scrollController.position.outOfRange && !loadingBatch) {
+        !this.scrollController.position.outOfRange &&
+        !loadingBatch) {
       this.loadingPrevious = true;
-      print("reached the top");
+
       //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
       // subtracting that from the max gives you the length to the bottom of
       // the top 1/3
@@ -111,8 +111,6 @@ class _EventsListState extends State<EventsList> {
 
   @override
   Widget build(BuildContext context) {
-    print("event list build " + widget.eventsType.toString());
-
     if (!widget.batchLimitHit &&
         widget.eventListScrollPositions[widget.eventsType] != null) {
       //dispose the old controller, reset the controller, add the listener

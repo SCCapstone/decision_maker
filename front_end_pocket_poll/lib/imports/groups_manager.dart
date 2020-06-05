@@ -524,7 +524,6 @@ class GroupsManager {
 
   static Future<ResultStatus<GetGroupResponse>> getBatchOfEvents(
       final String groupId, final int batchNumber, final int batchType) async {
-    print("getBatchOfEvents invoked");
     final ResultStatus<GetGroupResponse> retVal =
         new ResultStatus(success: false);
 
@@ -553,7 +552,6 @@ class GroupsManager {
           retVal.errorMessage = "Unable to load events.";
         }
       } catch (e) {
-        print(e);
         retVal.errorMessage = "Unable to load events.";
       }
     } else if (response.networkError) {

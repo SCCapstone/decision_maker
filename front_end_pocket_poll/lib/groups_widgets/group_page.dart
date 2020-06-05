@@ -338,6 +338,24 @@ class _GroupPageState extends State<GroupPage>
         });
   }
 
+  void getBatchOrEventsError() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text("Error getting events data"),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            content: Text("Please try again later."));
+        });
+  }
+
   // attempts to get group from DB. If success then display all events. Else show error
   Future<void> getGroup() async {
     int batchNum = (Globals.currentGroupResponse.group == null)
@@ -636,9 +654,6 @@ class _GroupPageState extends State<GroupPage>
                         [batchIndex - GroupPage.maxEventBatchesInMemory]
                     .contains(k);
               });
-
-//              //delete the history
-//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - maxEventBatchesInMemory);
             }
           } else {
             //we didn't get anything so set the limit and go back to the last
@@ -649,7 +664,7 @@ class _GroupPageState extends State<GroupPage>
 
           populateEventStages();
         } else {
-          print(resultStatus.errorMessage);
+          this.getBatchOrEventsError();
         }
       });
     } else {
@@ -661,19 +676,10 @@ class _GroupPageState extends State<GroupPage>
 
   // called when the user scrolls to the top of the page
   void getPreviousBatch(final int batchType, final double maxScrollExtent) {
-//    //indicate that we're getting the previous batch
-//    this.eventTypesToCurrentHighestBatchIndex[batchType]--;
-
     //the index we need is the max number allowed in memory before the max one
     // currently loaded
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] -
         GroupPage.maxEventBatchesInMemory;
-
-    //since we start removing at maxEventBatchesInMemory, we stop tracking where
-    // we were since the load point on the page becomes fixed
-//    if (batchIndex >= 0) {
-//      this.batchTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
-//    }
 
     //we only query the db when we haven't hit the batch index limit
     bool queryDb = (batchIndex >= 0);
@@ -707,12 +713,9 @@ class _GroupPageState extends State<GroupPage>
           //indicate that the largest batch currently loaded just got removed
           this.eventTypesToLargestBatchIndexLoaded[batchType]--;
 
-//              //delete the history
-//              this.eventTypesToBatchEventIds[batchType].remove(batchIndex - maxEventBatchesInMemory);
-
           populateEventStages();
         } else {
-          print(resultStatus.errorMessage);
+          this.getBatchOrEventsError();
         }
       });
     }
