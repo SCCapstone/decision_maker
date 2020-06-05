@@ -3,7 +3,6 @@ import 'package:front_end_pocket_poll/groups_widgets/group_page.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {
   static final int eventsTypeNew = 0;
@@ -15,30 +14,28 @@ class EventsList extends StatefulWidget {
   final List<EventCardInterface> events;
   final int eventsType;
   final bool isUnseenTab;
-  final Group group;
-  final Function refreshEventsUnseen;
-  final Function refreshPage;
   final Function getNextBatch;
   final Function getPreviousBatch;
   final Function markAllEventsSeen;
   final int largestBatchIndexLoaded;
+  final int batchLimit;
   final bool batchLimitHit;
   final double previousMaxScrollExtent;
+  final Map<int, double> eventListScrollPositions;
 
   EventsList(
       {Key key,
-      this.group,
       this.events,
       this.eventsType,
-      this.refreshEventsUnseen,
       this.markAllEventsSeen,
-      this.refreshPage,
       this.getNextBatch,
       this.getPreviousBatch,
       this.largestBatchIndexLoaded,
-      this.batchLimitHit,
-      this.previousMaxScrollExtent})
+      this.batchLimit,
+      this.previousMaxScrollExtent,
+      this.eventListScrollPositions})
       : this.isUnseenTab = (eventsType == 0),
+        this.batchLimitHit = (largestBatchIndexLoaded + 1 == batchLimit),
         super(key: key);
 
   @override
@@ -64,7 +61,7 @@ class _EventsListState extends State<EventsList> {
   }
 
   scrollListener() {
-    Globals.eventListScrollPositions[widget.eventsType] =
+    widget.eventListScrollPositions[widget.eventsType] =
         this.scrollController.position.pixels;
 
     if (this.scrollController.offset >=
@@ -73,7 +70,7 @@ class _EventsListState extends State<EventsList> {
       print("reached the bottom");
       if (widget.largestBatchIndexLoaded >=
           GroupPage.maxEventBatchesInMemory - 1) {
-        Globals.eventListScrollPositions[widget.eventsType] =
+        widget.eventListScrollPositions[widget.eventsType] =
             widget.previousMaxScrollExtent;
       }
 
@@ -88,7 +85,7 @@ class _EventsListState extends State<EventsList> {
       //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
       // subtracting that from the max gives you the length to the bottom of
       // the top 1/3
-      Globals.eventListScrollPositions[widget.eventsType] =
+      widget.eventListScrollPositions[widget.eventsType] =
           this.scrollController.position.maxScrollExtent -
               widget.previousMaxScrollExtent;
       widget.getPreviousBatch(
@@ -103,12 +100,12 @@ class _EventsListState extends State<EventsList> {
     print("event list build " + widget.eventsType.toString());
 
     if (!widget.batchLimitHit &&
-        Globals.eventListScrollPositions[widget.eventsType] != null) {
+        widget.eventListScrollPositions[widget.eventsType] != null) {
       //dispose the old controller, reset the controller, add the listener
       this.scrollController.dispose();
       this.scrollController = new ScrollController(
           initialScrollOffset:
-              Globals.eventListScrollPositions[widget.eventsType]);
+              widget.eventListScrollPositions[widget.eventsType]);
       this.scrollController.addListener(scrollListener);
     }
 

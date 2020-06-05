@@ -44,6 +44,8 @@ class _GroupPageState extends State<GroupPage>
   final int occurringTab = 1;
   final int closedTab = 4;
   final Map<int, int> listIndexesToEventTypes = new Map<int, int>();
+
+  //set up all of the variables needed for tracking the event lists
   final Map<int, int> eventTypesToLargestBatchIndexLoaded = {
     EventsList.eventsTypeNew: 0,
     EventsList.eventsTypeVoting: 0,
@@ -70,13 +72,15 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: new Map<int, List<String>>()
   };
 
-  final Map<int, double> batchTypesToPreviousMaxScrollExtents = {
+  final Map<int, double> eventTypesToPreviousMaxScrollExtents = {
     EventsList.eventsTypeNew: null,
     EventsList.eventsTypeVoting: null,
     EventsList.eventsTypeConsider: null,
     EventsList.eventsTypeClosed: null,
     EventsList.eventsTypeOccurring: null
   };
+
+  final Map<int, double> eventListScrollPositions = {};
 
   final Map<int, List<EventCardInterface>> eventCards = new Map<int,
       List<EventCardInterface>>(); // map of tab index to list of event cards
@@ -152,7 +156,6 @@ class _GroupPageState extends State<GroupPage>
     this.tabController.dispose();
     Globals.currentGroupResponse.group = null;
     Globals.refreshGroupPage = null;
-    Globals.eventListScrollPositions = {};
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -226,22 +229,17 @@ class _GroupPageState extends State<GroupPage>
                     int eventsType = this.listIndexesToEventTypes[index];
 
                     Widget retWidget = EventsList(
-                      group: Globals.currentGroupResponse.group,
                       events: this.eventCards[index],
                       eventsType: this.listIndexesToEventTypes[index],
-                      refreshEventsUnseen: updatePage,
                       markAllEventsSeen: markAllEventsSeen,
-                      refreshPage: refreshList,
                       getNextBatch: getNextBatch,
                       getPreviousBatch: getPreviousBatch,
                       largestBatchIndexLoaded:
                           this.eventTypesToLargestBatchIndexLoaded[eventsType],
-                      batchLimitHit: this.eventTypesToLargestBatchIndexLoaded[
-                                  eventsType] +
-                              1 ==
-                          this.eventTypesToBatchLimits[eventsType],
+                      batchLimit: this.eventTypesToBatchLimits[eventsType],
                       previousMaxScrollExtent:
-                          this.batchTypesToPreviousMaxScrollExtents[eventsType],
+                          this.eventTypesToPreviousMaxScrollExtents[eventsType],
+                      eventListScrollPositions: this.eventListScrollPositions,
                     );
 
                     //if we're at the top, wrap the list in a refresh indicator
@@ -578,7 +576,7 @@ class _GroupPageState extends State<GroupPage>
       }
 
       //reset this map, the page refresh means everything should be at the top
-      Globals.eventListScrollPositions = {};
+      this.eventListScrollPositions.clear();
     }
     return;
   }
@@ -601,7 +599,7 @@ class _GroupPageState extends State<GroupPage>
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType];
 
     if (batchIndex < GroupPage.maxEventBatchesInMemory) {
-      this.batchTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
+      this.eventTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
     }
 
     //we only query the db when we haven't hit the batch index limit
@@ -668,9 +666,8 @@ class _GroupPageState extends State<GroupPage>
 
     //the index we need is the max number allowed in memory before the max one
     // currently loaded
-    final int batchIndex =
-        this.eventTypesToLargestBatchIndexLoaded[batchType] -
-            GroupPage.maxEventBatchesInMemory;
+    final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] -
+        GroupPage.maxEventBatchesInMemory;
 
     //since we start removing at maxEventBatchesInMemory, we stop tracking where
     // we were since the load point on the page becomes fixed
