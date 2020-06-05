@@ -45,10 +45,17 @@ class EventsList extends StatefulWidget {
 class _EventsListState extends State<EventsList> {
   ScrollController scrollController = new ScrollController();
 
+  bool loadingNext;
+  bool loadingPrevious;
+
   @override
   void dispose() {
     print("event list dispose " + widget.eventsType.toString());
     this.scrollController.dispose();
+
+    this.loadingNext = false;
+    this.loadingPrevious = false;
+
     super.dispose();
   }
 
@@ -61,13 +68,19 @@ class _EventsListState extends State<EventsList> {
   }
 
   scrollListener() {
-    widget.eventListScrollPositions[widget.eventsType] =
-        this.scrollController.position.pixels;
+    bool loadingBatch = (this.loadingNext || this.loadingPrevious);
+
+    //if we're loading, we're setting the scroll position before the load so don't allow the user to mess that up.
+    if (!loadingBatch) {
+      widget.eventListScrollPositions[widget.eventsType] =
+          this.scrollController.position.pixels;
+    }
 
     if (this.scrollController.offset >=
             this.scrollController.position.maxScrollExtent &&
-        !this.scrollController.position.outOfRange) {
+        !this.scrollController.position.outOfRange && !loadingBatch) {
       print("reached the bottom");
+      this.loadingNext = true;
       if (widget.largestBatchIndexLoaded >=
           GroupPage.maxEventBatchesInMemory - 1) {
         widget.eventListScrollPositions[widget.eventsType] =
@@ -80,7 +93,8 @@ class _EventsListState extends State<EventsList> {
 
     if (this.scrollController.offset <=
             this.scrollController.position.minScrollExtent &&
-        !this.scrollController.position.outOfRange) {
+        !this.scrollController.position.outOfRange && !loadingBatch) {
+      this.loadingPrevious = true;
       print("reached the top");
       //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
       // subtracting that from the max gives you the length to the bottom of
@@ -180,6 +194,9 @@ class _EventsListState extends State<EventsList> {
               ),
             ));
       }
+
+      this.loadingNext = false;
+      this.loadingPrevious = false;
 
       return Scrollbar(
           key: UniqueKey(), //Key("events_list:scrollBar"),
