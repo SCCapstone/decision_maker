@@ -43,6 +43,10 @@ class _GroupPageState extends State<GroupPage>
   final int votingTab = 2;
   final int occurringTab = 1;
   final int closedTab = 4;
+
+  //this map is setup in the initState, it gives a map from the tab index to the
+  // event list types. This is helpful when building the event lists from the
+  // list builder
   final Map<int, int> listIndexesToEventTypes = new Map<int, int>();
 
   //set up all of the variables needed for tracking the event lists
@@ -63,7 +67,9 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: null
   };
 
-  //this 'batch limit' is the index of the first batch that comes back empty
+  //this keeps track of which event ids are in which batches. This is important
+  // when we need to delete batches so that we don't have to do calculations for
+  // sorting and iterating to figure whats where
   final Map<int, Map<int, List<String>>> eventTypesToBatchEventIds = {
     EventsList.eventsTypeNew: new Map<int, List<String>>(),
     EventsList.eventsTypeVoting: new Map<int, List<String>>(),
@@ -80,6 +86,8 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: null
   };
 
+  //Each event list needs to know where to load upon rebuild or reinit. This map
+  // will keep that data of what position the list should build at.
   final Map<int, double> eventListScrollPositions = {};
 
   final Map<int, List<EventCardInterface>> eventCards = new Map<int,
@@ -610,9 +618,8 @@ class _GroupPageState extends State<GroupPage>
   // called when the user scrolls to the bottom of the page
   Future<void> getNextBatch(
       final int batchType, final double maxScrollExtent) async {
-    //indicate that we're getting the next batch
-    this.eventTypesToLargestBatchIndexLoaded[batchType]++;
-    final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType];
+
+    final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] + 1;
 
     //we only query the db when we haven't hit the batch index limit
     bool queryDb = (this.eventTypesToBatchLimits[batchType] == null ||
@@ -672,12 +679,14 @@ class _GroupPageState extends State<GroupPage>
             });
           }
 
+          //indicate that we've gotten the next batch
+          this.eventTypesToLargestBatchIndexLoaded[batchType]++;
+
           populateEventStages();
         } else {
           //we didn't get anything so set the limit and go back to the last
           // batch index that had events
           this.eventTypesToBatchLimits[batchType] = batchIndex;
-          this.eventTypesToLargestBatchIndexLoaded[batchType]--;
 
           //set the scroll position to the bottom of the page
           this.eventListScrollPositions[batchType] = maxScrollExtent;

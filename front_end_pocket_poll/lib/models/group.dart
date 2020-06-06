@@ -1,7 +1,4 @@
-import 'dart:collection';
-
 import 'package:front_end_pocket_poll/events_widgets/events_list.dart';
-import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/member.dart';

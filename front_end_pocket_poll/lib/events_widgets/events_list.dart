@@ -54,7 +54,7 @@ class _EventsListState extends State<EventsList> {
     super.initState();
   }
 
-  scrollListener() {
+  void scrollListener() {
     //if we're loading, there's an async function in group_page that will set
     // the var in eventListScrollPosition -> don't want to interfere with that
     if (!loadingBatch) {
