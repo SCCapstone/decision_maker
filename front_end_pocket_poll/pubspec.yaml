@@ -62,3 +62,6 @@ flutter:
 
   assets:
     - assets/images/
+
+module:
+  androidX: true
