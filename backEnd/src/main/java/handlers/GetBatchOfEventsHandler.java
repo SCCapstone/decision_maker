@@ -118,42 +118,42 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
    */
   public static Map<String, Event> handle(final User activeUser, final Group group,
       final Integer batchNumber, final Integer batchType) {
-    Integer newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
-    Integer oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
+    int newestEventIndex = (batchNumber * EVENTS_BATCH_SIZE);
+    int oldestEventIndex = (batchNumber + 1) * EVENTS_BATCH_SIZE;
 
     ArrayList<String> batchEventIds = new ArrayList<>(group.getEvents().keySet());
     Map<String, Event> eventsBatch = new LinkedHashMap<>();
 
+    final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+
+    //first of all we convert the map to be events for sorting before we sort
+    //this way we don't have to do all of the sorting setup for every comparison in the sort
+    //if setting up sorting params takes n time and sorting takes m times, then doing
+    //this first leads to n + m complexity vs n * m complexity if we calculated every comparison
+    Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
+        .entrySet()
+        .stream()
+        .collect(collectingAndThen(
+            toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
+            LinkedHashMap::new));
+
+    if (batchType.equals(EVENTS_TYPE_NEW)) {
+      final Set<String> unseenEventIds = activeUser.getGroups().get(group.getGroupId())
+          .getEventsUnseen().keySet();
+
+      batchEventIds.removeIf(eventId -> !unseenEventIds.contains(eventId));
+    } else {
+      final Integer eventsTypePriority = getEventPriorityFromBatchType(batchType);
+
+      batchEventIds.removeIf(
+          eventId -> !searchingEventsBatch.get(eventId).getPriority().equals(eventsTypePriority));
+    }
+
     //get all of the events from the first event to the oldest event in the batch
-    if (group.getEvents().size() > newestEventIndex) {
+    if (batchEventIds.size() > newestEventIndex) {
       //we adjust this so that the .limit(oldestEvent - newestEvent) gets the correct number of items
-      if (group.getEvents().size() < oldestEventIndex) {
-        oldestEventIndex = group.getEvents().size();
-      }
-
-      final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
-
-      //first of all we convert the map to be events for sorting before we sort
-      //this way we don't have to do all of the sorting setup for every comparison in the sort
-      //if setting up sorting params takes n time and sorting takes m times, then doing
-      //this first leads to n + m complexity vs n * m complexity if we calculated every comparison
-      Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
-          .entrySet()
-          .stream()
-          .collect(collectingAndThen(
-              toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
-              LinkedHashMap::new));
-
-      if (batchType.equals(EVENTS_TYPE_NEW)) {
-        final Set<String> unseenEventIds = activeUser.getGroups().get(group.getGroupId())
-            .getEventsUnseen().keySet();
-
-        batchEventIds.removeIf(eventId -> !unseenEventIds.contains(eventId));
-      } else {
-        final Integer eventsTypePriority = getEventPriorityFromBatchType(batchType);
-
-        batchEventIds.removeIf(
-            eventId -> !searchingEventsBatch.get(eventId).getPriority().equals(eventsTypePriority));
+      if (batchEventIds.size() < oldestEventIndex) {
+        oldestEventIndex = batchEventIds.size();
       }
 
       //sort the events
@@ -258,6 +258,8 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
       label = GroupForApiResponse.OCCURRING_EVENTS;
     } else if (batchType.equals(EVENTS_TYPE_VOTING)) {
       label = GroupForApiResponse.VOTING_EVENTS;
+    } else if (batchType.equals(EVENTS_TYPE_NEW)) {
+      label = GroupForApiResponse.NEW_EVENTS;
     }
 
     return label;

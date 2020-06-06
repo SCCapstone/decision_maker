@@ -614,6 +614,11 @@ class _GroupPageState extends State<GroupPage>
     this.eventTypesToLargestBatchIndexLoaded[batchType]++;
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType];
 
+    print("batch type is " +
+        batchType.toString() +
+        " batch index is " +
+        batchIndex.toString());
+
     //we only query the db when we haven't hit the batch index limit
     bool queryDb = (this.eventTypesToBatchLimits[batchType] == null ||
         this.eventTypesToBatchLimits[batchType] > batchIndex);
@@ -632,11 +637,17 @@ class _GroupPageState extends State<GroupPage>
               widget.groupId, batchIndex, batchType);
 
       if (resultStatus.success) {
+        print("success");
         final GetGroupResponse apiResponse = resultStatus.data;
 
         if (apiResponse.group.getEventsFromBatchType(batchType).length > 0) {
-          Globals.currentGroupResponse.group
-              .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
+          print("> 0");
+          Globals.currentGroupResponse.group.addEvents(
+              apiResponse.group.getEventsFromBatchType(batchType), batchType);
+          Globals.currentGroupResponse.eventsUnseen
+              .addAll(apiResponse.eventsUnseen);
+          Globals.currentGroupResponse.eventsWithoutRatings
+              .addAll(apiResponse.eventsWithoutRatings);
 
           //add the event ids to their map
           this.eventTypesToBatchEventIds[batchType].putIfAbsent(
@@ -713,8 +724,12 @@ class _GroupPageState extends State<GroupPage>
       if (resultStatus.success) {
         final GetGroupResponse apiResponse = resultStatus.data;
 
-        Globals.currentGroupResponse.group
-            .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
+        Globals.currentGroupResponse.group.addEvents(
+            apiResponse.group.getEventsFromBatchType(batchType), batchType);
+        Globals.currentGroupResponse.eventsUnseen
+            .addAll(apiResponse.eventsUnseen);
+        Globals.currentGroupResponse.eventsWithoutRatings
+            .addAll(apiResponse.eventsWithoutRatings);
 
         //add the event ids to their map
         this.eventTypesToBatchEventIds[batchType].putIfAbsent(

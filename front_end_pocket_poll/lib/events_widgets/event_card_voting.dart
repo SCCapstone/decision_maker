@@ -135,6 +135,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
       // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
       setState(() {
         widget.refreshEventsUnseen();

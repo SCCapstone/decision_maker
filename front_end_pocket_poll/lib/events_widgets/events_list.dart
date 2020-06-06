@@ -183,8 +183,6 @@ class _EventsListState extends State<EventsList> {
 
       return Scrollbar(
           key: UniqueKey(),
-          isAlwaysShown: true,
-          controller: this.scrollController,
           child: ListView.builder(
               controller: this.scrollController,
               shrinkWrap: true,

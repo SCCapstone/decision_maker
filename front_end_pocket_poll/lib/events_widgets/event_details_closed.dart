@@ -35,6 +35,7 @@ class _EventDetailsClosedState extends State<EventDetailsClosed> {
     if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 

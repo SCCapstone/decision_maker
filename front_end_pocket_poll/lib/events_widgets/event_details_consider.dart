@@ -40,6 +40,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 

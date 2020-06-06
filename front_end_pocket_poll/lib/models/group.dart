@@ -111,21 +111,23 @@ class Group {
         isOpen: json[GroupsManager.IS_OPEN]);
   }
 
-  void addEvents(final Map<String, Event> events) {
-    for (MapEntry<String, Event> eventEntry in events.entries) {
-      int mode = EventsManager.getEventMode(eventEntry.value);
+  void addEvents(final Map<String, Event> events, final int eventsType) {
+    Map<String, Event> groupEventsReference;
 
-      if (mode == EventsManager.closedMode) {
-        this.closedEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
-      } else if (mode == EventsManager.votingMode) {
-        this.votingEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
-      } else if (mode == EventsManager.considerMode) {
-        this.considerEvents.putIfAbsent(eventEntry.key, () => eventEntry.value);
-      } else if (mode == EventsManager.occurringMode) {
-        this
-            .occurringEvents
-            .putIfAbsent(eventEntry.key, () => eventEntry.value);
-      }
+    if (eventsType == EventsList.eventsTypeClosed) {
+      groupEventsReference = this.closedEvents;
+    } else if (eventsType == EventsList.eventsTypeVoting) {
+      groupEventsReference = this.votingEvents;
+    } else if (eventsType == EventsList.eventsTypeConsider) {
+      groupEventsReference = this.considerEvents;
+    } else if (eventsType == EventsList.eventsTypeOccurring) {
+      groupEventsReference = this.occurringEvents;
+    } else if (eventsType == EventsList.eventsTypeNew) {
+      groupEventsReference = this.newEvents;
+    }
+
+    for (MapEntry<String, Event> eventEntry in events.entries) {
+      groupEventsReference.putIfAbsent(eventEntry.key, () => eventEntry.value);
     }
   }
 
