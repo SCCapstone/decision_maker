@@ -333,7 +333,7 @@ class _GroupPageState extends State<GroupPage>
         });
   }
 
-  void getBatchOrEventsError() {
+  void getBatchOfEventsError() {
     showDialog(
         context: context,
         builder: (context) {
@@ -606,7 +606,8 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when the user scrolls to the bottom of the page
-  void getNextBatch(final int batchType, final double maxScrollExtent) {
+  Future<void> getNextBatch(
+      final int batchType, final double maxScrollExtent) async {
     //indicate that we're getting the next batch
     this.eventTypesToLargestBatchIndexLoaded[batchType]++;
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType];
@@ -624,51 +625,60 @@ class _GroupPageState extends State<GroupPage>
             this.eventTypesToPreviousMaxScrollExtents[batchType];
       }
 
-      GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
-          .then((ResultStatus<GetGroupResponse> resultStatus) {
+      ResultStatus<GetGroupResponse> resultStatus =
+          await GroupsManager.getBatchOfEvents(
+              widget.groupId, batchIndex, batchType);
+
+      if (resultStatus.success) {
         final GetGroupResponse apiResponse = resultStatus.data;
-        if (resultStatus.success) {
-          if (apiResponse.group.getEventsFromBatchType(batchType).length > 0) {
-            Globals.currentGroupResponse.group
-                .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
 
-            //add the event ids to their map
-            this.eventTypesToBatchEventIds[batchType].putIfAbsent(
-                batchIndex,
-                () => apiResponse.group
-                    .getEventsFromBatchType(batchType)
-                    .keys
-                    .toList());
+        if (apiResponse.group.getEventsFromBatchType(batchType).length > 0) {
+          Globals.currentGroupResponse.group
+              .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
 
-            //remove the events at the top based on history
-            if (Globals.currentGroupResponse.group
-                    .getEventsFromBatchType(batchType)
-                    .length >
-                GroupPage.maxEventBatchesInMemory * GroupsManager.BATCH_SIZE) {
-              Globals.currentGroupResponse.group
+          //add the event ids to their map
+          this.eventTypesToBatchEventIds[batchType].putIfAbsent(
+              batchIndex,
+              () => apiResponse.group
                   .getEventsFromBatchType(batchType)
-                  .removeWhere((k, v) {
-                return this
-                    .eventTypesToBatchEventIds[batchType]
-                        [batchIndex - GroupPage.maxEventBatchesInMemory]
-                    .contains(k);
-              });
-            }
-          } else {
-            //we didn't get anything so set the limit and go back to the last
-            // batch index that had events
-            this.eventTypesToBatchLimits[batchType] = batchIndex;
-            this.eventTypesToLargestBatchIndexLoaded[batchType]--;
+                  .keys
+                  .toList());
 
-            //set the scroll position to the bottom of the page
-            this.eventListScrollPositions[batchType] = maxScrollExtent;
+          //if this batch didn't have a full batch, the next number up is the
+          // limiting index
+          if (this.eventTypesToBatchEventIds[batchType][batchIndex].length <
+              GroupsManager.BATCH_SIZE) {
+            this.eventTypesToBatchLimits[batchType] = batchIndex + 1;
+          }
+
+          //remove the events at the top based on history
+          if (Globals.currentGroupResponse.group
+                  .getEventsFromBatchType(batchType)
+                  .length >
+              GroupPage.maxEventBatchesInMemory * GroupsManager.BATCH_SIZE) {
+            Globals.currentGroupResponse.group
+                .getEventsFromBatchType(batchType)
+                .removeWhere((k, v) {
+              return this
+                  .eventTypesToBatchEventIds[batchType]
+                      [batchIndex - GroupPage.maxEventBatchesInMemory]
+                  .contains(k);
+            });
           }
 
           populateEventStages();
         } else {
-          this.getBatchOrEventsError();
+          //we didn't get anything so set the limit and go back to the last
+          // batch index that had events
+          this.eventTypesToBatchLimits[batchType] = batchIndex;
+          this.eventTypesToLargestBatchIndexLoaded[batchType]--;
+
+          //set the scroll position to the bottom of the page
+          this.eventListScrollPositions[batchType] = maxScrollExtent;
         }
-      });
+      } else {
+        this.getBatchOfEventsError();
+      }
     } else {
       //we've just tried to get the 'limit' batch again, go back to the last
       // batch index that had events
@@ -677,7 +687,8 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when the user scrolls to the top of the page
-  void getPreviousBatch(final int batchType, final double maxScrollExtent) {
+  Future<void> getPreviousBatch(
+      final int batchType, final double maxScrollExtent) async {
     //the index we need is the max number allowed in memory before the max one
     // currently loaded
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] -
@@ -693,39 +704,41 @@ class _GroupPageState extends State<GroupPage>
       this.eventListScrollPositions[batchType] = maxScrollExtent -
           this.eventTypesToPreviousMaxScrollExtents[batchType];
 
-      GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
-          .then((ResultStatus<GetGroupResponse> resultStatus) {
+      ResultStatus<GetGroupResponse> resultStatus =
+          await GroupsManager.getBatchOfEvents(
+              widget.groupId, batchIndex, batchType);
+
+      if (resultStatus.success) {
         final GetGroupResponse apiResponse = resultStatus.data;
-        if (resultStatus.success) {
-          Globals.currentGroupResponse.group
-              .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
 
-          //add the event ids to their map
-          this.eventTypesToBatchEventIds[batchType].putIfAbsent(
-              batchIndex,
-              () => apiResponse.group
-                  .getEventsFromBatchType(batchType)
-                  .keys
-                  .toList());
+        Globals.currentGroupResponse.group
+            .addEvents(apiResponse.group.getEventsFromBatchType(batchType));
 
-          //remove the events at the bottom based on history
-          Globals.currentGroupResponse.group
-              .getEventsFromBatchType(batchType)
-              .removeWhere((k, v) {
-            return this
-                .eventTypesToBatchEventIds[batchType]
-                    [batchIndex + GroupPage.maxEventBatchesInMemory]
-                .contains(k);
-          });
+        //add the event ids to their map
+        this.eventTypesToBatchEventIds[batchType].putIfAbsent(
+            batchIndex,
+            () => apiResponse.group
+                .getEventsFromBatchType(batchType)
+                .keys
+                .toList());
 
-          //indicate that the largest batch currently loaded just got removed
-          this.eventTypesToLargestBatchIndexLoaded[batchType]--;
+        //remove the events at the bottom based on history
+        Globals.currentGroupResponse.group
+            .getEventsFromBatchType(batchType)
+            .removeWhere((k, v) {
+          return this
+              .eventTypesToBatchEventIds[batchType]
+                  [batchIndex + GroupPage.maxEventBatchesInMemory]
+              .contains(k);
+        });
 
-          populateEventStages();
-        } else {
-          this.getBatchOrEventsError();
-        }
-      });
+        //indicate that the largest batch currently loaded just got removed
+        this.eventTypesToLargestBatchIndexLoaded[batchType]--;
+
+        populateEventStages();
+      } else {
+        this.getBatchOfEventsError();
+      }
     }
   }
 

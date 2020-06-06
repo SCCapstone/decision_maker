@@ -34,7 +34,6 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
-
   ScrollController scrollController;
   bool loadingBatch;
 
@@ -69,8 +68,13 @@ class _EventsListState extends State<EventsList> {
         !loadingBatch) {
       this.loadingBatch = true;
 
-      widget.getNextBatch(
-          widget.eventsType, this.scrollController.position.maxScrollExtent);
+      widget
+          .getNextBatch(
+              widget.eventsType, this.scrollController.position.maxScrollExtent)
+          .then((_) {
+        // if the batch didn't get anything, there will be no page refresh
+        this.loadingBatch = false;
+      });
     }
 
     if (this.scrollController.offset <=
@@ -79,8 +83,13 @@ class _EventsListState extends State<EventsList> {
         !loadingBatch) {
       this.loadingBatch = true;
 
-      widget.getPreviousBatch(
-          widget.eventsType, this.scrollController.position.maxScrollExtent);
+      widget
+          .getPreviousBatch(
+              widget.eventsType, this.scrollController.position.maxScrollExtent)
+          .then((_) {
+        // if the batch didn't get anything, there will be no page refresh
+        this.loadingBatch = false;
+      });
     }
 
     //TODO fix the last batch jump (maybe put empty cards at the bottom of the
@@ -174,6 +183,8 @@ class _EventsListState extends State<EventsList> {
 
       return Scrollbar(
           key: UniqueKey(),
+          isAlwaysShown: true,
+          controller: this.scrollController,
           child: ListView.builder(
               controller: this.scrollController,
               shrinkWrap: true,
