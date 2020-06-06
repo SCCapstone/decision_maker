@@ -694,10 +694,6 @@ class _GroupPageState extends State<GroupPage>
       } else {
         this.getBatchOfEventsError();
       }
-    } else {
-      //we've just tried to get the 'limit' batch again, go back to the last
-      // batch index that had events
-      this.eventTypesToLargestBatchIndexLoaded[batchType]--;
     }
   }
 
