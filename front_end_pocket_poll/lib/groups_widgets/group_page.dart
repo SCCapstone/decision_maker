@@ -578,18 +578,20 @@ class _GroupPageState extends State<GroupPage>
     if (ModalRoute.of(context).isCurrent) {
       // only refresh if this page is actually visible
       await getGroup();
-      updatePage();
 
       for (final int eventsType in this.eventTypesToBatchLimits.keys) {
         //wipe these out, we don't know if these still hold for new response
         this.eventTypesToBatchLimits[eventsType] = null;
+        this.eventTypesToPreviousMaxScrollExtents[eventsType] = null;
 
         //reset these, the page refreshed and we just got the zeroed info
         this.eventTypesToLargestBatchIndexLoaded[eventsType] = 0;
+
+        //put the position at the top of the list
+        this.eventListScrollPositions[eventsType] = 0;
       }
 
-      //reset this map, the page refresh means everything should be at the top
-      this.eventListScrollPositions.clear();
+      updatePage();
     }
     return;
   }
