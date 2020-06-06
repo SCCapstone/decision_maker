@@ -13,10 +13,10 @@ class EventCardVoting extends StatefulWidget implements EventCardInterface {
   final Event event;
   final String eventId;
   final Function refreshEventsUnseen;
-  final Function refreshPagePage;
+  final Function refreshGroupPage;
 
   EventCardVoting(this.groupId, this.event, this.eventId,
-      this.refreshEventsUnseen, this.refreshPagePage);
+      this.refreshEventsUnseen, this.refreshGroupPage);
 
   @override
   _EventCardVotingState createState() => new _EventCardVotingState();
@@ -108,7 +108,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
                               mode: EventsManager.votingMode,
                             )),
                   ).then((_) {
-                    widget.refreshPagePage();
+                    widget.refreshGroupPage();
                   });
                 },
               ),
@@ -130,6 +130,7 @@ class _EventCardVotingState extends State<EventCardVoting> {
       // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
       setState(() {
         widget.refreshEventsUnseen();

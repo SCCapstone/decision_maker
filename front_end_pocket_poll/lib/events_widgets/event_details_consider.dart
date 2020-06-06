@@ -40,10 +40,12 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    buildUserRows(Globals.currentGroupResponse.group.events[widget.eventId]);
+    buildUserRows(
+        Globals.currentGroupResponse.group.considerEvents[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -288,17 +290,17 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     bool oldConsiderUser = !considerUser;
     // update group in local memory to reflect the change in consider value
     if (considerUser) {
-      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+      Globals.currentGroupResponse.group.considerEvents[widget.eventId].optedIn
           .putIfAbsent(
               Globals.user.username, () => new Member.fromUser(Globals.user));
       this.event.optedIn.putIfAbsent(
           Globals.user.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
           Globals.user.username,
-          () => EventUserRow(
-              Globals.user.displayName, Globals.user.username, Globals.user.icon));
+          () => EventUserRow(Globals.user.displayName, Globals.user.username,
+              Globals.user.icon));
     } else {
-      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+      Globals.currentGroupResponse.group.considerEvents[widget.eventId].optedIn
           .remove(Globals.user.username);
       this.event.optedIn.remove(Globals.user.username);
       this.userRows.remove(Globals.user.username);
@@ -310,15 +312,17 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (!resultStatus.success) {
       // revert consider back if it failed
       if (oldConsiderUser) {
-        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+        Globals
+            .currentGroupResponse.group.considerEvents[widget.eventId].optedIn
             .putIfAbsent(
                 Globals.user.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
             Globals.user.username,
-            () => EventUserRow(
-                Globals.user.displayName, Globals.user.username, Globals.user.icon));
+            () => EventUserRow(Globals.user.displayName, Globals.user.username,
+                Globals.user.icon));
       } else {
-        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+        Globals
+            .currentGroupResponse.group.considerEvents[widget.eventId].optedIn
             .remove(Globals.user.username);
         this.userRows.remove(Globals.user.username);
       }

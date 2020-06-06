@@ -328,7 +328,11 @@ class _GroupCreateState extends State<GroupCreate> {
           members: membersMap,
           defaultVotingDuration: this.votingDuration,
           defaultConsiderDuration: this.considerDuration,
-          events: new Map<String, Event>(),
+          newEvents: new Map<String, Event>(),
+          votingEvents: new Map<String, Event>(),
+          considerEvents: new Map<String, Event>(),
+          closedEvents: new Map<String, Event>(),
+          occurringEvents: new Map<String, Event>(),
           isOpen: this.isOpen);
 
       showLoadingDialog(

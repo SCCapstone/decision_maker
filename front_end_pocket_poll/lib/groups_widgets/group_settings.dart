@@ -575,7 +575,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: Globals.currentGroupResponse.group.categories,
           members: membersMap,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration:
               Globals.currentGroupResponse.group.defaultVotingDuration,
           defaultConsiderDuration:
@@ -614,7 +618,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
           members: Globals.currentGroupResponse.group.members,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration:
               Globals.currentGroupResponse.group.defaultVotingDuration,
           defaultConsiderDuration:
@@ -824,7 +832,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
           members: membersMap,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration: this.votingDuration,
           defaultConsiderDuration: this.considerDuration,
           isOpen: this.isOpen);
