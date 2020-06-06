@@ -6,11 +6,8 @@ import static java.util.stream.Collectors.toMap;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -225,6 +222,7 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
           String priorityLabel = getEventPriorityLabelFromPriority(
               eventEntry.getValue().getPriority());
 
+          //add the events to the response until they fill up the batch size
           if (eventTypesToEvent.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
             eventTypesToEvent.get(priorityLabel).put(eventEntry.getKey(), eventEntry.getValue());
           }
