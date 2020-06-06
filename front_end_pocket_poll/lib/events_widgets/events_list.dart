@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/groups_widgets/group_page.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
@@ -17,10 +16,6 @@ class EventsList extends StatefulWidget {
   final Function getNextBatch;
   final Function getPreviousBatch;
   final Function markAllEventsSeen;
-  final int largestBatchIndexLoaded;
-  final int batchLimit;
-  final bool batchLimitHit;
-  final double previousMaxScrollExtent;
   final Map<int, double> eventListScrollPositions;
 
   EventsList(
@@ -30,12 +25,8 @@ class EventsList extends StatefulWidget {
       this.markAllEventsSeen,
       this.getNextBatch,
       this.getPreviousBatch,
-      this.largestBatchIndexLoaded,
-      this.batchLimit,
-      this.previousMaxScrollExtent,
       this.eventListScrollPositions})
       : this.isUnseenTab = (eventsType == 0),
-        this.batchLimitHit = (largestBatchIndexLoaded + 1 == batchLimit),
         super(key: key);
 
   @override
@@ -43,10 +34,9 @@ class EventsList extends StatefulWidget {
 }
 
 class _EventsListState extends State<EventsList> {
-  ScrollController scrollController = new ScrollController();
 
-  bool loadingNext;
-  bool loadingPrevious;
+  ScrollController scrollController;
+  bool loadingBatch;
 
   @override
   void dispose() {
@@ -57,18 +47,17 @@ class _EventsListState extends State<EventsList> {
 
   @override
   void initState() {
+    this.scrollController = new ScrollController();
     this.scrollController.addListener(scrollListener);
 
-    this.loadingNext = false;
-    this.loadingPrevious = false;
+    this.loadingBatch = false;
 
     super.initState();
   }
 
   scrollListener() {
-    bool loadingBatch = (this.loadingNext || this.loadingPrevious);
-
-    //if we're loading, we're setting the scroll position before the load so don't allow the user to mess that up.
+    //if we're loading, there's an async function in group_page that will set
+    // the var in eventListScrollPosition -> don't want to interfere with that
     if (!loadingBatch) {
       widget.eventListScrollPositions[widget.eventsType] =
           this.scrollController.position.pixels;
@@ -78,13 +67,7 @@ class _EventsListState extends State<EventsList> {
             this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange &&
         !loadingBatch) {
-      this.loadingNext = true;
-
-      if (widget.largestBatchIndexLoaded >=
-          GroupPage.maxEventBatchesInMemory - 1) {
-        widget.eventListScrollPositions[widget.eventsType] =
-            widget.previousMaxScrollExtent;
-      }
+      this.loadingBatch = true;
 
       widget.getNextBatch(
           widget.eventsType, this.scrollController.position.maxScrollExtent);
@@ -94,24 +77,19 @@ class _EventsListState extends State<EventsList> {
             this.scrollController.position.minScrollExtent &&
         !this.scrollController.position.outOfRange &&
         !loadingBatch) {
-      this.loadingPrevious = true;
+      this.loadingBatch = true;
 
-      //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
-      // subtracting that from the max gives you the length to the bottom of
-      // the top 1/3
-      widget.eventListScrollPositions[widget.eventsType] =
-          this.scrollController.position.maxScrollExtent -
-              widget.previousMaxScrollExtent;
-      widget.getPreviousBatch(widget.eventsType);
+      widget.getPreviousBatch(
+          widget.eventsType, this.scrollController.position.maxScrollExtent);
     }
 
-    //TODO fix the last batch jump
+    //TODO fix the last batch jump (maybe put empty cards at the bottom of the
+    // list if the batch isn't of size BATCH_SIZE
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.batchLimitHit &&
-        widget.eventListScrollPositions[widget.eventsType] != null) {
+    if (widget.eventListScrollPositions[widget.eventsType] != null) {
       //dispose the old controller, reset the controller, add the listener
       this.scrollController.dispose();
       this.scrollController = new ScrollController(
@@ -192,11 +170,10 @@ class _EventsListState extends State<EventsList> {
             ));
       }
 
-      this.loadingNext = false;
-      this.loadingPrevious = false;
+      this.loadingBatch = false;
 
       return Scrollbar(
-          key: UniqueKey(), //Key("events_list:scrollBar"),
+          key: UniqueKey(),
           child: ListView.builder(
               controller: this.scrollController,
               shrinkWrap: true,

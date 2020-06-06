@@ -234,11 +234,6 @@ class _GroupPageState extends State<GroupPage>
                       markAllEventsSeen: markAllEventsSeen,
                       getNextBatch: getNextBatch,
                       getPreviousBatch: getPreviousBatch,
-                      largestBatchIndexLoaded:
-                          this.eventTypesToLargestBatchIndexLoaded[eventsType],
-                      batchLimit: this.eventTypesToBatchLimits[eventsType],
-                      previousMaxScrollExtent:
-                          this.eventTypesToPreviousMaxScrollExtents[eventsType],
                       eventListScrollPositions: this.eventListScrollPositions,
                     );
 
@@ -352,7 +347,7 @@ class _GroupPageState extends State<GroupPage>
                   },
                 ),
               ],
-            content: Text("Please try again later."));
+              content: Text("Please try again later."));
         });
   }
 
@@ -616,15 +611,19 @@ class _GroupPageState extends State<GroupPage>
     this.eventTypesToLargestBatchIndexLoaded[batchType]++;
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType];
 
-    if (batchIndex < GroupPage.maxEventBatchesInMemory) {
-      this.eventTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
-    }
-
     //we only query the db when we haven't hit the batch index limit
     bool queryDb = (this.eventTypesToBatchLimits[batchType] == null ||
         this.eventTypesToBatchLimits[batchType] > batchIndex);
 
     if (queryDb) {
+      //only track while the max list size has the capacity to grow
+      if (batchIndex < GroupPage.maxEventBatchesInMemory) {
+        this.eventTypesToPreviousMaxScrollExtents[batchType] = maxScrollExtent;
+      } else {
+        this.eventListScrollPositions[batchType] =
+            this.eventTypesToPreviousMaxScrollExtents[batchType];
+      }
+
       GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
           .then((ResultStatus<GetGroupResponse> resultStatus) {
         final GetGroupResponse apiResponse = resultStatus.data;
@@ -660,6 +659,9 @@ class _GroupPageState extends State<GroupPage>
             // batch index that had events
             this.eventTypesToBatchLimits[batchType] = batchIndex;
             this.eventTypesToLargestBatchIndexLoaded[batchType]--;
+
+            //set the scroll position to the bottom of the page
+            this.eventListScrollPositions[batchType] = maxScrollExtent;
           }
 
           populateEventStages();
@@ -675,7 +677,7 @@ class _GroupPageState extends State<GroupPage>
   }
 
   // called when the user scrolls to the top of the page
-  void getPreviousBatch(final int batchType) {
+  void getPreviousBatch(final int batchType, final double maxScrollExtent) {
     //the index we need is the max number allowed in memory before the max one
     // currently loaded
     final int batchIndex = this.eventTypesToLargestBatchIndexLoaded[batchType] -
@@ -685,6 +687,12 @@ class _GroupPageState extends State<GroupPage>
     bool queryDb = (batchIndex >= 0);
 
     if (queryDb) {
+      //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
+      // subtracting that from the max gives you the length to the bottom of
+      // the top 1/3
+      this.eventListScrollPositions[batchType] = maxScrollExtent -
+          this.eventTypesToPreviousMaxScrollExtents[batchType];
+
       GroupsManager.getBatchOfEvents(widget.groupId, batchIndex, batchType)
           .then((ResultStatus<GetGroupResponse> resultStatus) {
         final GetGroupResponse apiResponse = resultStatus.data;
