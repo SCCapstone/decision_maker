@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.google.common.collect.ImmutableMap;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,16 +59,13 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param name                  The updated name of the group.
    * @param membersList           The updated list of usernames associated with the group.
    * @param categoriesList        The updated list of category ids associated with the group.
-   * @param defaultVotingDuration The updated default voting duration for events in this group.
-   * @param defaultRsvpDuration   The update default consider duration for events in this group.
    * @param isOpen                The update is open value for this group.
    * @param iconData              The byte array for a new group icon. If null, the icon is not
    *                              updated.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId, final String name,
-      final List<String> membersList, final List<String> categoriesList,
-      final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
+      final List<String> membersList, final List<String> categoriesList, final Boolean isOpen,
       final List<Integer> iconData) {
     final String classMethod = "EditGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -78,8 +76,7 @@ public class EditGroupHandler implements ApiRequestHandler {
       final Group oldGroup = this.dbAccessManager.getGroup(groupId);
 
       final Optional<String> errorMessage = this
-          .editGroupInputIsValid(oldGroup, activeUser, membersList, defaultVotingDuration,
-              defaultRsvpDuration);
+          .editGroupInputIsValid(oldGroup, activeUser, membersList);
       if (!errorMessage.isPresent()) {
         //all validation is successful, build transaction actions
         membersList.add(activeUser); // sanity check, active user is in members list
@@ -89,15 +86,11 @@ public class EditGroupHandler implements ApiRequestHandler {
 
         String updateExpression =
             "set " + Group.GROUP_NAME + " = :name, " + Group.MEMBERS + " = :members, "
-                + Group.CATEGORIES + " = :categories, " + Group.DEFAULT_VOTING_DURATION
-                + " = :defaultVotingDuration, " + Group.DEFAULT_RSVP_DURATION
-                + " = :defaultRsvpDuration, " + Group.IS_OPEN + " = :isOpen";
+                + Group.CATEGORIES + " = :categories, " + Group.IS_OPEN + " = :isOpen";
         ValueMap valueMap = new ValueMap()
             .withString(":name", name)
             .withMap(":members", membersMapped)
             .withMap(":categories", categoriesMapped)
-            .withInt(":defaultVotingDuration", defaultVotingDuration)
-            .withInt(":defaultRsvpDuration", defaultRsvpDuration)
             .withBoolean(":isOpen", isOpen);
 
         //assumption - currently we aren't allowing user's to clear a group's image once set
@@ -121,8 +114,6 @@ public class EditGroupHandler implements ApiRequestHandler {
         newGroup.setGroupName(name);
         newGroup.setMembers(membersMapped);
         newGroup.setCategoriesRawMap(categoriesMapped);
-        newGroup.setDefaultVotingDuration(defaultVotingDuration);
-        newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
         newGroup.setOpen(isOpen);
         if (newIconFileName != null) {
           newGroup.setIcon(newIconFileName);
@@ -395,13 +386,10 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param oldGroup              this is the old group definition that is attempting to be edited
    * @param activeUser            the user doing the edit
    * @param members               the new list of members for the group
-   * @param defaultVotingDuration the new voting duration
-   * @param defaultRsvpDuration   the new rsvp duration
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
   private Optional<String> editGroupInputIsValid(final Group oldGroup, final String activeUser,
-      final List<String> members, final Integer defaultVotingDuration,
-      final Integer defaultRsvpDuration) {
+      final List<String> members) {
 
     String errorMessage = null;
 
@@ -435,14 +423,6 @@ public class EditGroupHandler implements ApiRequestHandler {
           "Error: Error: Cannot add a user that left.");
     }
 
-    if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
-      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad voting duration.");
-    }
-
-    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
-      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
-    }
-
     return Optional.ofNullable(errorMessage);
   }
 
@@ -458,7 +438,7 @@ public class EditGroupHandler implements ApiRequestHandler {
   }
 
   private Map<String, Object> getMembersMapForInsertion(final List<String> members)
-      throws InvalidAttributeValueException {
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     final Map<String, Object> membersMap = new HashMap<>();
 
     for (final String username : new HashSet<>(members)) {

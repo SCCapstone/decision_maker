@@ -25,6 +25,11 @@ class GroupSettings extends StatefulWidget {
 }
 
 class _GroupSettingsState extends State<GroupSettings> {
+  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
+  final TextEditingController groupNameController = new TextEditingController();
+  final int muteAction = 0;
+  final int leaveDeleteAction = 1;
+
   bool autoValidate;
   bool validGroupIcon;
   bool editing;
@@ -34,8 +39,6 @@ class _GroupSettingsState extends State<GroupSettings> {
   File icon;
   String groupName;
   String currentGroupIcon;
-  int votingDuration;
-  int considerDuration;
   bool owner;
   List<Member> originalMembers;
   List<Member> displayedMembers;
@@ -45,20 +48,9 @@ class _GroupSettingsState extends State<GroupSettings> {
   Map<String, GroupCategory>
       originalCategories; // map of categoryIds -> GroupCategory
 
-  final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
-  final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController votingDurationController =
-      new TextEditingController();
-  final TextEditingController considerDurationController =
-      new TextEditingController();
-  final int muteAction = 0;
-  final int leaveDeleteAction = 1;
-
   @override
   void dispose() {
     groupNameController.dispose();
-    votingDurationController.dispose();
-    considerDurationController.dispose();
     super.dispose();
   }
 
@@ -102,18 +94,11 @@ class _GroupSettingsState extends State<GroupSettings> {
       this.membersLeft.add(username);
     }
     this.groupName = Globals.currentGroupResponse.group.groupName;
-    this.votingDuration =
-        Globals.currentGroupResponse.group.defaultVotingDuration;
-    this.considerDuration =
-        Globals.currentGroupResponse.group.defaultConsiderDuration;
     this.currentGroupIcon = Globals.currentGroupResponse.group.icon;
     this.isOpen = Globals.currentGroupResponse.group.isOpen;
     this.canEdit = owner || (isOpen && !owner);
 
     this.groupNameController.text = groupName;
-    this.votingDurationController.text = votingDuration.toString();
-    this.considerDurationController.text = considerDuration.toString();
-
     super.initState();
   }
 
@@ -285,8 +270,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   context);
                             },
                             child: Container(
-                              width: MediaQuery.of(context).size.width * .57,
-                              height: MediaQuery.of(context).size.height * .27,
+                              width: MediaQuery.of(context).size.width * .7,
+                              height: MediaQuery.of(context).size.height * .4,
                               alignment: Alignment.topRight,
                               decoration: BoxDecoration(
                                   image: DecorationImage(
@@ -323,104 +308,31 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Expanded(
-                                    child: AutoSizeText(
-                                      "Default consider duration (mins)",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * .20,
-                                    child: TextFormField(
-                                      enabled: this.canEdit,
-                                      maxLength: Globals.maxConsiderDigits,
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        return validConsiderDuration(
-                                            value, false);
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    GroupCategories(
+                                                      selectedCategories: this
+                                                          .selectedCategories,
+                                                      canEdit: this.canEdit,
+                                                    ))).then((_) {
+                                          if (this.canEdit) {
+                                            saveCategories();
+                                          }
+                                        });
                                       },
-                                      key: Key("group_settings:conider_input"),
-                                      controller:
-                                          this.considerDurationController,
-                                      onChanged: (String arg) {
-                                        try {
-                                          this.considerDuration =
-                                              int.parse(arg);
-                                          showSaveButton();
-                                        } catch (e) {
-                                          this.autoValidate = true;
-                                        }
-                                      },
-                                      onSaved: (String arg) {
-                                        this.considerDuration = int.parse(arg);
-                                      },
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          counterText: ""),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: AutoSizeText(
-                                      "Default voting duration (mins)",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * .20,
-                                    child: TextFormField(
-                                      enabled: this.canEdit,
-                                      maxLength: Globals.maxVotingDigits,
-                                      keyboardType: TextInputType.number,
-                                      validator: (value) {
-                                        return validVotingDuration(
-                                            value, false);
-                                      },
-                                      key: Key("group_settings:vote_input"),
-                                      controller: this.votingDurationController,
-                                      onChanged: (String arg) {
-                                        try {
-                                          this.votingDuration = int.parse(arg);
-                                          showSaveButton();
-                                        } catch (e) {
-                                          this.autoValidate = true;
-                                        }
-                                      },
-                                      onSaved: (String arg) {
-                                        this.votingDuration = int.parse(arg);
-                                      },
-                                      decoration: InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          counterText: ""),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: AutoSizeText(
-                                      (this.canEdit)
-                                          ? "Select categories for group"
-                                          : "View categories in group",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
+                                      child: AutoSizeText(
+                                        (this.canEdit)
+                                            ? "Select categories for group"
+                                            : "View categories in group",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
                                     ),
                                   ),
                                   Container(
@@ -455,14 +367,32 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Expanded(
-                                    child: AutoSizeText(
-                                      (this.canEdit)
-                                          ? "Add/Remove members"
-                                          : "View members",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MembersPage(
+                                                        this.displayedMembers,
+                                                        this.membersLeft,
+                                                        false,
+                                                        this.canEdit))).then(
+                                            (_) {
+                                          if (this.canEdit) {
+                                            saveMembers();
+                                          }
+                                        });
+                                      },
+                                      child: AutoSizeText(
+                                        (this.canEdit)
+                                            ? "Add/Remove members"
+                                            : "View members",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
                                     ),
                                   ),
                                   Container(
@@ -500,14 +430,22 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       MainAxisAlignment.spaceAround,
                                   children: <Widget>[
                                     Expanded(
-                                      child: AutoSizeText(
-                                        (this.isOpen)
-                                            ? "Make group private"
-                                            : "Make group open",
-                                        minFontSize: 14,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 20),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            this.isOpen = !this.isOpen;
+                                            showSaveButton();
+                                          });
+                                        },
+                                        child: AutoSizeText(
+                                          (this.isOpen)
+                                              ? "Make group private"
+                                              : "Make group open",
+                                          minFontSize: 14,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 20),
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -580,17 +518,13 @@ class _GroupSettingsState extends State<GroupSettings> {
           considerEvents: Globals.currentGroupResponse.group.considerEvents,
           closedEvents: Globals.currentGroupResponse.group.closedEvents,
           occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
-          defaultVotingDuration:
-              Globals.currentGroupResponse.group.defaultVotingDuration,
-          defaultConsiderDuration:
-              Globals.currentGroupResponse.group.defaultConsiderDuration,
           isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
+        Globals.currentGroupResponse.group = group;
         this.originalMembers.clear();
         this.originalMembers.addAll(displayedMembers);
       } else {
@@ -623,17 +557,13 @@ class _GroupSettingsState extends State<GroupSettings> {
           considerEvents: Globals.currentGroupResponse.group.considerEvents,
           closedEvents: Globals.currentGroupResponse.group.closedEvents,
           occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
-          defaultVotingDuration:
-              Globals.currentGroupResponse.group.defaultVotingDuration,
-          defaultConsiderDuration:
-              Globals.currentGroupResponse.group.defaultConsiderDuration,
           isOpen: Globals.currentGroupResponse.group.isOpen);
 
       ResultStatus<Group> resultStatus =
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
+        Globals.currentGroupResponse.group = group;
         originalCategories.clear();
         originalCategories.addAll(this.selectedCategories);
       } else {
@@ -793,11 +723,7 @@ class _GroupSettingsState extends State<GroupSettings> {
 
   // the moment the user makes changes to their previously saved settings, display the save button
   void showSaveButton() {
-    if (this.votingDuration !=
-            Globals.currentGroupResponse.group.defaultVotingDuration ||
-        this.considerDuration !=
-            Globals.currentGroupResponse.group.defaultConsiderDuration ||
-        this.groupName != Globals.currentGroupResponse.group.groupName ||
+    if (this.groupName != Globals.currentGroupResponse.group.groupName ||
         this.isOpen != Globals.currentGroupResponse.group.isOpen ||
         this.newIcon) {
       setState(() {
@@ -837,8 +763,6 @@ class _GroupSettingsState extends State<GroupSettings> {
           considerEvents: Globals.currentGroupResponse.group.considerEvents,
           closedEvents: Globals.currentGroupResponse.group.closedEvents,
           occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
-          defaultVotingDuration: this.votingDuration,
-          defaultConsiderDuration: this.considerDuration,
           isOpen: this.isOpen);
 
       showLoadingDialog(this.context, "Saving...", true);
@@ -848,14 +772,13 @@ class _GroupSettingsState extends State<GroupSettings> {
 
       if (resultStatus.success) {
         setState(() {
+          Globals.currentGroupResponse.group = group;
           // reset everything and reflect changes made
           this.originalMembers.clear();
           this.originalMembers.addAll(displayedMembers);
           this.originalCategories.clear();
           this.originalCategories.addAll(selectedCategories);
           this.groupNameController.text = groupName;
-          this.votingDurationController.text = votingDuration.toString();
-          this.considerDurationController.text = considerDuration.toString();
           this.editing = false;
           this.autoValidate = false;
           this.newIcon = false;

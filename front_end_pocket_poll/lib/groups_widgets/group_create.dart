@@ -26,19 +26,12 @@ class GroupCreate extends StatefulWidget {
 class _GroupCreateState extends State<GroupCreate> {
   final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final TextEditingController groupNameController = new TextEditingController();
-  final TextEditingController votingDurationController =
-      new TextEditingController();
-  final TextEditingController considerDurationController =
-      new TextEditingController();
+
   bool autoValidate;
   bool isOpen;
   String groupName;
-  int votingDuration;
-  int considerDuration;
   File groupIcon;
   List<Member> groupMembers;
-  FocusNode considerFocus;
-  FocusNode votingFocus;
 
   // map of categoryIds -> GroupCategory
   Map<String, GroupCategory> groupCategories = new Map<String, GroupCategory>();
@@ -48,16 +41,12 @@ class _GroupCreateState extends State<GroupCreate> {
     this.autoValidate = false;
     this.isOpen = true;
     this.groupMembers = new List<Member>();
-    this.considerFocus = new FocusNode();
-    this.votingFocus = new FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     groupNameController.dispose();
-    votingDurationController.dispose();
-    considerDurationController.dispose();
     super.dispose();
   }
 
@@ -91,10 +80,6 @@ class _GroupCreateState extends State<GroupCreate> {
                       this.groupName = arg.trim();
                     },
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (form) {
-                      // when user hits the done button on keyboard, hide it.
-                      FocusScope.of(context).requestFocus(this.considerFocus);
-                    },
                     key: Key("group_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter group name", counterText: ""),
@@ -104,8 +89,8 @@ class _GroupCreateState extends State<GroupCreate> {
                         MediaQuery.of(context).size.height * .004),
                   ),
                   Container(
-                    width: MediaQuery.of(context).size.width * .6,
-                    height: MediaQuery.of(context).size.height * .3,
+                    width: MediaQuery.of(context).size.width * .7,
+                    height: MediaQuery.of(context).size.height * .4,
                     alignment: Alignment.topRight,
                     decoration: BoxDecoration(
                         image: DecorationImage(
@@ -126,58 +111,28 @@ class _GroupCreateState extends State<GroupCreate> {
                       ),
                     ),
                   ),
-                  TextFormField(
-                    controller: this.considerDurationController,
-                    maxLength: Globals.maxConsiderDigits,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      return validConsiderDuration(value, true);
-                    },
-                    textInputAction: TextInputAction.next,
-                    focusNode: considerFocus,
-                    onFieldSubmitted: (form) {
-                      // when user hits the done button on keyboard, hide it.
-                      FocusScope.of(context).requestFocus(this.votingFocus);
-                    },
-                    onSaved: (String arg) {
-                      this.considerDuration = int.parse(arg.trim());
-                    },
-                    key: Key("group_create:consider_input"),
-                    decoration: InputDecoration(
-                        labelText: "Enter default consider duration (mins)",
-                        counterText: ""),
-                  ),
-                  TextFormField(
-                    controller: this.votingDurationController,
-                    maxLength: Globals.maxVotingDigits,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      return validVotingDuration(value, true);
-                    },
-                    textInputAction: TextInputAction.done,
-                    focusNode: votingFocus,
-                    onFieldSubmitted: (form) {
-                      // when user hits the done button on keyboard, hide it.
-                      hideKeyboard(context);
-                    },
-                    onSaved: (String arg) {
-                      this.votingDuration = int.parse(arg.trim());
-                    },
-                    key: Key("group_create:vote_input"),
-                    decoration: InputDecoration(
-                        labelText: "Enter default voting duration (mins)",
-                        counterText: ""),
-                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          "Select categories for group",
-                          style: TextStyle(
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.4),
+                        child: GestureDetector(
+                          onTap: () {
+                            hideKeyboard(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        GroupCreatePickCategories(
+                                            this.groupCategories)));
+                          },
+                          child: Text(
+                            "Select categories for group",
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.4),
+                          ),
                         ),
                       ),
                       Container(
@@ -201,12 +156,25 @@ class _GroupCreateState extends State<GroupCreate> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          "Add/Remove members",
-                          style: TextStyle(
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.4),
+                        child: GestureDetector(
+                          onTap: (){
+                            hideKeyboard(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MembersPage(
+                                        this.groupMembers,
+                                        new List<String>(),
+                                        true,
+                                        true)));
+                          },
+                          child: Text(
+                            "Add/Remove members",
+                            style: TextStyle(
+                                fontSize:
+                                    DefaultTextStyle.of(context).style.fontSize *
+                                        0.4),
+                          ),
                         ),
                       ),
                       Container(
@@ -232,14 +200,21 @@ class _GroupCreateState extends State<GroupCreate> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       Expanded(
-                        child: AutoSizeText(
-                          (this.isOpen)
-                              ? "Make group private"
-                              : "Make group open",
-                          minFontSize: 14,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 20),
+                        child: GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              this.isOpen = !this.isOpen;
+                            });
+                          },
+                          child: AutoSizeText(
+                            (this.isOpen)
+                                ? "Make group private"
+                                : "Make group open",
+                            minFontSize: 14,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 20),
+                          ),
                         ),
                       ),
                       Container(
@@ -326,8 +301,6 @@ class _GroupCreateState extends State<GroupCreate> {
           groupName: this.groupName,
           categories: this.groupCategories,
           members: membersMap,
-          defaultVotingDuration: this.votingDuration,
-          defaultConsiderDuration: this.considerDuration,
           newEvents: new Map<String, Event>(),
           votingEvents: new Map<String, Event>(),
           considerEvents: new Map<String, Event>(),

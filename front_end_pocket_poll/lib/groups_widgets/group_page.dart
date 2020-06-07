@@ -173,7 +173,7 @@ class _GroupPageState extends State<GroupPage>
     if (state == AppLifecycleState.resumed) {
       Globals.refreshGroupPage = refreshLoadedBatches;
       // app was recently resumed with this state being active, so refresh the group in case changes happened
-      getGroup();
+      refreshLoadedBatches();
     }
   }
 

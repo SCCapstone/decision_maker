@@ -1,5 +1,6 @@
 package handlers;
 
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,7 +175,8 @@ public class GetCategoriesHandler implements ApiRequestHandler {
   }
 
   private List<Map<String, Object>> getCategoryRatingTuples(final Set<String> categoryIds,
-      final String activeUser) throws InvalidAttributeValueException {
+      final String activeUser)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     final String classMethod = "GetCategoriesHandler.getCategories";
 
     final User user = this.dbAccessManager.getUser(activeUser);

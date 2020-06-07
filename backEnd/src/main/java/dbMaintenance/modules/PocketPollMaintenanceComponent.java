@@ -1,6 +1,7 @@
 package dbMaintenance.modules;
 
 import dbMaintenance.controllers.AddCategoryCreatorToGroupController;
+import dbMaintenance.controllers.AddDurationsToUserSettingsController;
 import dbMaintenance.controllers.KeyChoicesByLabelController;
 import dbMaintenance.controllers.UnkeyUserRatingsByVersionController;
 import dagger.Component;
@@ -14,4 +15,5 @@ public interface PocketPollMaintenanceComponent {
   void inject(AddCategoryCreatorToGroupController addCategoryCreatorToGroupController);
   void inject(KeyChoicesByLabelController keyChoicesByLabelController);
   void inject(DetachedRatingsRemovalController detachedRatingsRemovalController);
+  void inject(AddDurationsToUserSettingsController addDurationsToUserSettingsController);
 }

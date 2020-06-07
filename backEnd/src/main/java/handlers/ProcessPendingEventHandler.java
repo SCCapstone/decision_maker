@@ -31,7 +31,6 @@ import utilities.WarningDescriptor;
 public class ProcessPendingEventHandler {
 
   private static final Float K = 0.2f;
-  private static final String DELIM = ";";
 
   private DbAccessManager dbAccessManager;
   private SnsAccessManager snsAccessManager;
@@ -109,7 +108,8 @@ public class ProcessPendingEventHandler {
           if (!isNewEvent) {
             final UpdateItemSpec updateItemSpec = new UpdateItemSpec()
                 .withUpdateExpression("remove #groupEventKey")
-                .withNameMap(new NameMap().with("#groupEventKey", groupId + DELIM + eventId));
+                .withNameMap(new NameMap()
+                    .with("#groupEventKey", groupId + DbAccessManager.DELIM + eventId));
 
             this.dbAccessManager.updatePendingEvent(scannerId, updateItemSpec);
           }

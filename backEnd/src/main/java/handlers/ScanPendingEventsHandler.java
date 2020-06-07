@@ -17,8 +17,6 @@ import utilities.ResultStatus;
 
 public class ScanPendingEventsHandler {
 
-  private static final String DELIM = ";";
-
   private final DbAccessManager dbAccessManager;
   private final StepFunctionManager stepFunctionManager;
   private final Metrics metrics;
@@ -62,7 +60,7 @@ public class ScanPendingEventsHandler {
                   this.dbAccessManager.getDateTimeFormatter());
 
           if (currentDate.isAfter(resolutionDate)) {
-            keyPair = Arrays.asList(key.split(DELIM));
+            keyPair = Arrays.asList(key.split(DbAccessManager.DELIM));
 
             if (keyPair.size() == 2) {
               groupId = keyPair.get(0);

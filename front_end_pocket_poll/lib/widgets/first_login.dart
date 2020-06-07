@@ -7,10 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
-import 'package:front_end_pocket_poll/models/favorite.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
-import 'package:front_end_pocket_poll/widgets/favorites_page.dart';
 
 class FirstLogin extends StatefulWidget {
   FirstLogin({Key key}) : super(key: key);
@@ -26,11 +24,8 @@ class _FirstLoginState extends State<FirstLogin> {
   bool autoValidate;
   bool _darkTheme;
   bool _muted;
-  bool newIcon;
   File _icon;
   String _displayName;
-  List<Favorite> displayedFavorites;
-  List<Favorite> originalFavorites;
 
   @override
   void dispose() {
@@ -41,15 +36,10 @@ class _FirstLoginState extends State<FirstLogin> {
   @override
   void initState() {
     this.autoValidate = false;
-    this.newIcon = false;
-    this.displayedFavorites = new List<Favorite>();
-    this.originalFavorites = new List<Favorite>();
 
-    this._displayName = Globals.user.displayName;
-    this._darkTheme = Globals.user.appSettings.darkTheme;
-    this._muted = Globals.user.appSettings.muted;
-    this.originalFavorites = Globals.user.favorites;
-    this.displayedFavorites.addAll(this.originalFavorites);
+    this._displayName = "";
+    this._darkTheme = true;
+    this._muted = false;
     super.initState();
   }
 
@@ -88,7 +78,8 @@ class _FirstLoginState extends State<FirstLogin> {
                             onSaved: (String arg) {},
                             style: TextStyle(fontSize: 20),
                             decoration: InputDecoration(
-                                labelText: "Nickname (@${Globals.user.username})",
+                                labelText:
+                                    "Nickname (@${Globals.user.username})",
                                 counterText: ""),
                           )),
                       Padding(
@@ -224,7 +215,6 @@ class _FirstLoginState extends State<FirstLogin> {
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         this._icon = croppedImage;
-        this.newIcon = true;
       }
       setState(() {});
     }
@@ -236,17 +226,15 @@ class _FirstLoginState extends State<FirstLogin> {
     final form = this.formKey.currentState;
     if (form.validate()) {
       form.save();
-      List<String> userNames = new List<String>();
-      for (Favorite favorite in this.displayedFavorites) {
-        userNames.add(favorite.username);
-      }
 
       showLoadingDialog(this.context, "Saving settings...", true);
       ResultStatus resultStatus = await UsersManager.updateUserSettings(
           this._displayName,
           this._darkTheme,
           this._muted,
-          userNames,
+          10,
+          10,
+          new List<String>(),
           this._icon);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 

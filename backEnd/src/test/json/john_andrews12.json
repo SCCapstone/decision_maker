@@ -3,7 +3,9 @@
     "CategorySort": 1,
     "DarkTheme": true,
     "GroupSort": 0,
-    "Muted": false
+    "Muted": false,
+    "DefaultVotingDuration": 10,
+    "DefaultRsvpDuration": 10
   },
   "CategoryRatings": {
     "33461026-1f62-46e6-a621-81d53b36f5d6": {
