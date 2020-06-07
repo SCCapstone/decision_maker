@@ -847,7 +847,6 @@ class _GroupSettingsState extends State<GroupSettings> {
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
         setState(() {
           // reset everything and reflect changes made
           this.originalMembers.clear();
