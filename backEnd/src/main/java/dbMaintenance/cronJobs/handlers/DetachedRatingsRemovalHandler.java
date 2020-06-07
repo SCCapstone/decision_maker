@@ -89,7 +89,7 @@ public class DetachedRatingsRemovalHandler {
         }
       }
 
-      //next we loop over the user and look for ratings associated with neither a category or a
+      //next we loop over the user and look for ratings associated with neither a category nor a
       // pending event
       final Iterator<Item> tableItems = this.maintenanceDbAccessManager.scanUsersTable();
 
