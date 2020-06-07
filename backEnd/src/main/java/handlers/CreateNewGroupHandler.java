@@ -1,11 +1,11 @@
 package handlers;
 
-import static utilities.Config.MAX_DURATION;
 import static utilities.Config.MAX_GROUP_MEMBERS;
 
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -121,7 +121,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
   }
 
   private Map<String, Object> getMembersMapForInsertion(final List<String> members)
-      throws InvalidAttributeValueException {
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     final Map<String, Object> membersMap = new HashMap<>();
 
     for (final String username : new HashSet<>(members)) {

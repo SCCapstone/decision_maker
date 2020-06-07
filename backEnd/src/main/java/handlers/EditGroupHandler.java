@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.google.common.collect.ImmutableMap;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -445,7 +446,7 @@ public class EditGroupHandler implements ApiRequestHandler {
   }
 
   private Map<String, Object> getMembersMapForInsertion(final List<String> members)
-      throws InvalidAttributeValueException {
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     final Map<String, Object> membersMap = new HashMap<>();
 
     for (final String username : new HashSet<>(members)) {

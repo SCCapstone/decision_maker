@@ -25,6 +25,7 @@ public class DbMaintenanceController implements
           .put("unkeyUserRatingsByVersion", UnkeyUserRatingsByVersionController.class)
           .put("addCategoryCreatorToGroup", AddCategoryCreatorToGroupController.class)
           .put("keyChoicesByLabel", KeyChoicesByLabelController.class)
+          .put("addDurationsToUserSettings", AddDurationsToUserSettingsController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
