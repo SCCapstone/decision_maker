@@ -32,6 +32,8 @@ class UsersManager {
   static final String ICON = "Icon";
   static final String GROUPS_LEFT = "GroupsLeft";
   static final String FIRST_LOGIN = "FirstLogin";
+  static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  static final String DEFAULT_CONSIDER_DURATION = "DefaultRsvpDuration";
 
   static final String getUserDataAction = "getUserData";
   static final String updateSettingsAction = "updateUserSettings";
@@ -85,13 +87,21 @@ class UsersManager {
     return retVal;
   }
 
-  static Future<ResultStatus> updateUserSettings(String displayName,
-      bool darkTheme, bool muted, List<String> favorites, File image) async {
+  static Future<ResultStatus> updateUserSettings(
+      String displayName,
+      bool darkTheme,
+      bool muted,
+      int considerDuration,
+      int votingDuration,
+      List<String> favorites,
+      File image) async {
     ResultStatus retVal = new ResultStatus(success: false);
     AppSettings settings = new AppSettings(
         muted: muted,
         darkTheme: darkTheme,
         groupSort: Globals.user.appSettings.groupSort,
+        defaultConsiderDuration: considerDuration,
+        defaultVotingDuration: votingDuration,
         categorySort: Globals.user.appSettings.categorySort);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();

@@ -21,12 +21,19 @@ class UserSettings extends StatefulWidget {
 class _UserSettingsState extends State<UserSettings> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController displayNameController = TextEditingController();
+  final TextEditingController votingDurationController =
+      new TextEditingController();
+  final TextEditingController considerDurationController =
+      new TextEditingController();
+  final ScrollController listViewController = new ScrollController();
 
   bool autoValidate;
   bool editing;
   bool _darkTheme;
   bool _muted;
   bool newIcon;
+  int votingDuration;
+  int considerDuration;
   File _icon;
   String _displayName;
   List<Favorite> displayedFavorites;
@@ -45,6 +52,10 @@ class _UserSettingsState extends State<UserSettings> {
     this.newIcon = false;
     this.displayedFavorites = new List<Favorite>();
     this.originalFavorites = new List<Favorite>();
+    this.votingDuration = Globals.user.appSettings.defaultVotingDuration;
+    this.considerDuration = Globals.user.appSettings.defaultConsiderDuration;
+    this.votingDurationController.text = this.votingDuration.toString();
+    this.considerDurationController.text = this.considerDuration.toString();
 
     this._displayName = Globals.user.displayName;
     this._darkTheme = Globals.user.appSettings.darkTheme;
@@ -87,142 +98,262 @@ class _UserSettingsState extends State<UserSettings> {
               key: this.formKey,
               autovalidate: this.autoValidate,
               child: Expanded(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: EdgeInsets.all(10.0),
-                  children: <Widget>[
-                    Column(
-                      children: [
-                        Container(
-                            width: MediaQuery.of(context).size.width * .90,
-                            child: TextFormField(
-                              maxLength: Globals.maxDisplayNameLength,
-                              controller: this.displayNameController,
-                              validator: validDisplayName,
-                              onChanged: (String arg) {
-                                this._displayName = arg.trim();
-                                showSaveButton();
-                              },
-                              key: Key("user_settings:displayName_input"),
-                              onSaved: (String arg) {},
-                              style: TextStyle(fontSize: 20),
-                              decoration: InputDecoration(
-                                  labelText: "Nickname (@${Globals.user.username})",
-                                  counterText: ""),
-                            )),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .01),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            showActiveUserImage(
-                                this._icon == null
-                                    ? getUserIconImage(Globals.user.icon)
-                                    : FileImage(this._icon),
-                                context);
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * .65,
-                            height: MediaQuery.of(context).size.height * .35,
-                            alignment: Alignment.topRight,
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    fit: BoxFit.cover,
-                                    image: this._icon == null
-                                        ? getUserIconImage(Globals.user.icon)
-                                        : FileImage(this._icon))),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: Colors.grey.withOpacity(0.7),
-                                  shape: BoxShape.circle),
-                              child: IconButton(
-                                icon: Icon(Icons.edit),
-                                color: Colors.blueAccent,
-                                onPressed: () {
-                                  getImage();
+                child: Scrollbar(
+                  controller: this.listViewController,
+                  child: ListView(
+                    controller: this.listViewController,
+                    shrinkWrap: true,
+                    padding: EdgeInsets.all(10.0),
+                    children: <Widget>[
+                      Column(
+                        children: [
+                          Container(
+                              width: MediaQuery.of(context).size.width * .90,
+                              child: TextFormField(
+                                maxLength: Globals.maxDisplayNameLength,
+                                controller: this.displayNameController,
+                                validator: validDisplayName,
+                                onChanged: (String arg) {
+                                  this._displayName = arg.trim();
+                                  showSaveButton();
                                 },
+                                key: Key("user_settings:displayName_input"),
+                                onSaved: (String arg) {},
+                                style: TextStyle(fontSize: 20),
+                                decoration: InputDecoration(
+                                    labelText:
+                                        "Nickname (@${Globals.user.username})",
+                                    counterText: ""),
+                              )),
+                          Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .01),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              showActiveUserImage(
+                                  this._icon == null
+                                      ? getUserIconImage(Globals.user.icon)
+                                      : FileImage(this._icon),
+                                  context);
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * .6,
+                              height: MediaQuery.of(context).size.height * .3,
+                              alignment: Alignment.topRight,
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: this._icon == null
+                                          ? getUserIconImage(Globals.user.icon)
+                                          : FileImage(this._icon))),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.grey.withOpacity(0.7),
+                                    shape: BoxShape.circle),
+                                child: IconButton(
+                                  icon: Icon(Icons.edit),
+                                  color: Colors.blueAccent,
+                                  onPressed: () {
+                                    getImage();
+                                  },
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.height * .004),
-                        ),
-                        RaisedButton.icon(
-                            onPressed: () {
-                              hideKeyboard(this.context);
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => FavoritesPage(
-                                          this.displayedFavorites))).then((_) {
-                                saveFavorites();
-                              });
-                            },
-                            icon: Icon(Icons.contacts),
-                            key: Key("user_settings:favorites_button"),
-                            label: Text("My Favorites")),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .8,
-                          child: Column(
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: AutoSizeText(
-                                      "Mute Notifcations",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: this._muted,
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        this._muted = value;
-                                        showSaveButton();
-                                      });
-                                    },
-                                  )
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: AutoSizeText(
-                                      "Light Theme",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                  Switch(
-                                    value: !this._darkTheme,
-                                    key: Key("user_settings:dark_theme_switch"),
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        this._darkTheme = !value;
-                                        showSaveButton();
-                                      });
-                                    },
-                                  )
-                                ],
-                              ),
-                            ],
+                          Padding(
+                            padding: EdgeInsets.all(
+                                MediaQuery.of(context).size.height * .004),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Container(
+                            width: MediaQuery.of(context).size.width * .9,
+                            child: Column(
+                              children: <Widget>[
+                                ListTileTheme(
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(0, 0, 10.0, 0),
+                                  child: ExpansionTile(
+                                    title: AutoSizeText(
+                                      "Default Event Durations",
+                                      minFontSize: 14,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                    key: Key(
+                                        "user_settings:default_durations_button"),
+                                    children: <Widget>[
+                                      ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            maxHeight: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                .2,
+                                          ),
+                                          child: ListView(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: TextFormField(
+                                                  maxLength:
+                                                      Globals.maxConsiderDigits,
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  validator: (value) {
+                                                    return validConsiderDuration(
+                                                        value, false);
+                                                  },
+                                                  key: Key(
+                                                      "user_settings:conider_input"),
+                                                  controller: this
+                                                      .considerDurationController,
+                                                  onChanged: (String arg) {
+                                                    try {
+                                                      this.considerDuration =
+                                                          int.parse(arg);
+                                                      showSaveButton();
+                                                    } catch (e) {
+                                                      this.autoValidate = true;
+                                                    }
+                                                  },
+                                                  onSaved: (String arg) {
+                                                    this.considerDuration =
+                                                        int.parse(arg);
+                                                  },
+                                                  decoration: InputDecoration(
+                                                      labelText:
+                                                          "Consider Duration (mins)",
+                                                      helperText: " ",
+                                                      counterText: ""),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: TextFormField(
+                                                  maxLength:
+                                                      Globals.maxVotingDigits,
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  validator: (value) {
+                                                    return validVotingDuration(
+                                                        value, false);
+                                                  },
+                                                  key: Key(
+                                                      "user_settings:vote_input"),
+                                                  controller: this
+                                                      .votingDurationController,
+                                                  onChanged: (String arg) {
+                                                    try {
+                                                      this.votingDuration =
+                                                          int.parse(arg);
+                                                      showSaveButton();
+                                                    } catch (e) {
+                                                      this.autoValidate = true;
+                                                    }
+                                                  },
+                                                  onSaved: (String arg) {
+                                                    this.votingDuration =
+                                                        int.parse(arg);
+                                                  },
+                                                  decoration: InputDecoration(
+                                                      labelText:
+                                                          "Voting Duration (mins)",
+                                                      helperText: " ",
+                                                      counterText: ""),
+                                                ),
+                                              ),
+                                            ],
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: AutoSizeText(
+                                        "My Favorites",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        hideKeyboard(this.context);
+                                        Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        FavoritesPage(this
+                                                            .displayedFavorites)))
+                                            .then((_) {
+                                          saveFavorites();
+                                        });
+                                      },
+                                      icon: Icon(Icons.contacts),
+                                      key:
+                                          Key("user_settings:favorites_button"),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: AutoSizeText(
+                                        "Mute Notifcations",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: this._muted,
+                                      onChanged: (bool value) {
+                                        setState(() {
+                                          this._muted = value;
+                                          showSaveButton();
+                                        });
+                                      },
+                                    )
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: AutoSizeText(
+                                        "Light Theme",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: !this._darkTheme,
+                                      key: Key(
+                                          "user_settings:dark_theme_switch"),
+                                      onChanged: (bool value) {
+                                        setState(() {
+                                          this._darkTheme = !value;
+                                          showSaveButton();
+                                        });
+                                      },
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -271,6 +402,8 @@ class _UserSettingsState extends State<UserSettings> {
           Globals.user.displayName,
           Globals.user.appSettings.darkTheme,
           Globals.user.appSettings.muted,
+          Globals.user.appSettings.defaultConsiderDuration,
+          Globals.user.appSettings.defaultVotingDuration,
           userNames,
           null);
       if (resultStatus.success) {
@@ -287,7 +420,10 @@ class _UserSettingsState extends State<UserSettings> {
 
   // the moment the user makes changes to their previously saved settings, display the save button
   void showSaveButton() {
-    if (Globals.user.appSettings.darkTheme != this._darkTheme ||
+    if (Globals.user.appSettings.defaultConsiderDuration !=
+            this.considerDuration ||
+        Globals.user.appSettings.defaultVotingDuration != this.votingDuration ||
+        Globals.user.appSettings.darkTheme != this._darkTheme ||
         Globals.user.appSettings.muted != this._muted ||
         Globals.user.displayName != this._displayName ||
         this.newIcon) {
@@ -317,6 +453,8 @@ class _UserSettingsState extends State<UserSettings> {
           this._displayName,
           this._darkTheme,
           this._muted,
+          this.considerDuration,
+          this.votingDuration,
           userNames,
           this._icon);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');

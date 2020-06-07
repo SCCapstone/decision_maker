@@ -98,9 +98,9 @@ class _EventCreateState extends State<EventCreate> {
         Globals.dateFormatter.format(this.proposedEventDateTime);
 
     this.votingDurationController.text =
-        Globals.currentGroupResponse.group.defaultVotingDuration.toString();
+        Globals.user.appSettings.defaultVotingDuration.toString();
     this.considerDurationController.text =
-        Globals.currentGroupResponse.group.defaultConsiderDuration.toString();
+        Globals.user.appSettings.defaultConsiderDuration.toString();
     this.considerDuration = this.considerDurationController.text;
     this.votingDuration = this.votingDurationController.text;
     if (this.considerDuration == "0") {
@@ -396,9 +396,7 @@ class _EventCreateState extends State<EventCreate> {
                                   this.considerButtonText = "Set Consider";
                                 } else {
                                   this.considerDurationController.text = Globals
-                                      .currentGroupResponse
-                                      .group
-                                      .defaultConsiderDuration
+                                      .user.appSettings.defaultConsiderDuration
                                       .toString();
                                   this.considerDuration =
                                       this.considerDurationController.text;
@@ -484,9 +482,7 @@ class _EventCreateState extends State<EventCreate> {
                                   this.voteButtonText = "Set Voting";
                                 } else {
                                   this.votingDurationController.text = Globals
-                                      .currentGroupResponse
-                                      .group
-                                      .defaultVotingDuration
+                                      .user.appSettings.defaultVotingDuration
                                       .toString();
                                   this.votingDuration =
                                       this.votingDurationController.text;

@@ -19,8 +19,6 @@ class Group {
   final Map<String, Event> considerEvents;
   final Map<String, Event> closedEvents;
   final Map<String, Event> occurringEvents;
-  final int defaultVotingDuration;
-  final int defaultConsiderDuration;
   final int totalNumberOfEvents;
   final bool isOpen;
 
@@ -38,8 +36,6 @@ class Group {
       this.considerEvents,
       this.closedEvents,
       this.occurringEvents,
-      this.defaultVotingDuration,
-      this.defaultConsiderDuration,
       this.totalNumberOfEvents,
       this.isOpen});
 
@@ -57,8 +53,6 @@ class Group {
       this.considerEvents,
       this.closedEvents,
       this.occurringEvents,
-      this.defaultVotingDuration,
-      this.defaultConsiderDuration,
       this.totalNumberOfEvents,
       this.isOpen);
 
@@ -101,8 +95,6 @@ class Group {
         closedEvents: getEventsMapFromJson(json[GroupsManager.CLOSED_EVENTS]),
         occurringEvents:
             getEventsMapFromJson(json[GroupsManager.OCCURRING_EVENTS]),
-        defaultVotingDuration: json[GroupsManager.DEFAULT_VOTING_DURATION],
-        defaultConsiderDuration: json[GroupsManager.DEFAULT_CONSIDER_DURATION],
         totalNumberOfEvents: json[GroupsManager.TOTAL_NUMBER_OF_EVENTS],
         isOpen: json[GroupsManager.IS_OPEN]);
   }
@@ -174,8 +166,8 @@ class Group {
   String toString() {
     return "Groupid: $groupId GroupName: $groupName GroupIcon: "
         "$icon GroupCreator: $groupCreator LastActivity: $lastActivity Members: $members MembersLeft: $membersLeft"
-        "Categories: $categories NewEvents: $newEvents VotingEvents $votingEvents ConsiderEvents $considerEvents ClosedEvents $closedEvents OccurringEvents $occurringEvents DefaultVotingDuration: $defaultVotingDuration"
-        "DefaultRsvpDuration: $defaultConsiderDuration TotalNumberOfEvents $totalNumberOfEvents"
+        "Categories: $categories NewEvents: $newEvents VotingEvents $votingEvents ConsiderEvents $considerEvents ClosedEvents $closedEvents OccurringEvents $occurringEvents"
+        " TotalNumberOfEvents $totalNumberOfEvents"
         "IsOpen: $isOpen";
   }
 
@@ -209,8 +201,6 @@ class Group {
           this.getDynamicMapFromEventsMap(this.closedEvents),
       GroupsManager.OCCURRING_EVENTS:
           this.getDynamicMapFromEventsMap(this.occurringEvents),
-      GroupsManager.DEFAULT_VOTING_DURATION: this.defaultVotingDuration,
-      GroupsManager.DEFAULT_CONSIDER_DURATION: this.defaultConsiderDuration,
       GroupsManager.TOTAL_NUMBER_OF_EVENTS: this.totalNumberOfEvents,
       GroupsManager.IS_OPEN: this.isOpen
     };

@@ -88,7 +88,8 @@ class _FirstLoginState extends State<FirstLogin> {
                             onSaved: (String arg) {},
                             style: TextStyle(fontSize: 20),
                             decoration: InputDecoration(
-                                labelText: "Nickname (@${Globals.user.username})",
+                                labelText:
+                                    "Nickname (@${Globals.user.username})",
                                 counterText: ""),
                           )),
                       Padding(
@@ -246,6 +247,8 @@ class _FirstLoginState extends State<FirstLogin> {
           this._displayName,
           this._darkTheme,
           this._muted,
+          10,
+          10,
           userNames,
           this._icon);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
