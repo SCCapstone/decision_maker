@@ -45,6 +45,7 @@ public class ProxyPostController implements
           .put("setUserGroupMute", SetUserGroupMuteController.class)
           .put("markAllEventsSeen", MarkAllEventsSeenController.class)
           .put("getBatchOfEvents", GetBatchOfEventsController.class)
+          .put("getAllBatchesOfEvents", GetAllBatchesOfEventsController.class)
           .put("newEvent", NewEventController.class)
           .put("getEvent", GetEventController.class)
           .put("addFavorite", AddFavoriteController.class)

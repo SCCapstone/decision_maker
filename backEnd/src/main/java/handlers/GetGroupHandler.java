@@ -1,12 +1,8 @@
 package handlers;
 
-import java.util.Map;
 import javax.inject.Inject;
 import managers.DbAccessManager;
-import models.Event;
-import models.EventWithCategoryChoices;
 import models.GetGroupResponse;
-import models.GroupForApiResponse;
 import models.GroupWithCategoryChoices;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -33,12 +29,9 @@ public class GetGroupHandler implements ApiRequestHandler {
    *
    * @param activeUser  This is the username of the user making the api request.
    * @param groupId     This is the id of the group being gotten.
-   * @param batchNumber This is the event batch that we're limiting the returned data to.
    * @return Standard result status object giving insight on whether the request was successful.
    */
-  public ResultStatus handle(final String activeUser, final String groupId,
-      final Integer batchNumber) {
-    //todo remove batch number param
+  public ResultStatus handle(final String activeUser, final String groupId) {
     final String classMethod = "GetGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 

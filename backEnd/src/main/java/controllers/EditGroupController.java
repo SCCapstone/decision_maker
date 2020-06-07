@@ -28,7 +28,7 @@ public class EditGroupController implements ApiRequestController {
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID, Group.GROUP_NAME, Group.MEMBERS,
             Group.CATEGORIES, Group.DEFAULT_VOTING_DURATION, Group.DEFAULT_RSVP_DURATION,
-            Group.IS_OPEN, RequestFields.BATCH_NUMBER);
+            Group.IS_OPEN);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -40,7 +40,6 @@ public class EditGroupController implements ApiRequestController {
         final Integer defaultVotingDuration = (Integer) jsonMap.get(Group.DEFAULT_VOTING_DURATION);
         final Integer defaultRsvpDuration = (Integer) jsonMap.get(Group.DEFAULT_RSVP_DURATION);
         final Boolean isOpen = (Boolean) jsonMap.get(Group.IS_OPEN);
-        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
 
         //optional request keys
         final List<Integer> iconData = (List<Integer>) jsonMap.get(Group.ICON);
@@ -48,7 +47,7 @@ public class EditGroupController implements ApiRequestController {
         Injector.getInjector(metrics).inject(this);
         resultStatus = this.editGroupHandler
             .handle(activeUser, groupId, groupName, members, categories,
-                defaultVotingDuration, defaultRsvpDuration, isOpen, batchNumber, iconData);
+                defaultVotingDuration, defaultRsvpDuration, isOpen, iconData);
       } catch (Exception e) {
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));

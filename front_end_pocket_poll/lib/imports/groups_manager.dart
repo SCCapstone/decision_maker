@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:front_end_pocket_poll/groups_widgets/group_page.dart';
 import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
+import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
@@ -36,12 +38,13 @@ class GroupsManager {
   static final String MUTED = "Muted";
   static final String EVENTS_UNSEEN = "EventsUnseen";
   static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
-  static final int BATCH_SIZE = 5;
+  static final int BATCH_SIZE = 15;
   static final String IS_OPEN = "IsOpen";
 
   static final String getGroupAction = "getGroup";
   static final String getEventAction = "getEvent";
   static final String getBatchOfEventsActions = "getBatchOfEvents";
+  static final String getAllBatchesOfEventsActions = "getAllBatchesOfEvents";
   static final String deleteGroupAction = "deleteGroup";
   static final String createGroupAction = "createNewGroup";
   static final String editGroupAction = "editGroup";
@@ -51,21 +54,12 @@ class GroupsManager {
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
-  static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId,
-      {int batchNumber}) async {
+  static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId) async {
     ResultStatus<GetGroupResponse> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
-
-    if (batchNumber == null) {
-      // batchNumber is used to get a discrete number of events from the DB
-      batchNumber = 0;
-    }
-
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -173,8 +167,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile,
-      {int batchNumber}) async {
+  static Future<ResultStatus<Group>> editGroup(
+      Group group, File iconFile) async {
     ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -191,14 +185,6 @@ class GroupsManager {
         group.members.keys.toList();
     jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
         group.categories.keys.toList();
-
-    if (batchNumber == null) {
-      // batchNumber is used to get a discrete number of events from the DB
-      batchNumber = 0;
-    }
-
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -534,6 +520,48 @@ class GroupsManager {
       GROUP_ID: groupId,
       RequestFields.BATCH_NUMBER: batchNumber,
       RequestFields.BATCH_TYPE: batchType
+    };
+
+    final ResultStatus<String> response =
+        await makeApiRequest(apiEndpoint, jsonRequestBody);
+
+    if (response.success) {
+      try {
+        final Map<String, dynamic> body = jsonDecode(response.data);
+        final ResponseItem responseItem = new ResponseItem.fromJson(body);
+
+        if (responseItem.success) {
+          retVal.data = GetGroupResponse.fromJson(
+              json.decode(responseItem.resultMessage));
+          retVal.success = true;
+        } else {
+          retVal.errorMessage = "Unable to load events.";
+        }
+      } catch (e) {
+        retVal.errorMessage = "Unable to load events.";
+      }
+    } else if (response.networkError) {
+      retVal.errorMessage =
+          "Network error. Unable to load events. Check internet connection.";
+    } else {
+      retVal.errorMessage = "Unable to load events.";
+    }
+    return retVal;
+  }
+
+  static Future<ResultStatus<GetGroupResponse>> getAllBatchesOfEvents(
+      final String groupId,
+      final Map<String, int> eventTypesLabelsToLargestBatchIndexLoaded) async {
+    final ResultStatus<GetGroupResponse> retVal =
+        new ResultStatus(success: false);
+
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] =
+        GroupsManager.getAllBatchesOfEventsActions;
+    jsonRequestBody[RequestFields.PAYLOAD] = {
+      GROUP_ID: groupId,
+      RequestFields.BATCH_INDEXES: eventTypesLabelsToLargestBatchIndexLoaded,
+      RequestFields.MAX_BATCHES: GroupPage.maxEventBatchesInMemory
     };
 
     final ResultStatus<String> response =

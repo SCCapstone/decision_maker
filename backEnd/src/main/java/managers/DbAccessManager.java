@@ -78,6 +78,10 @@ public class DbAccessManager {
     return LocalDateTime.now(ZoneId.of("UTC")).format(this.dateTimeFormatter);
   }
 
+  public LocalDateTime nowObj() {
+    return LocalDateTime.now(ZoneId.of("UTC"));
+  }
+
   public DateTimeFormatter getDateTimeFormatter() {
     return this.dateTimeFormatter;
   }

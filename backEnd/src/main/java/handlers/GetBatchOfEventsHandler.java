@@ -28,13 +28,12 @@ import utilities.WarningDescriptor;
 
 public class GetBatchOfEventsHandler implements ApiRequestHandler {
 
-  private static final Integer EVENTS_TYPE_NEW = 0;
-  private static final Integer EVENTS_TYPE_CLOSED = 1;
-  private static final Integer EVENTS_TYPE_CONSIDER = 2;
-  private static final Integer EVENTS_TYPE_VOTING = 3;
-  private static final Integer EVENTS_TYPE_OCCURRING = 4;
-
-  private static final Integer EVENTS_BATCH_SIZE = 5;
+  public static final Integer EVENTS_BATCH_SIZE = 15;
+  public static final Integer EVENTS_TYPE_NEW = 0;
+  public static final Integer EVENTS_TYPE_CLOSED = 1;
+  public static final Integer EVENTS_TYPE_CONSIDER = 2;
+  public static final Integer EVENTS_TYPE_VOTING = 3;
+  public static final Integer EVENTS_TYPE_OCCURRING = 4;
 
   private final DbAccessManager dbAccessManager;
   private final Metrics metrics;
@@ -180,12 +179,12 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
    */
   public static Map<String, Map<String, Event>> handle(final User activeUser, final Group group) {
 
-    final Map<String, Map<String, Event>> eventTypesToEvent = new HashMap<>();
-    eventTypesToEvent.put(GroupForApiResponse.OCCURRING_EVENTS, new HashMap<>());
-    eventTypesToEvent.put(GroupForApiResponse.NEW_EVENTS, new HashMap<>());
-    eventTypesToEvent.put(GroupForApiResponse.CONSIDER_EVENTS, new HashMap<>());
-    eventTypesToEvent.put(GroupForApiResponse.VOTING_EVENTS, new HashMap<>());
-    eventTypesToEvent.put(GroupForApiResponse.CLOSED_EVENTS, new HashMap<>());
+    final Map<String, Map<String, Event>> eventTypesToEvents = new HashMap<>();
+    eventTypesToEvents.put(GroupForApiResponse.OCCURRING_EVENTS, new HashMap<>());
+    eventTypesToEvents.put(GroupForApiResponse.NEW_EVENTS, new HashMap<>());
+    eventTypesToEvents.put(GroupForApiResponse.CONSIDER_EVENTS, new HashMap<>());
+    eventTypesToEvents.put(GroupForApiResponse.VOTING_EVENTS, new HashMap<>());
+    eventTypesToEvents.put(GroupForApiResponse.CLOSED_EVENTS, new HashMap<>());
 
     //linked hash maps maintain order whereas normal hash maps do not
     LinkedHashMap<String, EventForSorting> eventsBatch = new LinkedHashMap<>();
@@ -214,8 +213,8 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
         .sorted((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
         .forEach((eventEntry) -> {
           if (unseenEventIds.contains(eventEntry.getKey()) &&
-              eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS).size() < EVENTS_BATCH_SIZE) {
-            eventTypesToEvent.get(GroupForApiResponse.NEW_EVENTS)
+              eventTypesToEvents.get(GroupForApiResponse.NEW_EVENTS).size() < EVENTS_BATCH_SIZE) {
+            eventTypesToEvents.get(GroupForApiResponse.NEW_EVENTS)
                 .put(eventEntry.getKey(), eventEntry.getValue());
           }
 
@@ -223,12 +222,12 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
               eventEntry.getValue().getPriority());
 
           //add the events to the response until they fill up the batch size
-          if (eventTypesToEvent.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
-            eventTypesToEvent.get(priorityLabel).put(eventEntry.getKey(), eventEntry.getValue());
+          if (eventTypesToEvents.get(priorityLabel).size() < EVENTS_BATCH_SIZE) {
+            eventTypesToEvents.get(priorityLabel).put(eventEntry.getKey(), eventEntry.getValue());
           }
         });
 
-    return eventTypesToEvent;
+    return eventTypesToEvents;
   }
 
   private static Integer getEventPriorityFromBatchType(final Integer batchType) {
@@ -263,7 +262,7 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
     return label;
   }
 
-  private static String getEventPriorityLabelFromPriority(final Integer priority) {
+  public static String getEventPriorityLabelFromPriority(final Integer priority) {
     String label = null;
     if (priority.equals(EventForSorting.PRIORITY_CLOSED)) {
       label = GroupForApiResponse.CLOSED_EVENTS;

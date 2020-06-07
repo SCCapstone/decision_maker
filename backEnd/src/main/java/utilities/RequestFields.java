@@ -12,4 +12,6 @@ public class RequestFields {
   public static final String DEVICE_TOKEN = "DeviceToken";
   public static final String BATCH_NUMBER = "BatchNumber";
   public static final String BATCH_TYPE = "BatchType";
+  public static final String BATCH_INDEXES = "BatchIndexes";
+  public static final String MAX_MATCHES = "MaxBatches";
 }

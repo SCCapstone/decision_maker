@@ -27,7 +27,7 @@ class EventsManager {
   static int getEventMode(Event event) {
     DateTime timeNow = DateTime.now();
     DateTime eventClosed = event.eventStartDateTime.add(new Duration(
-        hours: 24)); // assumption that after 24 hours the event is done
+        hours: 12)); // assumption that after 12 hours the event is done
     int retVal;
     if (event.tentativeAlgorithmChoices.isEmpty) {
       retVal = considerMode;

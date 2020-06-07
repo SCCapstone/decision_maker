@@ -13,4 +13,6 @@ class RequestFields {
   static final String PAYLOAD = "payload";
   static final String BATCH_NUMBER = "BatchNumber";
   static final String BATCH_TYPE = "BatchType";
+  static final String BATCH_INDEXES = "BatchIndexes";
+  static final String MAX_BATCHES = "MaxBatches";
 }

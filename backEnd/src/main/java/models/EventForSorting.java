@@ -96,7 +96,7 @@ public class EventForSorting extends Event {
   private void setPriorityFromOwnProperties(final LocalDateTime now) {
     if (this.getSelectedChoice() != null) {
       //the event is finalized - it has a selected choice
-      final LocalDateTime yesterday = now.minus(1, ChronoUnit.DAYS);
+      final LocalDateTime yesterday = now.minus(12, ChronoUnit.HOURS);
       if (this.eventStart.isAfter(yesterday)) {
         this.priority = PRIORITY_OCCURRING;
       } else {
