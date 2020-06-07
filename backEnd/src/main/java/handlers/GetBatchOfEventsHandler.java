@@ -28,7 +28,7 @@ import utilities.WarningDescriptor;
 
 public class GetBatchOfEventsHandler implements ApiRequestHandler {
 
-  public static final Integer EVENTS_BATCH_SIZE = 5;
+  public static final Integer EVENTS_BATCH_SIZE = 15;
   public static final Integer EVENTS_TYPE_NEW = 0;
   public static final Integer EVENTS_TYPE_CLOSED = 1;
   public static final Integer EVENTS_TYPE_CONSIDER = 2;
