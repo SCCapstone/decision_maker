@@ -32,8 +32,6 @@ class _GroupCreateState extends State<GroupCreate> {
   String groupName;
   File groupIcon;
   List<Member> groupMembers;
-  FocusNode considerFocus;
-  FocusNode votingFocus;
 
   // map of categoryIds -> GroupCategory
   Map<String, GroupCategory> groupCategories = new Map<String, GroupCategory>();
@@ -43,8 +41,6 @@ class _GroupCreateState extends State<GroupCreate> {
     this.autoValidate = false;
     this.isOpen = true;
     this.groupMembers = new List<Member>();
-    this.considerFocus = new FocusNode();
-    this.votingFocus = new FocusNode();
     super.initState();
   }
 
@@ -84,10 +80,6 @@ class _GroupCreateState extends State<GroupCreate> {
                       this.groupName = arg.trim();
                     },
                     textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (form) {
-                      // when user hits the done button on keyboard, hide it.
-                      FocusScope.of(context).requestFocus(this.considerFocus);
-                    },
                     key: Key("group_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter group name", counterText: ""),
