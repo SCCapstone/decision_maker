@@ -49,7 +49,7 @@ public class DbAccessManager {
   protected final Table groupsTable;
   protected final Table usersTable;
   protected final Table categoriesTable;
-  private final Table pendingEventsTable;
+  protected final Table pendingEventsTable;
 
   private final AmazonDynamoDBClient client;
   private final DateTimeFormatter dateTimeFormatter;
