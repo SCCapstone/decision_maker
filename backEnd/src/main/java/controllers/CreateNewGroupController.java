@@ -41,7 +41,8 @@ public class CreateNewGroupController implements ApiRequestController {
         final List<Integer> iconData = (List<Integer>) jsonMap.get(Group.ICON);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.createNewGroupHandler.handle(activeUser, groupName, members, categories, isOpen, iconData);
+        resultStatus = this.createNewGroupHandler
+            .handle(activeUser, groupName, members, categories, isOpen, iconData);
       } catch (Exception e) {
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));

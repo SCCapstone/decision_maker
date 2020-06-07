@@ -423,14 +423,6 @@ public class EditGroupHandler implements ApiRequestHandler {
           "Error: Error: Cannot add a user that left.");
     }
 
-//    if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
-//      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad voting duration.");
-//    }
-//
-//    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
-//      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
-//    }
-
     return Optional.ofNullable(errorMessage);
   }
 
