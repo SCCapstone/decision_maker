@@ -24,28 +24,16 @@ class GroupCategoryRow extends StatefulWidget {
 }
 
 class _GroupCategoryRowState extends State<GroupCategoryRow> {
-  int groupNum;
   bool activeUserOwnsCategory;
 
   @override
   void initState() {
-    this.groupNum = 0;
     this.activeUserOwnsCategory = false;
     if (widget.category == null && widget.categoryRatingTuple != null) {
       // means a tuple was passed in so the user doesn't own the category
       this.activeUserOwnsCategory = false;
     } else if (widget.categoryRatingTuple == null && widget.category != null) {
       this.activeUserOwnsCategory = true;
-    }
-
-    if (!this.activeUserOwnsCategory) {
-      // find the num of other groups this category is in if its not active user's category
-      for (String groupId in Globals.user.groups.keys) {
-        if (widget.categoryRatingTuple.category.groups.containsKey(groupId) &&
-            groupId != Globals.currentGroupResponse.group.groupId) {
-          this.groupNum++;
-        }
-      }
     }
     super.initState();
   }
@@ -83,8 +71,8 @@ class _GroupCategoryRowState extends State<GroupCategoryRow> {
                     }
                   },
                   child: AutoSizeText(
-                      (this.groupNum != 0)
-                          ? "${widget.category.categoryName}\n(Used in ${this.groupNum} of your other groups)"
+                      (!this.activeUserOwnsCategory)
+                          ? "${widget.category.categoryName}\n(@${widget.category.owner})"
                           : widget.category.categoryName,
                       maxLines: 2,
                       style: TextStyle(fontSize: 20),

@@ -22,8 +22,9 @@ public class DbMaintenanceController implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
   private static final Map<String, Class<? extends ApiRequestController>> ACTIONS_TO_CONTROLLERS = Maps
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
-          .put("keyUserRatingsByVersion", KeyUserRatingsByVersionController.class)
+          .put("unkeyUserRatingsByVersion", UnkeyUserRatingsByVersionController.class)
           .put("addCategoryCreatorToGroup", AddCategoryCreatorToGroupController.class)
+          .put("keyChoicesByLabel", KeyChoicesByLabelController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,

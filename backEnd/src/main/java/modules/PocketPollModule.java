@@ -4,20 +4,21 @@ import dagger.Module;
 import dagger.Provides;
 import handlers.AddFavoriteHandler;
 import handlers.AddPendingEventHandler;
-import handlers.GetBatchOfEventsHandler;
-import handlers.GetEventHandler;
-import handlers.NewCategoryHandler;
 import handlers.CreateNewGroupHandler;
 import handlers.DeleteCategoryHandler;
 import handlers.DeleteGroupHandler;
 import handlers.EditCategoryHandler;
 import handlers.EditGroupHandler;
+import handlers.GetAllBatchesOfEventsHandler;
+import handlers.GetBatchOfEventsHandler;
 import handlers.GetCategoriesHandler;
+import handlers.GetEventHandler;
 import handlers.GetGroupHandler;
 import handlers.GetUserDataHandler;
 import handlers.LeaveGroupHandler;
 import handlers.MarkAllEventsSeenHandler;
 import handlers.MarkEventAsSeenHandler;
+import handlers.NewCategoryHandler;
 import handlers.NewEventHandler;
 import handlers.OptUserInOutHandler;
 import handlers.ProcessPendingEventHandler;
@@ -70,9 +71,8 @@ public class PocketPollModule {
   }
 
   @Provides
-  public NewCategoryHandler provideAddNewCategoryHandler(final DbAccessManager dbAccessManager,
-      final
-      UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
+  public NewCategoryHandler provideNewCategoryHandler(final DbAccessManager dbAccessManager,
+      final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler) {
     return new NewCategoryHandler(dbAccessManager, updateUserChoiceRatingsHandler, this.metrics);
   }
 
@@ -241,5 +241,11 @@ public class PocketPollModule {
   @Provides
   public AddFavoriteHandler provideAddFavoriteHandler(final DbAccessManager dbAccessManager) {
     return new AddFavoriteHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GetAllBatchesOfEventsHandler provideGetAllBatchesOfEventsHandler(
+      final DbAccessManager dbAccessManager) {
+    return new GetAllBatchesOfEventsHandler(dbAccessManager, this.metrics);
   }
 }

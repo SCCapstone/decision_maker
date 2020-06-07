@@ -44,7 +44,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
             child: Icon(
               Icons.sort,
               size: MediaQuery.of(context).size.height * .04,
-              color: Colors.black,
+              color: Colors.white,
             ),
             key: Key("categories_home:sort_button"),
             tooltip: "Sort Categories",
@@ -148,6 +148,7 @@ class _CategoriesHomeState extends State<CategoriesHome> {
     for (Category category in Globals.user.ownedCategories) {
       this.categories.add(category);
     }
+    setState(() {});
   }
 
   // is called when the user clicks back on this page to fetch any new/edited categories to display

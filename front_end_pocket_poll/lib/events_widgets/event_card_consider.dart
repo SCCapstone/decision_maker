@@ -65,7 +65,8 @@ class _EventCardConsiderState extends State<EventCardConsider> {
                   ),
                   Visibility(
                     visible: (Globals.user.groups[widget.groupId] != null &&
-                        Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)),
+                        Globals.currentGroupResponse.eventsUnseen
+                            .containsKey(widget.eventId)),
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Container(
@@ -109,6 +110,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
             Center(
               child: RaisedButton(
                 child: Text("Consider"),
+                key: Key("event_card_consider:${widget.event.eventName}"),
                 color: Colors.green,
                 onPressed: () {
                   Navigator.push(
@@ -141,6 +143,7 @@ class _EventCardConsiderState extends State<EventCardConsider> {
       // blind send, not critical to catch errors
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
       setState(() {
         widget.refreshEventsUnseen();

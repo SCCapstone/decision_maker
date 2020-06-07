@@ -6,6 +6,7 @@ import controllers.DeleteCategoryController;
 import controllers.DeleteGroupController;
 import controllers.EditCategoryController;
 import controllers.EditGroupController;
+import controllers.GetAllBatchesOfEventsController;
 import controllers.GetBatchOfEventsController;
 import controllers.GetCategoriesController;
 import controllers.GetEventController;
@@ -62,4 +63,5 @@ public interface PocketPollComponent {
   void inject(PendingEventResolutionController pendingEventResolutionController);
   void inject(GetEventController getEventController);
   void inject(AddFavoriteController addFavoriteController);
+  void inject(GetAllBatchesOfEventsController getAllBatchesOfEventsController);
 }

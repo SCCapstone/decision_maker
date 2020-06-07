@@ -293,7 +293,8 @@ class _GroupCreateState extends State<GroupCreate> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         setState(() {
@@ -319,7 +320,7 @@ class _GroupCreateState extends State<GroupCreate> {
       }
       // creator is always in the group of course
       membersMap.putIfAbsent(
-          Globals.username, () => new Member.fromUser(Globals.user));
+          Globals.user.username, () => new Member.fromUser(Globals.user));
       // it's okay to not have any inputted members, since creator is guaranteed to be there
       Group group = new Group(
           groupName: this.groupName,
@@ -327,7 +328,11 @@ class _GroupCreateState extends State<GroupCreate> {
           members: membersMap,
           defaultVotingDuration: this.votingDuration,
           defaultConsiderDuration: this.considerDuration,
-          events: new Map<String, Event>(),
+          newEvents: new Map<String, Event>(),
+          votingEvents: new Map<String, Event>(),
+          considerEvents: new Map<String, Event>(),
+          closedEvents: new Map<String, Event>(),
+          occurringEvents: new Map<String, Event>(),
           isOpen: this.isOpen);
 
       showLoadingDialog(

@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,56 +44,51 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb) {
-    return this.handle(activeUser, categoryId, categoryVersion, ratings, updateDb, null, false);
+      final Map<String, Object> ratings, final boolean updateDb) {
+    return this.handle(activeUser, categoryId, ratings, updateDb, null, false);
   }
 
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb,
+      final Map<String, Object> ratings, final boolean updateDb,
       final String categoryName) {
-    return this
-        .handle(activeUser, categoryId, categoryVersion, ratings, updateDb, categoryName, false);
+    return this.handle(activeUser, categoryId, ratings, updateDb, categoryName, false);
   }
 
   //Same doc as above with the addition of the 'isNewCategory' param. This param tell the function
   //that the category has just been created and therefore the active user is the owner
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
-      final Integer categoryVersion, final Map<String, Object> ratings, final boolean updateDb,
+      final Map<String, Object> ratings, final boolean updateDb,
       final String categoryName,
       final boolean isNewCategory) {
     final String classMethod = "UpdateUserChoiceRatingsHandler.handle";
     this.metrics.commonSetup(classMethod);
 
-    ResultStatus resultStatus;
+    ResultStatus<UpdateItemData> resultStatus;
 
     try {
       final Optional<String> errorMessage = this.userRatingsIsValid(ratings);
       if (!errorMessage.isPresent()) {
+        //convert the input ratings to the correct map type
         final Map<String, Integer> ratingsMapConverted = ratings.entrySet().stream()
             .collect(collectingAndThen(
                 toMap(Entry::getKey, (Map.Entry e) -> Integer.parseInt(e.getValue().toString())),
                 HashMap::new));
 
-        String updateExpression;
-        NameMap nameMap;
-        ValueMap valueMap;
-
+        //check to see if the user has old choice ratings for this category, if so we need to keep
+        // these for historical purposes
         final User user = this.dbAccessManager.getUser(activeUser);
+
         if (user.getCategoryRatings().containsKey(categoryId)) {
-          //we just need to insert the new version to ratings map
-          updateExpression =
-              "set " + User.CATEGORY_RATINGS + ".#categoryId.#version" + " = :map";
-          nameMap = new NameMap()
-              .with("#categoryId", categoryId)
-              .with("#version", categoryVersion.toString());
-          valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
-        } else {
-          //this is the first version being saved -> the entire category to ratings map needs insert
-          updateExpression = "set " + User.CATEGORY_RATINGS + ".#categoryId = :map";
-          nameMap = new NameMap().with("#categoryId", categoryId);
-          valueMap = new ValueMap().withMap(":map", ImmutableMap
-              .of(categoryVersion.toString(), ratingsMapConverted));
+          for (final Map.Entry<String, Integer> ratingEntry : user.getCategoryRatings()
+              .get(categoryId).entrySet()) {
+            //Note the user of putIfAbsent here, values already set shouldn't be overwritten
+            ratingsMapConverted.putIfAbsent(ratingEntry.getKey(), ratingEntry.getValue());
+          }
         }
+
+        String updateExpression = "set " + User.CATEGORY_RATINGS + ".#categoryId = :map";
+        NameMap nameMap = new NameMap().with("#categoryId", categoryId);
+        ValueMap valueMap = new ValueMap().withMap(":map", ratingsMapConverted);
 
         if ((isNewCategory || user.getOwnedCategories().containsKey(categoryId))
             && categoryName != null) {
@@ -112,8 +106,7 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
           this.dbAccessManager.updateUser(updateItemData);
         }
 
-        resultStatus = new ResultStatus<>(true, updateItemData,
-            "User ratings updated successfully!");
+        resultStatus = ResultStatus.successful("User ratings updated successfully", updateItemData);
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());

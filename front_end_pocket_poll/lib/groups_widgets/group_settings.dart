@@ -6,6 +6,7 @@ import 'package:front_end_pocket_poll/groups_widgets/group_categories.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
+import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/models/group_category.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
@@ -50,6 +51,8 @@ class _GroupSettingsState extends State<GroupSettings> {
       new TextEditingController();
   final TextEditingController considerDurationController =
       new TextEditingController();
+  final int muteAction = 0;
+  final int leaveDeleteAction = 1;
 
   @override
   void dispose() {
@@ -71,7 +74,8 @@ class _GroupSettingsState extends State<GroupSettings> {
     this.originalCategories = new Map<String, GroupCategory>();
     this.selectedCategories = new Map<String, GroupCategory>();
 
-    if (Globals.username == Globals.currentGroupResponse.group.groupCreator) {
+    if (Globals.user.username ==
+        Globals.currentGroupResponse.group.groupCreator) {
       // to display the delete group button, check if user owns this group
       this.owner = true;
     } else {
@@ -140,7 +144,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   key: Key("group_settings:save_button"),
-                  textColor: Colors.black,
+                  textColor: Colors.white,
                   onPressed: () {
                     if (this.canEdit) {
                       attemptSave();
@@ -151,7 +155,7 @@ class _GroupSettingsState extends State<GroupSettings> {
               Visibility(
                   visible: !this.canEdit,
                   child: IconButton(
-                      disabledColor: Colors.black,
+                      disabledColor: Colors.white,
                       icon: Icon(Icons.lock),
                       tooltip: "Group is locked")),
             ],
@@ -170,22 +174,103 @@ class _GroupSettingsState extends State<GroupSettings> {
                     children: <Widget>[
                       Column(
                         children: [
-                          TextFormField(
-                            enabled: this.canEdit,
-                            maxLength: Globals.maxGroupNameLength,
-                            controller: this.groupNameController,
-                            validator: validGroupName,
-                            onChanged: (String arg) {
-                              this.groupName = arg.trim();
-                              showSaveButton();
-                            },
-                            onSaved: (String arg) {
-                              this.groupName = arg.trim();
-                            },
-                            key: Key("group_settings:group_name_input"),
-                            style: TextStyle(fontSize: 33),
-                            decoration: InputDecoration(
-                                labelText: "Group Name", counterText: ""),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: TextFormField(
+                                  enabled: this.canEdit,
+                                  maxLength: Globals.maxGroupNameLength,
+                                  controller: this.groupNameController,
+                                  validator: validGroupName,
+                                  onChanged: (String arg) {
+                                    this.groupName = arg.trim();
+                                    showSaveButton();
+                                  },
+                                  onSaved: (String arg) {
+                                    this.groupName = arg.trim();
+                                  },
+                                  key: Key("group_settings:group_name_input"),
+                                  style: TextStyle(fontSize: 33),
+                                  decoration: InputDecoration(
+                                      labelText: "Group Name", counterText: ""),
+                                ),
+                              ),
+                              PopupMenuButton<int>(
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size:
+                                      MediaQuery.of(context).size.height * .04,
+                                ),
+                                key: Key("group_settings:more_icon_button"),
+                                tooltip: "More Options",
+                                onCanceled: () => hideKeyboard(context),
+                                onSelected: (int result) {
+                                  hideKeyboard(context);
+                                  if (result == this.leaveDeleteAction) {
+                                    if (this.owner) {
+                                      confirmDeleteGroup();
+                                    } else {
+                                      confirmLeaveGroup();
+                                    }
+                                  } else if (result == this.muteAction) {
+                                    if ((Globals
+                                        .user
+                                        .groups[Globals
+                                            .currentGroupResponse.group.groupId]
+                                        .muted)) {
+                                      // we're unmuting the group
+                                      UsersManager.setUserGroupMute(
+                                          Globals.currentGroupResponse.group
+                                              .groupId,
+                                          false);
+                                      Globals
+                                          .user
+                                          .groups[Globals.currentGroupResponse
+                                              .group.groupId]
+                                          .muted = false;
+                                    } else {
+                                      // we muting that fool
+                                      UsersManager.setUserGroupMute(
+                                          Globals.currentGroupResponse.group
+                                              .groupId,
+                                          true);
+                                      Globals
+                                          .user
+                                          .groups[Globals.currentGroupResponse
+                                              .group.groupId]
+                                          .muted = true;
+                                    }
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<int>>[
+                                  PopupMenuItem<int>(
+                                    value: this.muteAction,
+                                    child: Text(
+                                      (Globals
+                                              .user
+                                              .groups[Globals
+                                                  .currentGroupResponse
+                                                  .group
+                                                  .groupId]
+                                              .muted)
+                                          ? "Unmute"
+                                          : "Mute",
+                                    ),
+                                  ),
+                                  PopupMenuItem<int>(
+                                    value: this.leaveDeleteAction,
+                                    key: Key(
+                                        "group_settings:delete_group_button"),
+                                    child: Text(
+                                      (this.owner)
+                                          ? "Delete Group"
+                                          : "Leave Group",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           Padding(
                             padding: EdgeInsets.all(
@@ -453,26 +538,6 @@ class _GroupSettingsState extends State<GroupSettings> {
               ),
             ),
           ]),
-          bottomNavigationBar: BottomAppBar(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                RaisedButton(
-                  child: Text((this.owner) ? "Delete Group" : "Leave Group"),
-                  color: Colors.red,
-                  key: Key("group_settings:delete_group_button"),
-                  onPressed: () {
-                    if (this.owner) {
-                      confirmDeleteGroup();
-                    } else {
-                      confirmLeaveGroup();
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -510,7 +575,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: Globals.currentGroupResponse.group.categories,
           members: membersMap,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration:
               Globals.currentGroupResponse.group.defaultVotingDuration,
           defaultConsiderDuration:
@@ -549,7 +618,11 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
           members: Globals.currentGroupResponse.group.members,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration:
               Globals.currentGroupResponse.group.defaultVotingDuration,
           defaultConsiderDuration:
@@ -586,7 +659,8 @@ class _GroupSettingsState extends State<GroupSettings> {
           maxWidth: 600,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-              toolbarColor: Globals.pocketPollGreen,
+              toolbarColor: Globals.pocketPollPrimary,
+              toolbarWidgetColor: Colors.white,
               toolbarTitle: "Crop Image"));
       if (croppedImage != null) {
         this.icon = croppedImage;
@@ -758,21 +832,21 @@ class _GroupSettingsState extends State<GroupSettings> {
           groupCreator: Globals.currentGroupResponse.group.groupCreator,
           categories: this.selectedCategories,
           members: membersMap,
-          events: Globals.currentGroupResponse.group.events,
+          newEvents: Globals.currentGroupResponse.group.newEvents,
+          votingEvents: Globals.currentGroupResponse.group.votingEvents,
+          considerEvents: Globals.currentGroupResponse.group.considerEvents,
+          closedEvents: Globals.currentGroupResponse.group.closedEvents,
+          occurringEvents: Globals.currentGroupResponse.group.occurringEvents,
           defaultVotingDuration: this.votingDuration,
           defaultConsiderDuration: this.considerDuration,
           isOpen: this.isOpen);
 
-      int batchNum = Globals.currentGroupResponse.group.currentBatchNum;
-
       showLoadingDialog(this.context, "Saving...", true);
       ResultStatus<Group> resultStatus =
-          await GroupsManager.editGroup(group, icon, batchNumber: batchNum);
+          await GroupsManager.editGroup(group, icon);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
-        Globals.currentGroupResponse.group.currentBatchNum = batchNum;
         setState(() {
           // reset everything and reflect changes made
           this.originalMembers.clear();

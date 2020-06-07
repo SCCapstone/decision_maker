@@ -1,7 +1,8 @@
 package dbMaintenance.modules;
 
 import dbMaintenance.controllers.AddCategoryCreatorToGroupController;
-import dbMaintenance.controllers.KeyUserRatingsByVersionController;
+import dbMaintenance.controllers.KeyChoicesByLabelController;
+import dbMaintenance.controllers.UnkeyUserRatingsByVersionController;
 import dagger.Component;
 import dbMaintenance.cronJobs.controllers.DetachedRatingsRemovalController;
 import javax.inject.Singleton;
@@ -9,7 +10,8 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules = PocketPollMaintenanceModule.class)
 public interface PocketPollMaintenanceComponent {
-  void inject(KeyUserRatingsByVersionController keyUserRatingsByVersionController);
+  void inject(UnkeyUserRatingsByVersionController unkeyUserRatingsByVersionController);
   void inject(AddCategoryCreatorToGroupController addCategoryCreatorToGroupController);
+  void inject(KeyChoicesByLabelController keyChoicesByLabelController);
   void inject(DetachedRatingsRemovalController detachedRatingsRemovalController);
 }

@@ -6,27 +6,65 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
-  static Color pocketPollDarkGreen = Color(0xff106126);
-  static Color pocketPollGreen = Color(0xff5ce080);
-  static Color pocketPollGrey = Color(0xff303030);
-  static String username;
   static User user;
-  static DateFormat formatterWithTime = DateFormat.yMMMMd("en_US").add_jm();
-  static DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
   static GetGroupResponse currentGroupResponse = new GetGroupResponse();
   static List<CategoryRatingTuple> cachedCategories =
       new List<CategoryRatingTuple>();
-  static SharedPreferences sharedPrefs;
-  static int dateNewestSort = 0;
-  static int alphabeticalSort = 1;
-  static int alphabeticalReverseSort = 2;
-  static int dateOldestSort = 3;
-  static String alphabeticalSortString = "Alphabetical (A-Z)";
-  static String alphabeticalReverseSortString = "Alphabetical (Z-A)";
-  static String dateNewestSortString = "Date Modified (Newest)";
-  static String dateOldestSortString = "Date Modified (Oldest)";
   static bool fireBaseConfigured = false;
   static Function refreshGroupPage;
+  static SharedPreferences sharedPrefs;
+
+  static Future<SharedPreferences> getSharedPrefs() async {
+    if (sharedPrefs == null) {
+      sharedPrefs = await SharedPreferences.getInstance();
+    }
+    return sharedPrefs;
+  }
+
+  // *************** CONSTANTS ***************
+  static final Color pocketPollPrimary = Color(0xff70919f);
+  static final Color pocketPollDarkBlue = Color(0xff1a78d6);
+  static final Color pocketPollGreen = Color(0xff5ce080);
+  static final Color pocketPollGrey = Color(0xff303030);
+  static final ThemeData darkTheme = ThemeData(
+      brightness: Brightness.dark,
+      primarySwatch: Colors.blue,
+      primaryColor: pocketPollPrimary,
+      accentColor: pocketPollPrimary,
+      primaryColorDark: Colors.black,
+      buttonTheme: ButtonThemeData(buttonColor: pocketPollDarkBlue),
+      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
+      textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
+  static final ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    primarySwatch: Colors.blue,
+    primaryColor: pocketPollPrimary,
+    accentColor: pocketPollPrimary,
+    buttonTheme: ButtonThemeData(
+        buttonColor: pocketPollDarkBlue, textTheme: ButtonTextTheme.primary),
+    primaryColorDark: Colors.black,
+    primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
+  );
+  static final DateFormat formatterWithTime =
+      DateFormat.yMMMMd("en_US").add_jm();
+  static final DateFormat dateFormatter = DateFormat.yMMMMd("en_US");
+  static final int defaultChoiceRating = 3;
+
+  // sorting variables
+  static final int dateNewestSort = 0;
+  static final int alphabeticalSort = 1;
+  static final int alphabeticalReverseSort = 2;
+  static final int dateOldestSort = 3;
+  static final int choiceRatingAscending = 4;
+  static final int choiceRatingDescending = 5;
+  static final String alphabeticalSortString = "Alphabetical (A-Z)";
+  static final String alphabeticalReverseSortString = "Alphabetical (Z-A)";
+  static final String dateNewestSortString = "Newest Activity";
+  static final String dateOldestSortString = "Oldest Activity";
+  static final String choiceRatingAscendingSortString = "Ratings (Ascending)";
+  static final String choiceRatingDescendingSortString = "Ratings (Descending)";
+
+  // notification actions
   static final String removedFromGroupAction = "removedFromGroup";
   static final String addedToGroupAction = "addedToGroup";
   static final String eventCreatedAction = "eventCreated";
@@ -64,9 +102,10 @@ class Globals {
   static final int minChoiceRating = 0;
   static final int maxChoiceRatingDigits = maxChoiceRating.toString().length;
 
-  static String resetPasswordUrl =
+  // URLS
+  static final String resetPasswordUrl =
       "https://pocket-poll.auth.us-east-2.amazoncognito.com/forgotPassword?client_id=7eh4otm1r5p351d1u9j3h3rf1o&response_type=code&redirect_uri=https://pocket-poll-documents.s3.us-east-2.amazonaws.com/login_redirect.html";
-  static String imageUrl =
+  static final String imageUrl =
       "https://pocketpoll-images.s3.us-east-2.amazonaws.com/";
   static final String termsUrl =
       "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/terms_conditions.html";
@@ -74,29 +113,6 @@ class Globals {
       "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/privacy_policy.html";
   static final String flutterUrl = "https://flutter.dev/";
   static final String awsUrl = "https://aws.amazon.com/";
-
-  static ThemeData darkTheme = ThemeData(
-      brightness: Brightness.dark,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
-      primaryColorDark: Colors.black,
-      buttonTheme: ButtonThemeData(buttonColor: Color(0xff106126)),
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
-  static ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      primarySwatch: Colors.green,
-      primaryColor: pocketPollGreen,
-      accentColor: pocketPollGreen,
-      primaryColorDark: Colors.black,
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.black)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.black)));
-
-  static Future<SharedPreferences> getSharedPrefs() async {
-    if (sharedPrefs == null) {
-      sharedPrefs = await SharedPreferences.getInstance();
-    }
-    return sharedPrefs;
-  }
+  static final String acknowledgementsUrl =
+      "https://pocket-poll-documents.s3.us-east-2.amazonaws.com/acknowledgements.html";
 }

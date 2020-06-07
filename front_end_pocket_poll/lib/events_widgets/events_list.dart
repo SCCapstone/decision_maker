@@ -1,38 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_closed.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_consider.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_occurring.dart';
-import 'package:front_end_pocket_poll/events_widgets/event_card_voting.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
-import 'package:front_end_pocket_poll/imports/groups_manager.dart';
-import 'package:front_end_pocket_poll/models/event.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
-import 'package:front_end_pocket_poll/models/group.dart';
 
 class EventsList extends StatefulWidget {
-  final Map<String, Event> events;
-  final Group group;
-  final Function refreshEventsUnseen;
-  final Function refreshPage;
+  static final int eventsTypeNew = 0;
+  static final int eventsTypeClosed = 1;
+  static final int eventsTypeConsider = 2;
+  static final int eventsTypeVoting = 3;
+  static final int eventsTypeOccurring = 4;
+
+  final List<EventCardInterface> events;
+  final int eventsType;
+  final bool isUnseenTab;
   final Function getNextBatch;
+  final Function getPreviousBatch;
+  final Function markAllEventsSeen;
+  final Map<int, double> eventListScrollPositions;
 
   EventsList(
       {Key key,
-      this.group,
       this.events,
-      this.refreshEventsUnseen,
-      this.refreshPage,
-      this.getNextBatch})
-      : super(key: key);
+      this.eventsType,
+      this.markAllEventsSeen,
+      this.getNextBatch,
+      this.getPreviousBatch,
+      this.eventListScrollPositions})
+      : this.isUnseenTab = (eventsType == 0),
+        super(key: key);
 
   @override
   _EventsListState createState() => _EventsListState();
 }
 
 class _EventsListState extends State<EventsList> {
+  ScrollController scrollController;
+  bool loadingBatch;
+
+  @override
+  void dispose() {
+    this.scrollController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    this.scrollController = new ScrollController();
+    this.scrollController.addListener(scrollListener);
+
+    this.loadingBatch = false;
+
+    super.initState();
+  }
+
+  void scrollListener() {
+    //if we're loading, there's an async function in group_page that will set
+    // the var in eventListScrollPosition -> don't want to interfere with that
+    if (!loadingBatch) {
+      widget.eventListScrollPositions[widget.eventsType] =
+          this.scrollController.position.pixels;
+    }
+
+    if (this.scrollController.offset >=
+            this.scrollController.position.maxScrollExtent &&
+        !this.scrollController.position.outOfRange &&
+        !loadingBatch) {
+      this.loadingBatch = true;
+
+      widget
+          .getNextBatch(
+              widget.eventsType, this.scrollController.position.maxScrollExtent)
+          .then((_) {
+        // if the batch didn't get anything, there will be no page refresh
+        this.loadingBatch = false;
+      });
+    }
+
+    if (this.scrollController.offset <=
+            this.scrollController.position.minScrollExtent &&
+        !this.scrollController.position.outOfRange &&
+        !loadingBatch) {
+      this.loadingBatch = true;
+
+      widget
+          .getPreviousBatch(
+              widget.eventsType, this.scrollController.position.maxScrollExtent)
+          .then((_) {
+        // if the batch didn't get anything, there will be no page refresh
+        this.loadingBatch = false;
+      });
+    }
+
+    //TODO fix the last batch jump (maybe put empty cards at the bottom of the
+    // list if the batch isn't of size BATCH_SIZE
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.eventListScrollPositions[widget.eventsType] != null) {
+      //dispose the old controller, reset the controller, add the listener
+      this.scrollController.dispose();
+      this.scrollController = new ScrollController(
+          initialScrollOffset:
+              widget.eventListScrollPositions[widget.eventsType]);
+      this.scrollController.addListener(scrollListener);
+    }
+
     if (widget.events.isEmpty) {
       return ListView(
         children: <Widget>[
@@ -40,56 +114,24 @@ class _EventsListState extends State<EventsList> {
             padding: EdgeInsets.all(20.0),
             child: Center(
               child: Text(
-                  "No events found! Click the button below to create one!",
+                  (widget.isUnseenTab)
+                      ? "No new events."
+                      : "No events currently in this stage. Click the plus button below to create new events.",
                   style: TextStyle(fontSize: 30)),
             ),
           )
         ],
       );
     } else {
-      List<EventCardInterface> eventCards = new List<EventCardInterface>();
-      for (String eventId in widget.events.keys) {
-        EventCardInterface eventCard;
-        int eventMode = EventsManager.getEventMode(widget.events[eventId]);
-        if (eventMode == EventsManager.considerMode) {
-          eventCard = new EventCardConsider(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.votingMode) {
-          eventCard = new EventCardVoting(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.occurringMode) {
-          eventCard = new EventCardOccurring(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        } else if (eventMode == EventsManager.closedMode) {
-          eventCard = new EventCardClosed(
-              widget.group.groupId,
-              widget.events[eventId],
-              eventId,
-              widget.refreshEventsUnseen,
-              widget.refreshPage);
-        }
-        eventCards.add(eventCard);
-      }
-
-      eventCards.sort((a, b) {
+      // sort the events
+      widget.events.sort((a, b) {
+        // this if statement is only needed in the new tab since all of the event types can be in it
         if (a.getEventMode() > b.getEventMode()) {
           return -1;
         } else if (b.getEventMode() > a.getEventMode()) {
           return 1;
         } else {
-          // cards are the same priority, so sort accordingly (most recent time first)
+          // cards are same priority
           if (a.getEventMode() == EventsManager.considerMode) {
             return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
                 ? 1
@@ -115,55 +157,36 @@ class _EventsListState extends State<EventsList> {
         }
       });
 
-      List<Widget> widgetList = new List<Widget>.from(eventCards);
-      int numEvents = (Globals.currentGroupResponse.group.currentBatchNum + 1) *
-          GroupsManager.BATCH_SIZE;
-      // have a button shown if more events to show
-      Row buttonRow = new Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          // back button must be on every batch except the first
-          Visibility(
-            visible: Globals.currentGroupResponse.group.currentBatchNum > 0,
-            child: RaisedButton(
-              onPressed: () {
-                Globals.currentGroupResponse.group.currentBatchNum -= 1;
-                widget.getNextBatch();
-              },
-              child: Text("Back"),
-            ),
-          ),
-          Visibility(
-            visible: Globals.currentGroupResponse.group.currentBatchNum > 0 &&
-                Globals.currentGroupResponse.group.totalNumberOfEvents -
-                        numEvents >
-                    0,
-            child: Padding(
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width * .02),
-            ),
-          ),
-          // next button only present when there are more events to show
-          Visibility(
-            visible: Globals.currentGroupResponse.group.totalNumberOfEvents -
-                    numEvents >
-                0,
-            child: RaisedButton(
-              onPressed: () {
-                Globals.currentGroupResponse.group.currentBatchNum += 1;
-                widget.getNextBatch();
-              },
-              child: Text("Next"),
-            ),
-          )
-        ],
-      );
-      widgetList.add(buttonRow);
+      List<Widget> widgetList = new List<Widget>.from(widget.events);
+
+      if (widget.isUnseenTab) {
+        // if unseen events are here, then we add a mark all seen button to the top of the list
+        widgetList.insert(
+            0,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                height: MediaQuery.of(context).size.height * .045,
+                child: IconButton(
+                  icon: Icon(Icons.done_all),
+                  color: Globals.pocketPollGreen,
+                  tooltip: "Mark all seen",
+                  onPressed: () {
+                    widget.markAllEventsSeen();
+                  },
+                ),
+              ),
+            ));
+      }
+
+      this.loadingBatch = false;
 
       return Scrollbar(
+          key: UniqueKey(),
           child: ListView.builder(
+              controller: this.scrollController,
               shrinkWrap: true,
               itemCount: widgetList.length,
-              key: Key("events_list:event_list"),
               itemBuilder: (context, index) {
                 return widgetList[index];
               }));

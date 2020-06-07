@@ -48,7 +48,7 @@ public class DbAccessManager {
   //making protected for extended classes
   protected final Table groupsTable;
   protected final Table usersTable;
-  private final Table categoriesTable;
+  protected final Table categoriesTable;
   private final Table pendingEventsTable;
 
   private final AmazonDynamoDBClient client;
@@ -76,6 +76,10 @@ public class DbAccessManager {
 
   public String now() {
     return LocalDateTime.now(ZoneId.of("UTC")).format(this.dateTimeFormatter);
+  }
+
+  public LocalDateTime nowObj() {
+    return LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public DateTimeFormatter getDateTimeFormatter() {

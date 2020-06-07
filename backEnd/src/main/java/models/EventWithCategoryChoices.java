@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EventWithCategoryChoices extends Event {
 
-  private Map<String, String> categoryChoices;
+  private Map<String, Integer> categoryChoices;
 
   public EventWithCategoryChoices(final Map<String, Object> jsonMap) {
     super(jsonMap);
@@ -24,7 +24,8 @@ public class EventWithCategoryChoices extends Event {
     this.categoryChoices = null;
     if (jsonMap != null) {
       this.categoryChoices = jsonMap.entrySet().stream().collect(collectingAndThen(
-          toMap(Entry::getKey, (Map.Entry e) -> (String) e.getValue()), HashMap::new));
+          toMap(Entry::getKey, (Map.Entry e) -> this.getIntFromObject(e.getValue())),
+          HashMap::new));
     }
   }
 
@@ -43,5 +44,12 @@ public class EventWithCategoryChoices extends Event {
 
   public Map<String, Object> asEventMap() {
     return super.asMap();
+  }
+
+  private Integer getIntFromObject(final Object input) {
+    if (input != null) {
+      return Integer.parseInt(input.toString());
+    }
+    return null;
   }
 }

@@ -40,10 +40,12 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (Globals.currentGroupResponse.eventsUnseen.containsKey(widget.eventId)) {
       UsersManager.markEventAsSeen(widget.groupId, widget.eventId);
       Globals.currentGroupResponse.eventsUnseen.remove(widget.eventId);
+      Globals.currentGroupResponse.group.newEvents.remove(widget.eventId);
       Globals.user.groups[widget.groupId].eventsUnseen--;
     }
 
-    buildUserRows(Globals.currentGroupResponse.group.events[widget.eventId]);
+    buildUserRows(
+        Globals.currentGroupResponse.group.considerEvents[widget.eventId]);
     for (String username in this.event.eventCreator.keys) {
       this.eventCreator =
           "${this.event.eventCreator[username].displayName} (@$username)";
@@ -81,6 +83,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
         ],
         leading: BackButton(),
       ),
+      key: Key("event_details_consider:scaffold"),
       body: RefreshIndicator(
         onRefresh: refreshEvent,
         child: Padding(
@@ -146,28 +149,39 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 32),
                   ),
-                  AutoSizeText(
-                    "Version: ${this.event.categoryVersion.toString()}",
-                    minFontSize: 12,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  RaisedButton(
-                    child: Text("Update Ratings"),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => EventUpdateRatings(
-                                  groupId: widget.groupId,
-                                  eventId: widget.eventId))).then((_) {
-                        refreshEvent();
-                      });
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      RaisedButton(
+                        child: Text("Update Ratings"),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        key:
+                            Key("event_details_consider:update_ratings_button"),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EventUpdateRatings(
+                                      groupId: widget.groupId,
+                                      eventId: widget.eventId))).then((_) {
+                            refreshEvent();
+                          });
+                        },
+                      ),
+                      Visibility(
+                        visible: Globals
+                            .currentGroupResponse.eventsWithoutRatings
+                            .containsKey(widget.eventId),
+                        child: Tooltip(
+                            message: "Unrated Category Choices",
+                            child: Icon(
+                              Icons.priority_high,
+                            )),
+                      ),
+                    ],
                   ),
                   Padding(
                     padding: EdgeInsets.all(
@@ -234,7 +248,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                             color: (!this
                                     .event
                                     .optedIn
-                                    .containsKey(Globals.username))
+                                    .containsKey(Globals.user.username))
                                 ? Colors.orangeAccent
                                 : Theme.of(context).scaffoldBackgroundColor,
                           )),
@@ -255,7 +269,7 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
                             color: (this
                                     .event
                                     .optedIn
-                                    .containsKey(Globals.username))
+                                    .containsKey(Globals.user.username))
                                 ? Colors.greenAccent
                                 : Theme.of(context).scaffoldBackgroundColor,
                           )),
@@ -276,17 +290,20 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     bool oldConsiderUser = !considerUser;
     // update group in local memory to reflect the change in consider value
     if (considerUser) {
-      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+      Globals.currentGroupResponse.group.considerEvents[widget.eventId].optedIn
           .putIfAbsent(
-              Globals.username, () => new Member.fromUser(Globals.user));
+              Globals.user.username, () => new Member.fromUser(Globals.user));
+      this.event.optedIn.putIfAbsent(
+          Globals.user.username, () => new Member.fromUser(Globals.user));
       this.userRows.putIfAbsent(
-          Globals.username,
-          () => EventUserRow(
-              Globals.user.displayName, Globals.username, Globals.user.icon));
+          Globals.user.username,
+          () => EventUserRow(Globals.user.displayName, Globals.user.username,
+              Globals.user.icon));
     } else {
-      Globals.currentGroupResponse.group.events[widget.eventId].optedIn
-          .remove(Globals.username);
-      this.userRows.remove(Globals.username);
+      Globals.currentGroupResponse.group.considerEvents[widget.eventId].optedIn
+          .remove(Globals.user.username);
+      this.event.optedIn.remove(Globals.user.username);
+      this.userRows.remove(Globals.user.username);
     }
     setState(() {});
 
@@ -295,17 +312,19 @@ class _EventDetailsConsiderState extends State<EventDetailsConsider> {
     if (!resultStatus.success) {
       // revert consider back if it failed
       if (oldConsiderUser) {
-        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
+        Globals
+            .currentGroupResponse.group.considerEvents[widget.eventId].optedIn
             .putIfAbsent(
-                Globals.username, () => new Member.fromUser(Globals.user));
+                Globals.user.username, () => new Member.fromUser(Globals.user));
         this.userRows.putIfAbsent(
-            Globals.username,
-            () => EventUserRow(
-                Globals.user.displayName, Globals.username, Globals.user.icon));
+            Globals.user.username,
+            () => EventUserRow(Globals.user.displayName, Globals.user.username,
+                Globals.user.icon));
       } else {
-        Globals.currentGroupResponse.group.events[widget.eventId].optedIn
-            .remove(Globals.username);
-        this.userRows.remove(Globals.username);
+        Globals
+            .currentGroupResponse.group.considerEvents[widget.eventId].optedIn
+            .remove(Globals.user.username);
+        this.userRows.remove(Globals.user.username);
       }
       showErrorMessage("Error", resultStatus.errorMessage, context);
       setState(() {});

@@ -30,7 +30,6 @@ Future<bool> hasValidTokensSet(BuildContext context) async {
   bool retVal = true;
   if (resultStatus.success) {
     Globals.user = resultStatus.data;
-    Globals.username = resultStatus.data.username;
   } else {
     retVal = false;
   }

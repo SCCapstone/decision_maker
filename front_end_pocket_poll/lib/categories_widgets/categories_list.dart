@@ -3,6 +3,7 @@ import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'categories_list_item.dart';
 
@@ -38,9 +39,9 @@ class _CategoryListState extends State<CategoryList> {
               itemCount: widget.categories.length,
               itemBuilder: (BuildContext context, int index) {
                 if (widget.sortType == Globals.alphabeticalSort) {
-                  CategoriesManager.sortByAlphaAscending(widget.categories);
+                  Sorter.sortCategoriesByAlphaAscending(widget.categories);
                 } else {
-                  CategoriesManager.sortByAlphaDescending(widget.categories);
+                  Sorter.sortCategoriesByAlphaDescending(widget.categories);
                 }
                 return CategoriesListItem(
                   widget.categories[index],

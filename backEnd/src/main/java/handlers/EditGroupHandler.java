@@ -61,8 +61,6 @@ public class EditGroupHandler implements ApiRequestHandler {
    * @param defaultVotingDuration The updated default voting duration for events in this group.
    * @param defaultRsvpDuration   The update default consider duration for events in this group.
    * @param isOpen                The update is open value for this group.
-   * @param batchNumber           The batch of events that are currently being viewed for the group
-   *                              on the front end.
    * @param iconData              The byte array for a new group icon. If null, the icon is not
    *                              updated.
    * @return Standard result status object giving insight on whether the request was successful.
@@ -70,7 +68,7 @@ public class EditGroupHandler implements ApiRequestHandler {
   public ResultStatus handle(final String activeUser, final String groupId, final String name,
       final List<String> membersList, final List<String> categoriesList,
       final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
-      final Integer batchNumber, final List<Integer> iconData) {
+      final List<Integer> iconData) {
     final String classMethod = "EditGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 
@@ -134,8 +132,10 @@ public class EditGroupHandler implements ApiRequestHandler {
         this.updateUsersTable(oldGroup, newGroup);
         this.updateCategoriesTable(oldGroup, newGroup);
 
+        final User user = this.dbAccessManager.getUser(activeUser);
+
         resultStatus = new ResultStatus(true,
-            JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup, batchNumber).asMap()));
+            JsonUtils.convertObjectToJson(new GroupForApiResponse(user, newGroup).asMap()));
       } else {
         resultStatus = ResultStatus.failure(errorMessage.get());
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));

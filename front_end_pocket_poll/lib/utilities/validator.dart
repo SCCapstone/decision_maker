@@ -102,7 +102,7 @@ String validNewUser(String user, List<String> users) {
     retVal = "Username cannot be empty.";
   } else if (user.length > Globals.maxUsernameLength) {
     retVal = "Username is too large.";
-  } else if (user == Globals.username) {
+  } else if (user == Globals.user.username) {
     retVal = "Can't add yourself.";
   } else if (users.contains(user)) {
     retVal = "Username already added.";
@@ -270,7 +270,7 @@ String validNewFavorite(String input, List<Favorite> favorites) {
     retVal = "Username is too large.";
   } else if (duplicates) {
     retVal = "You already have this username saved.";
-  } else if (input == Globals.username) {
+  } else if (input == Globals.user.username) {
     retVal = "Cannot add yourself.";
   } else if (!validCharacters(input)) {
     retVal = "Invalid characters.";

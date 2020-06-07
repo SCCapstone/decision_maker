@@ -122,6 +122,7 @@ public class NewEventHandler implements ApiRequestHandler {
 
         //Hope it works, we aren't using transactions yet (that's why nothing done with result).
         if (newEvent.getRsvpDuration() > 0) {
+          //TODO make this a transaction
           final ResultStatus pendingEventAdded = this.addPendingEventHandler
               .handle(groupId, eventId, newEvent.getRsvpDuration());
         } else {
@@ -132,9 +133,6 @@ public class NewEventHandler implements ApiRequestHandler {
 
         //since the event could have been updated by skipping consider, we need to pull to get the most up to date event
         final Group newGroup = this.dbAccessManager.getGroupNoCache(groupId);
-//        final Group newGroup = oldGroup.clone();
-//        newGroup.getEvents().put(eventId, newEvent);
-//        newGroup.setLastActivity(lastActivity);
 
         //when rsvp is not greater than 0, updateUsersTable gets called by updateEvent
         if (newEvent.getRsvpDuration() > 0) {
@@ -142,7 +140,8 @@ public class NewEventHandler implements ApiRequestHandler {
         }
 
         resultStatus = ResultStatus
-            .successful(JsonUtils.convertObjectToJson(new GroupForApiResponse(newGroup).asMap()));
+            .successful(
+                JsonUtils.convertObjectToJson(new GroupForApiResponse(eventCreator, newGroup)));
       } else {
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());
@@ -280,7 +279,7 @@ public class NewEventHandler implements ApiRequestHandler {
       //we just transitioned to a having a selected choice -> stage: occurring
       action = "eventChosen";
       eventChangeBody =
-          updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
+          updatedEvent.getEventName() + " - " + updatedEvent.getSelectedChoice() + " Won!";
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> stage: voting
       action = "eventVoting";
@@ -297,7 +296,7 @@ public class NewEventHandler implements ApiRequestHandler {
 
           if (user.pushEndpointArnIsSet()) {
             //each user needs to know how many events they haven't seen for the given group now
-            metadata.addToPayload(User.EVENTS_UNSEEN,
+            metadata.overwritePayload(User.EVENTS_UNSEEN,
                 user.getGroups().get(group.getGroupId()).getEventsUnseen().size());
 
             if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())

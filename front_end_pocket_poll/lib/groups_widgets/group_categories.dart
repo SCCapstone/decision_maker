@@ -22,6 +22,8 @@ class GroupCategories extends StatefulWidget {
 }
 
 class _GroupCategoriesState extends State<GroupCategories> {
+  final ScrollController myCategoriesController = new ScrollController();
+  final ScrollController memberCategoriesController = new ScrollController();
   bool loading;
   bool errorLoading;
   int sortVal;
@@ -42,6 +44,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
   }
 
   @override
+  void dispose() {
+    this.myCategoriesController.dispose();
+    this.memberCategoriesController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (this.loading) {
       return categoriesLoading();
@@ -53,7 +62,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
           centerTitle: false,
           title: (widget.canEdit)
               ? Text(
-                  "Add Categories",
+                  "Select Categories",
                   style: TextStyle(
                       fontSize:
                           DefaultTextStyle.of(context).style.fontSize * 0.5),
@@ -69,7 +78,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
               child: Icon(
                 Icons.sort,
                 size: MediaQuery.of(context).size.height * .04,
-                color: Colors.black,
+                color: Colors.white,
               ),
               tooltip: "Sort Categories",
               onSelected: (int result) {
@@ -194,11 +203,14 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   maxHeight: MediaQuery.of(context).size.height * .40),
               child: Scrollbar(
                 child: ListView.builder(
+                    controller: this.myCategoriesController,
                     shrinkWrap: true,
                     itemCount: this.ownedCategoryRows.length,
                     itemBuilder: (BuildContext context, int index) {
                       return this.ownedCategoryRows[index];
                     }),
+                isAlwaysShown: true,
+                controller: this.myCategoriesController,
               ),
             ),
             Visibility(
@@ -206,7 +218,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
                   this.ownedCategoryRows.isNotEmpty),
               child: Padding(
                 padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * .05),
+                    EdgeInsets.all(MediaQuery.of(context).size.height * .02),
               ),
             ),
             Visibility(
@@ -224,10 +236,13 @@ class _GroupCategoriesState extends State<GroupCategories> {
                 height: MediaQuery.of(context).size.height * .40,
                 child: Scrollbar(
                   child: ListView.builder(
+                      controller: this.memberCategoriesController,
                       itemCount: this.groupCategoryRows.length,
                       itemBuilder: (BuildContext context, int index) {
                         return this.groupCategoryRows[index];
                       }),
+                  isAlwaysShown: true,
+                  controller: this.memberCategoriesController,
                 ),
               ),
             ),
@@ -245,7 +260,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         appBar: AppBar(
             centerTitle: false,
             title: (widget.canEdit)
-                ? Text("Add Categories",
+                ? Text("Select Categories",
                     style: TextStyle(
                         fontSize:
                             DefaultTextStyle.of(context).style.fontSize * 0.5))
@@ -262,7 +277,7 @@ class _GroupCategoriesState extends State<GroupCategories> {
         appBar: AppBar(
             centerTitle: false,
             title: (widget.canEdit)
-                ? Text("Add Categories",
+                ? Text("Select Categories",
                     style: TextStyle(
                         fontSize:
                             DefaultTextStyle.of(context).style.fontSize * 0.5))

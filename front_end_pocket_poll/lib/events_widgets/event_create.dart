@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
@@ -52,6 +53,7 @@ class _EventCreateState extends State<EventCreate> {
   int proposedMonth;
   int proposedDay;
   FocusNode minuteInputFocus;
+  FocusNode hourInputFocus;
 
   @override
   void dispose() {
@@ -67,6 +69,7 @@ class _EventCreateState extends State<EventCreate> {
   @override
   void initState() {
     this.minuteInputFocus = new FocusNode();
+    this.hourInputFocus = new FocusNode();
     this.autoValidate = false;
     this.willConsider = true;
     this.willVote = true;
@@ -142,50 +145,25 @@ class _EventCreateState extends State<EventCreate> {
                       onSaved: (String arg) {
                         this.eventName = arg.trim();
                       },
+                      onFieldSubmitted: (_) {
+                        this.hourInputFocus.requestFocus();
+                      },
+                      textInputAction: TextInputAction.next,
                       key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
                           labelText: "Enter event name", counterText: ""),
                     ),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              showCategoriesPopup();
-                            },
-                            child: AutoSizeText(
-                              getCategoryActionMessage(),
-                              minFontSize: 10,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 24),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add_circle_outline),
-                          iconSize: 40,
-                          key: Key("event_create:add_category_button"),
-                          onPressed: () {
-                            showCategoriesPopup();
-                          },
-                        )
-                      ],
-                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text("Start date and time for the event",
-                              style: TextStyle(fontSize: 16)),
-                        ]),
-                    Padding(
-                      padding: EdgeInsets.all(
-                          MediaQuery.of(context).size.height * .01),
-                    ),
+                    AutoSizeText("Event start date and time",
+                        minFontSize: 10,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 16,
+                            decoration: TextDecoration.underline)),
                     Row(
                       children: <Widget>[
                         Expanded(
@@ -225,6 +203,7 @@ class _EventCreateState extends State<EventCreate> {
                             textAlign: TextAlign.center,
                             enableInteractiveSelection: false,
                             maxLength: 2,
+                            focusNode: this.hourInputFocus,
                             decoration: InputDecoration(
                                 hintText: "HH", counterText: ""),
                             onFieldSubmitted: (form) {
@@ -333,6 +312,29 @@ class _EventCreateState extends State<EventCreate> {
                         )
                       ],
                     ),
+                    ListTileTheme(
+                      contentPadding: EdgeInsets.all(0),
+                      child: ExpansionTile(
+                        title: AutoSizeText(
+                          getCategoryActionMessage(),
+                          minFontSize: 10,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        key: Key("event_create:add_category_button"),
+                        children: <Widget>[
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * .2,
+                            ),
+                            child: EventPickCategory(
+                                this.selectedCategory, selectCategory),
+                          ),
+                        ],
+                      ),
+                    ),
                     Padding(
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .005),
@@ -416,13 +418,16 @@ class _EventCreateState extends State<EventCreate> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    AutoSizeText(
-                      calculateVotingStartDateTime(),
-                      maxLines: 1,
-                      minFontSize: 12,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18),
+                    Visibility(
+                      visible: this.willConsider,
+                      child: AutoSizeText(
+                        calculateVotingStartDateTime(),
+                        maxLines: 1,
+                        minFontSize: 12,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -501,13 +506,16 @@ class _EventCreateState extends State<EventCreate> {
                       padding: EdgeInsets.all(
                           MediaQuery.of(context).size.height * .01),
                     ),
-                    AutoSizeText(
-                      calculateVotingEndDateTime(),
-                      minFontSize: 10,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 18),
+                    Visibility(
+                      visible: this.willVote,
+                      child: AutoSizeText(
+                        calculateVotingEndDateTime(),
+                        minFontSize: 10,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18),
+                      ),
                     ),
                   ],
                 )
@@ -544,16 +552,10 @@ class _EventCreateState extends State<EventCreate> {
     setState(() {});
   }
 
-  // display a popup for picking a category for this event
-  void showCategoriesPopup() {
-    showDialog(
-            context: this.context,
-            child: EventPickCategory(this.selectedCategory))
-        .then((selectedCategory) {
-      hideKeyboard(this.context); // close keyboard
-      setState(() {
-        this.selectedCategory = selectedCategory;
-      });
+  // used by the expansion tile to select a category for the event
+  void selectCategory(Category category) {
+    setState(() {
+      this.selectedCategory = category;
     });
   }
 
@@ -574,7 +576,7 @@ class _EventCreateState extends State<EventCreate> {
     DateTime selectedDate = await showDatePicker(
         context: this.context,
         initialDate: this.proposedEventDateTime,
-        firstDate: DateTime.now().subtract(Duration(days: 1)),
+        firstDate: DateTime.now(),
         lastDate: DateTime(DateTime.now().year + 50));
     if (selectedDate != null) {
       // would be null if user clicks cancel or clicks outside of the popup
@@ -711,7 +713,15 @@ class _EventCreateState extends State<EventCreate> {
 
         if (result.success) {
           Globals.currentGroupResponse.group = result.data;
-          Navigator.of(this.context).pop("Event Created");
+          // tell the group page what stage this event is going to start in
+          int retVal = EventsManager.considerMode;
+          if (int.parse(this.considerDuration) == 0 &&
+              int.parse(this.votingDuration) == 0) {
+            retVal = EventsManager.occurringMode;
+          } else if (int.parse(this.considerDuration) == 0) {
+            retVal = EventsManager.votingMode;
+          }
+          Navigator.of(this.context).pop(retVal);
         } else {
           showErrorMessage("Error", result.errorMessage, this.context);
         }

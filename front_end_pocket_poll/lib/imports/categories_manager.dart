@@ -18,9 +18,7 @@ class CategoriesManager {
   static final String CATEGORY_NAME = "CategoryName";
   static final String CHOICES = "Choices";
   static final String GROUPS = "Groups";
-  static final String NEXT_CHOICE_NO = "NextChoiceNo";
   static final String OWNER = "Owner";
-  static final String CATEGORY_VERSION = "Version";
 
   static final String editAction = "editCategory";
   static final String createAction = "newCategory";
@@ -29,7 +27,7 @@ class CategoriesManager {
 
   static Future<ResultStatus<Category>> addOrEditCategory(
       String categoryName,
-      Map<String, String> choiceLabels,
+      Map<String, int> choiceLabels,
       Map<String, String> choiceRatings,
       Category category) async {
     ResultStatus<Category> retVal = new ResultStatus(success: false);
@@ -188,17 +186,5 @@ class CategoriesManager {
       retVal.errorMessage = "Unable to delete category.";
     }
     return retVal;
-  }
-
-  // sorts a list of categories alphabetically (ascending)
-  static void sortByAlphaAscending(List<Category> categories) {
-    categories.sort((a, b) =>
-        a.categoryName.toUpperCase().compareTo(b.categoryName.toUpperCase()));
-  }
-
-  // sorts a list of categories alphabetically (descending)
-  static void sortByAlphaDescending(List<Category> categories) {
-    categories.sort((a, b) =>
-        b.categoryName.toUpperCase().compareTo(a.categoryName.toUpperCase()));
   }
 }

@@ -11,11 +11,11 @@ import 'package:front_end_pocket_poll/categories_widgets/categories_home.dart';
 import 'package:front_end_pocket_poll/groups_widgets//groups_list.dart';
 import 'package:front_end_pocket_poll/groups_widgets/group_create.dart';
 import 'package:front_end_pocket_poll/groups_widgets/groups_left_list.dart';
-import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 import 'package:front_end_pocket_poll/widgets/login_page.dart';
 import 'package:front_end_pocket_poll/models/group_left.dart';
 import 'package:front_end_pocket_poll/models/message.dart';
@@ -34,7 +34,7 @@ class GroupsHome extends StatefulWidget {
 }
 
 class _GroupsHomeState extends State<GroupsHome>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController searchBarController = new TextEditingController();
   final int totalTabs = 2;
   final int groupsHomeTab = 0;
@@ -52,6 +52,7 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     this.searching = false;
     this.searchIcon = new Icon(Icons.search);
     this.searchGroups = new List<UserGroup>();
@@ -93,7 +94,7 @@ class _GroupsHomeState extends State<GroupsHome>
               }
             }
             this.searchGroups = temp;
-            GroupsManager.sortByAlphaAscending(this.searchGroups);
+            Sorter.sortGroupRowsByAlphaAscending(this.searchGroups);
           });
         }
       } else {
@@ -118,7 +119,7 @@ class _GroupsHomeState extends State<GroupsHome>
               }
             }
             this.searchGroupsLeft = temp;
-            GroupsManager.sortByAlphaAscending(this.searchGroups);
+            Sorter.sortGroupRowsByAlphaAscending(this.searchGroups);
           });
         }
       }
@@ -146,9 +147,18 @@ class _GroupsHomeState extends State<GroupsHome>
 
   @override
   void dispose() {
-    tabController.dispose();
-    searchBarController.dispose();
+    this.tabController.dispose();
+    this.searchBarController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // app was recently resumed with this state being active, refresh in case changes happened
+      refreshList();
+    }
   }
 
   @override
@@ -184,13 +194,11 @@ class _GroupsHomeState extends State<GroupsHome>
                                 getUserIconImage(Globals.user.icon)),
                       ),
                       title: AutoSizeText(
-                        Globals.username,
+                        Globals.user.username,
                         minFontSize: 12,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Theme.of(context).primaryColorDark),
+                        style: TextStyle(fontSize: 24, color: Colors.white),
                       ),
                       onTap: () {
                         // close the drawer menu when clicked
@@ -273,7 +281,7 @@ class _GroupsHomeState extends State<GroupsHome>
                         if (Platform.isAndroid) {
                           Globals.fireBaseConfigured = false;
                           // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
-                          firebaseMessaging.deleteInstanceID();
+                          this.firebaseMessaging.deleteInstanceID();
                         }
                         Navigator.pushAndRemoveUntil(
                             context,
@@ -290,7 +298,7 @@ class _GroupsHomeState extends State<GroupsHome>
         appBar: AppBar(
           centerTitle: true,
           title: Visibility(
-            visible: !(searching),
+            visible: !(this.searching),
             child: AutoSizeText(
               "Pocket Poll",
               maxLines: 1,
@@ -349,7 +357,7 @@ class _GroupsHomeState extends State<GroupsHome>
                       controller: this.tabController,
                       isScrollable: false,
                       indicatorWeight: 3,
-                      indicatorColor: Colors.blueAccent,
+                      indicatorColor: Colors.white,
                       tabs: <Widget>[
                         AutoSizeText(
                           "Groups Home",
@@ -383,7 +391,7 @@ class _GroupsHomeState extends State<GroupsHome>
                         child: Icon(
                           Icons.sort,
                           size: MediaQuery.of(context).size.height * .04,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                         tooltip: "Sort Groups",
                         onSelected: (int result) {
@@ -586,13 +594,13 @@ class _GroupsHomeState extends State<GroupsHome>
 
   void setGroupsHomeSort(bool sendUpdate) {
     if (this.groupHomeSortVal == Globals.dateNewestSort) {
-      GroupsManager.sortByDateNewest(this.totalGroups);
+      Sorter.sortGroupRowsByDateNewest(this.totalGroups);
     } else if (this.groupHomeSortVal == Globals.dateOldestSort) {
-      GroupsManager.sortByDateOldest(totalGroups);
+      Sorter.sortGroupRowsByDateOldest(totalGroups);
     } else if (this.groupHomeSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(this.totalGroups);
+      Sorter.sortGroupRowsByAlphaDescending(this.totalGroups);
     } else if (this.groupHomeSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(this.totalGroups);
+      Sorter.sortGroupRowsByAlphaAscending(this.totalGroups);
     }
     if (sendUpdate) {
       // blind send, don't care if it doesn't work since it's just a sort value
@@ -605,9 +613,9 @@ class _GroupsHomeState extends State<GroupsHome>
   void setGroupsLeftSort() {
     // don't need to update DB, separate method so there isn't a break in consistency
     if (this.groupsLeftSortVal == Globals.alphabeticalReverseSort) {
-      GroupsManager.sortByAlphaDescending(this.groupsLeft);
+      Sorter.sortGroupRowsByAlphaDescending(this.groupsLeft);
     } else if (this.groupsLeftSortVal == Globals.alphabeticalSort) {
-      GroupsManager.sortByAlphaAscending(this.groupsLeft);
+      Sorter.sortGroupRowsByAlphaAscending(this.groupsLeft);
     }
   }
 
@@ -713,7 +721,9 @@ class _GroupsHomeState extends State<GroupsHome>
               notification.payload[GroupsManager.LAST_ACTIVITY];
         }
 
-        if (Globals.refreshGroupPage != null) {
+        //only refresh if the active group has the group id parsed above
+        if (Globals.currentGroupResponse.group.groupId == groupId &&
+            Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
@@ -801,7 +811,9 @@ class _GroupsHomeState extends State<GroupsHome>
               notification.payload[GroupsManager.LAST_ACTIVITY];
         }
 
-        if (Globals.refreshGroupPage != null) {
+        //only refresh if the active group has the group id parsed above
+        if (Globals.currentGroupResponse.group.groupId == groupId &&
+            Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
         }
