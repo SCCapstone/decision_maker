@@ -1,4 +1,4 @@
-package dbMaintenance.controllers;
+package dbMaintenance.cronJobs.controllers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -18,19 +18,17 @@ import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
-public class DbMaintenanceController implements
+public class CronJobController implements
     RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
   private static final Map<String, Class<? extends ApiRequestController>> ACTIONS_TO_CONTROLLERS = Maps
       .newHashMap(ImmutableMap.<String, Class<? extends ApiRequestController>>builder()
-          .put("unkeyUserRatingsByVersion", UnkeyUserRatingsByVersionController.class)
-          .put("addCategoryCreatorToGroup", AddCategoryCreatorToGroupController.class)
-          .put("keyChoicesByLabel", KeyChoicesByLabelController.class)
-          .put("addDurationsToUserSettings", AddDurationsToUserSettingsController.class)
+          .put("detachedRatingsRemoval", DetachedRatingsRemovalController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
       Context context) {
-    final String classMethod = "DbMaintenanceController.handleRequest";
+    final String classMethod = "CronJobController.handleRequest";
 
     final Metrics metrics = new Metrics(context.getAwsRequestId(), context.getLogger());
     metrics.commonSetup(classMethod);

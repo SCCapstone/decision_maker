@@ -17,6 +17,7 @@ import com.amazonaws.services.dynamodbv2.model.TransactGetItemsResult;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsRequest;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItemsResult;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -49,7 +50,7 @@ public class DbAccessManager {
   protected final Table groupsTable;
   protected final Table usersTable;
   protected final Table categoriesTable;
-  private final Table pendingEventsTable;
+  protected final Table pendingEventsTable;
 
   private final AmazonDynamoDBClient client;
   private final DateTimeFormatter dateTimeFormatter;
@@ -92,7 +93,7 @@ public class DbAccessManager {
   }
 
   public User getUser(final String username)
-      throws NullPointerException, InvalidAttributeValueException {
+      throws NullPointerException, InvalidAttributeValueException, AttributeValueOutOfRangeException {
     Item userItem;
     if (this.cache.containsKey(username)) {
       userItem = this.cache.get(username);
@@ -104,7 +105,8 @@ public class DbAccessManager {
     return new User(userItem);
   }
 
-  public User getUserNoCache(final String username) throws InvalidAttributeValueException {
+  public User getUserNoCache(final String username)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     final Item userItem = this.usersTable.getItem(new PrimaryKey(USERS_PRIMARY_KEY, username));
     this.cache.put(username, userItem);
 

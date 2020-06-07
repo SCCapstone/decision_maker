@@ -1,6 +1,7 @@
 package models;
 
 import com.google.common.collect.ImmutableList;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import utilities.Config;
 
 @Data
 @Builder
@@ -20,11 +22,14 @@ public class AppSettings {
   public static final String MUTED = "Muted";
   public static final String GROUP_SORT = "GroupSort";
   public static final String CATEGORY_SORT = "CategorySort";
+  public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
+  public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
 
   private static final boolean DEFAULT_DARK_THEME = true;
   private static final boolean DEFAULT_MUTED = true;
   private static final Integer DEFAULT_GROUP_SORT = 1;
   private static final Integer DEFAULT_CATEGORY_SORT = 1;
+  private static final Integer DEFAULT_DURATION = 10;
 
   private boolean darkTheme;
   private boolean muted;
@@ -33,23 +38,33 @@ public class AppSettings {
   private Integer groupSort;
   @Setter(AccessLevel.NONE)
   private Integer categorySort;
+  @Setter(AccessLevel.NONE)
+  private Integer defaultVotingDuration;
+  @Setter(AccessLevel.NONE)
+  private Integer defaultRsvpDuration;
 
-  public static AppSettings defaultSettings() throws InvalidAttributeValueException {
+  public static AppSettings defaultSettings()
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     return AppSettings.builder()
         .darkTheme(DEFAULT_DARK_THEME)
         .groupSort(DEFAULT_GROUP_SORT)
         .categorySort(DEFAULT_CATEGORY_SORT)
         .muted(DEFAULT_MUTED)
+        .defaultVotingDuration(DEFAULT_DURATION)
+        .defaultRsvpDuration(DEFAULT_DURATION)
         .build();
   }
 
-  public AppSettings(final Map<String, Object> jsonMap) throws InvalidAttributeValueException {
+  public AppSettings(final Map<String, Object> jsonMap)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     if (jsonMap != null) {
       this.setDarkTheme(this.getBoolFromObject(jsonMap.get(DARK_THEME)));
       this.setGroupSort(this.getIntFromObject(jsonMap.get(GROUP_SORT)));
       this.setCategorySort(
           this.getIntFromObject(jsonMap.get(CATEGORY_SORT)));
       this.setMuted(this.getBoolFromObject(jsonMap.get(MUTED)));
+      this.setDefaultVotingDuration(this.getIntFromObject(jsonMap.get(DEFAULT_VOTING_DURATION)));
+      this.setDefaultRsvpDuration(this.getIntFromObject(jsonMap.get(DEFAULT_RSVP_DURATION)));
     }
   }
 
@@ -74,6 +89,26 @@ public class AppSettings {
     }
   }
 
+  public void setDefaultVotingDuration(final Integer defaultVotingDuration)
+      throws AttributeValueOutOfRangeException {
+    if (defaultVotingDuration >= 0 && defaultVotingDuration <= Config.MAX_DURATION) {
+      this.defaultVotingDuration = defaultVotingDuration;
+    } else {
+      throw new AttributeValueOutOfRangeException(DEFAULT_VOTING_DURATION, 0, Config.MAX_DURATION,
+          defaultVotingDuration);
+    }
+  }
+
+  public void setDefaultRsvpDuration(final Integer defaultRsvpDuration)
+      throws AttributeValueOutOfRangeException {
+    if (defaultRsvpDuration >= 0 && defaultRsvpDuration <= Config.MAX_DURATION) {
+      this.defaultRsvpDuration = defaultRsvpDuration;
+    } else {
+      throw new AttributeValueOutOfRangeException(DEFAULT_RSVP_DURATION, 0, Config.MAX_DURATION,
+          defaultRsvpDuration);
+    }
+  }
+
   private Integer getIntFromObject(final Object input) {
     if (input != null) {
       return Integer.parseInt(input.toString());
@@ -94,6 +129,8 @@ public class AppSettings {
     modelAsMap.putIfAbsent(GROUP_SORT, this.groupSort);
     modelAsMap.putIfAbsent(CATEGORY_SORT, this.categorySort);
     modelAsMap.putIfAbsent(MUTED, this.muted);
+    modelAsMap.putIfAbsent(DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
+    modelAsMap.putIfAbsent(DEFAULT_RSVP_DURATION, this.defaultRsvpDuration);
     return modelAsMap;
   }
 }

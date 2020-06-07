@@ -23,8 +23,6 @@ public class Group implements Model {
   public static final String MEMBERS = "Members";
   public static final String MEMBERS_LEFT = "MembersLeft";
   public static final String CATEGORIES = "Categories";
-  public static final String DEFAULT_VOTING_DURATION = "DefaultVotingDuration";
-  public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
   public static final String EVENTS = "Events";
   public static final String LAST_ACTIVITY = "LastActivity";
   public static final String IS_OPEN = "IsOpen";
@@ -33,8 +31,6 @@ public class Group implements Model {
   private String groupName;
   private String icon;
   private String groupCreator;
-  private Integer defaultRsvpDuration;
-  private Integer defaultVotingDuration;
   private String lastActivity;
   private Map<String, Event> events;
   private boolean isOpen;
@@ -54,10 +50,6 @@ public class Group implements Model {
     this.setGroupName((String) jsonMap.get(GROUP_NAME));
     this.setIcon((String) jsonMap.get(ICON));
     this.setGroupCreator((String) jsonMap.get(GROUP_CREATOR));
-    this.setDefaultRsvpDuration(
-        this.getIntFromObject(jsonMap.get(DEFAULT_RSVP_DURATION)));
-    this.setDefaultVotingDuration(
-        this.getIntFromObject(jsonMap.get(DEFAULT_VOTING_DURATION)));
     this.setLastActivity((String) jsonMap.get(LAST_ACTIVITY));
     this.setOpen(this.getBoolFromObject(jsonMap.get(IS_OPEN)));
 
@@ -90,8 +82,6 @@ public class Group implements Model {
     modelAsMap.putIfAbsent(GROUP_NAME, this.groupName);
     modelAsMap.putIfAbsent(ICON, this.icon);
     modelAsMap.putIfAbsent(GROUP_CREATOR, this.groupCreator);
-    modelAsMap.putIfAbsent(DEFAULT_RSVP_DURATION, this.defaultRsvpDuration);
-    modelAsMap.putIfAbsent(DEFAULT_VOTING_DURATION, this.defaultVotingDuration);
     modelAsMap.putIfAbsent(LAST_ACTIVITY, this.lastActivity);
     modelAsMap.putIfAbsent(IS_OPEN, this.isOpen);
     modelAsMap.putIfAbsent(MEMBERS, this.getMembersMap());
@@ -176,20 +166,11 @@ public class Group implements Model {
         .groupName(this.groupName)
         .icon(this.icon)
         .groupCreator(this.groupCreator)
-        .defaultRsvpDuration(this.defaultRsvpDuration)
-        .defaultVotingDuration(this.defaultVotingDuration)
         .lastActivity(this.lastActivity)
         .members(this.members)
         .categories(this.categories)
         .events(this.events)
         .build();
-  }
-
-  private Integer getIntFromObject(final Object input) {
-    if (input != null) {
-      return Integer.parseInt(input.toString());
-    }
-    return null;
   }
 
   private boolean getBoolFromObject(final Object input) {

@@ -41,7 +41,7 @@ public class UpdateUserChoiceRatingsHandler implements ApiRequestHandler {
    * @param ratings    This is the map of choice ids to user rate values
    * @param updateDb   This boolean tells the method whether or not it should update the db. If
    *                   false, this generally means the update data will be part of a transaction.
-   * @return Standard result status object giving insight on whether the request was successful
+   * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus<UpdateItemData> handle(final String activeUser, final String categoryId,
       final Map<String, Object> ratings, final boolean updateDb) {
