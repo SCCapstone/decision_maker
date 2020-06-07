@@ -5,7 +5,6 @@ import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
 import java.util.Iterator;
-import java.util.Map;
 import javax.inject.Inject;
 import models.User;
 import utilities.ErrorDescriptor;
@@ -42,18 +41,15 @@ public class DetachedRatingsRemovalHandler {
       final Iterator<Item> tableItems = this.maintenanceDbAccessManager.scanUsersTable();
 
       while (tableItems.hasNext()) {
-        final Item userItem = tableItems.next();
+        final User user = new User(tableItems.next());
 
         try {
-          final String username = userItem.getString(User.USERNAME);
 
           final StringBuilder updateExpressionBuilder = new StringBuilder();
           final NameMap nameMap = new NameMap();
 
-          final Map<String, Object> oldCategoryRatingsMap = userItem.getMap(User.CATEGORY_RATINGS);
-
           int i = 0;
-          for (final String categoryId : oldCategoryRatingsMap.keySet()) {
+          for (final String categoryId : user.getCategoryRatings().keySet()) {
             try {
               final Item categoryItem = this.maintenanceDbAccessManager.getCategoryItem(categoryId);
 
@@ -73,7 +69,8 @@ public class DetachedRatingsRemovalHandler {
                 nameMap.with(categoryIdName, categoryId);
               }
             } catch (final Exception e) {
-              this.metrics.log(new ErrorDescriptor<>(username + " " + categoryId, classMethod, e));
+              this.metrics.log(
+                  new ErrorDescriptor<>(user.getUsername() + " " + categoryId, classMethod, e));
               resultStatus = ResultStatus.failure("Exception in " + classMethod);
             }
 
@@ -85,10 +82,10 @@ public class DetachedRatingsRemovalHandler {
                 .withUpdateExpression(updateExpressionBuilder.toString())
                 .withNameMap(nameMap);
 
-            this.maintenanceDbAccessManager.updateUser(username, updateItemSpec);
+            this.maintenanceDbAccessManager.updateUser(user.getUsername(), updateItemSpec);
           }
         } catch (final Exception e) {
-          this.metrics.log(new ErrorDescriptor<>(userItem.get(User.USERNAME), classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(user.getUsername(), classMethod, e));
           resultStatus = ResultStatus.failure("Exception in " + classMethod);
         }
       }
