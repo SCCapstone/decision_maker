@@ -24,4 +24,10 @@ public class Metadata {
       this.payload.putIfAbsent(key, value);
     }
   }
+
+  public void overwritePayload(final String key, final Object value) {
+    if (this.payload != null) {
+      this.payload.put(key, value);
+    }
+  }
 }

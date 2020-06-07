@@ -250,7 +250,7 @@ class _GroupPageState extends State<GroupPage>
                         GroupPage.maxEventBatchesInMemory) {
                       retWidget = RefreshIndicator(
                         child: retWidget,
-                        onRefresh: refreshList,
+                        onRefresh: refreshLoadedBatches,
                       );
                     }
 
@@ -361,16 +361,12 @@ class _GroupPageState extends State<GroupPage>
 
   // attempts to get group from DB. If success then display all events. Else show error
   Future<void> getGroup() async {
-    int batchNum = (Globals.currentGroupResponse.group == null)
-        ? 0
-        : Globals.currentGroupResponse.group.currentBatchNum;
     ResultStatus<GetGroupResponse> status =
-        await GroupsManager.getGroup(widget.groupId, batchNumber: batchNum);
+        await GroupsManager.getGroup(widget.groupId);
     this.loading = false;
     if (status.success) {
       this.errorLoading = false;
       Globals.currentGroupResponse = status.data;
-      Globals.currentGroupResponse.group.currentBatchNum = batchNum;
 
       for (int eventsType in this.eventTypesToBatchEventIds.keys) {
         this.eventTypesToBatchEventIds[eventsType].clear();
@@ -567,7 +563,7 @@ class _GroupPageState extends State<GroupPage>
         body: Container(
           height: MediaQuery.of(context).size.height * .80,
           child: RefreshIndicator(
-            onRefresh: refreshList,
+            onRefresh: getGroup,
             child: ListView(
               children: <Widget>[
                 Padding(
@@ -579,27 +575,6 @@ class _GroupPageState extends State<GroupPage>
           ),
         ),
         key: Key("group_page:error_scaffold"));
-  }
-
-  // attempts to get the latest data for the group from the DB
-  Future<void> refreshList() async {
-    // only refresh if this page is actually visible
-    if (ModalRoute.of(context).isCurrent) {
-      for (final int eventsType in this.eventTypesToBatchLimits.keys) {
-        //wipe these out, we don't know if these still hold for new response
-        this.eventTypesToBatchLimits[eventsType] = null;
-        this.eventTypesToPreviousMaxScrollExtents[eventsType] = null;
-
-        //reset these, the page refreshed and we just got the zeroed info
-        this.eventTypesToLargestBatchIndexLoaded[eventsType] = 0;
-
-        //put the position at the top of the list
-        this.eventListScrollPositions[eventsType] = 0;
-      }
-
-      await getGroup();
-    }
-    return;
   }
 
   //attempts to get latest event info for the batch windows being viewed
@@ -802,6 +777,7 @@ class _GroupPageState extends State<GroupPage>
     UsersManager.markAllEventsAsSeen(widget.groupId);
     Globals.user.groups[widget.groupId].eventsUnseen = 0;
     Globals.currentGroupResponse.eventsUnseen.clear();
+    Globals.currentGroupResponse.group.newEvents.clear();
     this.currentTab = this.occurringTab;
     this.tabController.animateTo(this.currentTab);
     populateEventStages();

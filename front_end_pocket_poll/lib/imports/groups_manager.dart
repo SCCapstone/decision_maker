@@ -54,21 +54,12 @@ class GroupsManager {
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
 
-  static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId,
-      {int batchNumber}) async {
+  static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId) async {
     ResultStatus<GetGroupResponse> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
-
-    if (batchNumber == null) {
-      // batchNumber is used to get a discrete number of events from the DB
-      batchNumber = 0;
-    }
-
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);
@@ -176,8 +167,8 @@ class GroupsManager {
     return retVal;
   }
 
-  static Future<ResultStatus<Group>> editGroup(Group group, File iconFile,
-      {int batchNumber}) async {
+  static Future<ResultStatus<Group>> editGroup(
+      Group group, File iconFile) async {
     ResultStatus<Group> retVal = new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
@@ -194,14 +185,6 @@ class GroupsManager {
         group.members.keys.toList();
     jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
         group.categories.keys.toList();
-
-    if (batchNumber == null) {
-      // batchNumber is used to get a discrete number of events from the DB
-      batchNumber = 0;
-    }
-
-    jsonRequestBody[RequestFields.PAYLOAD]
-        .putIfAbsent(RequestFields.BATCH_NUMBER, () => batchNumber);
 
     ResultStatus<String> response =
         await makeApiRequest(apiEndpoint, jsonRequestBody);

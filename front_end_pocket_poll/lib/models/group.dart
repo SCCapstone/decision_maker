@@ -22,7 +22,6 @@ class Group {
   final int defaultVotingDuration;
   final int defaultConsiderDuration;
   final int totalNumberOfEvents;
-  int currentBatchNum = 0;
   final bool isOpen;
 
   Group(

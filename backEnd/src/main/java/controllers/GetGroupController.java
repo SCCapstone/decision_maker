@@ -26,16 +26,15 @@ public class GetGroupController implements ApiRequestController {
     ResultStatus resultStatus;
 
     final List<String> requiredKeys = Arrays
-        .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID, RequestFields.BATCH_NUMBER);
+        .asList(RequestFields.ACTIVE_USER, Group.GROUP_ID);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
         final String activeUser = (String) jsonMap.get(RequestFields.ACTIVE_USER);
         final String groupId = (String) jsonMap.get(Group.GROUP_ID);
-        final Integer batchNumber = (Integer) jsonMap.get(RequestFields.BATCH_NUMBER);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.getGroupHandler.handle(activeUser, groupId, batchNumber);
+        resultStatus = this.getGroupHandler.handle(activeUser, groupId);
       } catch (final Exception e) {
         resultStatus = ResultStatus.failure("Error: Unable to parse request.");
         metrics.log(new ErrorDescriptor<>(jsonMap, classMethod, e));

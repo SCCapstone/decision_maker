@@ -279,7 +279,7 @@ public class NewEventHandler implements ApiRequestHandler {
       //we just transitioned to a having a selected choice -> stage: occurring
       action = "eventChosen";
       eventChangeBody =
-          updatedEvent.getEventName() + ": " + updatedEvent.getSelectedChoice() + " Won!";
+          updatedEvent.getEventName() + " - " + updatedEvent.getSelectedChoice() + " Won!";
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> stage: voting
       action = "eventVoting";
@@ -296,7 +296,7 @@ public class NewEventHandler implements ApiRequestHandler {
 
           if (user.pushEndpointArnIsSet()) {
             //each user needs to know how many events they haven't seen for the given group now
-            metadata.addToPayload(User.EVENTS_UNSEEN,
+            metadata.overwritePayload(User.EVENTS_UNSEEN,
                 user.getGroups().get(group.getGroupId()).getEventsUnseen().size());
 
             if (user.getAppSettings().isMuted() || user.getGroups().get(group.getGroupId())

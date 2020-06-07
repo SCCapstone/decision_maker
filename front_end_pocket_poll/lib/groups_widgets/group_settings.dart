@@ -841,16 +841,13 @@ class _GroupSettingsState extends State<GroupSettings> {
           defaultConsiderDuration: this.considerDuration,
           isOpen: this.isOpen);
 
-      int batchNum = Globals.currentGroupResponse.group.currentBatchNum;
-
       showLoadingDialog(this.context, "Saving...", true);
       ResultStatus<Group> resultStatus =
-          await GroupsManager.editGroup(group, icon, batchNumber: batchNum);
+          await GroupsManager.editGroup(group, icon);
       Navigator.of(this.context, rootNavigator: true).pop('dialog');
 
       if (resultStatus.success) {
         Globals.currentGroupResponse.group = resultStatus.data;
-        Globals.currentGroupResponse.group.currentBatchNum = batchNum;
         setState(() {
           // reset everything and reflect changes made
           this.originalMembers.clear();
