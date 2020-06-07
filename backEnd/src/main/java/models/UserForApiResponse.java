@@ -1,6 +1,7 @@
 package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,22 +15,24 @@ public class UserForApiResponse extends User {
   private boolean firstLogin;
 
   public UserForApiResponse(final User user, final boolean firstLogin)
-      throws InvalidAttributeValueException {
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     super(user.asMap());
     this.firstLogin = firstLogin;
   }
 
   public UserForApiResponse(final Item user, final boolean firstLogin)
-      throws InvalidAttributeValueException {
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     super(user.asMap());
     this.firstLogin = firstLogin;
   }
 
-  public UserForApiResponse(final User user) throws InvalidAttributeValueException {
+  public UserForApiResponse(final User user)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     this(user, false);
   }
 
-  public UserForApiResponse(final Item user) throws InvalidAttributeValueException {
+  public UserForApiResponse(final Item user)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     this(user, false);
   }
 

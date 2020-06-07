@@ -57,16 +57,13 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * @param name                  The name of the group.
    * @param membersList           The list of usernames to be associated with the group.
    * @param categoriesList        The list of category ids to be associated with the group.
-   * @param defaultVotingDuration The default voting duration for creating events in this group.
-   * @param defaultRsvpDuration   The default consider duration for creating events in this gorup.
    * @param isOpen                Whether or not this group is editable by its members or just its
    *                              creator.
    * @param iconData              The byte data for an icon. If null this implies no icon.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String name,
-      final List<String> membersList, final List<String> categoriesList,
-      final Integer defaultVotingDuration, final Integer defaultRsvpDuration, final Boolean isOpen,
+      final List<String> membersList, final List<String> categoriesList, final Boolean isOpen,
       final List<Integer> iconData) {
     final String classMethod = "CreateNewGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -74,16 +71,13 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final Optional<String> errorMessage = this
-          .newGroupInputIsValid(membersList, defaultVotingDuration, defaultRsvpDuration);
+      final Optional<String> errorMessage = this.newGroupInputIsValid(membersList);
       if (!errorMessage.isPresent()) {
         final String newGroupId = UUID.randomUUID().toString();
         final String lastActivity = this.dbAccessManager.now();
 
         final Group newGroup = new Group();
         newGroup.setGroupName(name);
-        newGroup.setDefaultVotingDuration(defaultVotingDuration);
-        newGroup.setDefaultRsvpDuration(defaultRsvpDuration);
         newGroup.setOpen(isOpen);
         newGroup.setGroupId(newGroupId);
         newGroup.setGroupCreator(activeUser);
@@ -153,22 +147,11 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * This function takes the perameters for creating a group and checks if they are valid.
    *
    * @param membersList           A list of the usernames to associate with this group.
-   * @param defaultVotingDuration the new voting duration
-   * @param defaultRsvpDuration   the new rsvp duration
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
-  private Optional<String> newGroupInputIsValid(final List<String> membersList,
-      final Integer defaultVotingDuration, final Integer defaultRsvpDuration) {
+  private Optional<String> newGroupInputIsValid(final List<String> membersList) {
 
     String errorMessage = null;
-
-    if (defaultVotingDuration < 0 || defaultVotingDuration > MAX_DURATION) {
-      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad voting duration.");
-    }
-
-    if (defaultRsvpDuration < 0 || defaultRsvpDuration > MAX_DURATION) {
-      errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Bad consider duration.");
-    }
 
     //NOTE this could potentially be a bad error since not all usernames are guaranteed to exist.
     // That being said, it should be assumed all names are valid from front end validation. This

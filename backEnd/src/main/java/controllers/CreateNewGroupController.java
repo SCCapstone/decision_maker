@@ -27,7 +27,7 @@ public class CreateNewGroupController implements ApiRequestController {
 
     final List<String> requiredKeys = Arrays
         .asList(RequestFields.ACTIVE_USER, Group.GROUP_NAME, Group.MEMBERS, Group.CATEGORIES,
-            Group.DEFAULT_VOTING_DURATION, Group.DEFAULT_RSVP_DURATION, Group.IS_OPEN);
+            Group.IS_OPEN);
 
     if (jsonMap.keySet().containsAll(requiredKeys)) {
       try {
@@ -35,16 +35,13 @@ public class CreateNewGroupController implements ApiRequestController {
         final String groupName = (String) jsonMap.get(Group.GROUP_NAME);
         final List<String> members = (List<String>) jsonMap.get(Group.MEMBERS);
         final List<String> categories = (List<String>) jsonMap.get(Group.CATEGORIES);
-        final Integer defaultVotingDuration = (Integer) jsonMap.get(Group.DEFAULT_VOTING_DURATION);
-        final Integer defaultRsvpDuration = (Integer) jsonMap.get(Group.DEFAULT_RSVP_DURATION);
         final Boolean isOpen = (Boolean) jsonMap.get(Group.IS_OPEN);
 
         //optional request keys
         final List<Integer> iconData = (List<Integer>) jsonMap.get(Group.ICON);
 
         Injector.getInjector(metrics).inject(this);
-        resultStatus = this.createNewGroupHandler.handle(activeUser, groupName, members, categories,
-            defaultVotingDuration, defaultRsvpDuration, isOpen, iconData);
+        resultStatus = this.createNewGroupHandler.handle(activeUser, groupName, members, categories, isOpen, iconData);
       } catch (Exception e) {
         resultStatus = ResultStatus.failure("Exception in " + classMethod);
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));

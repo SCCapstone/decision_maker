@@ -1,5 +1,6 @@
 package controllers;
 
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import exceptions.MissingApiRequestKeyException;
 import handlers.UpdateUserSettingsHandler;
@@ -49,6 +50,9 @@ public class UpdateUserSettingsController implements ApiRequestController {
       } catch (final InvalidAttributeValueException iae) {
         metrics.logWithBody(new WarningDescriptor<>(classMethod, iae));
         resultStatus = ResultStatus.failure(iae.getMessage());
+      } catch (final AttributeValueOutOfRangeException avre) {
+        metrics.logWithBody(new WarningDescriptor<>(classMethod, avre));
+        resultStatus = ResultStatus.failure(avre.getMessage());
       } catch (final Exception e) {
         metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
         resultStatus = ResultStatus.failure("Exception in " + classMethod);

@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
+import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,11 +48,13 @@ public class User implements Model {
   @Setter(AccessLevel.NONE)
   private Map<String, Favorite> favorites;
 
-  public User(final Item userItem) throws InvalidAttributeValueException {
+  public User(final Item userItem)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     this(userItem.asMap());
   }
 
-  public User(final Map<String, Object> jsonMap) throws InvalidAttributeValueException {
+  public User(final Map<String, Object> jsonMap)
+      throws InvalidAttributeValueException, AttributeValueOutOfRangeException {
     this.setUsername((String) jsonMap.get(USERNAME));
     this.setDisplayName((String) jsonMap.get(DISPLAY_NAME));
     this.setIcon((String) jsonMap.get(ICON));
