@@ -308,14 +308,31 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Expanded(
-                                    child: AutoSizeText(
-                                      (this.canEdit)
-                                          ? "Select categories for group"
-                                          : "View categories in group",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    GroupCategories(
+                                                      selectedCategories: this
+                                                          .selectedCategories,
+                                                      canEdit: this.canEdit,
+                                                    ))).then((_) {
+                                          if (this.canEdit) {
+                                            saveCategories();
+                                          }
+                                        });
+                                      },
+                                      child: AutoSizeText(
+                                        (this.canEdit)
+                                            ? "Select categories for group"
+                                            : "View categories in group",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
                                     ),
                                   ),
                                   Container(
@@ -350,14 +367,32 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Expanded(
-                                    child: AutoSizeText(
-                                      (this.canEdit)
-                                          ? "Add/Remove members"
-                                          : "View members",
-                                      minFontSize: 14,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 20),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    MembersPage(
+                                                        this.displayedMembers,
+                                                        this.membersLeft,
+                                                        false,
+                                                        this.canEdit))).then(
+                                            (_) {
+                                          if (this.canEdit) {
+                                            saveMembers();
+                                          }
+                                        });
+                                      },
+                                      child: AutoSizeText(
+                                        (this.canEdit)
+                                            ? "Add/Remove members"
+                                            : "View members",
+                                        minFontSize: 14,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
                                     ),
                                   ),
                                   Container(
@@ -395,14 +430,22 @@ class _GroupSettingsState extends State<GroupSettings> {
                                       MainAxisAlignment.spaceAround,
                                   children: <Widget>[
                                     Expanded(
-                                      child: AutoSizeText(
-                                        (this.isOpen)
-                                            ? "Make group private"
-                                            : "Make group open",
-                                        minFontSize: 14,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 20),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            this.isOpen = !this.isOpen;
+                                            showSaveButton();
+                                          });
+                                        },
+                                        child: AutoSizeText(
+                                          (this.isOpen)
+                                              ? "Make group private"
+                                              : "Make group open",
+                                          minFontSize: 14,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 20),
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -481,7 +524,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
+        Globals.currentGroupResponse.group = group;
         this.originalMembers.clear();
         this.originalMembers.addAll(displayedMembers);
       } else {
@@ -520,7 +563,7 @@ class _GroupSettingsState extends State<GroupSettings> {
           await GroupsManager.editGroup(group, this.icon);
 
       if (resultStatus.success) {
-        Globals.currentGroupResponse.group = resultStatus.data;
+        Globals.currentGroupResponse.group = group;
         originalCategories.clear();
         originalCategories.addAll(this.selectedCategories);
       } else {
@@ -729,6 +772,7 @@ class _GroupSettingsState extends State<GroupSettings> {
 
       if (resultStatus.success) {
         setState(() {
+          Globals.currentGroupResponse.group = group;
           // reset everything and reflect changes made
           this.originalMembers.clear();
           this.originalMembers.addAll(displayedMembers);

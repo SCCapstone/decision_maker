@@ -115,12 +115,24 @@ class _GroupCreateState extends State<GroupCreate> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          "Select categories for group",
-                          style: TextStyle(
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.4),
+                        child: GestureDetector(
+                          onTap: () {
+                            hideKeyboard(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        GroupCreatePickCategories(
+                                            this.groupCategories)));
+                          },
+                          child: Text(
+                            "Select categories for group",
+                            style: TextStyle(
+                                fontSize: DefaultTextStyle.of(context)
+                                        .style
+                                        .fontSize *
+                                    0.4),
+                          ),
                         ),
                       ),
                       Container(
@@ -144,12 +156,25 @@ class _GroupCreateState extends State<GroupCreate> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                          "Add/Remove members",
-                          style: TextStyle(
-                              fontSize:
-                                  DefaultTextStyle.of(context).style.fontSize *
-                                      0.4),
+                        child: GestureDetector(
+                          onTap: (){
+                            hideKeyboard(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MembersPage(
+                                        this.groupMembers,
+                                        new List<String>(),
+                                        true,
+                                        true)));
+                          },
+                          child: Text(
+                            "Add/Remove members",
+                            style: TextStyle(
+                                fontSize:
+                                    DefaultTextStyle.of(context).style.fontSize *
+                                        0.4),
+                          ),
                         ),
                       ),
                       Container(
@@ -175,14 +200,21 @@ class _GroupCreateState extends State<GroupCreate> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
                       Expanded(
-                        child: AutoSizeText(
-                          (this.isOpen)
-                              ? "Make group private"
-                              : "Make group open",
-                          minFontSize: 14,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 20),
+                        child: GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              this.isOpen = !this.isOpen;
+                            });
+                          },
+                          child: AutoSizeText(
+                            (this.isOpen)
+                                ? "Make group private"
+                                : "Make group open",
+                            minFontSize: 14,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 20),
+                          ),
                         ),
                       ),
                       Container(

@@ -266,12 +266,26 @@ class _UserSettingsState extends State<UserSettings> {
                                       MainAxisAlignment.spaceAround,
                                   children: <Widget>[
                                     Expanded(
-                                      child: AutoSizeText(
-                                        "My Favorites",
-                                        minFontSize: 14,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 20),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          hideKeyboard(this.context);
+                                          Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          FavoritesPage(this
+                                                              .displayedFavorites)))
+                                              .then((_) {
+                                            saveFavorites();
+                                          });
+                                        },
+                                        child: AutoSizeText(
+                                          "My Favorites",
+                                          minFontSize: 14,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 20),
+                                        ),
                                       ),
                                     ),
                                     IconButton(
