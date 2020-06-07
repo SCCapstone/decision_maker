@@ -192,73 +192,69 @@ class _UserSettingsState extends State<UserSettings> {
                                           ),
                                           child: ListView(
                                             children: <Widget>[
-                                              Expanded(
-                                                child: TextFormField(
-                                                  maxLength:
-                                                      Globals.maxConsiderDigits,
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  validator: (value) {
-                                                    return validConsiderDuration(
-                                                        value, false);
-                                                  },
-                                                  key: Key(
-                                                      "user_settings:conider_input"),
-                                                  controller: this
-                                                      .considerDurationController,
-                                                  onChanged: (String arg) {
-                                                    try {
-                                                      this.considerDuration =
-                                                          int.parse(arg);
-                                                      showSaveButton();
-                                                    } catch (e) {
-                                                      this.autoValidate = true;
-                                                    }
-                                                  },
-                                                  onSaved: (String arg) {
+                                              TextFormField(
+                                                maxLength:
+                                                    Globals.maxConsiderDigits,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                validator: (value) {
+                                                  return validConsiderDuration(
+                                                      value, false);
+                                                },
+                                                key: Key(
+                                                    "user_settings:conider_input"),
+                                                controller: this
+                                                    .considerDurationController,
+                                                onChanged: (String arg) {
+                                                  try {
                                                     this.considerDuration =
                                                         int.parse(arg);
-                                                  },
-                                                  decoration: InputDecoration(
-                                                      labelText:
-                                                          "Consider Duration (mins)",
-                                                      helperText: " ",
-                                                      counterText: ""),
-                                                ),
+                                                    showSaveButton();
+                                                  } catch (e) {
+                                                    this.autoValidate = true;
+                                                  }
+                                                },
+                                                onSaved: (String arg) {
+                                                  this.considerDuration =
+                                                      int.parse(arg);
+                                                },
+                                                decoration: InputDecoration(
+                                                    labelText:
+                                                        "Consider Duration (mins)",
+                                                    helperText: " ",
+                                                    counterText: ""),
                                               ),
-                                              Expanded(
-                                                child: TextFormField(
-                                                  maxLength:
-                                                      Globals.maxVotingDigits,
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  validator: (value) {
-                                                    return validVotingDuration(
-                                                        value, false);
-                                                  },
-                                                  key: Key(
-                                                      "user_settings:vote_input"),
-                                                  controller: this
-                                                      .votingDurationController,
-                                                  onChanged: (String arg) {
-                                                    try {
-                                                      this.votingDuration =
-                                                          int.parse(arg);
-                                                      showSaveButton();
-                                                    } catch (e) {
-                                                      this.autoValidate = true;
-                                                    }
-                                                  },
-                                                  onSaved: (String arg) {
+                                              TextFormField(
+                                                maxLength:
+                                                    Globals.maxVotingDigits,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                validator: (value) {
+                                                  return validVotingDuration(
+                                                      value, false);
+                                                },
+                                                key: Key(
+                                                    "user_settings:vote_input"),
+                                                controller: this
+                                                    .votingDurationController,
+                                                onChanged: (String arg) {
+                                                  try {
                                                     this.votingDuration =
                                                         int.parse(arg);
-                                                  },
-                                                  decoration: InputDecoration(
-                                                      labelText:
-                                                          "Voting Duration (mins)",
-                                                      helperText: " ",
-                                                      counterText: ""),
-                                                ),
+                                                    showSaveButton();
+                                                  } catch (e) {
+                                                    this.autoValidate = true;
+                                                  }
+                                                },
+                                                onSaved: (String arg) {
+                                                  this.votingDuration =
+                                                      int.parse(arg);
+                                                },
+                                                decoration: InputDecoration(
+                                                    labelText:
+                                                        "Voting Duration (mins)",
+                                                    helperText: " ",
+                                                    counterText: ""),
                                               ),
                                             ],
                                           )),

@@ -270,8 +270,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   context);
                             },
                             child: Container(
-                              width: MediaQuery.of(context).size.width * .57,
-                              height: MediaQuery.of(context).size.height * .27,
+                              width: MediaQuery.of(context).size.width * .7,
+                              height: MediaQuery.of(context).size.height * .4,
                               alignment: Alignment.topRight,
                               decoration: BoxDecoration(
                                   image: DecorationImage(

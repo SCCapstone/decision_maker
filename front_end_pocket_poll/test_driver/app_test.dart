@@ -145,6 +145,22 @@ void main() {
       var darkThemeSwitch = find.byValueKey("user_settings:dark_theme_switch");
       await driver.tap(darkThemeSwitch);
 
+      var openEventSettings =
+          find.byValueKey("user_settings:default_durations_button");
+      await driver.tap(openEventSettings);
+
+      // edit the consider time
+      var considerInput = find.byValueKey("user_settings:conider_input");
+      await driver.tap(considerInput);
+      await driver.enterText("2");
+
+      // edit the vote time
+      var voteInput = find.byValueKey("user_settings:vote_input");
+      await driver.tap(voteInput);
+      await driver.enterText("2");
+      // close dropdown, without this could actually make the test fail potentially if the emulator is too small and can't find rest of page
+      await driver.tap(openEventSettings);
+
       // save the changes
       var saveButton = find.byValueKey("user_settings:save_button");
       await driver.tap(saveButton);
@@ -193,16 +209,6 @@ void main() {
       var groupNameInput = find.byValueKey("group_create:group_name_input");
       await driver.tap(groupNameInput);
       await driver.enterText("Test Group");
-
-      // enter a default consider duration
-      var considerInput = find.byValueKey("group_create:consider_input");
-      await driver.tap(considerInput);
-      await driver.enterText("1");
-
-      // enter a default voting duration
-      var voteInput = find.byValueKey("group_create:vote_input");
-      await driver.tap(voteInput);
-      await driver.enterText("1");
 
       // add a category
       var addCategoryButton =
@@ -508,16 +514,6 @@ void main() {
       var groupNameInput = find.byValueKey("group_settings:group_name_input");
       await driver.tap(groupNameInput);
       await driver.enterText("New Group Name");
-
-      // edit the consider time
-      var considerInput = find.byValueKey("group_settings:conider_input");
-      await driver.tap(considerInput);
-      await driver.enterText("2");
-
-      // edit the vote time
-      var voteInput = find.byValueKey("group_settings:vote_input");
-      await driver.tap(voteInput);
-      await driver.enterText("2");
 
       // remove a selected category
       var addCategoriesButton =

@@ -26,7 +26,7 @@ public class AppSettings {
   public static final String DEFAULT_RSVP_DURATION = "DefaultRsvpDuration";
 
   private static final boolean DEFAULT_DARK_THEME = true;
-  private static final boolean DEFAULT_MUTED = true;
+  private static final boolean DEFAULT_MUTED = false;
   private static final Integer DEFAULT_GROUP_SORT = 1;
   private static final Integer DEFAULT_CATEGORY_SORT = 1;
   private static final Integer DEFAULT_DURATION = 10;
