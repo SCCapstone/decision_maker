@@ -1,12 +1,8 @@
 package handlers;
 
-import java.util.Map;
 import javax.inject.Inject;
 import managers.DbAccessManager;
-import models.Event;
-import models.EventWithCategoryChoices;
 import models.GetGroupResponse;
-import models.GroupForApiResponse;
 import models.GroupWithCategoryChoices;
 import models.User;
 import utilities.ErrorDescriptor;
