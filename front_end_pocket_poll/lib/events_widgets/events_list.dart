@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
@@ -66,6 +67,12 @@ class _EventsListState extends State<EventsList> {
             this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange &&
         !loadingBatch) {
+      //show a loading indicator
+      Scaffold.of(this.context).showSnackBar(SnackBar(
+          content: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [CircularProgressIndicator()])));
+
       this.loadingBatch = true;
 
       widget
@@ -74,6 +81,9 @@ class _EventsListState extends State<EventsList> {
           .then((_) {
         // if the batch didn't get anything, there will be no page refresh
         this.loadingBatch = false;
+
+        //remove the loading indicator
+        Scaffold.of(this.context).removeCurrentSnackBar();
       });
     }
 
