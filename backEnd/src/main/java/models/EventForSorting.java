@@ -14,6 +14,7 @@ public class EventForSorting extends Event {
   private LocalDateTime votingEnds;
   private Integer priority;
   private boolean isPending;
+  private String eventId;
 
   public static final Integer PRIORITY_VOTING = 4;
   public static final Integer PRIORITY_CONSIDERING = 3;
@@ -21,8 +22,10 @@ public class EventForSorting extends Event {
   public static final Integer PRIORITY_CLOSED = 1;
 
   //we pass in 'now' so that if numerous of these are being created, that time doesn't change
-  public EventForSorting(final Event event, final LocalDateTime now) {
+  public EventForSorting(final String eventId, final Event event, final LocalDateTime now) {
     super(event.asMap());
+
+    this.eventId = eventId;
 
     Integer eventStartSeconds = this.getUtcEventStartSeconds();
     this.eventStart = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
@@ -37,8 +40,10 @@ public class EventForSorting extends Event {
   }
 
   //use this one when the now doesn't matter (aka when we just want to know if the event is pending)
-  public EventForSorting(final Event event) {
+  public EventForSorting(final String eventId, final Event event) {
     super(event.asMap());
+
+    this.eventId = eventId;
 
     Integer eventStartSeconds = this.getUtcEventStartSeconds();
     this.eventStart = this.getLocalDateTimeFromEpochSeconds(eventStartSeconds);
@@ -76,20 +81,48 @@ public class EventForSorting extends Event {
       return 1;
     } else {
       if (this.priority.equals(PRIORITY_VOTING)) {
-        return this.votingEnds.isBefore(other.getVotingEnds()) ? -1 : 1;
+        if (this.votingEnds.isBefore(other.getVotingEnds())) {
+          return -1;
+        } else if (other.getVotingEnds().isBefore(this.votingEnds)) {
+          return 1;
+        } else {
+          //they occur at the same time, give sort based on event id
+          return this.eventId.compareTo(other.getEventId());
+        }
       } else if (this.priority.equals(PRIORITY_CONSIDERING)) {
-        return this.votingStarts.isBefore(other.getVotingStarts()) ? -1 : 1;
+        if (this.votingStarts.isBefore(other.getVotingStarts())) {
+          return -1;
+        } else if (other.getVotingStarts().isBefore(this.votingStarts)) {
+          return 1;
+        } else {
+          //they occur at the same time, give sort based on event id
+          return this.eventId.compareTo(other.getEventId());
+        }
       } else if (this.priority.equals(PRIORITY_CLOSED)) {
         //NOTE: this one uses isAfter, we want the oldest ones on top
-        return this.eventStart.isAfter(other.getEventStart()) ? -1 : 1;
+        if (this.eventStart.isAfter(other.getEventStart())) {
+          return -1;
+        } else if (other.getEventStart().isAfter(this.eventStart)) {
+          return 1;
+        } else {
+          //they occur at the same time, give sort based on event id
+          return this.eventId.compareTo(other.getEventId());
+        }
       } else { // occurring
-        return this.eventStart.isBefore(other.getEventStart()) ? -1 : 1;
+        if (this.eventStart.isBefore(other.getEventStart())) {
+          return -1;
+        } else if (other.getEventStart().isBefore(this.eventStart)) {
+          return 1;
+        } else {
+          //they occur at the same time, give sort based on event id
+          return this.eventId.compareTo(other.getEventId());
+        }
       }
     }
   }
 
   /**
-   * Priority values are as follows: 4 - voting, 3 - considering, 2 - occurring, 1 - closed
+   * This method looks at the settings of 'this' event and determines the priority appropriately
    *
    * @param now - The current time that we are determining this priority at.
    */
@@ -113,6 +146,4 @@ public class EventForSorting extends Event {
       this.isPending = true;
     }
   }
-
-
 }

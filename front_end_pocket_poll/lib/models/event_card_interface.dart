@@ -4,4 +4,6 @@ class EventCardInterface{
   int getEventMode() {}
 
   Event getEvent(){}
+
+  String getEventId(){}
 }

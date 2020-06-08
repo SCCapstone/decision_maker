@@ -57,6 +57,9 @@ public class DbAccessManager {
 
   private final HashMap<String, Item> cache;
 
+  //lambdas occur 'instantaneously' so save the now at initialization and use throughout
+  private final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
+
   public DbAccessManager() {
     final Regions region = Regions.US_EAST_2;
     this.client = (AmazonDynamoDBClient) AmazonDynamoDBClient.builder()
@@ -76,11 +79,11 @@ public class DbAccessManager {
   }
 
   public String now() {
-    return LocalDateTime.now(ZoneId.of("UTC")).format(this.dateTimeFormatter);
+    return this.now.format(this.dateTimeFormatter);
   }
 
   public LocalDateTime nowObj() {
-    return LocalDateTime.now(ZoneId.of("UTC"));
+    return this.now;
   }
 
   public DateTimeFormatter getDateTimeFormatter() {

@@ -102,9 +102,6 @@ class _EventsListState extends State<EventsList> {
         this.loadingBatch = false;
       });
     }
-
-    //TODO fix the last batch jump (maybe put empty cards at the bottom of the
-    // list if the batch isn't of size BATCH_SIZE
   }
 
   @override
@@ -134,36 +131,67 @@ class _EventsListState extends State<EventsList> {
         ],
       );
     } else {
-      // sort the events
+      //sort the events
       widget.events.sort((a, b) {
-        // this if statement is only needed in the new tab since all of the event types can be in it
         if (a.getEventMode() > b.getEventMode()) {
           return -1;
         } else if (b.getEventMode() > a.getEventMode()) {
           return 1;
         } else {
-          // cards are same priority
+          //cards are same priority
           if (a.getEventMode() == EventsManager.considerMode) {
-            return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
-                ? 1
-                : -1;
+            if (a.getEvent().pollBegin.isBefore(b.getEvent().pollBegin)) {
+              return -1;
+            } else if (b
+                .getEvent()
+                .pollBegin
+                .isBefore(a.getEvent().pollBegin)) {
+              return 1;
+            } else {
+              //same time, give definitive sort based on ids
+              return a.getEventId().compareTo(b.getEventId());
+            }
           } else if (a.getEventMode() == EventsManager.votingMode) {
-            return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
+            if (a.getEvent().pollEnd.isBefore(b.getEvent().pollEnd)) {
+              return -1;
+            } else if (b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd)) {
+              return 1;
+            } else {
+              //same time, give definitive sort based on ids
+              return a.getEventId().compareTo(b.getEventId());
+            }
           } else if (a.getEventMode() == EventsManager.occurringMode) {
-            return b
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(a.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
+            if (a
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(b.getEvent().eventStartDateTime)) {
+              return -1;
+            } else if (b
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(a.getEvent().eventStartDateTime)) {
+              return 1;
+            } else {
+              //same time, give definitive sort based on ids
+              return a.getEventId().compareTo(b.getEventId());
+            }
           } else {
-            // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
-            return a
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(b.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
+            //event is in closed mode. we want the most recent times here
+            // otherwise the first event would always be at the top
+            if (a
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(b.getEvent().eventStartDateTime)) {
+              return 1;
+            } else if (b
+                .getEvent()
+                .eventStartDateTime
+                .isBefore(a.getEvent().eventStartDateTime)) {
+              return -1;
+            } else {
+              //same time, give definitive sort based on ids
+              return a.getEventId().compareTo(b.getEventId());
+            }
           }
         }
       });

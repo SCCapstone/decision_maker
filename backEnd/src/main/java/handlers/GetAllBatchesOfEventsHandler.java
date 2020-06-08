@@ -95,8 +95,9 @@ public class GetAllBatchesOfEventsHandler implements ApiRequestHandler {
     final Map<String, EventForSorting> searchingEventsBatch = group.getEvents()
         .entrySet()
         .stream()
-        .collect(toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(),
-            this.dbAccessManager.nowObj())));
+        .collect(toMap(Entry::getKey,
+            (Map.Entry<String, Event> e) -> new EventForSorting(e.getKey(), e.getValue(),
+                this.dbAccessManager.nowObj())));
 
     //separate the events into their appropriate buckets
     String priorityLabel;

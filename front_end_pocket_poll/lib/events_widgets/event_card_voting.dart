@@ -30,6 +30,11 @@ class EventCardVoting extends StatefulWidget implements EventCardInterface {
   Event getEvent() {
     return this.event;
   }
+
+  @override
+  String getEventId() {
+    return this.eventId;
+  }
 }
 
 class _EventCardVotingState extends State<EventCardVoting> {
