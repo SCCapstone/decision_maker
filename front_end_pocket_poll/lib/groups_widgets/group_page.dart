@@ -660,7 +660,6 @@ class _GroupPageState extends State<GroupPage>
       // the first batch after the max in memory. To make scrolling back up work
       // we save the max scroll extent of the page will full batches loaded
       if (batchIndex == GroupPage.maxEventBatchesInMemory) {
-        print("setting the thing");
         this.eventTypesToMaxScrollExtentOfMaxBatches[batchType] =
             maxScrollExtent;
       }
