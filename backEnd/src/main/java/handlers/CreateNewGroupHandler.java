@@ -38,6 +38,8 @@ import utilities.WarningDescriptor;
 
 public class CreateNewGroupHandler implements ApiRequestHandler {
 
+  public static final Integer MAX_OWNED_GROUPS = 100;
+
   private DbAccessManager dbAccessManager;
   private S3AccessManager s3AccessManager;
   private SnsAccessManager snsAccessManager;
@@ -76,7 +78,9 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     ResultStatus resultStatus;
 
     try {
-      final Optional<String> errorMessage = this.newGroupInputIsValid(membersList);
+      User user = this.dbAccessManager.getUser(activeUser);
+
+      final Optional<String> errorMessage = this.newGroupInputIsValid(user, membersList);
       if (!errorMessage.isPresent()) {
         //build the new group for insertion
         final String newGroupId = UUID.randomUUID().toString();
@@ -123,7 +127,8 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
         this.updateUsersTable(newGroup);
         this.updateCategoriesTable(newGroup);
 
-        final User user = this.dbAccessManager.getUser(activeUser);
+        //get the user with updated properties
+        user = this.dbAccessManager.getUserNoCache(activeUser);
 
         resultStatus = new ResultStatus(true,
             JsonUtils.convertObjectToJson(new GroupForApiResponse(user, newGroup).asMap()));
@@ -166,10 +171,11 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
   /**
    * This function takes the perameters for creating a group and checks if they are valid.
    *
+   * @param user        The active user making the api request.
    * @param membersList A list of the usernames to associate with this group.
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
-  private Optional<String> newGroupInputIsValid(final List<String> membersList) {
+  private Optional<String> newGroupInputIsValid(final User user, final List<String> membersList) {
 
     String errorMessage = null;
 
@@ -178,6 +184,11 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     // also saves potentially unnecessary db hits.
     if (new HashSet<>(membersList).size() > MAX_GROUP_MEMBERS) {
       errorMessage = this.getUpdatedErrorMessage(errorMessage, "Error: Too many members.");
+    }
+
+    if (user.getOwnedGroupsCount() >= MAX_OWNED_GROUPS) {
+      errorMessage = this.getUpdatedErrorMessage(errorMessage,
+          "Error: User cannot own more than " + MAX_OWNED_GROUPS + " at one time.");
     }
 
     return Optional.ofNullable(errorMessage);
