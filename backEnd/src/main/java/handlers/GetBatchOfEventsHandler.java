@@ -130,7 +130,8 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
         .entrySet()
         .stream()
         .collect(collectingAndThen(
-            toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
+            toMap(Entry::getKey,
+                (Map.Entry<String, Event> e) -> new EventForSorting(e.getKey(), e.getValue(), now)),
             LinkedHashMap::new));
 
     if (batchType.equals(EVENTS_TYPE_NEW)) {
@@ -204,7 +205,9 @@ public class GetBatchOfEventsHandler implements ApiRequestHandler {
           .entrySet()
           .stream()
           .collect(collectingAndThen(
-              toMap(Entry::getKey, (Map.Entry e) -> new EventForSorting((Event) e.getValue(), now)),
+              toMap(Entry::getKey,
+                  (Map.Entry<String, Event> e) -> new EventForSorting(e.getKey(), e.getValue(),
+                      now)),
               LinkedHashMap::new));
     } // else there are no events in this range and we return the empty map
 

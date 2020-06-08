@@ -1,7 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/event_card_interface.dart';
+import 'package:front_end_pocket_poll/utilities/sorter.dart';
 
 class EventsList extends StatefulWidget {
   static final int eventsTypeNew = 0;
@@ -66,6 +67,13 @@ class _EventsListState extends State<EventsList> {
             this.scrollController.position.maxScrollExtent &&
         !this.scrollController.position.outOfRange &&
         !loadingBatch) {
+      //show a loading indicator
+      Scaffold.of(this.context).showSnackBar(SnackBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          content: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [CircularProgressIndicator()])));
+
       this.loadingBatch = true;
 
       widget
@@ -74,6 +82,9 @@ class _EventsListState extends State<EventsList> {
           .then((_) {
         // if the batch didn't get anything, there will be no page refresh
         this.loadingBatch = false;
+
+        //remove the loading indicator
+        Scaffold.of(this.context).removeCurrentSnackBar();
       });
     }
 
@@ -91,9 +102,6 @@ class _EventsListState extends State<EventsList> {
         this.loadingBatch = false;
       });
     }
-
-    //TODO fix the last batch jump (maybe put empty cards at the bottom of the
-    // list if the batch isn't of size BATCH_SIZE
   }
 
   @override
@@ -123,39 +131,8 @@ class _EventsListState extends State<EventsList> {
         ],
       );
     } else {
-      // sort the events
-      widget.events.sort((a, b) {
-        // this if statement is only needed in the new tab since all of the event types can be in it
-        if (a.getEventMode() > b.getEventMode()) {
-          return -1;
-        } else if (b.getEventMode() > a.getEventMode()) {
-          return 1;
-        } else {
-          // cards are same priority
-          if (a.getEventMode() == EventsManager.considerMode) {
-            return b.getEvent().pollBegin.isBefore(a.getEvent().pollBegin)
-                ? 1
-                : -1;
-          } else if (a.getEventMode() == EventsManager.votingMode) {
-            return b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd) ? 1 : -1;
-          } else if (a.getEventMode() == EventsManager.occurringMode) {
-            return b
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(a.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
-          } else {
-            // event is in closed mode. we want the most recent times here otherwise the first event would always be at the top
-            return a
-                    .getEvent()
-                    .eventStartDateTime
-                    .isBefore(b.getEvent().eventStartDateTime)
-                ? 1
-                : -1;
-          }
-        }
-      });
+      //sort the events
+      Sorter.sortEventCardInterfaces(widget.events);
 
       List<Widget> widgetList = new List<Widget>.from(widget.events);
 
@@ -184,6 +161,7 @@ class _EventsListState extends State<EventsList> {
       return Scrollbar(
           key: UniqueKey(),
           child: ListView.builder(
+              physics: AlwaysScrollableScrollPhysics(),
               controller: this.scrollController,
               shrinkWrap: true,
               itemCount: widgetList.length,

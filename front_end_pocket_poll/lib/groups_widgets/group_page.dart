@@ -78,7 +78,21 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: new Map<int, List<String>>()
   };
 
+  //This tracks the max scroll extents of the lists as they grow up until the
+  // list reaches the max batch in memory size. This allows us to load the list
+  // in the correct position when destroying events at the top of the list to
+  // account for the max memory size being hit
   final Map<int, double> eventTypesToPreviousMaxScrollExtents = {
+    EventsList.eventsTypeNew: null,
+    EventsList.eventsTypeVoting: null,
+    EventsList.eventsTypeConsider: null,
+    EventsList.eventsTypeClosed: null,
+    EventsList.eventsTypeOccurring: null
+  };
+
+  //This tracks the scroll extent of a fully filled up list. This is used to
+  // calculate the appropriate offset when loading in the up direction.
+  final Map<int, double> eventTypesToMaxScrollExtentOfMaxBatches = {
     EventsList.eventsTypeNew: null,
     EventsList.eventsTypeVoting: null,
     EventsList.eventsTypeConsider: null,
@@ -604,6 +618,12 @@ class _GroupPageState extends State<GroupPage>
 
         Globals.currentGroupResponse = apiResponse;
 
+        //assume this is a refresh after a lot of time of being on the page, we
+        // no longer know if our found limits are valid so clear them
+        for (final int batchType in this.eventTypesToBatchLimits.keys) {
+          this.eventTypesToBatchLimits[batchType] = null;
+        }
+
         this.populateEventStages();
       } else {
         this.getBatchOfEventsError();
@@ -640,6 +660,15 @@ class _GroupPageState extends State<GroupPage>
       } else {
         this.eventListScrollPositions[batchType] =
             this.eventTypesToPreviousMaxScrollExtents[batchType];
+      }
+
+      //batchIndex starts at 0, batchIndex equal to max means that we're loading
+      // the first batch after the max in memory. To make scrolling back up work
+      // we save the max scroll extent of the page now since we know it has full
+      // batches loaded
+      if (batchIndex == GroupPage.maxEventBatchesInMemory) {
+        this.eventTypesToMaxScrollExtentOfMaxBatches[batchType] =
+            maxScrollExtent;
       }
 
       final ResultStatus<GetGroupResponse> resultStatus =
@@ -720,8 +749,9 @@ class _GroupPageState extends State<GroupPage>
       //the previous maxScrollExtent should be the bottom of the 2/3 mark, so
       // subtracting that from the max gives you the length to the bottom of
       // the top 1/3
-      this.eventListScrollPositions[batchType] = maxScrollExtent -
-          this.eventTypesToPreviousMaxScrollExtents[batchType];
+      this.eventListScrollPositions[batchType] =
+          this.eventTypesToMaxScrollExtentOfMaxBatches[batchType] -
+              this.eventTypesToPreviousMaxScrollExtents[batchType];
 
       final ResultStatus<GetGroupResponse> resultStatus =
           await GroupsManager.getBatchOfEvents(

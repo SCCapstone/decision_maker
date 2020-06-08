@@ -95,7 +95,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
    */
   private ResultStatus deleteAllPendingGroupEvents(final Group deletedGroup) {
     final Set<String> pendingEventIds = deletedGroup.getEvents().entrySet().stream()
-        .filter((e) -> (new EventForSorting(e.getValue()).isPending()))
+        .filter((e) -> (new EventForSorting(e.getKey(), e.getValue()).isPending()))
         .map(Entry::getKey).collect(Collectors.toSet());
 
     if (pendingEventIds.isEmpty()) {

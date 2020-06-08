@@ -55,7 +55,7 @@ class AboutDescriptions {
       </ol>
       <p>If you have notifications enabled, you will receive a notification whenever an event goes to a different stage.</p>
       <p>When creating an event, the consider and voting stages can be skipped by either hitting the skip buttons next to the input fields or by putting the number 0 in for the time.</p>
-      <p>The default consider and voting durations are set in the group settings page.</p>
+      <p>The default consider and voting durations can be updated on one's account settings page.</p>
       <P>When clicking on the details of an event, you can add that event to your calendar app by clicking the calendar icon button in the top right corner of the page.</P>
     """);
 }
