@@ -25,6 +25,13 @@ public class AddDurationsToUserSettingsHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
+  /**
+   * This function loops over every user and checks for any groups they are the owner of. It gets a
+   * count of the number of groups that a user owns and then sets the new 'OwnedGroupsCount'
+   * attribute accordingly.
+   *
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle() {
     final String classMethod = "AddDurationsToUserSettingsHandler.handle";
     this.metrics.commonSetup(classMethod);
@@ -49,7 +56,8 @@ public class AddDurationsToUserSettingsHandler implements ApiRequestHandler {
         final Item userItem = tableItems.next();
 
         try {
-          this.maintenanceDbAccessManager.updateUser(userItem.getString(User.USERNAME), updateItemSpec);
+          this.maintenanceDbAccessManager
+              .updateUser(userItem.getString(User.USERNAME), updateItemSpec);
         } catch (final Exception e) {
           this.metrics.log(new ErrorDescriptor<>(userItem.get(User.USERNAME), classMethod, e));
           resultStatus = ResultStatus.failure("Exception in " + classMethod);

@@ -579,8 +579,8 @@ class _GroupsHomeState extends State<GroupsHome>
                   refreshList();
                 });
               } else {
-                // we aren't allowing users to go to this page if they have no categories, so show a popup telling them this
-                print(Globals.user.ownedGroupsCount);
+                // we aren't allowing users to go to this page if they have no
+                // too many owned groups, so show a popup telling them this
                 this.createGroupError();
               }
             },

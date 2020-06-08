@@ -28,7 +28,7 @@ Future<ResultStatus<String>> makeApiRequest(Map<String, dynamic> requestContent,
       //add the app version to the request payload
       PackageInfo packageInfo = await Globals.getPackageInfo();
       requestContent[RequestFields.PAYLOAD]
-          .putIfAbsent(appVersion, () => packageInfo.version);
+          .putIfAbsent(appVersion, () => packageInfo.buildNumber);
 
       //make the api request
       http.Response response = await http.post(
