@@ -11,4 +11,5 @@ public class Config {
   //validation parameters used across more than one handler
   public static final Integer MAX_DURATION = 10000;
   public static final Integer MAX_GROUP_MEMBERS = 300;
+  public static final Integer MAX_NUMBER_OF_CHOICES = 500;
 }

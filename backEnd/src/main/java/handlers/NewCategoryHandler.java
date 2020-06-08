@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.MAX_NUMBER_OF_CHOICES;
+
 import com.amazonaws.services.dynamodbv2.model.Put;
 import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import java.util.ArrayList;
@@ -23,7 +25,6 @@ import utilities.WarningDescriptor;
 public class NewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
-  public static final Integer MAX_NUMBER_OF_CHOICES = 500;
 
   private final DbAccessManager dbAccessManager;
   private final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;

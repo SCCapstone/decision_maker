@@ -1,5 +1,7 @@
 package handlers;
 
+import static utilities.Config.MAX_NUMBER_OF_CHOICES;
+
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
@@ -136,6 +138,11 @@ public class EditCategoryHandler implements ApiRequestHandler {
       if (editCategory.getChoices().size() < 1) {
         errorMessage = this.getUpdatedErrorMessage(errorMessage,
             "Error: category must have at least one choice.");
+      }
+
+      if (editCategory.getChoices().size() > MAX_NUMBER_OF_CHOICES) {
+        errorMessage = this.getUpdatedErrorMessage(errorMessage,
+            "Error: category cannot have more than " + MAX_NUMBER_OF_CHOICES + " choices.");
       }
 
       for (final String choiceLabel : editCategory.getChoices().keySet()) {

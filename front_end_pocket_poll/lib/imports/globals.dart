@@ -16,18 +16,18 @@ class Globals {
   static SharedPreferences sharedPrefs;
   static PackageInfo packageInfo;
 
-  static Future<PackageInfo> getPackageInfo() async {
-    if (packageInfo == null) {
-      packageInfo = await PackageInfo.fromPlatform();
-    }
-    return packageInfo;
-  }
-
   static Future<SharedPreferences> getSharedPrefs() async {
     if (sharedPrefs == null) {
       sharedPrefs = await SharedPreferences.getInstance();
     }
     return sharedPrefs;
+  }
+
+  static Future<PackageInfo> getPackageInfo() async {
+    if (packageInfo == null) {
+      packageInfo = await PackageInfo.fromPlatform();
+    }
+    return packageInfo;
   }
 
   // *************** CONSTANTS ***************
