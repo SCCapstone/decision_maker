@@ -50,7 +50,7 @@ class _EventsListState extends State<EventsList> {
     this.scrollController = new ScrollController();
     this.scrollController.addListener(scrollListener);
 
-    this.loadingBatch = false;
+    this.loadingBatch = true;
 
     super.initState();
   }
