@@ -14,6 +14,7 @@ class User {
   final Map<String, UserGroup> groups;
   final Map<String, GroupLeft> groupsLeft;
   final List<Category> ownedCategories;
+  final int ownedGroupsCount;
   List<Favorite> favorites;
   final bool firstLogin;
 
@@ -24,6 +25,7 @@ class User {
       this.groups,
       this.groupsLeft,
       this.ownedCategories,
+      this.ownedGroupsCount,
       this.favorites,
       this.icon,
       this.firstLogin});
@@ -35,6 +37,7 @@ class User {
       this.groups,
       this.groupsLeft,
       this.ownedCategories,
+      this.ownedGroupsCount,
       this.favorites,
       this.icon,
       this.firstLogin);
@@ -81,6 +84,7 @@ class User {
         groups: groupsMap,
         groupsLeft: groupsLeftMap,
         ownedCategories: categoryList,
+        ownedGroupsCount: json[UsersManager.OWNED_GROUPS_COUNT],
         favorites: favoriteList,
         icon: json[UsersManager.ICON],
         firstLogin: firstLogin);

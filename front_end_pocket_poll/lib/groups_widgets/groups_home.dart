@@ -571,18 +571,43 @@ class _GroupsHomeState extends State<GroupsHome>
             child: Icon(Icons.add),
             key: Key("groups_home:new_group_button"),
             onPressed: () {
-              // Navigate to second route when tapped.
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => GroupCreate()),
-              ).then((val) {
-                refreshList();
-              });
+              if (Globals.user.ownedGroupsCount < Globals.maxOwnedGroups) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GroupCreate()),
+                ).then((val) {
+                  refreshList();
+                });
+              } else {
+                // we aren't allowing users to go to this page if they have no categories, so show a popup telling them this
+                print(Globals.user.ownedGroupsCount);
+                this.createGroupError();
+              }
             },
           ),
         ),
       ),
     );
+  }
+
+  void createGroupError() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text("Cannot create group"),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+              content: Text("You cannot create more than " +
+                  Globals.maxOwnedGroups.toString() +
+                  " groups. You must delete some that you own before you will be allowed to create more."));
+        });
   }
 
   // whenever the tab changes make sure to save current tab index

@@ -2,6 +2,9 @@ package handlers;
 
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.Delete;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +21,11 @@ import models.EventForSorting;
 import models.Group;
 import models.Metadata;
 import models.User;
+import utilities.AttributeValueUtils;
 import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
+import utilities.UpdateItemData;
 
 /**
  * This method handles deleting a group item from the db. In addition, it handles removing all of
@@ -59,7 +64,21 @@ public class DeleteGroupHandler implements ApiRequestHandler {
         final ResultStatus removeFromCategoriesResult = this.removeGroupFromCategories(group);
 
         if (removeGroupFromUsers.success && removeFromCategoriesResult.success) {
-          this.dbAccessManager.deleteGroup(groupId);
+          //build the owned group statement for the active user
+          final UpdateItemData updateItemData = new UpdateItemData(activeUser,
+              DbAccessManager.USERS_TABLE_NAME)
+              .withUpdateExpression(
+                  "set " + User.OWNED_GROUPS_COUNT + " = " + User.OWNED_GROUPS_COUNT + " - :val")
+              .withValueMap(new ValueMap().withNumber(":val", 1));
+
+          final List<TransactWriteItem> actions = new ArrayList<>();
+
+          actions.add(new TransactWriteItem().withUpdate(updateItemData.asUpdate()));
+          actions.add(new TransactWriteItem()
+              .withDelete(
+                  new UpdateItemData(groupId, DbAccessManager.GROUPS_TABLE_NAME).asDelete()));
+
+          this.dbAccessManager.executeWriteTransaction(actions);
 
           resultStatus = ResultStatus.successful("Group deleted successfully!");
 
@@ -222,7 +241,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
             this.snsAccessManager.sendMutedMessage(removedUser.getPushEndpointArn(), metadata);
           } else {
             this.snsAccessManager.sendMessage(removedUser.getPushEndpointArn(), "Group Deleted",
-                deletedGroup.getGroupName(), deletedGroup.getGroupId(), metadata);
+                "'" + deletedGroup.getGroupName() + "'", deletedGroup.getGroupId(), metadata);
           }
         }
       } catch (Exception e) {

@@ -15,8 +15,6 @@ import 'api_manager.dart';
 import 'globals.dart';
 
 class UsersManager {
-  static final String apiEndpoint = "usersendpoint";
-
   //breaking style guide for consistency with backend vars
   static final String USERNAME = "Username";
   static final String DISPLAY_NAME = "DisplayName";
@@ -28,6 +26,7 @@ class UsersManager {
   static final String GROUPS = "Groups";
   static final String CATEGORY_RATINGS = "CategoryRatings";
   static final String OWNED_CATEGORIES = "OwnedCategories";
+  static final String OWNED_GROUPS_COUNT = "OwnedGroupsCount";
   static final String FAVORITES = "Favorites";
   static final String ICON = "Icon";
   static final String GROUPS_LEFT = "GroupsLeft";
@@ -56,8 +55,7 @@ class UsersManager {
           .putIfAbsent(USERNAME, () => username);
     }
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -117,8 +115,7 @@ class UsersManager {
           .putIfAbsent(ICON, () => image.readAsBytesSync());
     }
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       Map<String, dynamic> body = jsonDecode(response.data);
@@ -155,8 +152,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       Map<String, dynamic> body = jsonDecode(response.data);
@@ -188,7 +184,7 @@ class UsersManager {
         .putIfAbsent(sortSetting, () => sortValue);
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future registerPushEndpoint(Future<String> token) async {
@@ -200,7 +196,7 @@ class UsersManager {
         .putIfAbsent(RequestFields.DEVICE_TOKEN, () => tokenAfter);
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future unregisterPushEndpoint() async {
@@ -208,7 +204,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.ACTION] = unregisterPushEndpointAction;
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future markEventAsSeen(
@@ -219,7 +215,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD][RequestFields.EVENT_ID] = eventId;
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future markAllEventsAsSeen(final String groupId) async {
@@ -228,7 +224,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD][GroupsManager.GROUP_ID] = groupId;
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future setUserGroupMute(
@@ -239,7 +235,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD][APP_SETTINGS_MUTED] = muteValue;
 
     //blind send here, not critical for app or user if it fails
-    makeApiRequest(apiEndpoint, jsonRequestBody);
+    makeApiRequest(jsonRequestBody);
   }
 
   static Future<ResultStatus> addFavorite(final Favorite favorite) async {
@@ -250,8 +246,7 @@ class UsersManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(USERNAME, () => favorite.username);
 
-    final ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    final ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {

@@ -23,7 +23,6 @@ import models.User;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
-import utilities.RequestFields;
 import utilities.ResultStatus;
 import utilities.WarningDescriptor;
 
@@ -268,7 +267,7 @@ public class NewEventHandler implements ApiRequestHandler {
 
     String action = "eventCreated";
 
-    String eventChangeTitle = "Event in " + group.getGroupName();
+    String eventChangeTitle = "Event in '" + group.getGroupName() + "'";
 
     //assume the event just got created with no skips
     String eventChangeBody =
@@ -278,12 +277,13 @@ public class NewEventHandler implements ApiRequestHandler {
     if (updatedEvent.getSelectedChoice() != null) {
       //we just transitioned to a having a selected choice -> stage: occurring
       action = "eventChosen";
-      eventChangeBody =
-          updatedEvent.getEventName() + " - " + updatedEvent.getSelectedChoice() + " Won!";
+      eventChangeBody = String
+          .format("'%s' - '%s' Won!", updatedEvent.getEventName(),
+              updatedEvent.getSelectedChoice());
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> stage: voting
       action = "eventVoting";
-      eventChangeBody = "Vote for " + updatedEvent.getEventName();
+      eventChangeBody = "Vote for '" + updatedEvent.getEventName() + "'";
     } // else the event was indeed just created without skips
 
     final Metadata metadata = new Metadata(action, payload);

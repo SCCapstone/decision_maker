@@ -54,14 +54,13 @@ public class EditGroupHandler implements ApiRequestHandler {
    * requesting user has permissions, then the group gets updated and the necessary data for
    * denormalization is sent to the groups table and the categories table respectively.
    *
-   * @param activeUser            The user making the edit group request.
-   * @param groupId               The id of the group attempting to be edited.
-   * @param name                  The updated name of the group.
-   * @param membersList           The updated list of usernames associated with the group.
-   * @param categoriesList        The updated list of category ids associated with the group.
-   * @param isOpen                The update is open value for this group.
-   * @param iconData              The byte array for a new group icon. If null, the icon is not
-   *                              updated.
+   * @param activeUser     The user making the edit group request.
+   * @param groupId        The id of the group attempting to be edited.
+   * @param name           The updated name of the group.
+   * @param membersList    The updated list of usernames associated with the group.
+   * @param categoriesList The updated list of category ids associated with the group.
+   * @param isOpen         The update is open value for this group.
+   * @param iconData       The byte array for a new group icon. If null, the icon is not updated.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String groupId, final String name,
@@ -245,7 +244,8 @@ public class EditGroupHandler implements ApiRequestHandler {
               this.snsAccessManager.sendMutedMessage(user.getPushEndpointArn(), metadata);
             } else {
               this.snsAccessManager.sendMessage(user.getPushEndpointArn(),
-                  "Added to new group!", newGroup.getGroupName(), newGroup.getGroupId(), metadata);
+                  "Added to new group!", "'" + newGroup.getGroupName() + "'", newGroup.getGroupId(),
+                  metadata);
             }
           }
         }
@@ -299,7 +299,7 @@ public class EditGroupHandler implements ApiRequestHandler {
           } else {
             this.snsAccessManager
                 .sendMessage(removedUser.getPushEndpointArn(), "Removed from group",
-                    group.getGroupName(), group.getGroupId(), metadata);
+                    "'" + group.getGroupName() + "'", group.getGroupId(), metadata);
           }
         }
       } catch (Exception e) {
@@ -383,9 +383,9 @@ public class EditGroupHandler implements ApiRequestHandler {
    * This function takes the old definition of a group and checks to see if proposed edits are
    * valid.
    *
-   * @param oldGroup              this is the old group definition that is attempting to be edited
-   * @param activeUser            the user doing the edit
-   * @param members               the new list of members for the group
+   * @param oldGroup   this is the old group definition that is attempting to be edited
+   * @param activeUser the user doing the edit
+   * @param members    the new list of members for the group
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
   private Optional<String> editGroupInputIsValid(final Group oldGroup, final String activeUser,

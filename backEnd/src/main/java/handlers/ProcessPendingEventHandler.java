@@ -381,7 +381,7 @@ public class ProcessPendingEventHandler {
 
     String action = "eventCreated";
 
-    String eventChangeTitle = "Event in " + group.getGroupName();
+    String eventChangeTitle = "Event in '" + group.getGroupName() + "'";
 
     //assume the event just got created - this can't be true otherwise we wouldn't hit this flow
     String eventChangeBody =
@@ -391,12 +391,13 @@ public class ProcessPendingEventHandler {
     if (updatedEvent.getSelectedChoice() != null) {
       //we just transitioned to a having a selected choice -> stage: occurring
       action = "eventChosen";
-      eventChangeBody =
-          updatedEvent.getEventName() + " - " + updatedEvent.getSelectedChoice() + " Won!";
+      eventChangeBody = String
+          .format("'%s' - '%s' Won!", updatedEvent.getEventName(),
+              updatedEvent.getSelectedChoice());
     } else if (!updatedEvent.getTentativeAlgorithmChoices().isEmpty()) {
       //we just transitioned to getting tentative choices -> stage: voting
       action = "eventVoting";
-      eventChangeBody = "Vote for " + updatedEvent.getEventName();
+      eventChangeBody = "Vote for '" + updatedEvent.getEventName() + "'";
     } // else the event was indeed just created
 
     final Metadata metadata = new Metadata(action, payload);

@@ -10,8 +10,6 @@ import 'api_manager.dart';
 import 'groups_manager.dart';
 
 class CategoriesManager {
-  static final String apiEndpoint = "categoriesendpoint";
-
   //breaking style guide for consistency with backend vars
   static final String CATEGORY_ID = "CategoryId";
   static final String CATEGORY_IDS = "CategoryIds";
@@ -50,8 +48,7 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.USER_RATINGS, () => choiceRatings);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -79,7 +76,8 @@ class CategoriesManager {
 
   static Future<ResultStatus<List<CategoryRatingTuple>>> getCategoriesList(
       {String categoryId}) async {
-    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
+    ResultStatus<List<CategoryRatingTuple>> retVal =
+        new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
@@ -89,8 +87,7 @@ class CategoriesManager {
           .putIfAbsent(CATEGORY_IDS, () => categoryIdList);
     }
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -99,8 +96,9 @@ class CategoriesManager {
 
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
-          retVal.data =
-              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
+          retVal.data = responseJson
+              .map((m) => new CategoryRatingTuple.fromJson(m))
+              .toList();
           retVal.success = true;
         } else {
           retVal.errorMessage = "Unable to load categories.";
@@ -117,17 +115,17 @@ class CategoriesManager {
     return retVal;
   }
 
-  static Future<ResultStatus<List<CategoryRatingTuple>>> getAllCategoriesFromGroup(
-      String groupId) async {
-    ResultStatus<List<CategoryRatingTuple>> retVal = new ResultStatus(success: false);
+  static Future<ResultStatus<List<CategoryRatingTuple>>>
+      getAllCategoriesFromGroup(String groupId) async {
+    ResultStatus<List<CategoryRatingTuple>> retVal =
+        new ResultStatus(success: false);
 
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = getAction;
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(GroupsManager.GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -137,8 +135,9 @@ class CategoriesManager {
         if (responseItem.success) {
           List<dynamic> responseJson = json.decode(responseItem.resultMessage);
           retVal.success = true;
-          retVal.data =
-              responseJson.map((m) => new CategoryRatingTuple.fromJson(m)).toList();
+          retVal.data = responseJson
+              .map((m) => new CategoryRatingTuple.fromJson(m))
+              .toList();
         } else {
           // not sure if we want to return an error here, but it needs to return an empty list to avoid problems in popups
           retVal.errorMessage = "Unable to load group categories.";
@@ -163,8 +162,7 @@ class CategoriesManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(CATEGORY_ID, () => categoryId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {

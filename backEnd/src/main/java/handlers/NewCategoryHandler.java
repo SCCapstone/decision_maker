@@ -23,6 +23,7 @@ import utilities.WarningDescriptor;
 public class NewCategoryHandler implements ApiRequestHandler {
 
   public static final Integer MAX_NUMBER_OF_CATEGORIES = 25;
+  public static final Integer MAX_NUMBER_OF_CHOICES = 500;
 
   private final DbAccessManager dbAccessManager;
   private final UpdateUserChoiceRatingsHandler updateUserChoiceRatingsHandler;
@@ -117,6 +118,11 @@ public class NewCategoryHandler implements ApiRequestHandler {
       if (newCategory.getChoices().size() < 1) {
         errorMessage = this.getUpdatedErrorMessage(errorMessage,
             "Error: category must have at least one choice.");
+      }
+
+      if (newCategory.getChoices().size() > MAX_NUMBER_OF_CHOICES) {
+        errorMessage = this.getUpdatedErrorMessage(errorMessage,
+            "Error: category cannot have more than " + MAX_NUMBER_OF_CHOICES + " choices.");
       }
 
       //choice ids are the labels

@@ -5,8 +5,11 @@ import static utilities.Config.MAX_GROUP_MEMBERS;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
+import com.amazonaws.services.dynamodbv2.model.Put;
+import com.amazonaws.services.dynamodbv2.model.TransactWriteItem;
 import exceptions.AttributeValueOutOfRangeException;
 import exceptions.InvalidAttributeValueException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,10 +28,12 @@ import models.GroupForApiResponse;
 import models.Metadata;
 import models.User;
 import models.UserGroup;
+import utilities.AttributeValueUtils;
 import utilities.ErrorDescriptor;
 import utilities.JsonUtils;
 import utilities.Metrics;
 import utilities.ResultStatus;
+import utilities.UpdateItemData;
 import utilities.WarningDescriptor;
 
 public class CreateNewGroupHandler implements ApiRequestHandler {
@@ -53,13 +58,13 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
    * of the input fields and then de-normalizing the data to the necessary locations in the
    * users/categories tables.
    *
-   * @param activeUser            The user making the create new group api request.
-   * @param name                  The name of the group.
-   * @param membersList           The list of usernames to be associated with the group.
-   * @param categoriesList        The list of category ids to be associated with the group.
-   * @param isOpen                Whether or not this group is editable by its members or just its
-   *                              creator.
-   * @param iconData              The byte data for an icon. If null this implies no icon.
+   * @param activeUser     The user making the create new group api request.
+   * @param name           The name of the group.
+   * @param membersList    The list of usernames to be associated with the group.
+   * @param categoriesList The list of category ids to be associated with the group.
+   * @param isOpen         Whether or not this group is editable by its members or just its
+   *                       creator.
+   * @param iconData       The byte data for an icon. If null this implies no icon.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String name,
@@ -73,6 +78,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
     try {
       final Optional<String> errorMessage = this.newGroupInputIsValid(membersList);
       if (!errorMessage.isPresent()) {
+        //build the new group for insertion
         final String newGroupId = UUID.randomUUID().toString();
         final String lastActivity = this.dbAccessManager.now();
 
@@ -98,7 +104,21 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
           newGroup.setIcon(newIconFileName);
         }
 
-        this.dbAccessManager.putGroup(newGroup);
+        //build the owned group statement for the active user
+        final UpdateItemData updateItemData = new UpdateItemData(activeUser,
+            DbAccessManager.USERS_TABLE_NAME)
+            .withUpdateExpression(
+                "set " + User.OWNED_GROUPS_COUNT + " = " + User.OWNED_GROUPS_COUNT + " + :val")
+            .withValueMap(new ValueMap().withNumber(":val", 1));
+
+        final List<TransactWriteItem> actions = new ArrayList<>();
+
+        actions.add(new TransactWriteItem().withUpdate(updateItemData.asUpdate()));
+        actions.add(new TransactWriteItem()
+            .withPut(new Put().withTableName(DbAccessManager.GROUPS_TABLE_NAME).withItem(
+                AttributeValueUtils.convertMapToAttributeValueMap(newGroup.asMap()))));
+
+        this.dbAccessManager.executeWriteTransaction(actions);
 
         this.updateUsersTable(newGroup);
         this.updateCategoriesTable(newGroup);
@@ -146,7 +166,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
   /**
    * This function takes the perameters for creating a group and checks if they are valid.
    *
-   * @param membersList           A list of the usernames to associate with this group.
+   * @param membersList A list of the usernames to associate with this group.
    * @return A nullable errorMessage. If null, then there was no error and it is valid
    */
   private Optional<String> newGroupInputIsValid(final List<String> membersList) {
@@ -213,7 +233,7 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
 
   private void sendAddedToGroupNotifications(final Group newGroup) {
     final String classMethod = "CreateNewGroupHandler.sendAddedToGroupNotifications";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
 
@@ -234,17 +254,18 @@ public class CreateNewGroupHandler implements ApiRequestHandler {
               this.snsAccessManager.sendMutedMessage(user.getPushEndpointArn(), metadata);
             } else {
               this.snsAccessManager.sendMessage(user.getPushEndpointArn(),
-                  "Added to new group!", newGroup.getGroupName(), newGroup.getGroupId(), metadata);
+                  "Added to new group!", "'" + newGroup.getGroupName() + "'",
+                  newGroup.getGroupId(), metadata);
             }
           }
         }
       } catch (Exception e) {
         success = false;
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 
   /**

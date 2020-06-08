@@ -303,15 +303,15 @@ class _GroupPageState extends State<GroupPage>
                     debugPrintStack();
                   }
                   this.tabController.animateTo(this.currentTab);
-                  populateEventStages();
+                  this.populateEventStages();
                 } else {
                   // no event created, so make API call to make sure page is most up to date
-                  refreshLoadedBatches();
+                  this.refreshLoadedBatches();
                 }
               });
             } else {
               // we aren't allowing users to go to this page if they have no categories, so show a popup telling them this
-              createEventError();
+              this.createEventError();
             }
           },
         ),

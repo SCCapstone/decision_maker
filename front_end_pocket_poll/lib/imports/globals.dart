@@ -3,6 +3,7 @@ import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/models/get_group_response.dart';
 import 'package:front_end_pocket_poll/models/user.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Globals {
@@ -13,6 +14,14 @@ class Globals {
   static bool fireBaseConfigured = false;
   static Function refreshGroupPage;
   static SharedPreferences sharedPrefs;
+  static PackageInfo packageInfo;
+
+  static Future<PackageInfo> getPackageInfo() async {
+    if (packageInfo == null) {
+      packageInfo = await PackageInfo.fromPlatform();
+    }
+    return packageInfo;
+  }
 
   static Future<SharedPreferences> getSharedPrefs() async {
     if (sharedPrefs == null) {
@@ -73,8 +82,9 @@ class Globals {
 
   // validation variables
   static final int maxCategoryCacheSize = 10;
-  static final int maxEventsPulled = 25;
   static final int maxCategories = 25;
+  static final int maxCategoryChoices = 500;
+  static final int maxOwnedGroups = 100;
   static final int minEmailLength = 3;
   static final int maxEmailLength = 60;
   static final int minUsernameLength = 4;

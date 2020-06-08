@@ -17,8 +17,6 @@ import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'api_manager.dart';
 
 class GroupsManager {
-  static final String apiEndpoint = "groupsendpoint";
-
   //breaking style guide for consistency with backend vars
   static final String GROUP_ID = "GroupId";
   static final String GROUP_NAME = "GroupName";
@@ -60,8 +58,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = getGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -95,8 +92,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = deleteGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -139,8 +135,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
         group.categories.keys.toList();
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -185,8 +180,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD][CATEGORIES] =
         group.categories.keys.toList();
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -224,8 +218,7 @@ class GroupsManager {
         EventsManager.UTC_EVENT_START_SECONDS,
         () => getUtcSecondsSinceEpoch(event.eventStartDateTime));
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -257,8 +250,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = leaveGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -290,8 +282,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = rejoinGroupAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -330,8 +321,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.PARTICIPATING, () => participating);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -370,8 +360,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.VOTE_VALUE, () => voteVal);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -404,8 +393,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.ACTION] = CategoriesManager.getAction;
     jsonRequestBody[RequestFields.PAYLOAD].putIfAbsent(GROUP_ID, () => groupId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -443,8 +431,7 @@ class GroupsManager {
     jsonRequestBody[RequestFields.PAYLOAD]
         .putIfAbsent(RequestFields.EVENT_ID, () => eventId);
 
-    ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -481,8 +468,7 @@ class GroupsManager {
       RequestFields.EVENT_ID: eventId
     };
 
-    final ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    final ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -521,8 +507,7 @@ class GroupsManager {
       RequestFields.BATCH_TYPE: batchType
     };
 
-    final ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    final ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {
@@ -563,8 +548,7 @@ class GroupsManager {
       RequestFields.MAX_BATCHES: GroupPage.maxEventBatchesInMemory
     };
 
-    final ResultStatus<String> response =
-        await makeApiRequest(apiEndpoint, jsonRequestBody);
+    final ResultStatus<String> response = await makeApiRequest(jsonRequestBody);
 
     if (response.success) {
       try {

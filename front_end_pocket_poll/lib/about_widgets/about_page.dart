@@ -227,7 +227,7 @@ class _AboutPageState extends State<AboutPage> {
     Once done loading, notify the app state and then display the data.
    */
   void getPackageInfo() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    PackageInfo packageInfo = await Globals.getPackageInfo();
 
     setState(() {
       this.loading = false;
