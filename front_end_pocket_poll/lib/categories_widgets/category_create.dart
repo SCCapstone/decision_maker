@@ -271,7 +271,8 @@ class _CategoryCreateState extends State<CategoryCreate> {
         )
         .then((_) {
       // at the bottom of the list now, so request the focus of the choice row
-      choiceRow.requestFocus(context);
+      SchedulerBinding.instance
+          .addPostFrameCallback((_) => choiceRow.requestFocus(context));
     });
   }
 
