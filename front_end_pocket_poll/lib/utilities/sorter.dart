@@ -1,6 +1,8 @@
 import 'package:front_end_pocket_poll/categories_widgets/choice_row.dart';
+import 'package:front_end_pocket_poll/imports/events_manager.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
+import 'package:front_end_pocket_poll/models/event_card_interface.dart';
 import 'package:front_end_pocket_poll/models/group_interface.dart';
 import 'package:front_end_pocket_poll/models/user_group.dart';
 
@@ -75,5 +77,73 @@ class Sorter {
   static void sortCategoriesByAlphaDescending(List<Category> categories) {
     categories.sort((a, b) =>
         b.categoryName.toLowerCase().compareTo(a.categoryName.toLowerCase()));
+  }
+
+  // sorts a list of EventCardInterfaces based on the event state
+  static void sortEventCardInterfaces(
+      final List<EventCardInterface> eventCardInterfaces) {
+    eventCardInterfaces.sort((a, b) {
+      if (a.getEventMode() > b.getEventMode()) {
+        return -1;
+      } else if (b.getEventMode() > a.getEventMode()) {
+        return 1;
+      } else {
+        //cards are same priority
+        if (a.getEventMode() == EventsManager.considerMode) {
+          if (a.getEvent().pollBegin.isBefore(b.getEvent().pollBegin)) {
+            return -1;
+          } else if (b
+              .getEvent()
+              .pollBegin
+              .isBefore(a.getEvent().pollBegin)) {
+            return 1;
+          } else {
+            //same time, give definitive sort based on ids
+            return a.getEventId().compareTo(b.getEventId());
+          }
+        } else if (a.getEventMode() == EventsManager.votingMode) {
+          if (a.getEvent().pollEnd.isBefore(b.getEvent().pollEnd)) {
+            return -1;
+          } else if (b.getEvent().pollEnd.isBefore(a.getEvent().pollEnd)) {
+            return 1;
+          } else {
+            //same time, give definitive sort based on ids
+            return a.getEventId().compareTo(b.getEventId());
+          }
+        } else if (a.getEventMode() == EventsManager.occurringMode) {
+          if (a
+              .getEvent()
+              .eventStartDateTime
+              .isBefore(b.getEvent().eventStartDateTime)) {
+            return -1;
+          } else if (b
+              .getEvent()
+              .eventStartDateTime
+              .isBefore(a.getEvent().eventStartDateTime)) {
+            return 1;
+          } else {
+            //same time, give definitive sort based on ids
+            return a.getEventId().compareTo(b.getEventId());
+          }
+        } else {
+          //event is in closed mode. we want the most recent times here
+          // otherwise the first event would always be at the top
+          if (a
+              .getEvent()
+              .eventStartDateTime
+              .isBefore(b.getEvent().eventStartDateTime)) {
+            return 1;
+          } else if (b
+              .getEvent()
+              .eventStartDateTime
+              .isBefore(a.getEvent().eventStartDateTime)) {
+            return -1;
+          } else {
+            //same time, give definitive sort based on ids
+            return a.getEventId().compareTo(b.getEventId());
+          }
+        }
+      }
+    });
   }
 }

@@ -34,6 +34,16 @@ public class GetAllBatchesOfEventsHandler implements ApiRequestHandler {
     this.metrics = metrics;
   }
 
+  /**
+   * This function handles getting all of the batches present in all of the events lists possible.
+   *
+   * @param activeUser   The active user making the request.
+   * @param groupId      The id of the group that all of the events should be retrieved from.
+   * @param batchIndexes The max batch ids loaded in all of the events lists.
+   * @param maxBatches   The max batches allowed to be loaded. This with the batchIndexes gives
+   *                     information to know all of tha batches that need information retrieved.
+   * @return Standard result status object giving insight on whether the request was successful.
+   */
   public ResultStatus handle(final String activeUser, final String groupId,
       final Map<String, Integer> batchIndexes, final Integer maxBatches) {
     final String classMethod = "GetAllBatchesOfEventsHandler.handle";

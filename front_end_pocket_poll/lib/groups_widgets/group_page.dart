@@ -78,6 +78,10 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: new Map<int, List<String>>()
   };
 
+  //This tracks the max scroll extents of the lists as they grow up until the
+  // list reaches the max batch in memory size. This allows us to load the list
+  // in the correct position when destroying events at the top of the list to
+  // account for the max memory size being hit
   final Map<int, double> eventTypesToPreviousMaxScrollExtents = {
     EventsList.eventsTypeNew: null,
     EventsList.eventsTypeVoting: null,
@@ -86,6 +90,8 @@ class _GroupPageState extends State<GroupPage>
     EventsList.eventsTypeOccurring: null
   };
 
+  //This tracks the scroll extent of a fully filled up list. This is used to
+  // calculate the appropriate offset when loading in the up direction.
   final Map<int, double> eventTypesToMaxScrollExtentOfMaxBatches = {
     EventsList.eventsTypeNew: null,
     EventsList.eventsTypeVoting: null,
