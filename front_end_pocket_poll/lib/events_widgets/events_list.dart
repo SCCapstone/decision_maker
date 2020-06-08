@@ -69,6 +69,7 @@ class _EventsListState extends State<EventsList> {
         !loadingBatch) {
       //show a loading indicator
       Scaffold.of(this.context).showSnackBar(SnackBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           content: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [CircularProgressIndicator()])));
