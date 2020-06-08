@@ -24,6 +24,7 @@ public class User implements Model {
   public static final String GROUPS_LEFT = "GroupsLeft";
   public static final String CATEGORY_RATINGS = "CategoryRatings";
   public static final String OWNED_CATEGORIES = "OwnedCategories";
+  public static final String OWNED_GROUPS_COUNT = "OwnedGroupsCount";
   public static final String FAVORITES = "Favorites";
   public static final String FAVORITE_OF = "FavoriteOf";
   public static final String PUSH_ENDPOINT_ARN = "PushEndpointArn";
@@ -34,6 +35,7 @@ public class User implements Model {
   private String icon;
   private String pushEndpointArn;
   private AppSettings appSettings;
+  private Integer ownedGroupsCount;
 
   @Setter(AccessLevel.NONE)
   private Map<String, UserGroup> groups;
@@ -65,6 +67,7 @@ public class User implements Model {
     this.setGroupsLeft((Map<String, Object>) jsonMap.get(GROUPS_LEFT));
     this.setCategoryRatings((Map<String, Object>) jsonMap.get(CATEGORY_RATINGS));
     this.setOwnedCategories((Map<String, Object>) jsonMap.get(OWNED_CATEGORIES));
+    this.setOwnedGroupsCount(this.getIntFromObject(jsonMap.get(OWNED_GROUPS_COUNT)));
     this.setFavoriteOf((Map<String, Object>) jsonMap.get(FAVORITE_OF));
     this.setFavorites((Map<String, Object>) jsonMap.get(FAVORITES));
   }
@@ -80,6 +83,7 @@ public class User implements Model {
     modelAsMap.putIfAbsent(GROUPS_LEFT, this.getGroupsLeftMap());
     modelAsMap.putIfAbsent(CATEGORY_RATINGS, this.categoryRatings);
     modelAsMap.putIfAbsent(OWNED_CATEGORIES, this.ownedCategories);
+    modelAsMap.putIfAbsent(OWNED_GROUPS_COUNT, this.ownedGroupsCount);
     modelAsMap.putIfAbsent(FAVORITE_OF, this.favoriteOf);
     modelAsMap.putIfAbsent(FAVORITES, this.getFavoritesMap());
     return modelAsMap;

@@ -3,6 +3,7 @@ package dbMaintenance.modules;
 import dbMaintenance.cronJobs.handlers.DetachedRatingsRemovalHandler;
 import dbMaintenance.handlers.AddCategoryCreatorToGroupHandler;
 import dbMaintenance.handlers.AddDurationsToUserSettingsHandler;
+import dbMaintenance.handlers.AddOwnedGroupsCountHandler;
 import dbMaintenance.handlers.KeyChoicesByLabelHandler;
 import dbMaintenance.handlers.UnkeyUserRatingsByVersionHandler;
 import dbMaintenance.managers.MaintenanceDbAccessManager;
@@ -52,5 +53,11 @@ public class PocketPollMaintenanceModule {
   public AddDurationsToUserSettingsHandler provideAddDurationsToUserSettingsHandler(
       final MaintenanceDbAccessManager maintenanceDbAccessManager) {
     return new AddDurationsToUserSettingsHandler(maintenanceDbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public AddOwnedGroupsCountHandler provideAddOwnedGroupsCountHandler(
+      final MaintenanceDbAccessManager maintenanceDbAccessManager) {
+    return new AddOwnedGroupsCountHandler(maintenanceDbAccessManager, this.metrics);
   }
 }

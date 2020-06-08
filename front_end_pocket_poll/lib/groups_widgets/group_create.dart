@@ -79,7 +79,6 @@ class _GroupCreateState extends State<GroupCreate> {
                     onSaved: (String arg) {
                       this.groupName = arg.trim();
                     },
-                    textInputAction: TextInputAction.next,
                     key: Key("group_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter group name", counterText: ""),
@@ -287,7 +286,10 @@ class _GroupCreateState extends State<GroupCreate> {
   void validateInput() async {
     hideKeyboard(this.context);
     final form = this.formKey.currentState;
-    if (form.validate()) {
+    if (Globals.user.ownedGroupsCount >= Globals.maxOwnedGroups) {
+      //we shouldn't be able to get to this page if this is true, but for sanity
+      this.createGroupError();
+    } else if (form.validate()) {
       form.save();
       Map<String, Member> membersMap = new Map<String, Member>();
       for (Member member in this.groupMembers) {
@@ -333,5 +335,25 @@ class _GroupCreateState extends State<GroupCreate> {
     } else {
       setState(() => this.autoValidate = true);
     }
+  }
+
+  void createGroupError() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text("Cannot create group"),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+              content: Text("You cannot create more than " +
+                  Globals.maxOwnedGroups.toString() +
+                  " groups. You must delete some that you own before you will be allowed to create more."));
+        });
   }
 }

@@ -336,6 +336,13 @@ class _CategoryCreateState extends State<CategoryCreate> {
     final form = this.formKey.currentState;
     if (this.choiceRows.isEmpty) {
       showErrorMessage("Error", "Must have at least one choice!", this.context);
+    } else if (this.choiceRows.length > Globals.maxCategoryChoices) {
+      showErrorMessage(
+          "Error",
+          "Category cannot have more than " +
+              Globals.maxCategoryChoices.toString() +
+              " choices!",
+          this.context);
     } else if (form.validate()) {
       Map<String, int> labelsToSave = new LinkedHashMap<String, int>();
       Map<String, String> ratesToSave = new LinkedHashMap<String, String>();

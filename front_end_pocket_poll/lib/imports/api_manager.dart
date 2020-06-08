@@ -7,12 +7,13 @@ import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/utilities/config.dart';
 import 'package:front_end_pocket_poll/utilities/request_fields.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final String idTokenKey = "id";
+final String appVersion = "AppVersion";
 
-Future<ResultStatus<String>> makeApiRequest(
-    String apiEndpoint, Map<String, dynamic> requestContent,
+Future<ResultStatus<String>> makeApiRequest(Map<String, dynamic> requestContent,
     {firstAttempt: true}) async {
   ResultStatus<String> retVal =
       new ResultStatus(success: false, networkError: false);
@@ -24,6 +25,12 @@ Future<ResultStatus<String>> makeApiRequest(
     };
 
     try {
+      //add the app version to the request payload
+      PackageInfo packageInfo = await Globals.getPackageInfo();
+      requestContent[RequestFields.PAYLOAD]
+          .putIfAbsent(appVersion, () => packageInfo.buildNumber);
+
+      //make the api request
       http.Response response = await http.post(
           Config.apiRootUrl +
               Config.apiDeployment +
@@ -36,7 +43,7 @@ Future<ResultStatus<String>> makeApiRequest(
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
-          retVal = await makeApiRequest(apiEndpoint, requestContent,
+          retVal = await makeApiRequest(requestContent,
               firstAttempt: false);
         }
       }
