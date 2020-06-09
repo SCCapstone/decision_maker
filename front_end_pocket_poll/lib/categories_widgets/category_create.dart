@@ -130,6 +130,8 @@ class _CategoryCreateState extends State<CategoryCreate> {
                                   border: OutlineInputBorder(),
                                   labelText: "Category Name",
                                   counterText: ""),
+                              smartQuotesType: SmartQuotesType.disabled,
+                              smartDashesType: SmartDashesType.disabled,
                             ),
                           ),
                           PopupMenuButton<int>(

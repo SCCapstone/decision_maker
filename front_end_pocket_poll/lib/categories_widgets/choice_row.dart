@@ -143,6 +143,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
             onFieldSubmitted: (val) {
               FocusScope.of(context).requestFocus(this.ratingsFocus);
             },
+            smartQuotesType: SmartQuotesType.disabled,
+            smartDashesType: SmartDashesType.disabled,
           ),
         ),
         Container(
@@ -198,6 +200,8 @@ class _ChoiceRowState extends State<ChoiceRow> {
                 helperText: (widget.displayRateHelpText && this.choiceChanged)
                     ? this.labelHelpText
                     : " "),
+            smartQuotesType: SmartQuotesType.disabled,
+            smartDashesType: SmartDashesType.disabled,
           ),
         ),
         Visibility(

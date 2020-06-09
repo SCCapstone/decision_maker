@@ -178,6 +178,8 @@ class _CategoryEditState extends State<CategoryEdit> {
                                     border: OutlineInputBorder(),
                                     labelText: "Category Name",
                                     counterText: ""),
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
                               ),
                             ),
                             Expanded(
@@ -507,6 +509,8 @@ class _CategoryEditState extends State<CategoryEdit> {
                       maxLength: Globals.maxCategoryNameLength,
                       decoration: InputDecoration(
                           labelText: "Category Name", counterText: ""),
+                      smartQuotesType: SmartQuotesType.disabled,
+                      smartDashesType: SmartDashesType.disabled,
                     )
                   ],
                 ),

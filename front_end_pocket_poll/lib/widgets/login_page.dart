@@ -95,6 +95,8 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(fontSize: 32),
                           decoration: InputDecoration(
                               labelText: "Email", counterText: ""),
+                          smartQuotesType: SmartQuotesType.disabled,
+                          smartDashesType: SmartDashesType.disabled,
                         ),
                       ),
                       IconButton(
@@ -129,6 +131,8 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(fontSize: 32),
                       decoration: InputDecoration(
                           labelText: "Username", counterText: ""),
+                      smartQuotesType: SmartQuotesType.disabled,
+                      smartDashesType: SmartDashesType.disabled,
                     ),
                   ),
                   Visibility(
@@ -171,6 +175,8 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(fontSize: 32),
                       decoration: InputDecoration(
                           labelText: "Password", counterText: ""),
+                      smartQuotesType: SmartQuotesType.disabled,
+                      smartDashesType: SmartDashesType.disabled,
                     ),
                   ),
                   IconButton(
