@@ -99,20 +99,22 @@ class _MembersPageState extends State<MembersPage> {
                             visible: !this.showFavorites,
                             child: Expanded(
                               child: TextFormField(
-                                  maxLength: Globals.maxUsernameLength,
-                                  controller: this.userController,
-                                  validator: (value) {
-                                    List<String> allUsers = new List<String>();
-                                    for (Member user
-                                        in widget.displayedMembers) {
-                                      allUsers.add(user.username);
-                                    }
-                                    return validNewUser(value.trim(), allUsers);
-                                  },
-                                  key: Key("members_page:member_input"),
-                                  decoration: InputDecoration(
-                                      labelText: "Enter username to add",
-                                      counterText: "")),
+                                maxLength: Globals.maxUsernameLength,
+                                controller: this.userController,
+                                validator: (value) {
+                                  List<String> allUsers = new List<String>();
+                                  for (Member user in widget.displayedMembers) {
+                                    allUsers.add(user.username);
+                                  }
+                                  return validNewUser(value.trim(), allUsers);
+                                },
+                                key: Key("members_page:member_input"),
+                                decoration: InputDecoration(
+                                    labelText: "Enter username to add",
+                                    counterText: ""),
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
+                              ),
                             ),
                           ),
                           Visibility(
@@ -178,6 +180,8 @@ class _MembersPageState extends State<MembersPage> {
                                     });
                                   }
                                 },
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
                               ),
                             ),
                           ),

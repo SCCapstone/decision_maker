@@ -53,7 +53,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             decoration: InputDecoration(
                               labelText: "Enter username to add",
                               counterText: "",
-                            )),
+                            ),
+                          smartQuotesType: SmartQuotesType.disabled,
+                          smartDashesType: SmartDashesType.disabled,),
                       ),
                       FlatButton(
                         child: Text("Add User"),

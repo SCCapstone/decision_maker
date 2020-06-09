@@ -317,6 +317,8 @@ class _GroupsHomeState extends State<GroupsHome>
                         hintText: "Search Group",
                         hintStyle: TextStyle(
                             color: Colors.white, fontStyle: FontStyle.italic)),
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
                   ),
                 ),
               ),

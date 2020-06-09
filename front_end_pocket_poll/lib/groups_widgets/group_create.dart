@@ -82,6 +82,8 @@ class _GroupCreateState extends State<GroupCreate> {
                     key: Key("group_create:group_name_input"),
                     decoration: InputDecoration(
                         labelText: "Enter group name", counterText: ""),
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
                   ),
                   Padding(
                     padding: EdgeInsets.all(

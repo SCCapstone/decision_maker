@@ -152,6 +152,8 @@ class _EventCreateState extends State<EventCreate> {
                       key: Key("event_create:event_name_input"),
                       decoration: InputDecoration(
                           labelText: "Enter event name", counterText: ""),
+                      smartQuotesType: SmartQuotesType.disabled,
+                      smartDashesType: SmartDashesType.disabled,
                     ),
                     Padding(
                       padding: EdgeInsets.all(
@@ -247,6 +249,8 @@ class _EventCreateState extends State<EventCreate> {
                                 }
                               }
                             },
+                            smartQuotesType: SmartQuotesType.disabled,
+                            smartDashesType: SmartDashesType.disabled,
                           ),
                         ),
                         Text(":"),
@@ -292,6 +296,8 @@ class _EventCreateState extends State<EventCreate> {
                                 }
                               }
                             },
+                            smartQuotesType: SmartQuotesType.disabled,
+                            smartDashesType: SmartDashesType.disabled,
                           ),
                         ),
                         Expanded(
@@ -372,6 +378,8 @@ class _EventCreateState extends State<EventCreate> {
                                 decoration: InputDecoration(
                                     labelText: "Consider Duration (mins)",
                                     counterText: ""),
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
                               ),
                             ),
                           ),
@@ -458,6 +466,8 @@ class _EventCreateState extends State<EventCreate> {
                                 decoration: InputDecoration(
                                     labelText: "Voting Duration (mins)",
                                     counterText: ""),
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
                               ),
                             ),
                           ),

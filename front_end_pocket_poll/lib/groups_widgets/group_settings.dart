@@ -181,6 +181,8 @@ class _GroupSettingsState extends State<GroupSettings> {
                                   style: TextStyle(fontSize: 33),
                                   decoration: InputDecoration(
                                       labelText: "Group Name", counterText: ""),
+                                  smartQuotesType: SmartQuotesType.disabled,
+                                  smartDashesType: SmartDashesType.disabled,
                                 ),
                               ),
                               PopupMenuButton<int>(

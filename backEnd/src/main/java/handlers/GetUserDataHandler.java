@@ -82,6 +82,7 @@ public class GetUserDataHandler implements ApiRequestHandler {
             .withMap(User.OWNED_CATEGORIES, Collections.emptyMap())
             .withMap(User.GROUPS, Collections.emptyMap())
             .withMap(User.GROUPS_LEFT, Collections.emptyMap())
+            .withNumber(User.OWNED_GROUPS_COUNT, 0)
             .withMap(User.FAVORITES, Collections.emptyMap())
             .withMap(User.FAVORITE_OF, Collections.emptyMap());
 

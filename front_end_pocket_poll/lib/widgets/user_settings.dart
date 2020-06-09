@@ -124,6 +124,8 @@ class _UserSettingsState extends State<UserSettings> {
                                     labelText:
                                         "Nickname (@${Globals.user.username})",
                                     counterText: ""),
+                                smartQuotesType: SmartQuotesType.disabled,
+                                smartDashesType: SmartDashesType.disabled,
                               )),
                           Padding(
                             padding: EdgeInsets.all(
@@ -223,6 +225,8 @@ class _UserSettingsState extends State<UserSettings> {
                                                         "Consider Duration (mins)",
                                                     helperText: " ",
                                                     counterText: ""),
+                                                smartQuotesType: SmartQuotesType.disabled,
+                                                smartDashesType: SmartDashesType.disabled,
                                               ),
                                               TextFormField(
                                                 maxLength:
@@ -255,6 +259,8 @@ class _UserSettingsState extends State<UserSettings> {
                                                         "Voting Duration (mins)",
                                                     helperText: " ",
                                                     counterText: ""),
+                                                smartQuotesType: SmartQuotesType.disabled,
+                                                smartDashesType: SmartDashesType.disabled,
                                               ),
                                             ],
                                           )),

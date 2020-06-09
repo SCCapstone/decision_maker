@@ -81,6 +81,8 @@ class _FirstLoginState extends State<FirstLogin> {
                                 labelText:
                                     "Nickname (@${Globals.user.username})",
                                 counterText: ""),
+                            smartQuotesType: SmartQuotesType.disabled,
+                            smartDashesType: SmartDashesType.disabled,
                           )),
                       Padding(
                         padding: EdgeInsets.all(

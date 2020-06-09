@@ -121,6 +121,8 @@ class _EventUpdateRatingsState extends State<EventUpdateRatings> {
                                 border: OutlineInputBorder(),
                                 labelText: "Category Name",
                                 counterText: ""),
+                            smartQuotesType: SmartQuotesType.disabled,
+                            smartDashesType: SmartDashesType.disabled,
                           ),
                         ),
                         Expanded(
