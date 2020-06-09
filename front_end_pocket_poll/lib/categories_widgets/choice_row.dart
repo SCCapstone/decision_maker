@@ -133,7 +133,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             controller: widget.labelController,
             textInputAction: TextInputAction.next,
             decoration: InputDecoration(
-                labelStyle: TextStyle(fontSize: 15),
+                labelStyle: TextStyle(fontSize: 14),
                 labelText: "Choice",
                 counterText: "",
                 helperText: (widget.displayLabelHelpText && this.choiceChanged)
@@ -191,7 +191,7 @@ class _ChoiceRowState extends State<ChoiceRow> {
             keyboardType: TextInputType.number,
             key: Key("choice_row:rating_input:${widget.choiceNumber}"),
             decoration: InputDecoration(
-                labelStyle: TextStyle(fontSize: 15),
+                labelStyle: TextStyle(fontSize: 14),
                 labelText:
                     "Rating (${Globals.minChoiceRating}-${Globals.maxChoiceRating})",
                 counterText: "",

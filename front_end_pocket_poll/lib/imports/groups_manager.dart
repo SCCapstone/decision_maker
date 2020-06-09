@@ -190,7 +190,7 @@ class GroupsManager {
               new Group.fromJson(json.decode(responseItem.resultMessage));
           retVal.success = true;
         } else {
-          retVal.errorMessage = "Unable to update group."
+          retVal.errorMessage = "Unable to update group.\n"
               "${responseItem.resultMessage}";
         }
       } catch (e) {
