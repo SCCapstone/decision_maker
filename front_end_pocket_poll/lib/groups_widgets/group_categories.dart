@@ -187,9 +187,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
                                 MaterialPageRoute(
                                     builder: (context) => CategoriesHome()))
                             .then((val) {
-                          setState(() {
-                            this.loading = true;
-                          });
                           this.buildCategoryRows();
                         });
                       },
