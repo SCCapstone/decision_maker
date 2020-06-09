@@ -14,7 +14,7 @@ final String idTokenKey = "id";
 final String appVersion = "AppVersion";
 
 Future<ResultStatus<String>> makeApiRequest(Map<String, dynamic> requestContent,
-    {firstAttempt: true}) async {
+    {firstAttempt = true}) async {
   ResultStatus<String> retVal =
       new ResultStatus(success: false, networkError: false);
 
@@ -43,8 +43,7 @@ Future<ResultStatus<String>> makeApiRequest(Map<String, dynamic> requestContent,
       } else if (firstAttempt) {
         // in case the id_token has expired
         if (await refreshUserTokens()) {
-          retVal = await makeApiRequest(requestContent,
-              firstAttempt: false);
+          retVal = await makeApiRequest(requestContent, firstAttempt: false);
         }
       }
     } on SocketException catch (_) {

@@ -530,6 +530,9 @@ class _GroupPageState extends State<GroupPage>
                 maintainAnimation: true,
                 maintainSize: true,
                 child: IconButton(
+                  onPressed: (){
+                    // empty to get rid of warning
+                  },
                   icon: Icon(Icons.settings),
                 ),
               )
@@ -563,6 +566,9 @@ class _GroupPageState extends State<GroupPage>
               maintainAnimation: true,
               maintainSize: true,
               child: IconButton(
+                onPressed: (){
+                  // empty to get rid of warning
+                },
                 icon: Icon(Icons.settings),
               ),
             )
