@@ -60,10 +60,7 @@ class _GroupsHomeState extends State<GroupsHome>
     this.totalGroups = new List<UserGroup>();
     this.groupsLeft = new List<GroupLeft>();
 
-    if (Platform.isAndroid) {
-      // for now only have firebase messaging on android since ios requires license
-      this.firebaseMessaging = FirebaseMessaging();
-    }
+    this.firebaseMessaging = FirebaseMessaging();
 
     this.groupsLeftSortVal = Globals.alphabeticalSort;
     this.currentTab = this.groupsHomeTab;
@@ -125,22 +122,21 @@ class _GroupsHomeState extends State<GroupsHome>
       }
     });
     //endregion
-    // set up notification listener
-    if (Platform.isAndroid) {
-      Future<String> token = this.firebaseMessaging.getToken();
-      UsersManager.registerPushEndpoint(token);
-      if (!Globals.fireBaseConfigured) {
-        this.firebaseMessaging.configure(
-              onMessage: _onMessage,
-              onLaunch: _onLaunch,
-              onResume: _onResume,
-            );
-        Globals.fireBaseConfigured = true;
-      }
 
-      this.firebaseMessaging.requestNotificationPermissions(
-          const IosNotificationSettings(sound: true, badge: true, alert: true));
+    // set up notification listener
+    Future<String> token = this.firebaseMessaging.getToken();
+    UsersManager.registerPushEndpoint(token);
+    if (!Globals.fireBaseConfigured) {
+      this.firebaseMessaging.configure(
+            onMessage: _onMessage,
+            onLaunch: _onLaunch,
+            onResume: _onResume,
+          );
+      Globals.fireBaseConfigured = true;
     }
+
+    this.firebaseMessaging.requestNotificationPermissions(
+        const IosNotificationSettings(sound: true, badge: true, alert: true));
 
     super.initState();
   }
@@ -278,11 +274,9 @@ class _GroupsHomeState extends State<GroupsHome>
                       key: Key("groups_home:log_out_button"),
                       onTap: () {
                         logOutUser(context);
-                        if (Platform.isAndroid) {
-                          Globals.fireBaseConfigured = false;
-                          // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
-                          this.firebaseMessaging.deleteInstanceID();
-                        }
+                        Globals.fireBaseConfigured = false;
+                        // not 100% sure the below does what i think it does, i think it resets the firebaseMessaging
+                        this.firebaseMessaging.deleteInstanceID();
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -747,7 +741,8 @@ class _GroupsHomeState extends State<GroupsHome>
         }
 
         //only refresh if the active group has the group id parsed above
-        if (Globals.currentGroupResponse.group.groupId == groupId &&
+        if (Globals.currentGroupResponse.group != null &&
+            Globals.currentGroupResponse.group.groupId == groupId &&
             Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
@@ -837,7 +832,8 @@ class _GroupsHomeState extends State<GroupsHome>
         }
 
         //only refresh if the active group has the group id parsed above
-        if (Globals.currentGroupResponse.group.groupId == groupId &&
+        if (Globals.currentGroupResponse.group != null &&
+            Globals.currentGroupResponse.group.groupId == groupId &&
             Globals.refreshGroupPage != null) {
           // the refresh callback has been properly set, so refresh the current global group
           Globals.refreshGroupPage();
