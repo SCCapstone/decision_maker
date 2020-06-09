@@ -38,7 +38,7 @@ public class LeaveGroupHandler implements ApiRequestHandler {
    */
   public ResultStatus handle(final String activeUser, final String groupId) {
     final String classMethod = "LeaveGroupHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -83,15 +83,15 @@ public class LeaveGroupHandler implements ApiRequestHandler {
 
         resultStatus = new ResultStatus(true, "Group left successfully.");
       } else {
-        metrics.logWithBody(new ErrorDescriptor<>(classMethod, errorMessage.get()));
+        this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, errorMessage.get()));
         resultStatus = ResultStatus.failure(errorMessage.get());
       }
     } catch (Exception e) {
-      metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 

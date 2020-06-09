@@ -122,7 +122,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
     }
 
     final String classMethod = "DeleteGroupHandler.deleteAllPendingGroupEvents";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     //assume success, we'll set to fail if anything goes wrong
     ResultStatus resultStatus = ResultStatus.successful("Pending events deleted successfully");
@@ -148,19 +148,19 @@ public class DeleteGroupHandler implements ApiRequestHandler {
         try {
           this.dbAccessManager.updatePendingEvent(Integer.valueOf(i).toString(), updateItemSpec);
         } catch (final Exception e) {
-          metrics.log(new ErrorDescriptor<>(i, classMethod, e));
+          this.metrics.log(new ErrorDescriptor<>(i, classMethod, e));
           resultStatus = ResultStatus.failure("Exception in " + classMethod);
         }
       }
     } catch (final Exception e) {
-      metrics.log(
+      this.metrics.log(
           new ErrorDescriptor<>(String
               .format("GroupId: %s, EventIds: %s", deletedGroup.getGroupId(), pendingEventIds),
               classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -173,7 +173,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
    */
   private ResultStatus removeGroupFromCategories(final Group removedFrom) {
     final String classMethod = "DeleteGroupHandler.removeGroupFromCategories";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     //assume true and set to false if anything fails
     ResultStatus resultStatus = new ResultStatus(true,
@@ -190,12 +190,12 @@ public class DeleteGroupHandler implements ApiRequestHandler {
       try {
         this.dbAccessManager.updateCategory(categoryId, updateItemSpec);
       } catch (final Exception e) {
-        metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(categoryId, classMethod, e));
         resultStatus.resultMessage = "Error: group failed to be removed from category.";
       }
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
@@ -209,7 +209,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
    */
   private ResultStatus removeGroupFromUsersAndSendNotifications(final Group deletedGroup) {
     final String classMethod = "DeleteGroupHandler.removeGroupFromUsersAndSendNotifications";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     //assume true and set to false on any failures
     ResultStatus resultStatus = new ResultStatus(true,
@@ -246,7 +246,7 @@ public class DeleteGroupHandler implements ApiRequestHandler {
         }
       } catch (Exception e) {
         resultStatus = new ResultStatus(false, "Exception removing group from user");
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
@@ -268,11 +268,11 @@ public class DeleteGroupHandler implements ApiRequestHandler {
         this.snsAccessManager.sendMutedMessage(removedUser.getPushEndpointArn(), metadata);
       } catch (final Exception e) {
         resultStatus = new ResultStatus(false, "Exception removing group from left user");
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 }

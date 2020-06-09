@@ -40,7 +40,7 @@ public class AddPendingEventHandler implements ApiRequestHandler {
     }
 
     final String classMethod = "AddPendingEventHandler.handle";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
@@ -64,12 +64,12 @@ public class AddPendingEventHandler implements ApiRequestHandler {
       resultStatus = new ResultStatus(true, "Pending event inserted successfully.");
     } catch (Exception e) {
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
-      metrics.log(new ErrorDescriptor<>(String
+      this.metrics.log(new ErrorDescriptor<>(String
           .format("Group: %s, Event: %s, duration: %s", groupId, eventId, pollDuration.toString()),
           classMethod, e));
     }
 
-    metrics.commonClose(resultStatus.success);
+    this.metrics.commonClose(resultStatus.success);
     return resultStatus;
   }
 
