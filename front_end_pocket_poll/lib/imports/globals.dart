@@ -42,8 +42,8 @@ class Globals {
       accentColor: pocketPollPrimary,
       primaryColorDark: Colors.black,
       buttonTheme: ButtonThemeData(buttonColor: pocketPollDarkBlue),
-      primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
-      textTheme: TextTheme(body1: TextStyle(color: Colors.white)));
+      primaryTextTheme: TextTheme(headline6: TextStyle(color: Colors.white)),
+      textTheme: TextTheme(bodyText2: TextStyle(color: Colors.white)));
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: Colors.blue,
@@ -52,7 +52,7 @@ class Globals {
     buttonTheme: ButtonThemeData(
         buttonColor: pocketPollDarkBlue, textTheme: ButtonTextTheme.primary),
     primaryColorDark: Colors.black,
-    primaryTextTheme: TextTheme(title: TextStyle(color: Colors.white)),
+    primaryTextTheme: TextTheme(headline6: TextStyle(color: Colors.white)),
   );
   static final DateFormat formatterWithTime =
       DateFormat.yMMMMd("en_US").add_jm();

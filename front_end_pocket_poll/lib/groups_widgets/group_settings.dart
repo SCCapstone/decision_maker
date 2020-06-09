@@ -140,6 +140,9 @@ class _GroupSettingsState extends State<GroupSettings> {
               Visibility(
                   visible: !this.canEdit,
                   child: IconButton(
+                      onPressed: () {
+                        // empty to get rid of warning
+                      },
                       disabledColor: Colors.white,
                       icon: Icon(Icons.lock),
                       tooltip: "Group is locked")),

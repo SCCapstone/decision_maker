@@ -63,6 +63,9 @@ class UserRow extends StatelessWidget {
               visible: this.isGroupOwner,
               // show a special icon if user is the owner of the group. Used a button to make it centered
               child: IconButton(
+                onPressed: () {
+                  // empty to get rid of warning message
+                },
                 icon: Icon(Icons.star, color: Colors.yellow),
                 tooltip: "Owner",
               ),

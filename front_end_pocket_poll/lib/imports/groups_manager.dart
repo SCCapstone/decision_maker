@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:front_end_pocket_poll/groups_widgets/group_page.dart';
 import 'package:front_end_pocket_poll/imports/categories_manager.dart';
 import 'package:front_end_pocket_poll/imports/events_manager.dart';
-import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/response_item.dart';
 import 'package:front_end_pocket_poll/imports/result_status.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';

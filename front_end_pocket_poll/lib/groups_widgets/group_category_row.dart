@@ -1,7 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/categories_widgets/category_edit.dart';
-import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/models/category.dart';
 import 'package:front_end_pocket_poll/models/category_rating_tuple.dart';
 import 'package:front_end_pocket_poll/utilities/utilities.dart';
