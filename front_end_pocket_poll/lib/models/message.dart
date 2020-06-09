@@ -9,12 +9,11 @@ class Message {
   final String action;
   final Map<String, dynamic> payload;
 
-  const Message({
-    @required this.title,
-    @required this.body,
-    @required this.action,
-    @required this.payload
-  });
+  const Message(
+      {@required this.title,
+      @required this.body,
+      @required this.action,
+      @required this.payload});
 
   @override
   String toString() {
@@ -22,23 +21,31 @@ class Message {
   }
 
   static Message fromJSON(Map<String, dynamic> json) {
-    dynamic notification = json["notification"];
+    Map<String, dynamic> metadata;
+
     final dynamic data = json["data"];
     if (data != null) {
-      Map<String, dynamic> metadata = jsonDecode(data['metadata']);
-      if (metadata != null) {
-        if (notification == null) {
+      metadata = jsonDecode(data["metadata"]);
+    } else {
+      metadata = jsonDecode(json["metadata"]);
+    }
+
+    if (metadata != null) {
+      dynamic notification = json["notification"];
+      if (notification == null) {
+        notification = json["aps"];
+        if (notification != null) {
+          notification = notification["alert"];
+        } else {
           notification = {"title": null, "action": null};
         }
-
-        return new Message(
-            title: notification['title'],
-            body: notification['body'],
-            action: metadata['action'],
-            payload: metadata['payload']);
-      } else {
-        throw new Exception("Bad message format.");
       }
+
+      return new Message(
+          title: notification['title'],
+          body: notification['body'],
+          action: metadata['action'],
+          payload: metadata['payload']);
     } else {
       throw new Exception("Bad message format.");
     }
