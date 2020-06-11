@@ -16,6 +16,10 @@
 **/*.iws
 **/.idea/
 
+#keys
+**/key.jks
+**/ios/**/signingKey.p12
+
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
@@ -42,6 +46,7 @@ backend/target/
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
 
 # iOS/XCode related
 **/ios/build/
