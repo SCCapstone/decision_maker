@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:738236932202:android:895a4366005df479d46a13",
+        "mobilesdk_app_id": "1:738236932202:android:29a3ae7d400dbbf6d46a13",
         "android_client_info": {
-          "package_name": "com.example.frontEnd"
+          "package_name": "com.decisionMaker.pocketPoll"
         }
       },
       "oauth_client": [
@@ -30,6 +30,13 @@
             {
               "client_id": "738236932202-o3bbm771selt2shfo9jcm47cum0lcedb.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "738236932202-6qlb8cu80d3kmm920lab7nlrjrpt6e3b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.decisionMaker.pocketPoll"
+              }
             }
           ]
         }

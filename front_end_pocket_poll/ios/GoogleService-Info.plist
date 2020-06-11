@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>738236932202-1jurn5dskgt38lme6t7hiu1ct54s3ods.apps.googleusercontent.com</string>
+	<string>738236932202-6qlb8cu80d3kmm920lab7nlrjrpt6e3b.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.738236932202-1jurn5dskgt38lme6t7hiu1ct54s3ods</string>
+	<string>com.googleusercontent.apps.738236932202-6qlb8cu80d3kmm920lab7nlrjrpt6e3b</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBRXHEEq9k8eCvMte-JNIIOceez-n5op78</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.frontEndPocketPoll</string>
+	<string>com.decisionMaker.pocketPoll</string>
 	<key>PROJECT_ID</key>
 	<string>pocketpollmessaging</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,7 +29,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:738236932202:ios:12b974ffd6c32fc6d46a13</string>
+	<string>1:738236932202:ios:1c8ceb91af2eb85dd46a13</string>
 	<key>DATABASE_URL</key>
 	<string>https://pocketpollmessaging.firebaseio.com</string>
 </dict>
