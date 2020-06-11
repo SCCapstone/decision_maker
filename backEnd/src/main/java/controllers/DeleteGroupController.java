@@ -21,7 +21,6 @@ public class DeleteGroupController implements ApiRequestController {
   public ResultStatus processApiRequest(final Map<String, Object> jsonMap, final Metrics metrics)
       throws MissingApiRequestKeyException {
     final String classMethod = "DeleteGroupController.processApiRequest";
-    metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 

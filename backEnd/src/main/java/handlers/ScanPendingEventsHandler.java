@@ -70,7 +70,7 @@ public class ScanPendingEventsHandler {
                 resultStatus = ResultStatus.failure("Step Function failed to start.");
               }
             } else {
-              metrics.log(new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key,
+              this.metrics.log(new ErrorDescriptor<>("scanner id: " + scannerId + ", key : " + key,
                   classMethod, "bad format for key in pending events table"));
               resultStatus = ResultStatus.failure("Bad key format in pending events partition.");
             }

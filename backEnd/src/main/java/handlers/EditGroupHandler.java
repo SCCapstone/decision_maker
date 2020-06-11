@@ -148,7 +148,7 @@ public class EditGroupHandler implements ApiRequestHandler {
    */
   private void updateUsersTable(final Group oldGroup, final Group newGroup) {
     final String classMethod = "EditGroupHandler.updateUsersTable";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
     boolean success = true;
 
     final NameMap nameMap = new NameMap().with("#groupId", newGroup.getGroupId());
@@ -191,7 +191,7 @@ public class EditGroupHandler implements ApiRequestHandler {
         this.dbAccessManager.updateUser(oldMember, updateItemSpec);
       } catch (final Exception e) {
         success = false;
-        metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(oldMember, classMethod, e));
       }
     }
 
@@ -209,7 +209,7 @@ public class EditGroupHandler implements ApiRequestHandler {
         this.dbAccessManager.updateUser(newMember, updateItemSpec);
       } catch (Exception e) {
         success = false;
-        metrics.log(new ErrorDescriptor<>(newMember, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(newMember, classMethod, e));
       }
     }
 
@@ -217,13 +217,13 @@ public class EditGroupHandler implements ApiRequestHandler {
     this.removeGroupFromUsersAndSendNotifications(removedUsernames, oldGroup);
     this.sendAddedToGroupNotifications(addedUsernames, newGroup);
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 
   private void sendAddedToGroupNotifications(final Set<String> addedUsernames,
       final Group newGroup) {
     final String classMethod = "EditGroupHandler.sendAddedToGroupNotifications";
-    metrics.commonSetup(classMethod);
+    this.metrics.commonSetup(classMethod);
 
     boolean success = true;
 
@@ -251,11 +251,11 @@ public class EditGroupHandler implements ApiRequestHandler {
         }
       } catch (Exception e) {
         success = false;
-        metrics.log(new ErrorDescriptor<>(username, classMethod, e));
+        this.metrics.log(new ErrorDescriptor<>(username, classMethod, e));
       }
     }
 
-    metrics.commonClose(success);
+    this.metrics.commonClose(success);
   }
 
   /**
