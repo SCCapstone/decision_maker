@@ -5,6 +5,7 @@ import 'package:front_end_pocket_poll/imports/globals.dart';
 import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
+import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 
@@ -202,6 +203,12 @@ void showUserImage(Favorite user, BuildContext buildContext) {
           content: Image(image: getUserIconImage(user.icon)),
           title: Text("${user.displayName} (@${user.username})"),
           actions: <Widget>[
+            FlatButton(
+              child: Text("REPORT"),
+              onPressed: () {
+                reportDialog(user, buildContext);
+              },
+            ),
             Visibility(
                 visible: showFavoriteButton,
                 child: FlatButton(
@@ -222,6 +229,55 @@ void showUserImage(Favorite user, BuildContext buildContext) {
               child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      });
+}
+
+void reportDialog(Favorite user, BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Report User"),
+          content: Form(
+            key: reportForm,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                    "Please provide a brief description of why you wish to report \"${user.username}\"."),
+                TextFormField(
+                  controller: editingController,
+                  maxLines: 3,
+                  maxLength: Globals.maxReportMessageLength,
+                  validator: validReportMessage,
+                  smartQuotesType: SmartQuotesType.disabled,
+                  smartDashesType: SmartDashesType.disabled,
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  UsersManager.reportUser(
+                      user.username, editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                }
               },
             )
           ],

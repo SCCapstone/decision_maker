@@ -1,16 +1,19 @@
 # decision_maker (Pocket Poll) - Simple Group Event Planner
 
-This mobile application will help users create events in group settings. Users can create groups amongst other users. Users can define categories with many different choices. Users can rate all of the choices for a category. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choice options for group activities at the click of a button.
+This mobile application helps users create fair events in group settings. Users can: create groups amongst other users, define categories with many different choices, and rate all of the choices for a category. Leveraging saved groups and saved choice preferences, the application can quickly and fairly suggest mutually good choice options for group activities at the click of a button.
 
-The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. **We are currently only providing full support for the Android plaform**. In the dart code there are api calls to our AWS cloud hosted api endpoints. These apis are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
+The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. In the dart code there are API calls to our AWS cloud hosted API endpoints. These API are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
+
+[Google Play Store Link](TODO)
+[Apple App Store Link](https://apps.apple.com/us/app/pocket-poll-decision-maker/id1517924891)
 
 ## 1 Technologies
-This application leverages several technologies. At a high level, it uses flutter for the front end and java for the back end.
+This application leverages several technologies. At a high level, it uses Flutter for the front end and Java for the back end.
 
 ### 1.1 Front End Technologies
 For the front end we are using Flutter. In order to develop, build, and run our Flutter application, you will need to download several things:
 * [Flutter](https://flutter.dev/docs/get-started/install)
-   * The application depends on the several external packages. Before building, one needs to fetch these by running `flutter pug get` (more info in section 2).
+   * The application depends on the several external packages. Before building, one needs to fetch these by running `flutter pub get` (more info in section 2).
 * [Android Studio](https://developer.android.com/studio)
    * Flutter Plugin and Dart Plugin will be needed for development. To install these, start android studio, go to File -> Settings -> Plugins, select the 'Marketplace' tab, select the Flutter plugin and click 'Install', click 'Yes' when prompted to install the Dart plugin, and finally click 'Restart' when prompted.
 * [Virtual Device (Android)](https://developer.android.com/studio/run/managing-avds)
@@ -68,7 +71,7 @@ To run the application from a debug .apk file, one must:
 3. One can also download the apk file and then run this command in the downloaded directory: `adb install <apk-file>`. Note that your emulator must be turned on for this command to work.
 
 ## 3 Deployment
-The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll AWS credentials. Please contact John Andrews (jha2@email.sc.edu) if you have any inqueries.
+The backend of our application running in the AWS cloud requires deployment. This section is for the development team only as only they have access to the pocket poll AWS credentials. Please contact John Andrews (jha2@email.sc.edu) if you have any inquiries.
 
 ### 3.1 Deploying Lambda Functions
 1. Develop java code locally and use the command `mvn package` to package your java code into an executable .jar file.
@@ -82,8 +85,8 @@ The backend of our application running in the AWS cloud requires deployment. Thi
 1. Login to the AWS Management Console and navigate to the API Gateway service.
 2. Create a new API or make necessary changes to give API access to your lambda functions.
 3. Click on the 'Actions' drop down and then click the deploy option.
-4. Upon deployment, you will be able to view the link to access the api, this can be used within the dart front end code to access the backend.
-5. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the api has authorization to access the lambda function.
+4. Upon deployment, you will be able to view the link to access the API, this can be used within the dart front end code to access the backend.
+5. If this is the first deployment, the appropriate AWS Iam roles need to be setup so that the API has authorization to access the lambda function.
 
 ## 4 Code Style Guides:
 * [Dart](https://dart.dev/guides/language/effective-dart/style)

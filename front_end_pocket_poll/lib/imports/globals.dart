@@ -111,6 +111,7 @@ class Globals {
   static final int maxChoiceRating = 5;
   static final int minChoiceRating = 0;
   static final int maxChoiceRatingDigits = maxChoiceRating.toString().length;
+  static final int maxReportMessageLength = 2000;
 
   // URLS
   static final String resetPasswordUrl =

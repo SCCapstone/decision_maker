@@ -225,8 +225,10 @@ class _UserSettingsState extends State<UserSettings> {
                                                         "Consider Duration (mins)",
                                                     helperText: " ",
                                                     counterText: ""),
-                                                smartQuotesType: SmartQuotesType.disabled,
-                                                smartDashesType: SmartDashesType.disabled,
+                                                smartQuotesType:
+                                                    SmartQuotesType.disabled,
+                                                smartDashesType:
+                                                    SmartDashesType.disabled,
                                               ),
                                               TextFormField(
                                                 maxLength:
@@ -259,8 +261,10 @@ class _UserSettingsState extends State<UserSettings> {
                                                         "Voting Duration (mins)",
                                                     helperText: " ",
                                                     counterText: ""),
-                                                smartQuotesType: SmartQuotesType.disabled,
-                                                smartDashesType: SmartDashesType.disabled,
+                                                smartQuotesType:
+                                                    SmartQuotesType.disabled,
+                                                smartDashesType:
+                                                    SmartDashesType.disabled,
                                               ),
                                             ],
                                           )),
