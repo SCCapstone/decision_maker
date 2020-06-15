@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
+import 'package:front_end_pocket_poll/models/group.dart';
 import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
@@ -203,11 +206,14 @@ void showUserImage(Favorite user, BuildContext buildContext) {
           content: Image(image: getUserIconImage(user.icon)),
           title: Text("${user.displayName} (@${user.username})"),
           actions: <Widget>[
-            FlatButton(
-              child: Text("REPORT"),
-              onPressed: () {
-                reportDialog(user, buildContext);
-              },
+            Visibility(
+              visible: user.username != Globals.user.username,
+              child: FlatButton(
+                child: Text("REPORT"),
+                onPressed: () {
+                  reportUserDialog(user, buildContext);
+                },
+              ),
             ),
             Visibility(
                 visible: showFavoriteButton,
@@ -236,7 +242,7 @@ void showUserImage(Favorite user, BuildContext buildContext) {
       });
 }
 
-void reportDialog(Favorite user, BuildContext buildContext) {
+void reportUserDialog(Favorite user, BuildContext buildContext) {
   final TextEditingController editingController = new TextEditingController();
   final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
   showDialog(
@@ -277,6 +283,63 @@ void reportDialog(Favorite user, BuildContext buildContext) {
                   UsersManager.reportUser(
                       user.username, editingController.text.toString().trim());
                   Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you! We are processing your report now.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
+                }
+              },
+            )
+          ],
+        );
+      });
+}
+
+void reportGroupDialog(Group group, BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Report Group"),
+          content: Form(
+            key: reportForm,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                    "Please provide a brief description of why you wish to report the group: \"${group.groupName}\"."),
+                TextFormField(
+                  controller: editingController,
+                  maxLines: 3,
+                  maxLength: Globals.maxReportMessageLength,
+                  validator: validReportMessage,
+                  smartQuotesType: SmartQuotesType.disabled,
+                  smartDashesType: SmartDashesType.disabled,
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  GroupsManager.reportGroup(
+                      group.groupId, editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you! We are processing your report now.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
                 }
               },
             )
