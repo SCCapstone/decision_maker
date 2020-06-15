@@ -4,7 +4,7 @@ This mobile application helps users create fair events in group settings. Users 
 
 The basic architecture of this project consists of Flutter and several AWS services. Flutter is a framework that uses the dart language to create cross platform UI. In the dart code there are API calls to our AWS cloud hosted API endpoints. These API are backed by AWS Lambda cloud functions. Packaged Java code in the form of executable .jar files supply the lambda function with their functionality. Maven is used to package our back end source code and manager dependencies.
 
-[Google Play Store Link](TODO)
+[Google Play Store Link](https://play.google.com/store/apps/details?id=com.decisionMaker.pocketPoll)
 [Apple App Store Link](https://apps.apple.com/us/app/pocket-poll-decision-maker/id1517924891)
 
 ## 1 Technologies
