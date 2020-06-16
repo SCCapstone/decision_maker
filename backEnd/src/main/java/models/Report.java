@@ -78,7 +78,35 @@ public class Report implements Model {
     return modelAsMap;
   }
 
+  public String getEmailSubject() {
+    String emailSubject;
+
+    if (this.reportedUsername != null) {
+      emailSubject = "A user has been reported";
+    } else if (this.reportedGroupId != null) {
+      emailSubject = "A group has been reported";
+    } else {
+      emailSubject = "Unknown report";
+    }
+
+    return emailSubject;
+  }
+
   public String getEmailBody() {
-    return null;
+    final StringBuilder emailBody = new StringBuilder("Reporting user: ")
+        .append(this.reportingUsername).append("\n");
+
+    if (this.reportedUsername != null) {
+      emailBody.append("Reported user: ").append(this.reportedUsername).append("\n");
+    } else if (this.reportedGroupId != null) {
+      emailBody.append("Reported group id: ").append(this.reportedGroupId).append("\n");
+    } else {
+      emailBody.append("Unknown report");
+    }
+
+    emailBody.append("\n");
+    emailBody.append("Report message: ").append(this.reportMessage);
+
+    return emailBody.toString();
   }
 }

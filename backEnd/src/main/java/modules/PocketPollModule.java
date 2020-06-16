@@ -24,6 +24,7 @@ import handlers.OptUserInOutHandler;
 import handlers.ProcessPendingEventHandler;
 import handlers.RegisterPushEndpointHandler;
 import handlers.RejoinGroupHandler;
+import handlers.ReportGroupHandler;
 import handlers.ReportUserHandler;
 import handlers.ScanPendingEventsHandler;
 import handlers.SetUserGroupMuteHandler;
@@ -251,7 +252,14 @@ public class PocketPollModule {
   }
 
   @Provides
-  public ReportUserHandler provideReportUserHandler(final DbAccessManager dbAccessManager) {
-    return new ReportUserHandler(dbAccessManager, this.metrics);
+  public ReportUserHandler provideReportUserHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new ReportUserHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public ReportGroupHandler provideReportGroupHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new ReportGroupHandler(dbAccessManager, snsAccessManager, this.metrics);
   }
 }

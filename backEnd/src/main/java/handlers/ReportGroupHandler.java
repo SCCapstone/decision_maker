@@ -3,6 +3,7 @@ package handlers;
 import javax.inject.Inject;
 import managers.DbAccessManager;
 import managers.SnsAccessManager;
+import models.Group;
 import models.Report;
 import models.User;
 import utilities.Config;
@@ -10,14 +11,14 @@ import utilities.ErrorDescriptor;
 import utilities.Metrics;
 import utilities.ResultStatus;
 
-public class ReportUserHandler {
+public class ReportGroupHandler implements ApiRequestHandler {
 
   private final DbAccessManager dbAccessManager;
   private final SnsAccessManager snsAccessManager;
   private final Metrics metrics;
 
   @Inject
-  public ReportUserHandler(final DbAccessManager dbAccessManager,
+  public ReportGroupHandler(final DbAccessManager dbAccessManager,
       final SnsAccessManager snsAccessManager, final Metrics metrics) {
     this.dbAccessManager = dbAccessManager;
     this.snsAccessManager = snsAccessManager;
@@ -29,24 +30,24 @@ public class ReportUserHandler {
    * database. In addition, an email gets sent out the the development team so that they can look
    * into the report.
    *
-   * @param activeUser       The active user doing the reporting.
-   * @param reportedUsername The username of the user being reported.
-   * @param reportMessage    The reasoning as to why the active user is reporting the reported
-   *                         username.
+   * @param activeUser      The active user doing the reporting.
+   * @param reportedGroupId The id of the group being reported.
+   * @param reportMessage   The reasoning as to why the active user is reporting the reported
+   *                        username.
    * @return Standard result status object giving insight on whether the request was successful.
    */
-  public ResultStatus handle(final String activeUser, final String reportedUsername,
+  public ResultStatus handle(final String activeUser, final String reportedGroupId,
       final String reportMessage) {
-    final String classMethod = "ReportUserHandler.handle";
+    final String classMethod = "ReportGroupHandler.handle";
     this.metrics.commonSetup(classMethod);
 
     ResultStatus resultStatus;
 
     try {
-      final User reportedUserObj = this.dbAccessManager.getUser(reportedUsername);
+      final Group reportedGroupObj = this.dbAccessManager.getGroup(reportedGroupId);
 
       final Report userReport = Report
-          .user(activeUser, reportedUsername, reportMessage, reportedUserObj.asMember().asMap(),
+          .group(activeUser, reportedGroupId, reportMessage, reportedGroupObj.getReportSnapshot(),
               this.dbAccessManager.now());
 
       this.dbAccessManager.putReport(userReport);
