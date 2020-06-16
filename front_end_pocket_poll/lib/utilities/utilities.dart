@@ -253,20 +253,22 @@ void reportUserDialog(Favorite user, BuildContext buildContext) {
           title: Text("Report User"),
           content: Form(
             key: reportForm,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                    "Please provide a brief description of why you wish to report \"${user.username}\"."),
-                TextFormField(
-                  controller: editingController,
-                  maxLines: 3,
-                  maxLength: Globals.maxReportMessageLength,
-                  validator: validReportMessage,
-                  smartQuotesType: SmartQuotesType.disabled,
-                  smartDashesType: SmartDashesType.disabled,
-                )
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Please provide a brief description of why you wish to report \"${user.username}\"."),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
             ),
           ),
           actions: <Widget>[
@@ -307,20 +309,22 @@ void reportGroupDialog(Group group, BuildContext buildContext) {
           title: Text("Report Group"),
           content: Form(
             key: reportForm,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                    "Please provide a brief description of why you wish to report the group: \"${group.groupName}\"."),
-                TextFormField(
-                  controller: editingController,
-                  maxLines: 3,
-                  maxLength: Globals.maxReportMessageLength,
-                  validator: validReportMessage,
-                  smartQuotesType: SmartQuotesType.disabled,
-                  smartDashesType: SmartDashesType.disabled,
-                )
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Please provide a brief description of why you wish to report the group: \"${group.groupName}\"."),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
             ),
           ),
           actions: <Widget>[
@@ -361,22 +365,24 @@ void appFeedbackDialog(BuildContext buildContext) {
           title: Text("Pocket Poll Feedback"),
           content: Form(
             key: reportForm,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(
-                    "Let us know of any issues or concerns you have with the app! "
-                    "Feel free to also let us know of features you enjoy or would like to be implemented in the future.\n\n"
-                    "Consider giving us a rating on the app store too!"),
-                TextFormField(
-                  controller: editingController,
-                  maxLines: 3,
-                  maxLength: Globals.maxReportMessageLength,
-                  validator: validReportMessage,
-                  smartQuotesType: SmartQuotesType.disabled,
-                  smartDashesType: SmartDashesType.disabled,
-                )
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Let us know of any issues or concerns you have with the app! "
+                      "Feel free to also let us know of features you enjoy or would like to be implemented in the future.\n\n"
+                      "Consider giving us a rating on the app store too!"),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
             ),
           ),
           actions: <Widget>[
