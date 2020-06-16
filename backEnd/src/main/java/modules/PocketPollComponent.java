@@ -22,6 +22,7 @@ import controllers.PendingEventResolutionController;
 import controllers.PendingEventsScanningController;
 import controllers.RegisterPushEndpointController;
 import controllers.RejoinGroupController;
+import controllers.ReportUserController;
 import controllers.SetUserGroupMuteController;
 import controllers.UnregisterPushEndpointController;
 import controllers.UpdateSortSettingController;
@@ -64,4 +65,5 @@ public interface PocketPollComponent {
   void inject(GetEventController getEventController);
   void inject(AddFavoriteController addFavoriteController);
   void inject(GetAllBatchesOfEventsController getAllBatchesOfEventsController);
+  void inject(ReportUserController reportUserController);
 }

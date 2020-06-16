@@ -111,8 +111,8 @@ public class Group implements Model {
     }
   }
 
-  public Map<String, Map<String, String>> getMembersMap() {
-    final Map<String, Map<String, String>> membersMapped = new HashMap<>();
+  public Map<String, Map<String, Object>> getMembersMap() {
+    final Map<String, Map<String, Object>> membersMapped = new HashMap<>();
     for (final String username : this.members.keySet()) {
       membersMapped.putIfAbsent(username, this.members.get(username).asMap());
     }

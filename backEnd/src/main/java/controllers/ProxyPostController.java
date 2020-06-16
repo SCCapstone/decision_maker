@@ -49,6 +49,7 @@ public class ProxyPostController implements
           .put("newEvent", NewEventController.class)
           .put("getEvent", GetEventController.class)
           .put("addFavorite", AddFavoriteController.class)
+          .put("reportUser", ReportUserController.class)
           .build());
 
   public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request,
