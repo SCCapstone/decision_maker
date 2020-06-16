@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/utilities/utilities.dart';
 import 'package:package_info/package_info.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -214,6 +215,19 @@ class _AboutPageState extends State<AboutPage> {
                     }
                   },
                 ),
+                Padding(
+                  padding:
+                      EdgeInsets.all(MediaQuery.of(context).size.height * .01),
+                ),
+                Center(
+                  child: RaisedButton.icon(
+                    icon: Icon(Icons.feedback),
+                    label: Text("Give Feedback"),
+                    onPressed: () {
+                      appFeedbackDialog(context);
+                    },
+                  ),
+                )
               ],
             ),
           ),

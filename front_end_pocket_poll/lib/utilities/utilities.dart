@@ -242,6 +242,7 @@ void showUserImage(Favorite user, BuildContext buildContext) {
       });
 }
 
+// allows active user to report specific user
 void reportUserDialog(Favorite user, BuildContext buildContext) {
   final TextEditingController editingController = new TextEditingController();
   final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
@@ -295,6 +296,7 @@ void reportUserDialog(Favorite user, BuildContext buildContext) {
       });
 }
 
+// allows the user to report a group (can be for inappropriate images/events)
 void reportGroupDialog(Group group, BuildContext buildContext) {
   final TextEditingController editingController = new TextEditingController();
   final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
@@ -338,6 +340,62 @@ void reportGroupDialog(Group group, BuildContext buildContext) {
                   Navigator.of(context).pop();
                   Fluttertoast.showToast(
                       msg: "Thank you! We are processing your report now.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
+                }
+              },
+            )
+          ],
+        );
+      });
+}
+
+// allows the user to give general app feedback
+void appFeedbackDialog(BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Pocket Poll Feedback"),
+          content: Form(
+            key: reportForm,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                    "Let us know of any issues or concerns you have with the app! "
+                    "Feel free to also let us know of features you enjoy or would like to be implemented in the future.\n\n"
+                    "Consider giving us a rating on the app store too!"),
+                TextFormField(
+                  controller: editingController,
+                  maxLines: 3,
+                  maxLength: Globals.maxReportMessageLength,
+                  validator: validReportMessage,
+                  smartQuotesType: SmartQuotesType.disabled,
+                  smartDashesType: SmartDashesType.disabled,
+                )
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  UsersManager.giveAppFeedback(Globals.user.username,
+                      editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you for your feedback!.",
                       toastLength: Toast.LENGTH_LONG,
                       gravity: ToastGravity.CENTER);
                 }

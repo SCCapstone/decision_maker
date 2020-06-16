@@ -46,6 +46,7 @@ class UsersManager {
   static final String setUserGroupMuteAction = "setUserGroupMute";
   static final String addFavoriteAction = "addFavorite";
   static final String reportUserAction = "reportUser";
+  static final String giveAppFeedbackAction = "giveAppFeedback";
 
   static Future<ResultStatus<User>> getUserData({String username}) async {
     ResultStatus<User> retVal = new ResultStatus(success: false);
@@ -243,6 +244,16 @@ class UsersManager {
   static Future reportUser(String username, String reportMessage) async {
     Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
     jsonRequestBody[RequestFields.ACTION] = reportUserAction;
+    jsonRequestBody[RequestFields.PAYLOAD][USERNAME] = username;
+    jsonRequestBody[RequestFields.PAYLOAD][REPORT_MESSAGE] = reportMessage;
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(jsonRequestBody);
+  }
+
+  static Future giveAppFeedback(String username, String reportMessage) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = giveAppFeedbackAction;
     jsonRequestBody[RequestFields.PAYLOAD][USERNAME] = username;
     jsonRequestBody[RequestFields.PAYLOAD][REPORT_MESSAGE] = reportMessage;
 
