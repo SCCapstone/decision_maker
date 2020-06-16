@@ -15,6 +15,7 @@ import handlers.GetCategoriesHandler;
 import handlers.GetEventHandler;
 import handlers.GetGroupHandler;
 import handlers.GetUserDataHandler;
+import handlers.GiveAppFeedbackHandler;
 import handlers.LeaveGroupHandler;
 import handlers.MarkAllEventsSeenHandler;
 import handlers.MarkEventAsSeenHandler;
@@ -261,5 +262,11 @@ public class PocketPollModule {
   public ReportGroupHandler provideReportGroupHandler(final DbAccessManager dbAccessManager,
       final SnsAccessManager snsAccessManager) {
     return new ReportGroupHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GiveAppFeedbackHandler provideGiveAppFeedbackHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new GiveAppFeedbackHandler(dbAccessManager, snsAccessManager, this.metrics);
   }
 }

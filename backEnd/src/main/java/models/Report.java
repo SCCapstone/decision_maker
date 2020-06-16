@@ -105,7 +105,8 @@ public class Report implements Model {
     }
 
     emailBody.append("\n");
-    emailBody.append("Report message: ").append(this.reportMessage);
+    emailBody.append("Report message: ").append(this.reportMessage).append("\n\n");
+    emailBody.append("Report ID: ").append(this.reportId);
 
     return emailBody.toString();
   }

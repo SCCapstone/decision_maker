@@ -12,6 +12,7 @@ import controllers.GetCategoriesController;
 import controllers.GetEventController;
 import controllers.GetGroupController;
 import controllers.GetUserDataController;
+import controllers.GiveAppFeedbackController;
 import controllers.LeaveGroupController;
 import controllers.MarkAllEventsSeenController;
 import controllers.MarkEventAsSeenController;
@@ -68,4 +69,5 @@ public interface PocketPollComponent {
   void inject(GetAllBatchesOfEventsController getAllBatchesOfEventsController);
   void inject(ReportUserController reportUserController);
   void inject(ReportGroupController reportGroupController);
+  void inject(GiveAppFeedbackController giveAppFeedbackController);
 }

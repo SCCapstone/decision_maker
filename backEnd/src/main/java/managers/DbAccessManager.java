@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import models.Category;
+import models.Feedback;
 import models.Group;
 import models.Report;
 import models.User;
@@ -39,12 +40,14 @@ public class DbAccessManager {
   public static final String CATEGORIES_TABLE_NAME = "categories";
   public static final String PENDING_EVENTS_TABLE_NAME = "pending_events";
   public static final String REPORTS_TABLE_NAME = "reports";
+  public static final String FEEDBACK_TABLE_NAME = "feedback";
 
   public static final String CATEGORIES_PRIMARY_KEY = Category.CATEGORY_ID;
   public static final String GROUPS_PRIMARY_KEY = Group.GROUP_ID;
   public static final String USERS_PRIMARY_KEY = User.USERNAME;
   public static final String PENDING_EVENTS_PRIMARY_KEY = "ScannerId";
   public static final String REPORTS_PRIMARY_KEY = Report.REPORT_ID;
+  public static final String FEEDBACK_PRIMARY_KEY = Feedback.FEEDBACK_ID;
 
   public static final String NUMBER_OF_PARTITIONS_ENV_KEY = "NUMBER_OF_PARTITIONS";
   public static final String DELIM = ";";
@@ -55,6 +58,7 @@ public class DbAccessManager {
   protected final Table categoriesTable;
   protected final Table pendingEventsTable;
   protected final Table reportsTable;
+  protected final Table feedbackTable;
 
   private final AmazonDynamoDBClient client;
   private final DateTimeFormatter dateTimeFormatter;
@@ -79,6 +83,7 @@ public class DbAccessManager {
     this.categoriesTable = dynamoDb.getTable(CATEGORIES_TABLE_NAME);
     this.pendingEventsTable = dynamoDb.getTable(PENDING_EVENTS_TABLE_NAME);
     this.reportsTable = dynamoDb.getTable(REPORTS_TABLE_NAME);
+    this.feedbackTable = dynamoDb.getTable(FEEDBACK_TABLE_NAME);
 
     this.cache = new HashMap<>();
   }
@@ -240,6 +245,11 @@ public class DbAccessManager {
     return this.reportsTable.putItem(report.asItem());
   }
 
+  //Feedback table methods
+  public PutItemOutcome putFeedback(final Feedback feedback) {
+    return this.feedbackTable.putItem(feedback.asItem());
+  }
+
   //for warming
   public List<TableDescription> describeTables() {
     final ArrayList<TableDescription> descriptions = new ArrayList<>();
@@ -248,6 +258,7 @@ public class DbAccessManager {
     descriptions.add(this.categoriesTable.describe());
     descriptions.add(this.pendingEventsTable.describe());
     descriptions.add(this.reportsTable.describe());
+    descriptions.add(this.feedbackTable.describe());
     return descriptions;
   }
 
@@ -274,6 +285,8 @@ public class DbAccessManager {
       return PENDING_EVENTS_PRIMARY_KEY;
     } else if (tableName.equals(REPORTS_TABLE_NAME)) {
       return REPORTS_PRIMARY_KEY;
+    } else if (tableName.equals(FEEDBACK_TABLE_NAME)) {
+      return FEEDBACK_PRIMARY_KEY;
     } else {
       throw new Exception("Invalid table name: " + tableName);
     }
