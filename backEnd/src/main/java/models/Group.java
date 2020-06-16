@@ -1,6 +1,7 @@
 package models;
 
 import com.amazonaws.services.dynamodbv2.document.Item;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -111,8 +112,8 @@ public class Group implements Model {
     }
   }
 
-  public Map<String, Map<String, String>> getMembersMap() {
-    final Map<String, Map<String, String>> membersMapped = new HashMap<>();
+  public Map<String, Map<String, Object>> getMembersMap() {
+    final Map<String, Map<String, Object>> membersMapped = new HashMap<>();
     for (final String username : this.members.keySet()) {
       membersMapped.putIfAbsent(username, this.members.get(username).asMap());
     }
@@ -171,6 +172,14 @@ public class Group implements Model {
         .categories(this.categories)
         .events(this.events)
         .build();
+  }
+
+  public Map<String, Object> getReportSnapshot() {
+    final Map<String, Object> snapshot = new HashMap<>();
+    snapshot.put(GROUP_NAME, this.groupName);
+    snapshot.put(ICON, this.icon);
+    snapshot.put(MEMBERS, new ArrayList<>(this.members.keySet()));
+    return snapshot;
   }
 
   private boolean getBoolFromObject(final Object input) {

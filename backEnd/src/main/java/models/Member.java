@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Member {
+public class Member implements Model {
 
   private String displayName;
   private String icon;
@@ -19,8 +19,8 @@ public class Member {
     this.setIcon((String) jsonMap.get(User.ICON));
   }
 
-  public Map<String, String> asMap() {
-    Map<String, String> modelAsMap = new HashMap<>();
+  public Map<String, Object> asMap() {
+    Map<String, Object> modelAsMap = new HashMap<>();
     modelAsMap.putIfAbsent(User.DISPLAY_NAME, this.displayName);
     modelAsMap.putIfAbsent(User.ICON, this.icon);
     return modelAsMap;

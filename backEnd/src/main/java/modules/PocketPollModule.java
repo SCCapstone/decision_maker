@@ -15,6 +15,7 @@ import handlers.GetCategoriesHandler;
 import handlers.GetEventHandler;
 import handlers.GetGroupHandler;
 import handlers.GetUserDataHandler;
+import handlers.GiveAppFeedbackHandler;
 import handlers.LeaveGroupHandler;
 import handlers.MarkAllEventsSeenHandler;
 import handlers.MarkEventAsSeenHandler;
@@ -24,6 +25,8 @@ import handlers.OptUserInOutHandler;
 import handlers.ProcessPendingEventHandler;
 import handlers.RegisterPushEndpointHandler;
 import handlers.RejoinGroupHandler;
+import handlers.ReportGroupHandler;
+import handlers.ReportUserHandler;
 import handlers.ScanPendingEventsHandler;
 import handlers.SetUserGroupMuteHandler;
 import handlers.UnregisterPushEndpointHandler;
@@ -247,5 +250,23 @@ public class PocketPollModule {
   public GetAllBatchesOfEventsHandler provideGetAllBatchesOfEventsHandler(
       final DbAccessManager dbAccessManager) {
     return new GetAllBatchesOfEventsHandler(dbAccessManager, this.metrics);
+  }
+
+  @Provides
+  public ReportUserHandler provideReportUserHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new ReportUserHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public ReportGroupHandler provideReportGroupHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new ReportGroupHandler(dbAccessManager, snsAccessManager, this.metrics);
+  }
+
+  @Provides
+  public GiveAppFeedbackHandler provideGiveAppFeedbackHandler(final DbAccessManager dbAccessManager,
+      final SnsAccessManager snsAccessManager) {
+    return new GiveAppFeedbackHandler(dbAccessManager, snsAccessManager, this.metrics);
   }
 }

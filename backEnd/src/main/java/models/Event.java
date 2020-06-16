@@ -114,8 +114,8 @@ public class Event implements Model {
     }
   }
 
-  public Map<String, Map<String, String>> getOptedInMap() {
-    final Map<String, Map<String, String>> membersMapped = new HashMap<>();
+  public Map<String, Map<String, Object>> getOptedInMap() {
+    final Map<String, Map<String, Object>> membersMapped = new HashMap<>();
     for (String username : this.optedIn.keySet()) {
       membersMapped.putIfAbsent(username, this.optedIn.get(username).asMap());
     }
@@ -165,8 +165,8 @@ public class Event implements Model {
     this.eventCreator = memberMap;
   }
 
-  public Map<String, Map<String, String>> getEventCreatorMap() {
-    final Map<String, Map<String, String>> eventCreatorMap = new HashMap<>();
+  public Map<String, Map<String, Object>> getEventCreatorMap() {
+    final Map<String, Map<String, Object>> eventCreatorMap = new HashMap<>();
     for (String username : this.eventCreator.keySet()) {
       eventCreatorMap.putIfAbsent(username, this.eventCreator.get(username).asMap());
     }
