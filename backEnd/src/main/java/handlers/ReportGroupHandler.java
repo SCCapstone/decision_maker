@@ -26,14 +26,14 @@ public class ReportGroupHandler implements ApiRequestHandler {
   }
 
   /**
-   * This method takes in the report form entries for reporting a user and logs this report in the
+   * This method takes in the report form entries for reporting a group and logs this report in the
    * database. In addition, an email gets sent out the the development team so that they can look
    * into the report.
    *
    * @param activeUser      The active user doing the reporting.
    * @param reportedGroupId The id of the group being reported.
    * @param reportMessage   The reasoning as to why the active user is reporting the reported
-   *                        username.
+   *                        group.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String reportedGroupId,

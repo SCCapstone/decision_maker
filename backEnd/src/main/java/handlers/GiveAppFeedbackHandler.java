@@ -27,12 +27,12 @@ public class GiveAppFeedbackHandler implements ApiRequestHandler {
   }
 
   /**
-   * This method takes in the report form entries for reporting a user and logs this report in the
-   * database. In addition, an email gets sent out the the development team so that they can look
-   * into the report.
+   * This method takes in the report form entries for providing feedback and logs this feedback in
+   * the database. In addition, an email gets sent out the the development team so that they can
+   * look into the request.
    *
-   * @param activeUser      The active user doing the reporting.
-   * @param feedbackMessage The id of the group being reported.
+   * @param activeUser      The active user doing the feedback.
+   * @param feedbackMessage The content of the feedback being sent in.
    * @return Standard result status object giving insight on whether the request was successful.
    */
   public ResultStatus handle(final String activeUser, final String feedbackMessage) {
@@ -51,7 +51,7 @@ public class GiveAppFeedbackHandler implements ApiRequestHandler {
       this.snsAccessManager.sendEmail(Config.SNS_REPORT_TOPIC_ARN, feedback.getEmailSubject(),
           feedback.getEmailBody());
 
-      resultStatus = new ResultStatus(true, "Report processed successfully.");
+      resultStatus = new ResultStatus(true, "Feedback processed successfully.");
     } catch (final Exception e) {
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
       resultStatus = ResultStatus.failure("Exception in " + classMethod);
