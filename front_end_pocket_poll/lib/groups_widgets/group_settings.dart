@@ -29,6 +29,7 @@ class _GroupSettingsState extends State<GroupSettings> {
   final TextEditingController groupNameController = new TextEditingController();
   final int muteAction = 0;
   final int leaveDeleteAction = 1;
+  final int reportGroupAction = 2;
 
   bool autoValidate;
   bool validGroupIcon;
@@ -230,6 +231,10 @@ class _GroupSettingsState extends State<GroupSettings> {
                                               .group.groupId]
                                           .muted = true;
                                     }
+                                  } else if (result == this.reportGroupAction) {
+                                    reportGroupDialog(
+                                        Globals.currentGroupResponse.group,
+                                        context);
                                   }
                                 },
                                 itemBuilder: (BuildContext context) =>
@@ -249,6 +254,12 @@ class _GroupSettingsState extends State<GroupSettings> {
                                     ),
                                   ),
                                   PopupMenuItem<int>(
+                                    value: this.reportGroupAction,
+                                    child: Text(
+                                      "Report",
+                                    ),
+                                  ),
+                                  PopupMenuItem<int>(
                                     value: this.leaveDeleteAction,
                                     key: Key(
                                         "group_settings:delete_group_button"),
@@ -257,7 +268,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                                           ? "Delete Group"
                                           : "Leave Group",
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ],

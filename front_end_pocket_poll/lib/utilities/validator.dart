@@ -313,3 +313,14 @@ String validMinute(String input) {
   }
   return retVal;
 }
+
+String validReportMessage(String input) {
+  input = input.trim(); // sanity check trim
+  String retVal;
+  if (input.isEmpty) {
+    retVal = "Message cannot be empty.";
+  } else if (input.length > Globals.maxReportMessageLength) {
+    retVal = "Message is too long.";
+  }
+  return retVal;
+}

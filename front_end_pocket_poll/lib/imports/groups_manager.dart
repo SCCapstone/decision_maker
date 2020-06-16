@@ -36,6 +36,7 @@ class GroupsManager {
   static final String TOTAL_NUMBER_OF_EVENTS = "TotalNumberOfEvents";
   static final int BATCH_SIZE = 15;
   static final String IS_OPEN = "IsOpen";
+  static final String REPORT_MESSAGE = "ReportMessage";
 
   static final String getGroupAction = "getGroup";
   static final String getEventAction = "getEvent";
@@ -49,6 +50,7 @@ class GroupsManager {
   static final String rejoinGroupAction = "rejoinGroup";
   static final String optInAction = "optUserInOut";
   static final String voteAction = "voteForChoice";
+  static final String reportGroupAction = "reportGroup";
 
   static Future<ResultStatus<GetGroupResponse>> getGroup(String groupId) async {
     ResultStatus<GetGroupResponse> retVal = new ResultStatus(success: false);
@@ -571,5 +573,15 @@ class GroupsManager {
       retVal.errorMessage = "Unable to load events.";
     }
     return retVal;
+  }
+
+  static Future reportGroup(String groupId, String reportMessage) async {
+    Map<String, dynamic> jsonRequestBody = getEmptyApiRequest();
+    jsonRequestBody[RequestFields.ACTION] = reportGroupAction;
+    jsonRequestBody[RequestFields.PAYLOAD][GROUP_ID] = groupId;
+    jsonRequestBody[RequestFields.PAYLOAD][REPORT_MESSAGE] = reportMessage;
+
+    //blind send here, not critical for app or user if it fails
+    makeApiRequest(jsonRequestBody);
   }
 }

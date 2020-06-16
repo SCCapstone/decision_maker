@@ -21,6 +21,7 @@ class UserRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        hideKeyboard(context);
         showUserImage(
             new Favorite.debug(this.username, this.displayName, this.icon),
             context);

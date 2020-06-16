@@ -1,10 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:front_end_pocket_poll/imports/globals.dart';
+import 'package:front_end_pocket_poll/imports/groups_manager.dart';
 import 'package:front_end_pocket_poll/imports/user_tokens_manager.dart';
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
 import 'package:front_end_pocket_poll/models/favorite.dart';
+import 'package:front_end_pocket_poll/models/group.dart';
+import 'package:front_end_pocket_poll/utilities/validator.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 
@@ -203,6 +207,15 @@ void showUserImage(Favorite user, BuildContext buildContext) {
           title: Text("${user.displayName} (@${user.username})"),
           actions: <Widget>[
             Visibility(
+              visible: user.username != Globals.user.username,
+              child: FlatButton(
+                child: Text("REPORT"),
+                onPressed: () {
+                  reportUserDialog(user, buildContext);
+                },
+              ),
+            ),
+            Visibility(
                 visible: showFavoriteButton,
                 child: FlatButton(
                     child: Text("ADD TO FAVORITES"),
@@ -222,6 +235,176 @@ void showUserImage(Favorite user, BuildContext buildContext) {
               child: Text("RETURN"),
               onPressed: () {
                 Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      });
+}
+
+// allows active user to report specific user
+void reportUserDialog(Favorite user, BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Report User"),
+          content: Form(
+            key: reportForm,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Please provide a brief description of why you wish to report \"${user.username}\"."),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  UsersManager.reportUser(
+                      user.username, editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you! We are processing your report now.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
+                }
+              },
+            )
+          ],
+        );
+      });
+}
+
+// allows the user to report a group (can be for inappropriate images/events)
+void reportGroupDialog(Group group, BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Report Group"),
+          content: Form(
+            key: reportForm,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Please provide a brief description of why you wish to report the group: \"${group.groupName}\"."),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  GroupsManager.reportGroup(
+                      group.groupId, editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you! We are processing your report now.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
+                }
+              },
+            )
+          ],
+        );
+      });
+}
+
+// allows the user to give general app feedback
+void appFeedbackDialog(BuildContext buildContext) {
+  final TextEditingController editingController = new TextEditingController();
+  final GlobalKey<FormState> reportForm = GlobalKey<FormState>();
+  showDialog(
+      context: buildContext,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Pocket Poll Feedback"),
+          content: Form(
+            key: reportForm,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                      "Let us know of any issues or concerns you have with the app! "
+                      "Feel free to also let us know of features you enjoy or would like to be implemented in the future.\n\n"
+                      "Consider giving us a rating on the app store too!"),
+                  TextFormField(
+                    controller: editingController,
+                    maxLines: 3,
+                    maxLength: Globals.maxReportMessageLength,
+                    validator: validReportMessage,
+                    smartQuotesType: SmartQuotesType.disabled,
+                    smartDashesType: SmartDashesType.disabled,
+                  )
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("CANCEL"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("SUBMIT"),
+              onPressed: () {
+                final form = reportForm.currentState;
+                if (form.validate()) {
+                  UsersManager.giveAppFeedback(Globals.user.username,
+                      editingController.text.toString().trim());
+                  Navigator.of(context).pop();
+                  Fluttertoast.showToast(
+                      msg: "Thank you for your feedback!.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.CENTER);
+                }
               },
             )
           ],

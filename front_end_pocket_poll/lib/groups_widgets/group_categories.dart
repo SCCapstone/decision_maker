@@ -59,7 +59,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          centerTitle: false,
           title: (widget.canEdit)
               ? Text(
                   "Select Categories",
@@ -255,7 +254,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesLoading() {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: false,
             title: (widget.canEdit)
                 ? Text("Select Categories",
                     style: TextStyle(
@@ -272,7 +270,6 @@ class _GroupCategoriesState extends State<GroupCategories> {
   Widget categoriesError(String errorMsg) {
     return Scaffold(
         appBar: AppBar(
-            centerTitle: false,
             title: (widget.canEdit)
                 ? Text("Select Categories",
                     style: TextStyle(

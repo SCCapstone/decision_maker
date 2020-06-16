@@ -23,7 +23,6 @@ import utilities.JsonUtils;
 public class SnsAccessManager {
 
   private final Regions region = Regions.US_EAST_1; //TODO migrate everything to us east 1 and move this to config
-  private static final String USER_DATA_KEY = "CustomUserData";
 
   private AmazonSNSClient client;
 
@@ -135,6 +134,21 @@ public class SnsAccessManager {
         .withTargetArn(arn)
         .withMessage(jsonNotification);
     publishRequest.setMessageStructure("json");
+
+    PublishResult publishResult;
+    try {
+      publishResult = this.client.publish(publishRequest);
+    } catch (final EndpointDisabledException ede) {
+      //this isn't an error on our end, read more about this exception here:
+      //https://forums.aws.amazon.com/thread.jspa?threadID=174551
+      publishResult = new PublishResult();
+    }
+
+    return publishResult;
+  }
+
+  public PublishResult sendEmail(final String arn, final String subject, final String body) {
+    final PublishRequest publishRequest = new PublishRequest(arn, body, subject);
 
     PublishResult publishResult;
     try {

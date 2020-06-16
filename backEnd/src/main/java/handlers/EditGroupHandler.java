@@ -130,7 +130,11 @@ public class EditGroupHandler implements ApiRequestHandler {
         resultStatus = ResultStatus.failure(errorMessage.get());
         this.metrics.logWithBody(new WarningDescriptor<>(classMethod, errorMessage.get()));
       }
-    } catch (Exception e) {
+    } catch (final NullPointerException npe) {
+      //trying to send a user friendly message just in the group was just deleted
+      resultStatus = ResultStatus.failure("Error: Group not found.");
+      this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, npe));
+    } catch (final Exception e) {
       resultStatus = ResultStatus.failure("Exception in: " + classMethod);
       this.metrics.logWithBody(new ErrorDescriptor<>(classMethod, e));
     }

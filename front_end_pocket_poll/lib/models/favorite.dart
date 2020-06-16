@@ -1,4 +1,5 @@
 import 'package:front_end_pocket_poll/imports/users_manager.dart';
+import 'package:front_end_pocket_poll/models/user.dart';
 
 class Favorite {
   final String username;
@@ -14,6 +15,13 @@ class Favorite {
         username: username,
         displayName: json[UsersManager.DISPLAY_NAME],
         icon: json[UsersManager.ICON]);
+  }
+
+  factory Favorite.fromUser(final User user) {
+    return Favorite(
+        username: user.username,
+        displayName: user.displayName,
+        icon: user.icon);
   }
 
   @override

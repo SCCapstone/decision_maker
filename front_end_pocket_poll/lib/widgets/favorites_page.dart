@@ -43,19 +43,20 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     children: <Widget>[
                       Expanded(
                         child: TextFormField(
-                            maxLength: Globals.maxUsernameLength,
-                            controller: this.userController,
-                            validator: (value) {
-                              return validNewFavorite(
-                                  value.trim(), widget.displayedFavorites);
-                            },
-                            key: Key("favorites_page:username_input"),
-                            decoration: InputDecoration(
-                              labelText: "Enter username to add",
-                              counterText: "",
-                            ),
+                          maxLength: Globals.maxUsernameLength,
+                          controller: this.userController,
+                          validator: (value) {
+                            return validNewFavorite(
+                                value.trim(), widget.displayedFavorites);
+                          },
+                          key: Key("favorites_page:username_input"),
+                          decoration: InputDecoration(
+                            labelText: "Enter username to add",
+                            counterText: "",
+                          ),
                           smartQuotesType: SmartQuotesType.disabled,
-                          smartDashesType: SmartDashesType.disabled,),
+                          smartDashesType: SmartDashesType.disabled,
+                        ),
                       ),
                       FlatButton(
                         child: Text("Add User"),
@@ -105,11 +106,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
     ResultStatus<User> resultStatus = await UsersManager.getUserData(
         username: this.userController.text.trim());
     if (resultStatus.success) {
-      User newFavorite = resultStatus.data;
-      widget.displayedFavorites.add(new Favorite(
-          username: newFavorite.username,
-          displayName: newFavorite.displayName,
-          icon: newFavorite.icon));
+      Favorite newFavorite = new Favorite.fromUser(resultStatus.data);
+      // add it to the global user so the "Add to Favorites" isn't shown when clicking the user row
+      Globals.user.favorites.add(newFavorite);
+      widget.displayedFavorites.add(newFavorite);
     } else {
       showErrorMessage("Error", resultStatus.errorMessage, this.context);
       hideKeyboard(this.context);

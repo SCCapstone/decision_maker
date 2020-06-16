@@ -595,6 +595,7 @@ class _CategoryEditState extends State<CategoryEdit> {
         }
       }
       initializeChoiceRows();
+      setOriginalValues();
     } else {
       this.errorLoading = true;
       this.errorWidget = categoriesError(resultStatus.errorMessage);
@@ -645,7 +646,6 @@ class _CategoryEditState extends State<CategoryEdit> {
 
     // sort by rows by choice number
     Sorter.sortChoiceRows(this.choiceRows, this.sortVal);
-    setOriginalValues();
   }
 
   /*
