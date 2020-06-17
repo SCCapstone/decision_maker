@@ -60,7 +60,7 @@ class _UserSettingsState extends State<UserSettings> {
     this._displayName = Globals.user.displayName;
     this._darkTheme = Globals.user.appSettings.darkTheme;
     this._muted = Globals.user.appSettings.muted;
-    this.originalFavorites = Globals.user.favorites;
+    this.originalFavorites = new List<Favorite>.from(Globals.user.favorites);
     this.displayedFavorites.addAll(this.originalFavorites);
     this.displayNameController.text = this._displayName;
     super.initState();
