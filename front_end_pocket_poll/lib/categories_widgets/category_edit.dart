@@ -657,10 +657,11 @@ class _CategoryEditState extends State<CategoryEdit> {
     this.originalRatings.clear();
     this.originalLabels.clear();
     for (ChoiceRow choiceRow in this.choiceRows) {
-      this.originalLabels.putIfAbsent(choiceRow.labelController.text.toString(),
+      this.originalLabels.putIfAbsent(
+          choiceRow.labelController.text.toString().trim(),
           () => choiceRow.choiceNumber);
       this.originalRatings.putIfAbsent(
-          choiceRow.labelController.text.toString(),
+          choiceRow.labelController.text.toString().trim(),
           () => choiceRow.rateController.text.toString());
     }
   }
