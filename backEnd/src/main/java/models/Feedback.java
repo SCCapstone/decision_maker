@@ -11,9 +11,12 @@ import utilities.RequestFields;
 @AllArgsConstructor
 public class Feedback implements Model {
 
-  public static final String FEEDBACK_ID = "FeedbackId";
+  /*
+    NOTICE: For cost reasons, the feedback table was removed. All feedback data is now being put in
+    the reports table. This is intentional to remain within the free tier.
+   */
 
-  private String feedbackId;
+  private String reportId;
   private String reportingUsername;
   private String feedbackMessage;
   private String now;
@@ -22,8 +25,8 @@ public class Feedback implements Model {
     final Item modelAsItem = Item.fromMap(this.asMap());
 
     //change the feedback id to be the primary key
-    modelAsItem.removeAttribute(FEEDBACK_ID);
-    modelAsItem.withPrimaryKey(FEEDBACK_ID, this.feedbackId);
+    modelAsItem.removeAttribute(Report.REPORT_ID);
+    modelAsItem.withPrimaryKey(Report.REPORT_ID, this.reportId);
 
     return modelAsItem;
   }
@@ -31,7 +34,7 @@ public class Feedback implements Model {
   @Override
   public Map<String, Object> asMap() {
     final Map<String, Object> modelAsMap = new HashMap<>();
-    modelAsMap.put(FEEDBACK_ID, this.feedbackId);
+    modelAsMap.put(Report.REPORT_ID, this.reportId);
     modelAsMap.put(RequestFields.ACTIVE_USER, this.reportingUsername);
     modelAsMap.put(Report.REPORT_MESSAGE, this.feedbackMessage);
     modelAsMap.put(Report.REPORTED_DATETIME, this.now);
@@ -46,7 +49,7 @@ public class Feedback implements Model {
     final StringBuilder emailBody = new StringBuilder();
     emailBody.append("Reporting user: ").append(this.reportingUsername).append("\n\n");
     emailBody.append("Feedback message: ").append(this.feedbackMessage).append("\n\n");
-    emailBody.append("Feedback ID: ").append(this.feedbackId);
+    emailBody.append("Feedback ID (report id): ").append(this.reportId);
 
     return emailBody.toString();
   }
