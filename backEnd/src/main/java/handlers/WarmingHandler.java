@@ -37,7 +37,9 @@ public class WarmingHandler implements ApiRequestHandler {
 
     try {
       this.dbAccessManager.describeTables();
-      this.s3AccessManager.imageBucketExists();
+      // this line counts as an s3 get request which is consuming our s3 free tier limit
+      // there are few cases where a warm connection to s3 is necessary and we have few users
+//      this.s3AccessManager.imageBucketExists();
       this.snsAccessManager.getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
 
       resultStatus = ResultStatus.successful("Endpoints warmed.");
