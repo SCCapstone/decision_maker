@@ -54,7 +54,7 @@ public class WarmingHandlerTest {
 
     assertTrue(resultStatus.success);
     verify(this.dbAccessManager, times(1)).describeTables();
-    verify(this.s3AccessManager, times(1)).imageBucketExists();
+    verify(this.s3AccessManager, times(0)).imageBucketExists();
     verify(this.snsAccessManager, times(1)).getPlatformAttributes(Config.PUSH_SNS_PLATFORM_ARN);
     verify(this.metrics, times(1)).commonClose(true);
   }
